@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
@@ -13,8 +14,11 @@ class ExpenseParser {
   /// Parse raw input string into a structured Expense object
   /// Returns ParseResult with the expense and metadata
   static ParseResult parse(String rawInput, String userId) {
+    debugPrint('💸 [ExpenseParser] Parsing input: "$rawInput"');
+
     // Validate input
     if (rawInput.trim().isEmpty) {
+      debugPrint('❌ [ExpenseParser] Empty input');
       return ParseResult(
         success: false,
         errorMessage: 'Input cannot be empty',
@@ -27,19 +31,26 @@ class ExpenseParser {
     final language = LanguageDetector.detectLanguage(trimmedInput);
     final languageConfidence =
         LanguageDetector.getConfidence(trimmedInput, language);
+    debugPrint('🌍 [ExpenseParser] Language: $language (confidence: ${(languageConfidence * 100).toStringAsFixed(1)}%)');
 
     // Step 2: Extract amount and description
     final amountResult = AmountParser.extractAmount(trimmedInput);
+    debugPrint('💰 [ExpenseParser] Extracting amount from: "$trimmedInput"');
 
     if (amountResult == null) {
+      debugPrint('❌ [ExpenseParser] Could not extract amount');
       return ParseResult(
         success: false,
         errorMessage: 'Could not find a valid amount in the input',
       );
     }
 
+    debugPrint('   Amount: ${amountResult.amount} (raw: "${amountResult.rawAmount}")');
+    debugPrint('   Remaining text: "${amountResult.description}"');
+
     // Validate amount
     if (amountResult.amount <= 0) {
+      debugPrint('❌ [ExpenseParser] Invalid amount: ${amountResult.amount}');
       return ParseResult(
         success: false,
         errorMessage: 'Amount must be greater than zero',
@@ -51,16 +62,22 @@ class ExpenseParser {
     if (description.isEmpty) {
       // Use a default description based on language
       description = language == 'vi' ? 'Chi tiêu' : 'Expense';
+      debugPrint('📝 [ExpenseParser] Using default description: "$description"');
+    } else {
+      debugPrint('📝 [ExpenseParser] Description: "$description"');
     }
 
     // Step 4: Auto-categorize based on description
     final categoryResult = Categorizer.categorize(description, language);
+    debugPrint('🏷️ [ExpenseParser] Category: ${categoryResult.category} (confidence: ${(categoryResult.confidence * 100).toStringAsFixed(1)}%)');
 
     // Calculate overall confidence
     // Weight: 50% categorization, 30% language detection, 20% amount parsing
     final overallConfidence = (categoryResult.confidence * 0.5) +
         (languageConfidence * 0.3) +
         (0.2); // Amount parsing is assumed successful if we got here
+
+    debugPrint('📊 [ExpenseParser] Overall confidence: ${(overallConfidence * 100).toStringAsFixed(1)}%');
 
     // Step 5: Create Expense object
     final expense = Expense(
@@ -74,6 +91,8 @@ class ExpenseParser {
       rawInput: rawInput,
       confidence: overallConfidence,
     );
+
+    debugPrint('✅ [ExpenseParser] Success! Parsed expense with ID: ${expense.id}');
 
     return ParseResult(
       success: true,

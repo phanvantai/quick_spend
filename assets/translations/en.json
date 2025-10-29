@@ -24,6 +24,15 @@
   "expense": {
     "add_coming_soon": "Add expense coming soon!"
   },
+  "voice": {
+    "hold_to_record": "Hold to Record",
+    "hold_instruction": "Hold the button to record your expense",
+    "recording": "Recording...",
+    "release_to_send": "Release to send",
+    "slide_to_cancel": "Slide up to cancel",
+    "listening": "Listening...",
+    "error": "Could not start voice recording. Please check microphone permissions."
+  },
   "categories": {
     "food": "Food",
     "transport": "Transport",

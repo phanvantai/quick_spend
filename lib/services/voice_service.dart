@@ -1,0 +1,196 @@
+import 'package:flutter/foundation.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+/// Service for handling voice input with speech-to-text
+class VoiceService {
+  final SpeechToText _speechToText = SpeechToText();
+  bool _isInitialized = false;
+  bool _isListening = false;
+
+  /// Check if service is initialized
+  bool get isInitialized => _isInitialized;
+
+  /// Check if currently listening
+  bool get isListening => _isListening;
+
+  /// Initialize the speech service
+  Future<bool> initialize() async {
+    debugPrint('🎙️ [VoiceService] Initializing...');
+    if (_isInitialized) {
+      debugPrint('✅ [VoiceService] Already initialized');
+      return true;
+    }
+
+    try {
+      // Request microphone permission
+      debugPrint('🔐 [VoiceService] Requesting microphone permission...');
+      final status = await Permission.microphone.request();
+      debugPrint('📋 [VoiceService] Permission status: ${status.name}');
+
+      if (!status.isGranted) {
+        debugPrint('❌ [VoiceService] Microphone permission denied');
+        return false;
+      }
+
+      // Initialize speech to text
+      debugPrint('🎤 [VoiceService] Initializing speech-to-text...');
+      _isInitialized = await _speechToText.initialize(
+        onError: (error) {
+          debugPrint('❌ [VoiceService] Speech recognition error: ${error.errorMsg}');
+        },
+        onStatus: (status) {
+          debugPrint('📊 [VoiceService] Speech recognition status: $status');
+        },
+      );
+
+      debugPrint('✅ [VoiceService] Initialization complete: $_isInitialized');
+      return _isInitialized;
+    } catch (e) {
+      debugPrint('❌ [VoiceService] Error initializing: $e');
+      return false;
+    }
+  }
+
+  /// Check if microphone permission is granted
+  Future<bool> hasPermission() async {
+    final status = await Permission.microphone.status;
+    return status.isGranted;
+  }
+
+  /// Request microphone permission
+  Future<bool> requestPermission() async {
+    final status = await Permission.microphone.request();
+    return status.isGranted;
+  }
+
+  /// Start listening for speech
+  /// [language] can be 'en' or 'vi'
+  /// [onResult] callback when speech is recognized
+  Future<bool> startListening({
+    required String language,
+    required Function(String) onResult,
+    Function(double)? onSoundLevel,
+  }) async {
+    debugPrint('🎧 [VoiceService] Starting to listen (language: $language)');
+
+    if (!_isInitialized) {
+      debugPrint('⚠️ [VoiceService] Not initialized, initializing now...');
+      final initialized = await initialize();
+      if (!initialized) {
+        debugPrint('❌ [VoiceService] Initialization failed');
+        return false;
+      }
+    }
+
+    if (_isListening) {
+      debugPrint('⚠️ [VoiceService] Already listening');
+      return false;
+    }
+
+    try {
+      // Map language code to locale ID
+      final localeId = _getLocaleId(language);
+      debugPrint('🌍 [VoiceService] Using locale: $localeId');
+
+      await _speechToText.listen(
+        onResult: (result) {
+          debugPrint('📝 [VoiceService] Result received:');
+          debugPrint('   Recognized: "${result.recognizedWords}"');
+          debugPrint('   Final: ${result.finalResult}');
+          debugPrint('   Confidence: ${result.confidence}');
+
+          if (result.finalResult) {
+            debugPrint('✅ [VoiceService] Final result: "${result.recognizedWords}"');
+            onResult(result.recognizedWords);
+          }
+        },
+        localeId: localeId,
+        listenOptions: SpeechListenOptions(
+          listenMode: ListenMode.confirmation,
+          cancelOnError: true,
+          partialResults: true,
+        ),
+        onSoundLevelChange: onSoundLevel,
+      );
+
+      _isListening = true;
+      debugPrint('✅ [VoiceService] Now listening...');
+      return true;
+    } catch (e) {
+      debugPrint('❌ [VoiceService] Error starting listening: $e');
+      return false;
+    }
+  }
+
+  /// Stop listening
+  Future<void> stopListening() async {
+    debugPrint('🛑 [VoiceService] Stopping listening...');
+    if (!_isListening) {
+      debugPrint('⚠️ [VoiceService] Not currently listening');
+      return;
+    }
+
+    try {
+      await _speechToText.stop();
+      _isListening = false;
+      debugPrint('✅ [VoiceService] Stopped listening');
+    } catch (e) {
+      debugPrint('❌ [VoiceService] Error stopping listening: $e');
+    }
+  }
+
+  /// Cancel listening
+  Future<void> cancelListening() async {
+    debugPrint('❌ [VoiceService] Canceling listening...');
+    if (!_isListening) {
+      debugPrint('⚠️ [VoiceService] Not currently listening');
+      return;
+    }
+
+    try {
+      await _speechToText.cancel();
+      _isListening = false;
+      debugPrint('✅ [VoiceService] Canceled listening');
+    } catch (e) {
+      debugPrint('❌ [VoiceService] Error canceling listening: $e');
+    }
+  }
+
+  /// Get available locales
+  Future<List<String>> getAvailableLocales() async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    final locales = await _speechToText.locales();
+    return locales.map((locale) => locale.localeId).toList();
+  }
+
+  /// Check if a specific locale is available
+  Future<bool> isLocaleAvailable(String language) async {
+    final locales = await getAvailableLocales();
+    final localeId = _getLocaleId(language);
+    return locales.any((locale) => locale.startsWith(localeId.split('_')[0]));
+  }
+
+  /// Map language code to speech recognition locale ID
+  String _getLocaleId(String language) {
+    switch (language) {
+      case 'vi':
+        return 'vi_VN'; // Vietnamese
+      case 'en':
+      default:
+        return 'en_US'; // English (US)
+    }
+  }
+
+  /// Dispose resources
+  void dispose() {
+    if (_isListening) {
+      _speechToText.stop();
+    }
+    _isListening = false;
+    _isInitialized = false;
+  }
+}
