@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "Quick Spend",
+    "tagline": "Track your expenses effortlessly"
+  },
+  "onboarding": {
+    "choose_language": "Choose your language",
+    "choose_currency": "Choose your currency",
+    "get_started": "Get Started"
+  },
+  "home": {
+    "title": "Quick Spend",
+    "welcome": "Welcome to Quick Spend!",
+    "language_label": "Language: English",
+    "currency_label": "Currency: {currency}",
+    "coming_soon": "Main interface coming soon!",
+    "features": "You will be able to:\n• Add expenses by voice or typing\n• View expense list\n• See spending statistics\n• And much more!",
+    "add_expense": "Add Expense",
+    "settings": "Settings"
+  },
+  "settings": {
+    "coming_soon": "Settings coming soon!"
+  },
+  "expense": {
+    "add_coming_soon": "Add expense coming soon!"
+  },
+  "categories": {
+    "food": "Food",
+    "transport": "Transport",
+    "shopping": "Shopping",
+    "bills": "Bills",
+    "health": "Health",
+    "entertainment": "Entertainment",
+    "other": "Other"
+  },
+  "currencies": {
+    "usd": {
+      "name": "US Dollar",
+      "code": "USD"
+    },
+    "vnd": {
+      "name": "Vietnamese Dong",
+      "code": "VND"
+    }
+  },
+  "languages": {
+    "en": "English",
+    "vi": "Tiếng Việt"
+  }
+}

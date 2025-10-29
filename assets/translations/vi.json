@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "Quick Spend",
+    "tagline": "Quản lý chi tiêu dễ dàng"
+  },
+  "onboarding": {
+    "choose_language": "Chọn ngôn ngữ",
+    "choose_currency": "Chọn đơn vị tiền tệ",
+    "get_started": "Bắt Đầu"
+  },
+  "home": {
+    "title": "Quick Spend",
+    "welcome": "Chào mừng đến Quick Spend!",
+    "language_label": "Ngôn ngữ: Tiếng Việt",
+    "currency_label": "Tiền tệ: {currency}",
+    "coming_soon": "Giao diện chính sẽ có sớm!",
+    "features": "Bạn sẽ có thể:\n• Thêm chi tiêu bằng giọng nói hoặc gõ\n• Xem danh sách chi tiêu\n• Xem thống kê chi tiêu\n• Và nhiều tính năng khác!",
+    "add_expense": "Thêm Chi Tiêu",
+    "settings": "Cài Đặt"
+  },
+  "settings": {
+    "coming_soon": "Cài đặt sẽ có sớm!"
+  },
+  "expense": {
+    "add_coming_soon": "Thêm chi tiêu sẽ có sớm!"
+  },
+  "categories": {
+    "food": "Ăn Uống",
+    "transport": "Di Chuyển",
+    "shopping": "Mua Sắm",
+    "bills": "Hóa Đơn",
+    "health": "Sức Khỏe",
+    "entertainment": "Giải Trí",
+    "other": "Khác"
+  },
+  "currencies": {
+    "usd": {
+      "name": "Đô la Mỹ",
+      "code": "USD"
+    },
+    "vnd": {
+      "name": "Đồng Việt Nam",
+      "code": "VND"
+    }
+  },
+  "languages": {
+    "en": "English",
+    "vi": "Tiếng Việt"
+  }
+}
