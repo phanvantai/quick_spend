@@ -5,15 +5,44 @@ import '../models/category.dart';
 import 'amount_parser.dart';
 import 'language_detector.dart';
 import 'categorizer.dart';
+import 'gemini_expense_parser.dart';
 
 /// Main expense parser that orchestrates language detection,
 /// amount extraction, and auto-categorization
+/// Now uses Gemini AI as primary parser with fallback to rule-based parser
 class ExpenseParser {
   static const _uuid = Uuid();
 
   /// Parse raw input string into a structured Expense object
+  /// Uses Gemini AI if available, falls back to rule-based parser
   /// Returns ParseResult with the expense and metadata
-  static ParseResult parse(String rawInput, String userId) {
+  static Future<List<ParseResult>> parse(String rawInput, String userId) async {
+    debugPrint('💸 [ExpenseParser] Starting parse for: "$rawInput"');
+
+    // Try Gemini parser first if available
+    if (GeminiExpenseParser.isAvailable) {
+      debugPrint('🤖 [ExpenseParser] Using Gemini AI parser');
+      try {
+        final geminiResults = await GeminiExpenseParser.parse(rawInput, userId);
+        if (geminiResults.isNotEmpty) {
+          debugPrint('✅ [ExpenseParser] Gemini returned ${geminiResults.length} result(s)');
+          return geminiResults;
+        }
+        debugPrint('⚠️ [ExpenseParser] Gemini returned no results, falling back to rule-based');
+      } catch (e) {
+        debugPrint('⚠️ [ExpenseParser] Gemini failed: $e, falling back to rule-based');
+      }
+    } else {
+      debugPrint('📋 [ExpenseParser] Gemini not available, using rule-based parser');
+    }
+
+    // Fallback to rule-based parser
+    final result = _parseRuleBased(rawInput, userId);
+    return [result];
+  }
+
+  /// Original rule-based parsing (kept as fallback)
+  static ParseResult _parseRuleBased(String rawInput, String userId) {
     debugPrint('💸 [ExpenseParser] Parsing input: "$rawInput"');
 
     // Validate input
@@ -106,32 +135,48 @@ class ExpenseParser {
   }
 
   /// Parse with custom category (user override)
-  static ParseResult parseWithCategory(
+  static Future<List<ParseResult>> parseWithCategory(
     String rawInput,
     String userId,
     ExpenseCategory category,
-  ) {
-    final result = parse(rawInput, userId);
+  ) async {
+    final results = await parse(rawInput, userId);
 
-    if (!result.success || result.expense == null) {
-      return result;
+    if (results.isEmpty) {
+      return [
+        ParseResult(
+          success: false,
+          errorMessage: 'Failed to parse expense',
+        )
+      ];
     }
 
-    // Override category with user's choice
-    final updatedExpense = result.expense!.copyWith(
-      category: category,
-      confidence: 1.0, // User confirmed, so confidence is 100%
-    );
+    // Override category for all parsed expenses
+    final updatedResults = <ParseResult>[];
+    for (final result in results) {
+      if (!result.success || result.expense == null) {
+        updatedResults.add(result);
+        continue;
+      }
 
-    return ParseResult(
-      success: true,
-      expense: updatedExpense,
-      language: result.language,
-      languageConfidence: result.languageConfidence,
-      categoryConfidence: 1.0, // User confirmed
-      overallConfidence: 1.0,
-      suggestedCategories: result.suggestedCategories,
-    );
+      // Override category with user's choice
+      final updatedExpense = result.expense!.copyWith(
+        category: category,
+        confidence: 1.0, // User confirmed, so confidence is 100%
+      );
+
+      updatedResults.add(ParseResult(
+        success: true,
+        expense: updatedExpense,
+        language: result.language,
+        languageConfidence: result.languageConfidence,
+        categoryConfidence: 1.0, // User confirmed
+        overallConfidence: 1.0,
+        suggestedCategories: result.suggestedCategories,
+      ));
+    }
+
+    return updatedResults;
   }
 }
 

@@ -130,63 +130,145 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _processExpense(String input) {
+  Future<void> _processExpense(String input) async {
     debugPrint('💰 [HomeScreen] Processing expense: "$input"');
-    final result = ExpenseParser.parse(input, 'user123'); // TODO: Real user ID
 
-    debugPrint('📊 [HomeScreen] Parse result: ${result.toString()}');
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Parsing expense...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
 
-    if (result.success && result.expense != null) {
-      final expense = result.expense!;
-      debugPrint('✅ [HomeScreen] Expense parsed successfully:');
-      debugPrint('   Amount: ${expense.amount}');
-      debugPrint('   Description: ${expense.description}');
-      debugPrint('   Category: ${expense.category}');
-      debugPrint('   Language: ${expense.language}');
-      debugPrint('   Confidence: ${result.overallConfidence}');
+    try {
+      final results = await ExpenseParser.parse(input, 'user123'); // TODO: Real user ID
 
-      // Show success with expense details
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Expense Recorded!'),
-          content: Column(
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      debugPrint('📊 [HomeScreen] Parse results: ${results.length} expense(s)');
+
+      if (results.isEmpty || !results.any((r) => r.success)) {
+        debugPrint('❌ [HomeScreen] No successful parse results');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to parse expense'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Filter successful results
+      final successfulResults = results.where((r) => r.success && r.expense != null).toList();
+
+      if (successfulResults.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(results.first.errorMessage ?? 'Failed to parse expense'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Show results dialog
+      if (mounted) {
+        _showExpenseResultsDialog(successfulResults);
+      }
+    } catch (e) {
+      debugPrint('❌ [HomeScreen] Error processing expense: $e');
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showExpenseResultsDialog(List<ParseResult> results) {
+    final isMultiple = results.length > 1;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          isMultiple
+              ? '${results.length} Expenses Recorded!'
+              : 'Expense Recorded!',
+        ),
+        content: SingleChildScrollView(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Amount: ${result.expense!.getFormattedAmount()}'),
-              Text('Description: ${result.expense!.description}'),
-              Text(
-                'Category: ${result.expense!.category.toString().split('.').last}',
-              ),
-              if (result.overallConfidence != null &&
-                  result.overallConfidence! < 0.7)
-                const Text(
-                  '\nLow confidence - please verify',
-                  style: TextStyle(color: Colors.orange),
-                ),
+              for (var i = 0; i < results.length; i++) ...[
+                if (isMultiple) ...[
+                  Text(
+                    'Expense ${i + 1}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                ],
+                _buildExpenseDetails(results[i]),
+                if (i < results.length - 1) ...[
+                  const Divider(height: 24),
+                ],
+              ],
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
         ),
-      );
-    } else {
-      debugPrint(
-        '❌ [HomeScreen] Failed to parse expense: ${result.errorMessage}',
-      );
-      // Show error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.errorMessage ?? 'Failed to parse expense'),
-          backgroundColor: Colors.red,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpenseDetails(ParseResult result) {
+    final expense = result.expense!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('Amount: ${expense.getFormattedAmount()}'),
+        Text('Description: ${expense.description}'),
+        Text(
+          'Category: ${expense.category.toString().split('.').last}',
         ),
-      );
-    }
+        if (result.overallConfidence != null &&
+            result.overallConfidence! < 0.7)
+          const Text(
+            '\nLow confidence - please verify',
+            style: TextStyle(color: Colors.orange, fontSize: 12),
+          ),
+      ],
+    );
   }
 
   @override

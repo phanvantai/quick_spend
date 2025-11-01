@@ -3,6 +3,8 @@
 /// - "50k" → 50,000
 /// - "1.5m" or "1tr5" → 1,500,000
 /// - "50 nghìn" → 50,000
+/// - "45 ca" → 45,000 (Vietnamese slang: ca = k)
+/// - "1 củ" → 1,000,000 (Vietnamese slang: củ = million)
 /// - "100,000" → 100,000
 /// - Plain numbers
 class AmountParser {
@@ -45,9 +47,9 @@ class AmountParser {
     RegExp? matchedPattern;
     Match? match;
 
-    // Pattern 1: Number with Vietnamese words (e.g., "50 nghìn", "1 triệu")
+    // Pattern 1: Number with Vietnamese words and slang (e.g., "50 nghìn", "1 triệu", "45 ca", "1 củ")
     final vietnamesePattern = RegExp(
-      r'(\d+(?:[.,]\d+)?)\s*(nghìn|ngàn|triệu|tr|trieu)',
+      r'(\d+(?:[.,]\d+)?)\s*(nghìn|ngàn|triệu|tr|trieu|ca|củ|cu|cọc|coc)',
       caseSensitive: false,
     );
     match = vietnamesePattern.firstMatch(text);
@@ -105,11 +107,11 @@ class AmountParser {
     );
   }
 
-  /// Parse Vietnamese number words
+  /// Parse Vietnamese number words and slang
   static double? _parseVietnameseWords(String text) {
-    // Match patterns like "50 nghìn", "1 triệu"
+    // Match patterns like "50 nghìn", "1 triệu", "45 ca", "1 củ"
     final pattern = RegExp(
-      r'(\d+(?:[.,]\d+)?)\s*(nghìn|ngàn|triệu|tr|trieu)',
+      r'(\d+(?:[.,]\d+)?)\s*(nghìn|ngàn|triệu|tr|trieu|ca|củ|cu|cọc|coc)',
       caseSensitive: false,
     );
     final match = pattern.firstMatch(text);
@@ -124,9 +126,12 @@ class AmountParser {
 
     // Determine multiplier
     double multiplier = 1;
-    if (unit == 'nghìn' || unit == 'ngàn') {
+    if (unit == 'nghìn' || unit == 'ngàn' || unit == 'ca') {
+      // Thousand: nghìn, ngàn, ca (slang)
       multiplier = 1000;
-    } else if (unit == 'triệu' || unit == 'tr' || unit == 'trieu') {
+    } else if (unit == 'triệu' || unit == 'tr' || unit == 'trieu' ||
+               unit == 'củ' || unit == 'cu' || unit == 'cọc' || unit == 'coc') {
+      // Million: triệu, tr, củ, cọc (slang)
       multiplier = 1000000;
     }
 

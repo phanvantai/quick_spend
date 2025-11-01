@@ -4,20 +4,26 @@ A Flutter mobile app for quickly logging expenses with voice input and automatic
 
 ## Features
 
-- 🎤 **Voice Input**: Speak your expenses naturally
+- 🎤 **Voice Input**: Speak your expenses naturally in Vietnamese or English
+- 🤖 **AI-Powered Parsing**: Uses Gemini 2.5 Flash via Firebase AI for intelligent expense extraction
 - 🌍 **Bilingual**: Full support for English and Vietnamese
-- 🤖 **Auto-categorization**: Smart categorization based on keywords
+- 💬 **Vietnamese Slang Support**: Understands "ca" (thousand), "củ/cọc" (million)
+- ✨ **Multiple Expenses**: Parse several expenses from one input ("50k coffee and 30k parking")
 - 💰 **Flexible Input Formats**:
   - "50k coffee" → 50,000 VND
   - "1.5m shopping" → 1,500,000 VND
   - "100 nghìn xăng" → 100,000 VND
-- 📊 **Real-time Sync**: Firebase Firestore integration
-- 📈 **Statistics Dashboard**: Visual spending insights
+  - "45 ca tiền cơm" → 45,000 VND (Vietnamese slang!)
+  - "1 củ xăng" → 1,000,000 VND (Vietnamese slang!)
+- 📊 **Smart Categorization**: AI categorizes based on context (food, transport, shopping, etc.)
+- 🔄 **Hybrid Architecture**: Gemini AI primary + rule-based fallback for reliability
+- 📈 **Statistics Dashboard**: Visual spending insights (coming soon)
 
 ## Tech Stack
 
 - **Flutter** (latest stable)
-- **Firebase** (Auth, Firestore)
+- **Firebase** (Auth, Firestore, AI)
+- **Firebase AI** (Gemini 2.5 Flash for expense parsing)
 - **Provider** (State management)
 - **easy_localization** (i18n/l10n)
 - **speech_to_text** (Voice input)
@@ -33,11 +39,13 @@ lib/
 │   ├── category.dart      # Category definitions with bilingual support
 │   └── app_config.dart    # App configuration and preferences
 ├── services/         # Business logic
-│   ├── amount_parser.dart       # Parse amounts from text
-│   ├── language_detector.dart   # Detect English/Vietnamese
-│   ├── categorizer.dart         # Auto-categorize expenses
-│   ├── expense_parser.dart      # Main parser orchestrator
-│   └── preferences_service.dart # SharedPreferences wrapper
+│   ├── gemini_expense_parser.dart # AI-powered parser (Gemini 2.5 Flash)
+│   ├── expense_parser.dart        # Main parser orchestrator (AI + fallback)
+│   ├── amount_parser.dart         # Fallback amount parser (with slang support)
+│   ├── language_detector.dart     # Fallback language detection
+│   ├── categorizer.dart           # Fallback keyword categorization
+│   ├── voice_service.dart         # Speech-to-text wrapper
+│   └── preferences_service.dart   # SharedPreferences wrapper
 ├── providers/        # State management
 │   └── app_config_provider.dart # App configuration state
 ├── screens/          # UI screens
@@ -164,6 +172,7 @@ void main() {
 ### Onboarding Flow
 
 **[lib/screens/onboarding_screen.dart](lib/screens/onboarding_screen.dart)**
+
 - Beautiful Material Design 3 UI
 - Language selection (English 🇺🇸 / Tiếng Việt 🇻🇳)
 - Currency selection (USD $ / VND đ)
@@ -173,12 +182,14 @@ void main() {
 ### Localization System
 
 **[assets/translations/](assets/translations/)**
+
 - Complete i18n setup with `easy_localization`
 - JSON translation files for English and Vietnamese
 - Dynamic locale switching based on user preference
 - Supports named arguments (e.g., `{currency}`)
 
 **Key Features:**
+
 - All UI text is localized
 - Language changes take effect immediately
 - Fallback to English if translation missing
@@ -187,16 +198,19 @@ void main() {
 ### App Configuration
 
 **[lib/models/app_config.dart](lib/models/app_config.dart)**
+
 - User preferences model (language, currency)
 - Language and currency options with display names
 - JSON serialization for persistence
 
 **[lib/services/preferences_service.dart](lib/services/preferences_service.dart)**
+
 - SharedPreferences wrapper
 - Save/load configuration
 - Onboarding completion tracking
 
 **[lib/providers/app_config_provider.dart](lib/providers/app_config_provider.dart)**
+
 - State management with Provider
 - Real-time config updates
 - Automatic persistence
@@ -216,6 +230,7 @@ void main() {
 3. Hot reload to see changes
 
 Example:
+
 ```json
 // en.json
 {
@@ -243,27 +258,32 @@ Text('welcome.message'.tr())
 ## Next Steps (Phase 3-6)
 
 ### Phase 3: Firebase Integration
+
 - [ ] Firebase configuration
 - [ ] Authentication service (anonymous sign-in)
 - [ ] Firestore service (CRUD operations)
 - [ ] ExpenseProvider for state management
 
 ### Phase 4: Voice Input
+
 - [ ] VoiceService with speech_to_text
 - [ ] Permission handling
 - [ ] Bilingual voice recognition (en-US, vi-VN)
 
 ### Phase 5: Main UI Components
+
 - [ ] ExpenseInputWidget (input bar with voice button)
 - [ ] ExpenseListItem (swipeable cards)
 - [ ] Expense list with real data
 
 ### Phase 6: Statistics
+
 - [ ] StatsScreen with charts
 - [ ] Period selector (Today/Week/Month)
 - [ ] Category breakdown
 
 ### Phase 7: Settings & Polish
+
 - [ ] SettingsScreen (change language/currency)
 - [ ] Bottom navigation
 - [ ] Edit/delete expenses

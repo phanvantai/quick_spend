@@ -26,7 +26,11 @@
 	<string>$(PRODUCT_COPYRIGHT)</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Quick Spend needs microphone access to let you record expenses by voice. Just say your expenses naturally.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Quick Spend uses speech recognition to convert your voice into text for quick expense logging. Your voice data is processed on-device and not stored.</string>
 </dict>
 </plist>

@@ -1,13 +1,20 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'firebase_options.dart';
 import 'providers/app_config_provider.dart';
 import 'services/preferences_service.dart';
+import 'services/gemini_expense_parser.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  debugPrint('✅ [Main] Firebase initialized');
 
   // Initialize EasyLocalization
   await EasyLocalization.ensureInitialized();
@@ -15,6 +22,9 @@ void main() async {
   // Initialize preferences service
   final preferencesService = PreferencesService();
   await preferencesService.init();
+
+  // Initialize Gemini parser
+  GeminiExpenseParser.initialize();
 
   runApp(
     EasyLocalization(
@@ -47,9 +57,7 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               home: Scaffold(
                 body: Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.deepPurple,
-                  ),
+                  child: CircularProgressIndicator(color: Colors.deepPurple),
                 ),
               ),
             );
