@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
+import '../theme/app_theme.dart';
+import '../widgets/common/gradient_button.dart';
 import 'home_screen.dart';
 
 /// Onboarding screen with multi-step flow
@@ -64,25 +66,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.neutral50,
       body: SafeArea(
         child: Column(
           children: [
             // Page indicator
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppTheme.spacing16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   3,
                   (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentPage == index ? 24 : 8,
+                    margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacing4),
+                    width: _currentPage == index ? 32 : 8,
                     height: 8,
                     decoration: BoxDecoration(
+                      gradient: _currentPage == index
+                          ? AppTheme.primaryGradient
+                          : null,
                       color: _currentPage == index
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4),
+                          ? null
+                          : AppTheme.neutral300,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                     ),
                   ),
                 ),
@@ -106,42 +112,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             // Navigation buttons
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(AppTheme.spacing24),
               child: Row(
                 children: [
                   if (_currentPage > 0)
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _previousPage,
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                         child: const Text('Back'),
                       ),
                     ),
-                  if (_currentPage > 0) const SizedBox(width: 16),
+                  if (_currentPage > 0) const SizedBox(width: AppTheme.spacing16),
                   Expanded(
-                    flex: _currentPage == 0 ? 1 : 1,
-                    child: FilledButton(
+                    child: GradientButton(
+                      text: _currentPage == 2
+                          ? 'onboarding.get_started'.tr()
+                          : 'Next',
+                      icon: _currentPage == 2 ? Icons.check : Icons.arrow_forward,
                       onPressed: _nextPage,
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        _currentPage == 2
-                            ? 'onboarding.get_started'.tr()
-                            : 'Next',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      gradient: AppTheme.primaryGradient,
                     ),
                   ),
                 ],
@@ -156,84 +145,99 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // Welcome page
   Widget _buildWelcomePage() {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(AppTheme.spacing24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.wallet_rounded,
-            size: 120,
-            color: Theme.of(context).colorScheme.primary,
+          // Gradient icon
+          Container(
+            width: 140,
+            height: 140,
+            decoration: const BoxDecoration(
+              gradient: AppTheme.primaryGradient,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.wallet_rounded,
+              size: 80,
+              color: Colors.white,
+            ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppTheme.spacing32),
           Text(
             'app.name'.tr(),
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: AppTheme.lightTextTheme.displaySmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacing16),
           Text(
             'app.tagline'.tr(),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            style: AppTheme.lightTextTheme.titleLarge?.copyWith(
+              color: AppTheme.neutral600,
+            ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: AppTheme.spacing48),
           _buildFeatureItem(
             Icons.speed,
             'Quick Entry',
             'Log expenses in seconds with voice or text',
+            AppTheme.accentOrange,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacing16),
           _buildFeatureItem(
             Icons.language,
             'Bilingual',
             'Full support for English & Vietnamese',
+            AppTheme.accentTeal,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacing16),
           _buildFeatureItem(
             Icons.auto_awesome,
             'Smart Categories',
             'Automatic categorization powered by AI',
+            AppTheme.accentPink,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFeatureItem(IconData icon, String title, String description) {
+  Widget _buildFeatureItem(IconData icon, String title, String description, Color color) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
+            color: color.withValues(alpha: 0.15),
+            borderRadius: AppTheme.borderRadiusMedium,
           ),
           child: Icon(
             icon,
-            color: Theme.of(context).colorScheme.primary,
+            color: color,
+            size: 28,
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: AppTheme.spacing16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: AppTheme.lightTextTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
+              const SizedBox(height: AppTheme.spacing4),
               Text(
                 description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                style: AppTheme.lightTextTheme.bodyMedium?.copyWith(
+                  color: AppTheme.neutral600,
+                ),
               ),
             ],
           ),
@@ -245,33 +249,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // Language selection page
   Widget _buildLanguagePage() {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(AppTheme.spacing24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 40),
-          Icon(
-            Icons.language,
-            size: 80,
-            color: Theme.of(context).colorScheme.primary,
+          const SizedBox(height: AppTheme.spacing40),
+          Container(
+            width: 100,
+            height: 100,
+            decoration: const BoxDecoration(
+              gradient: AppTheme.primaryGradient,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.language,
+              size: 56,
+              color: Colors.white,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.spacing24),
           Text(
             'onboarding.choose_language'.tr(),
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: AppTheme.lightTextTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppTheme.spacing8),
           Text(
             'Select your preferred language',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            style: AppTheme.lightTextTheme.bodyLarge?.copyWith(
+              color: AppTheme.neutral600,
+            ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: AppTheme.spacing48),
           ...LanguageOption.options.map((option) {
             return _OptionCard(
               isSelected: _selectedLanguage == option.code,
@@ -298,33 +310,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // Currency selection page
   Widget _buildCurrencyPage() {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(AppTheme.spacing24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 40),
-          Icon(
-            Icons.attach_money,
-            size: 80,
-            color: Theme.of(context).colorScheme.primary,
+          const SizedBox(height: AppTheme.spacing40),
+          Container(
+            width: 100,
+            height: 100,
+            decoration: const BoxDecoration(
+              gradient: AppTheme.accentGradient,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.attach_money,
+              size: 56,
+              color: Colors.white,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.spacing24),
           Text(
             'onboarding.choose_currency'.tr(),
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: AppTheme.lightTextTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppTheme.spacing8),
           Text(
             'Select your primary currency',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            style: AppTheme.lightTextTheme.bodyLarge?.copyWith(
+              color: AppTheme.neutral600,
+            ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: AppTheme.spacing48),
           ...CurrencyOption.options.map((option) {
             return _OptionCard(
               isSelected: _selectedCurrency == option.code,
@@ -370,25 +390,26 @@ class _OptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppTheme.borderRadiusMedium,
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppTheme.spacing16),
             decoration: BoxDecoration(
               border: Border.all(
                 color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.grey[300]!,
+                    ? AppTheme.primaryPurple
+                    : AppTheme.neutral300,
                 width: isSelected ? 2 : 1,
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppTheme.borderRadiusMedium,
               color: isSelected
-                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.05)
-                  : Colors.transparent,
+                  ? AppTheme.primaryPurple.withValues(alpha: 0.08)
+                  : Colors.white,
+              boxShadow: isSelected ? AppTheme.shadowSmall : null,
             ),
             child: Row(
               children: [
@@ -396,34 +417,41 @@ class _OptionCard extends StatelessWidget {
                   width: 48,
                   child: Center(child: leading),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppTheme.spacing16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight:
-                                  isSelected ? FontWeight.w600 : FontWeight.normal,
-                            ),
+                        style: AppTheme.lightTextTheme.titleMedium?.copyWith(
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        ),
                       ),
                       if (subtitle != null) ...[
-                        const SizedBox(height: 2),
+                        const SizedBox(height: AppTheme.spacing4),
                         Text(
                           subtitle!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                          style: AppTheme.lightTextTheme.bodySmall?.copyWith(
+                            color: AppTheme.neutral600,
+                          ),
                         ),
                       ],
                     ],
                   ),
                 ),
                 if (isSelected)
-                  Icon(
-                    Icons.check_circle,
-                    color: Theme.of(context).colorScheme.primary,
+                  Container(
+                    padding: const EdgeInsets.all(AppTheme.spacing4),
+                    decoration: const BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
               ],
             ),

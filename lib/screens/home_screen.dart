@@ -4,8 +4,10 @@ import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_config_provider.dart';
 import '../services/voice_service.dart';
 import '../services/expense_parser.dart';
+import '../theme/app_theme.dart';
+import '../widgets/common/empty_state.dart';
 
-/// Home screen - main app interface
+/// Home Screen with modern UI and voice input
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -20,13 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String _recognizedText = '';
 
   @override
-  void initState() {
-    super.initState();
-    // Don't initialize voice service here to avoid immediate permission request
-    // It will be initialized on first use
-  }
-
-  @override
   void dispose() {
     _voiceService.dispose();
     super.dispose();
@@ -35,19 +30,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _startRecording() async {
     debugPrint('🎤 [HomeScreen] Starting recording...');
 
-    // Check if we have microphone permission
     final hasPermission = await _voiceService.hasPermission();
     debugPrint('🔐 [HomeScreen] Has microphone permission: $hasPermission');
 
     if (!hasPermission) {
-      // Show rationale dialog before requesting permission
       final shouldRequest = await _showPermissionRationale();
       if (!shouldRequest || !mounted) {
         debugPrint('❌ [HomeScreen] User declined permission rationale');
         return;
       }
 
-      // Request permission
       final granted = await _voiceService.requestPermission();
       debugPrint('🔐 [HomeScreen] Permission granted: $granted');
 
@@ -63,7 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     final configProvider = context.read<AppConfigProvider>();
     final language = configProvider.language;
-    debugPrint('🌍 [HomeScreen] Language: $language');
 
     setState(() {
       _isRecording = true;
@@ -73,34 +64,27 @@ class _HomeScreenState extends State<HomeScreen> {
     final success = await _voiceService.startListening(
       language: language,
       onResult: (text) {
-        debugPrint('📝 [HomeScreen] Recognized text: "$text"');
         setState(() {
           _recognizedText = text;
         });
       },
       onSoundLevel: (level) {
-        debugPrint('🔊 [HomeScreen] Sound level: $level');
         setState(() {
           _soundLevel = level;
         });
       },
     );
 
-    debugPrint('✅ [HomeScreen] Start listening success: $success');
-
-    if (!success) {
-      debugPrint('❌ [HomeScreen] Failed to start listening');
+    if (!success && mounted) {
       setState(() {
         _isRecording = false;
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('voice.error'.tr()),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('voice.error'.tr()),
+          backgroundColor: AppTheme.error,
+        ),
+      );
     }
   }
 
@@ -111,13 +95,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _isRecording = false;
     });
 
-    debugPrint('📄 [HomeScreen] Final recognized text: "$_recognizedText"');
-
-    // Parse the recognized text
     if (_recognizedText.isNotEmpty) {
       _processExpense(_recognizedText);
-    } else {
-      debugPrint('⚠️ [HomeScreen] No text recognized');
     }
   }
 
@@ -133,20 +112,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _processExpense(String input) async {
     debugPrint('💰 [HomeScreen] Processing expense: "$input"');
 
-    // Show loading indicator
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: Card(
           child: Padding(
-            padding: EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(AppTheme.spacing24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Parsing expense...'),
+                const CircularProgressIndicator(),
+                const SizedBox(height: AppTheme.spacing16),
+                Text(
+                  'Parsing expense...',
+                  style: AppTheme.lightTextTheme.bodyMedium,
+                ),
               ],
             ),
           ),
@@ -155,69 +136,47 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     try {
-      final results = await ExpenseParser.parse(input, 'user123'); // TODO: Real user ID
-
-      // Close loading dialog
+      final results = await ExpenseParser.parse(input, 'user123');
       if (mounted) Navigator.pop(context);
 
-      debugPrint('📊 [HomeScreen] Parse results: ${results.length} expense(s)');
-
       if (results.isEmpty || !results.any((r) => r.success)) {
-        debugPrint('❌ [HomeScreen] No successful parse results');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Failed to parse expense'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppTheme.error,
             ),
           );
         }
         return;
       }
 
-      // Filter successful results
-      final successfulResults = results.where((r) => r.success && r.expense != null).toList();
-
-      if (successfulResults.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(results.first.errorMessage ?? 'Failed to parse expense'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return;
-      }
-
-      // Show results dialog
-      if (mounted) {
+      final successfulResults = results
+          .where((r) => r.success && r.expense != null)
+          .toList();
+      if (mounted && successfulResults.isNotEmpty) {
         _showExpenseResultsDialog(successfulResults);
       }
     } catch (e) {
-      debugPrint('❌ [HomeScreen] Error processing expense: $e');
+      debugPrint('❌ [HomeScreen] Error: $e');
       if (mounted) {
-        Navigator.pop(context); // Close loading dialog
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
         );
       }
     }
   }
 
   void _showExpenseResultsDialog(List<ParseResult> results) {
-    final isMultiple = results.length > 1;
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          isMultiple
+          results.length > 1
               ? '${results.length} Expenses Recorded!'
               : 'Expense Recorded!',
+          style: AppTheme.lightTextTheme.headlineSmall,
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -225,16 +184,16 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (var i = 0; i < results.length; i++) ...[
-                if (isMultiple) ...[
+                if (results.length > 1) ...[
                   Text(
                     'Expense ${i + 1}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: AppTheme.lightTextTheme.titleMedium,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppTheme.spacing8),
                 ],
                 _buildExpenseDetails(results[i]),
                 if (i < results.length - 1) ...[
-                  const Divider(height: 24),
+                  const Divider(height: AppTheme.spacing24),
                 ],
               ],
             ],
@@ -258,14 +217,13 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Text('Amount: ${expense.getFormattedAmount()}'),
         Text('Description: ${expense.description}'),
-        Text(
-          'Category: ${expense.category.toString().split('.').last}',
-        ),
-        if (result.overallConfidence != null &&
-            result.overallConfidence! < 0.7)
-          const Text(
+        Text('Category: ${expense.category.toString().split('.').last}'),
+        if (result.overallConfidence != null && result.overallConfidence! < 0.7)
+          Text(
             '\nLow confidence - please verify',
-            style: TextStyle(color: Colors.orange, fontSize: 12),
+            style: AppTheme.lightTextTheme.bodySmall?.copyWith(
+              color: AppTheme.warning,
+            ),
           ),
       ],
     );
@@ -273,150 +231,136 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final configProvider = context.watch<AppConfigProvider>();
-    final currency = configProvider.currency;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('home.title'.tr()),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('settings.coming_soon'.tr())),
-              );
-            },
-          ),
-        ],
-      ),
+      backgroundColor: AppTheme.neutral50,
       body: Stack(
         children: [
           // Main content
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.wallet_outlined,
-                    size: 80,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'home.welcome'.tr(),
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+          CustomScrollView(
+            slivers: [
+              // App bar with gradient
+              SliverAppBar(
+                expandedHeight: 160,
+                floating: false,
+                pinned: true,
+                backgroundColor: AppTheme.primaryPurple,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: const BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppTheme.spacing24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
-                              Icons.language,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onPrimaryContainer,
+                              Icons.account_balance_wallet_outlined,
+                              size: 48,
+                              color: Colors.white.withValues(alpha: 0.9),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(height: AppTheme.spacing12),
                             Text(
-                              'home.language_label'.tr(),
-                              style: Theme.of(context).textTheme.bodyLarge,
+                              'home.welcome'.tr(),
+                              style: AppTheme.lightTextTheme.headlineSmall
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
+                            const SizedBox(height: AppTheme.spacing16),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.attach_money,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onPrimaryContainer,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'home.currency_label'.tr(
-                                namedArgs: {'currency': currency},
-                              ),
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  Text(
-                    '${'home.coming_soon'.tr()}\n\n${'home.features'.tr()}',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.settings_outlined,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('settings.coming_soon'.tr())),
+                      );
+                    },
                   ),
                 ],
               ),
-            ),
+
+              // Content
+              SliverPadding(
+                padding: const EdgeInsets.all(AppTheme.spacing16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // Empty state
+                    EmptyState(
+                      icon: Icons.receipt_long_outlined,
+                      title: 'No expenses yet',
+                      message:
+                          'Start tracking your spending by adding your first expense using voice or text input.',
+                      actionLabel: 'Add Expense',
+                      onAction: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('voice.hold_instruction'.tr()),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    ),
+                  ]),
+                ),
+              ),
+            ],
           ),
 
           // Recording overlay
           if (_isRecording)
             Positioned.fill(
               child: Container(
-                color: Colors.black54,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.7),
+                      Colors.black.withValues(alpha: 0.9),
+                    ],
+                  ),
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Animated microphone with ripple effect
+                    // Animated microphone
                     TweenAnimationBuilder<double>(
                       tween: Tween(begin: 0.0, end: _soundLevel),
                       duration: const Duration(milliseconds: 100),
                       builder: (context, value, child) {
-                        // Sound level comes as negative dB (e.g., -40.0 to -20.0)
-                        // Convert to 0.0-1.0 range for animation
-                        // Typical range: -60 dB (quiet) to -20 dB (loud)
-                        final normalizedLevel = ((value + 60) / 40).clamp(0.0, 1.0);
-
+                        final normalizedLevel = ((value + 60) / 40).clamp(
+                          0.0,
+                          1.0,
+                        );
                         return Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Outer ripple
-                            _buildRipple(
-                              delay: 0,
-                              minSize: 120,
-                              maxSize: 180,
-                              opacity: 0.3,
-                            ),
-                            // Middle ripple
-                            _buildRipple(
-                              delay: 400,
-                              minSize: 110,
-                              maxSize: 160,
-                              opacity: 0.4,
-                            ),
-                            // Inner circle with sound level animation
+                            _buildRipple(normalizedLevel, 180, 0.2),
+                            _buildRipple(normalizedLevel, 150, 0.3),
                             Container(
                               width: 100.0 + (normalizedLevel * 30.0),
                               height: 100.0 + (normalizedLevel * 30.0),
                               decoration: BoxDecoration(
+                                gradient: AppTheme.accentGradient,
                                 shape: BoxShape.circle,
-                                color: Colors.red,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.red.withValues(alpha: 0.5),
+                                    color: AppTheme.accentPink.withValues(
+                                      alpha: 0.5,
+                                    ),
                                     blurRadius: 20 + (normalizedLevel * 10),
                                     spreadRadius: 5 + (normalizedLevel * 5),
                                   ),
@@ -432,37 +376,38 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppTheme.spacing24),
                     Text(
                       'voice.listening'.tr(),
-                      style: const TextStyle(
+                      style: AppTheme.lightTextTheme.headlineSmall?.copyWith(
                         color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     if (_recognizedText.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppTheme.spacing16),
                       Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 32),
-                        padding: const EdgeInsets.all(16),
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacing32,
+                        ),
+                        padding: const EdgeInsets.all(AppTheme.spacing16),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppTheme.borderRadiusMedium,
+                          boxShadow: AppTheme.shadowLarge,
                         ),
                         child: Text(
                           _recognizedText,
-                          style: const TextStyle(fontSize: 18),
+                          style: AppTheme.lightTextTheme.titleMedium,
                           textAlign: TextAlign.center,
                         ),
                       ),
                     ],
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppTheme.spacing32),
                     Text(
                       'voice.slide_to_cancel'.tr(),
-                      style: TextStyle(
+                      style: AppTheme.lightTextTheme.bodyMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -471,90 +416,92 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
         ],
       ),
-      floatingActionButton: _buildVoiceButton(),
+
+      // Voice FAB
+      floatingActionButton: _buildVoiceFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  Widget _buildVoiceButton() {
+  Widget _buildVoiceFAB() {
     return GestureDetector(
-      onLongPressStart: (_isRecording)
-          ? null
-          : (_) {
-              debugPrint('👆 [HomeScreen] Long press started');
-              _startRecording();
-            },
-      onLongPressEnd: (_isRecording)
-          ? (_) {
-              debugPrint('👆 [HomeScreen] Long press ended');
-              _stopRecording();
-            }
-          : null,
-      onVerticalDragUpdate: (_isRecording)
+      onLongPressStart: _isRecording ? null : (_) => _startRecording(),
+      onLongPressEnd: _isRecording ? (_) => _stopRecording() : null,
+      onVerticalDragUpdate: _isRecording
           ? (details) {
               if (details.primaryDelta! < -10) {
-                debugPrint('👆 [HomeScreen] Slide to cancel detected');
                 _cancelRecording();
               }
             }
           : null,
-      child: _isRecording
-          ? Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.red,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.red.withValues(alpha: 0.5),
-                    blurRadius: 20,
-                    spreadRadius: 5,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: _isRecording
+              ? AppTheme.accentGradient
+              : AppTheme.primaryGradient,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          boxShadow: AppTheme.shadowLarge,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _isRecording
+                ? null
+                : () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('voice.hold_instruction'.tr()),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing24,
+                vertical: AppTheme.spacing16,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isRecording ? Icons.mic : Icons.mic_none,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: AppTheme.spacing12),
+                  Text(
+                    _isRecording ? 'Recording...' : 'voice.hold_to_record'.tr(),
+                    style: AppTheme.lightTextTheme.labelLarge?.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
-              child: const Icon(Icons.mic, color: Colors.white, size: 36),
-            )
-          : FloatingActionButton.extended(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('voice.hold_instruction'.tr()),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.mic),
-              label: Text('voice.hold_to_record'.tr()),
-              heroTag: 'voice_button',
             ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildRipple({
-    required int delay,
-    required double minSize,
-    required double maxSize,
-    required double opacity,
-  }) {
+  Widget _buildRipple(double level, double size, double opacity) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: const Duration(milliseconds: 1200),
       curve: Curves.easeOut,
       onEnd: () {
-        // Trigger rebuild to restart animation
         if (mounted && _isRecording) {
           setState(() {});
         }
       },
       builder: (context, value, child) {
         return Container(
-          width: minSize + ((maxSize - minSize) * value),
-          height: minSize + ((maxSize - minSize) * value),
+          width: size * (0.7 + (0.3 * value)),
+          height: size * (0.7 + (0.3 * value)),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.red.withValues(
+              color: AppTheme.accentPink.withValues(
                 alpha: opacity * (1.0 - value),
               ),
               width: 2,
@@ -571,8 +518,8 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.mic, color: Colors.blue),
-            const SizedBox(width: 12),
+            const Icon(Icons.mic, color: AppTheme.info),
+            const SizedBox(width: AppTheme.spacing12),
             Text('voice.permission_title'.tr()),
           ],
         ),
@@ -598,8 +545,8 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.warning, color: Colors.orange),
-            const SizedBox(width: 12),
+            const Icon(Icons.warning, color: AppTheme.warning),
+            const SizedBox(width: AppTheme.spacing12),
             Text('voice.permission_denied_title'.tr()),
           ],
         ),

@@ -8,6 +8,7 @@ import 'services/preferences_service.dart';
 import 'services/gemini_expense_parser.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/home_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,9 +56,12 @@ class MyApp extends StatelessWidget {
           if (configProvider.isLoading) {
             return MaterialApp(
               debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
               home: Scaffold(
                 body: Center(
-                  child: CircularProgressIndicator(color: Colors.deepPurple),
+                  child: CircularProgressIndicator(
+                    color: AppTheme.primaryPurple,
+                  ),
                 ),
               ),
             );
@@ -75,19 +79,10 @@ class MyApp extends StatelessWidget {
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,
             locale: context.locale,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
-                brightness: Brightness.light,
-              ),
-              useMaterial3: true,
-              cardTheme: CardThemeData(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode:
+                ThemeMode.light, // TODO: Add dark mode toggle in settings
             // Show onboarding if not completed, otherwise show home
             home: configProvider.isOnboardingComplete
                 ? const HomeScreen()
