@@ -22,7 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Don't initialize voice service here - only when user taps/holds button
+    // Don't initialize voice service here to avoid immediate permission request
+    // It will be initialized on first use
   }
 
   @override
@@ -33,6 +34,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _startRecording() async {
     debugPrint('🎤 [HomeScreen] Starting recording...');
+
+    // Check if we have microphone permission
+    final hasPermission = await _voiceService.hasPermission();
+    debugPrint('🔐 [HomeScreen] Has microphone permission: $hasPermission');
+
+    if (!hasPermission) {
+      // Show rationale dialog before requesting permission
+      final shouldRequest = await _showPermissionRationale();
+      if (!shouldRequest || !mounted) {
+        debugPrint('❌ [HomeScreen] User declined permission rationale');
+        return;
+      }
+
+      // Request permission
+      final granted = await _voiceService.requestPermission();
+      debugPrint('🔐 [HomeScreen] Permission granted: $granted');
+
+      if (!granted) {
+        debugPrint('❌ [HomeScreen] Microphone permission denied');
+        if (mounted) {
+          _showPermissionDeniedDialog();
+        }
+        return;
+      }
+    }
+
+    if (!mounted) return;
     final configProvider = context.read<AppConfigProvider>();
     final language = configProvider.language;
     debugPrint('🌍 [HomeScreen] Language: $language');
@@ -270,22 +298,55 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Animated microphone with ripple effect
                     TweenAnimationBuilder<double>(
                       tween: Tween(begin: 0.0, end: _soundLevel),
                       duration: const Duration(milliseconds: 100),
                       builder: (context, value, child) {
-                        return Container(
-                          width: 100 + (value * 50),
-                          height: 100 + (value * 50),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.red.withValues(alpha: 0.3),
-                          ),
-                          child: const Icon(
-                            Icons.mic,
-                            color: Colors.white,
-                            size: 48,
-                          ),
+                        // Sound level comes as negative dB (e.g., -40.0 to -20.0)
+                        // Convert to 0.0-1.0 range for animation
+                        // Typical range: -60 dB (quiet) to -20 dB (loud)
+                        final normalizedLevel = ((value + 60) / 40).clamp(0.0, 1.0);
+
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Outer ripple
+                            _buildRipple(
+                              delay: 0,
+                              minSize: 120,
+                              maxSize: 180,
+                              opacity: 0.3,
+                            ),
+                            // Middle ripple
+                            _buildRipple(
+                              delay: 400,
+                              minSize: 110,
+                              maxSize: 160,
+                              opacity: 0.4,
+                            ),
+                            // Inner circle with sound level animation
+                            Container(
+                              width: 100.0 + (normalizedLevel * 30.0),
+                              height: 100.0 + (normalizedLevel * 30.0),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.red,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.red.withValues(alpha: 0.5),
+                                    blurRadius: 20 + (normalizedLevel * 10),
+                                    spreadRadius: 5 + (normalizedLevel * 5),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.mic,
+                                color: Colors.white,
+                                size: 48,
+                              ),
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -334,48 +395,139 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildVoiceButton() {
-    if (_isRecording) {
-      return GestureDetector(
-        onLongPressEnd: (_) => _stopRecording(),
-        onVerticalDragUpdate: (details) {
-          if (details.primaryDelta! < -10) {
-            _cancelRecording();
-          }
-        },
-        child: Container(
-          width: 80,
-          height: 80,
+    return GestureDetector(
+      onLongPressStart: (_isRecording)
+          ? null
+          : (_) {
+              debugPrint('👆 [HomeScreen] Long press started');
+              _startRecording();
+            },
+      onLongPressEnd: (_isRecording)
+          ? (_) {
+              debugPrint('👆 [HomeScreen] Long press ended');
+              _stopRecording();
+            }
+          : null,
+      onVerticalDragUpdate: (_isRecording)
+          ? (details) {
+              if (details.primaryDelta! < -10) {
+                debugPrint('👆 [HomeScreen] Slide to cancel detected');
+                _cancelRecording();
+              }
+            }
+          : null,
+      child: _isRecording
+          ? Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.red,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.red.withValues(alpha: 0.5),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.mic, color: Colors.white, size: 36),
+            )
+          : FloatingActionButton.extended(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('voice.hold_instruction'.tr()),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.mic),
+              label: Text('voice.hold_to_record'.tr()),
+              heroTag: 'voice_button',
+            ),
+    );
+  }
+
+  Widget _buildRipple({
+    required int delay,
+    required double minSize,
+    required double maxSize,
+    required double opacity,
+  }) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 1200),
+      curve: Curves.easeOut,
+      onEnd: () {
+        // Trigger rebuild to restart animation
+        if (mounted && _isRecording) {
+          setState(() {});
+        }
+      },
+      builder: (context, value, child) {
+        return Container(
+          width: minSize + ((maxSize - minSize) * value),
+          height: minSize + ((maxSize - minSize) * value),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.red,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.red.withValues(alpha: 0.5),
-                blurRadius: 20,
-                spreadRadius: 5,
+            border: Border.all(
+              color: Colors.red.withValues(
+                alpha: opacity * (1.0 - value),
               ),
-            ],
-          ),
-          child: const Icon(Icons.mic, color: Colors.white, size: 36),
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onLongPressStart: (_) => _startRecording(),
-      child: FloatingActionButton.extended(
-        onPressed: () {
-          _voiceService.initialize();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('voice.hold_instruction'.tr()),
-              duration: const Duration(seconds: 2),
+              width: 2,
             ),
-          );
-        },
-        icon: const Icon(Icons.mic),
-        label: Text('voice.hold_to_record'.tr()),
-        heroTag: 'voice_button',
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool> _showPermissionRationale() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.mic, color: Colors.blue),
+            const SizedBox(width: 12),
+            Text('voice.permission_title'.tr()),
+          ],
+        ),
+        content: Text('voice.permission_rationale'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('common.cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('common.allow'.tr()),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.warning, color: Colors.orange),
+            const SizedBox(width: 12),
+            Text('voice.permission_denied_title'.tr()),
+          ],
+        ),
+        content: Text('voice.permission_denied_message'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('common.ok'.tr()),
+          ),
+        ],
       ),
     );
   }

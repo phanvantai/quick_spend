@@ -89,6 +89,9 @@ class VoiceService {
     }
 
     try {
+      // Set listening state BEFORE starting to prevent race condition
+      _isListening = true;
+
       // Map language code to locale ID
       final localeId = _getLocaleId(language);
       debugPrint('🌍 [VoiceService] Using locale: $localeId');
@@ -114,11 +117,11 @@ class VoiceService {
         onSoundLevelChange: onSoundLevel,
       );
 
-      _isListening = true;
-      debugPrint('✅ [VoiceService] Now listening...');
+      debugPrint('✅ [VoiceService] Listen command sent');
       return true;
     } catch (e) {
       debugPrint('❌ [VoiceService] Error starting listening: $e');
+      _isListening = false;
       return false;
     }
   }
@@ -126,34 +129,50 @@ class VoiceService {
   /// Stop listening
   Future<void> stopListening() async {
     debugPrint('🛑 [VoiceService] Stopping listening...');
-    if (!_isListening) {
+    debugPrint('   _isListening flag: $_isListening');
+    debugPrint('   SpeechToText.isListening: ${_speechToText.isListening}');
+
+    if (!_isListening && !_speechToText.isListening) {
       debugPrint('⚠️ [VoiceService] Not currently listening');
       return;
     }
 
     try {
-      await _speechToText.stop();
+      // ALWAYS call stop() if our flag is set, even if SpeechToText.isListening
+      // is still false - this handles the race condition where stop is called
+      // before the async listen() operation completes
+      if (_isListening || _speechToText.isListening) {
+        await _speechToText.stop();
+      }
       _isListening = false;
       debugPrint('✅ [VoiceService] Stopped listening');
     } catch (e) {
       debugPrint('❌ [VoiceService] Error stopping listening: $e');
+      _isListening = false;
     }
   }
 
   /// Cancel listening
   Future<void> cancelListening() async {
     debugPrint('❌ [VoiceService] Canceling listening...');
-    if (!_isListening) {
+    debugPrint('   _isListening flag: $_isListening');
+    debugPrint('   SpeechToText.isListening: ${_speechToText.isListening}');
+
+    if (!_isListening && !_speechToText.isListening) {
       debugPrint('⚠️ [VoiceService] Not currently listening');
       return;
     }
 
     try {
-      await _speechToText.cancel();
+      // ALWAYS call cancel() if our flag is set (same race condition handling)
+      if (_isListening || _speechToText.isListening) {
+        await _speechToText.cancel();
+      }
       _isListening = false;
       debugPrint('✅ [VoiceService] Canceled listening');
     } catch (e) {
       debugPrint('❌ [VoiceService] Error canceling listening: $e');
+      _isListening = false;
     }
   }
 

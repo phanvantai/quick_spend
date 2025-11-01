@@ -31,7 +31,16 @@
     "release_to_send": "Thả ra để gửi",
     "slide_to_cancel": "Vuốt lên để hủy",
     "listening": "Đang nghe...",
-    "error": "Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền microphone."
+    "error": "Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền microphone.",
+    "permission_title": "Quyền Microphone",
+    "permission_rationale": "Quick Spend cần truy cập microphone để ghi âm chi tiêu. Điều này cho phép bạn nhanh chóng thêm chi tiêu bằng giọng nói.",
+    "permission_denied_title": "Từ Chối Quyền",
+    "permission_denied_message": "Cần quyền truy cập microphone để ghi âm chi tiêu. Vui lòng bật trong cài đặt thiết bị."
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Hủy",
+    "allow": "Cho Phép"
   },
   "categories": {
     "food": "Ăn Uống",
