@@ -19,6 +19,18 @@
     "settings": "Cài Đặt"
   },
   "settings": {
+    "title": "Cài Đặt",
+    "preferences": "Tùy Chọn",
+    "language": "Ngôn Ngữ",
+    "currency": "Tiền Tệ",
+    "theme": "Giao Diện",
+    "theme_light": "Sáng",
+    "theme_dark": "Tối",
+    "theme_system": "Theo Hệ Thống",
+    "about": "Thông Tin",
+    "language_changed": "Đã thay đổi ngôn ngữ thành công",
+    "currency_changed": "Đã thay đổi tiền tệ thành công",
+    "theme_changed": "Đã thay đổi giao diện thành công",
     "coming_soon": "Cài đặt sẽ có sớm!"
   },
   "expense": {

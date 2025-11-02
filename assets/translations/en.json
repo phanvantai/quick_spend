@@ -19,6 +19,18 @@
     "settings": "Settings"
   },
   "settings": {
+    "title": "Settings",
+    "preferences": "Preferences",
+    "language": "Language",
+    "currency": "Currency",
+    "theme": "Theme",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_system": "System Default",
+    "about": "About",
+    "language_changed": "Language changed successfully",
+    "currency_changed": "Currency changed successfully",
+    "theme_changed": "Theme changed successfully",
     "coming_soon": "Settings coming soon!"
   },
   "expense": {

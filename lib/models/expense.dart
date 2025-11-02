@@ -58,6 +58,39 @@ class Expense {
     };
   }
 
+  /// Convert Expense to JSON for local storage (SQLite)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'amount': amount,
+      'description': description,
+      'category': category.toString().split('.').last,
+      'language': language,
+      'date': date.toIso8601String(),
+      'userId': userId,
+      'rawInput': rawInput,
+      'confidence': confidence,
+    };
+  }
+
+  /// Create Expense from JSON (SQLite)
+  factory Expense.fromJson(Map<String, dynamic> json) {
+    return Expense(
+      id: json['id'] as String,
+      amount: (json['amount'] as num).toDouble(),
+      description: json['description'] as String,
+      category: ExpenseCategory.values.firstWhere(
+        (e) => e.toString() == 'ExpenseCategory.${json['category']}',
+        orElse: () => ExpenseCategory.other,
+      ),
+      language: json['language'] as String? ?? 'en',
+      date: DateTime.parse(json['date'] as String),
+      userId: json['userId'] as String,
+      rawInput: json['rawInput'] as String? ?? '',
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 1.0,
+    );
+  }
+
   /// Create a copy with modified fields
   Expense copyWith({
     String? id,

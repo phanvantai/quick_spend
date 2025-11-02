@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_config_provider.dart';
+import '../providers/expense_provider.dart';
 import '../services/voice_service.dart';
 import '../services/expense_parser.dart';
+import '../models/expense.dart';
+import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
+import '../widgets/common/expense_card.dart';
+import 'settings_screen.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 /// Home Screen with modern UI and voice input
 class HomeScreen extends StatefulWidget {
@@ -126,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: AppTheme.spacing16),
                 Text(
                   'Parsing expense...',
-                  style: AppTheme.lightTextTheme.bodyMedium,
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
             ),
@@ -136,7 +142,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     try {
-      final results = await ExpenseParser.parse(input, 'user123');
+      final expenseProvider = context.read<ExpenseProvider>();
+      final results = await ExpenseParser.parse(
+        input,
+        expenseProvider.currentUserId,
+      );
       if (mounted) Navigator.pop(context);
 
       if (results.isEmpty || !results.any((r) => r.success)) {
@@ -174,9 +184,9 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           results.length > 1
-              ? '${results.length} Expenses Recorded!'
-              : 'Expense Recorded!',
-          style: AppTheme.lightTextTheme.headlineSmall,
+              ? '${results.length} Expenses Parsed!'
+              : 'Expense Parsed!',
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -187,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (results.length > 1) ...[
                   Text(
                     'Expense ${i + 1}',
-                    style: AppTheme.lightTextTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: AppTheme.spacing8),
                 ],
@@ -202,10 +212,217 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => _saveExpenses(results),
+            child: const Text('Save'),
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _saveExpenses(List<ParseResult> results) async {
+    debugPrint(
+      '💾 [HomeScreen] Save button pressed, saving ${results.length} result(s)',
+    );
+
+    if (!mounted) return;
+    final expenseProvider = context.read<ExpenseProvider>();
+
+    try {
+      // Save all expenses
+      final expenses = results
+          .where((r) => r.success && r.expense != null)
+          .map((r) => r.expense!)
+          .toList();
+
+      debugPrint(
+        '💾 [HomeScreen] Filtered to ${expenses.length} valid expense(s)',
+      );
+
+      await expenseProvider.addExpenses(expenses);
+
+      debugPrint('✅ [HomeScreen] Expenses saved successfully');
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              expenses.length > 1
+                  ? '${expenses.length} expenses saved!'
+                  : 'Expense saved!',
+            ),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [HomeScreen] Error saving expenses: $e');
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving expenses: $e'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteExpense(String expenseId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Expense?'),
+        content: const Text(
+          'Are you sure you want to delete this expense? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await context.read<ExpenseProvider>().deleteExpense(expenseId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Expense deleted'),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [HomeScreen] Error deleting expense: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting expense: $e'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showExpenseDetailsDialog(Expense expense) {
+    final categoryData = Category.getByType(expense.category);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(categoryData.icon, color: categoryData.color),
+            const SizedBox(width: AppTheme.spacing12),
+            Expanded(
+              child: Text(
+                expense.description,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDetailRow('Amount', expense.getFormattedAmount()),
+            const SizedBox(height: AppTheme.spacing12),
+            _buildDetailRow(
+              'Category',
+              categoryData.getLabel(expense.language),
+            ),
+            const SizedBox(height: AppTheme.spacing12),
+            _buildDetailRow(
+              'Date',
+              DateFormat.yMMMd().add_jm().format(expense.date),
+            ),
+            const SizedBox(height: AppTheme.spacing12),
+            _buildDetailRow(
+              'Language',
+              expense.language == 'vi' ? 'Vietnamese' : 'English',
+            ),
+            if (expense.rawInput.isNotEmpty) ...[
+              const SizedBox(height: AppTheme.spacing12),
+              _buildDetailRow('Original Input', expense.rawInput),
+            ],
+            if (expense.confidence < 0.8) ...[
+              const SizedBox(height: AppTheme.spacing12),
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spacing8),
+                decoration: BoxDecoration(
+                  color: AppTheme.warning.withValues(alpha: 0.15),
+                  borderRadius: AppTheme.borderRadiusSmall,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.warning,
+                      color: AppTheme.warning,
+                      size: 16,
+                    ),
+                    const SizedBox(width: AppTheme.spacing8),
+                    Expanded(
+                      child: Text(
+                        'Low confidence (${(expense.confidence * 100).toStringAsFixed(0)}%)',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.warning,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
+            '$label:',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
     );
   }
 
@@ -221,9 +438,9 @@ class _HomeScreenState extends State<HomeScreen> {
         if (result.overallConfidence != null && result.overallConfidence! < 0.7)
           Text(
             '\nLow confidence - please verify',
-            style: AppTheme.lightTextTheme.bodySmall?.copyWith(
-              color: AppTheme.warning,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppTheme.warning),
           ),
       ],
     );
@@ -231,195 +448,255 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.neutral50,
-      body: Stack(
-        children: [
-          // Main content
-          CustomScrollView(
-            slivers: [
-              // App bar with gradient
-              SliverAppBar(
-                expandedHeight: 160,
-                floating: false,
-                pinned: true,
-                backgroundColor: AppTheme.primaryPurple,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: const BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                    ),
-                    child: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppTheme.spacing24),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.account_balance_wallet_outlined,
-                              size: 48,
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
-                            const SizedBox(height: AppTheme.spacing12),
-                            Text(
-                              'home.welcome'.tr(),
-                              style: AppTheme.lightTextTheme.headlineSmall
-                                  ?.copyWith(
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Consumer<AppConfigProvider>(
+      builder: (context, configProvider, _) {
+        return Scaffold(
+          backgroundColor: colorScheme.surface,
+          body: Stack(
+            children: [
+              // Main content
+              CustomScrollView(
+                slivers: [
+                  // App bar with gradient
+                  SliverAppBar(
+                    expandedHeight: 160,
+                    floating: false,
+                    pinned: true,
+                    backgroundColor: AppTheme.primaryMint,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Container(
+                        decoration: const BoxDecoration(
+                          gradient: AppTheme.primaryGradient,
+                        ),
+                        child: SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppTheme.spacing24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.account_balance_wallet_outlined,
+                                  size: 48,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                ),
+                                const SizedBox(height: AppTheme.spacing12),
+                                Text(
+                                  'home.welcome'.tr(),
+                                  style: textTheme.headlineSmall?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
                                   ),
+                                ),
+                                const SizedBox(height: AppTheme.spacing16),
+                              ],
                             ),
-                            const SizedBox(height: AppTheme.spacing16),
-                          ],
+                          ),
                         ),
                       ),
                     ),
+                    actions: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.settings_outlined,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.settings_outlined,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('settings.coming_soon'.tr())),
+
+                  // Content - Expense List
+                  Consumer<ExpenseProvider>(
+                    builder: (context, expenseProvider, _) {
+                      if (expenseProvider.isLoading) {
+                        return const SliverFillRemaining(
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+
+                      final expenses = expenseProvider.expenses;
+
+                      if (expenses.isEmpty) {
+                        return SliverPadding(
+                          padding: const EdgeInsets.all(AppTheme.spacing16),
+                          sliver: SliverList(
+                            delegate: SliverChildListDelegate([
+                              EmptyState(
+                                icon: Icons.receipt_long_outlined,
+                                title: 'No expenses yet',
+                                message:
+                                    'Start tracking your spending by adding your first expense using voice or text input.',
+                                actionLabel: 'Add Expense',
+                                onAction: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'voice.hold_instruction'.tr(),
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ]),
+                          ),
+                        );
+                      }
+
+                      return SliverPadding(
+                        padding: const EdgeInsets.all(AppTheme.spacing16),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final expense = expenses[index];
+                            return Slidable(
+                              key: ValueKey(expense.id),
+                              endActionPane: ActionPane(
+                                motion: const ScrollMotion(),
+                                children: [
+                                  SlidableAction(
+                                    onPressed: (_) =>
+                                        _deleteExpense(expense.id),
+                                    backgroundColor: AppTheme.error,
+                                    foregroundColor: Colors.white,
+                                    icon: Icons.delete,
+                                    label: 'Delete',
+                                  ),
+                                ],
+                              ),
+                              child: ExpenseCard(
+                                expense: expense,
+                                onTap: () => _showExpenseDetailsDialog(expense),
+                              ),
+                            );
+                          }, childCount: expenses.length),
+                        ),
                       );
                     },
                   ),
                 ],
               ),
 
-              // Content
-              SliverPadding(
-                padding: const EdgeInsets.all(AppTheme.spacing16),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    // Empty state
-                    EmptyState(
-                      icon: Icons.receipt_long_outlined,
-                      title: 'No expenses yet',
-                      message:
-                          'Start tracking your spending by adding your first expense using voice or text input.',
-                      actionLabel: 'Add Expense',
-                      onAction: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('voice.hold_instruction'.tr()),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      },
+              // Recording overlay
+              if (_isRecording)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.7),
+                          Colors.black.withValues(alpha: 0.9),
+                        ],
+                      ),
                     ),
-                  ]),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Animated microphone
+                        TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0.0, end: _soundLevel),
+                          duration: const Duration(milliseconds: 100),
+                          builder: (context, value, child) {
+                            final normalizedLevel = ((value + 60) / 40).clamp(
+                              0.0,
+                              1.0,
+                            );
+                            return Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                _buildRipple(normalizedLevel, 180, 0.2),
+                                _buildRipple(normalizedLevel, 150, 0.3),
+                                Container(
+                                  width: 100.0 + (normalizedLevel * 30.0),
+                                  height: 100.0 + (normalizedLevel * 30.0),
+                                  decoration: BoxDecoration(
+                                    gradient: AppTheme.accentGradient,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.accentPink.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        blurRadius: 20 + (normalizedLevel * 10),
+                                        spreadRadius: 5 + (normalizedLevel * 5),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.mic,
+                                    color: Colors.white,
+                                    size: 48,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                        const SizedBox(height: AppTheme.spacing24),
+                        Text(
+                          'voice.listening'.tr(),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        if (_recognizedText.isNotEmpty) ...[
+                          const SizedBox(height: AppTheme.spacing16),
+                          Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacing32,
+                            ),
+                            padding: const EdgeInsets.all(AppTheme.spacing16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: AppTheme.borderRadiusMedium,
+                              boxShadow: AppTheme.shadowLarge,
+                            ),
+                            child: Text(
+                              _recognizedText,
+                              style: Theme.of(context).textTheme.titleMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: AppTheme.spacing32),
+                        Text(
+                          'voice.slide_to_cancel'.tr(),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.7),
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
 
-          // Recording overlay
-          if (_isRecording)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.7),
-                      Colors.black.withValues(alpha: 0.9),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Animated microphone
-                    TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: _soundLevel),
-                      duration: const Duration(milliseconds: 100),
-                      builder: (context, value, child) {
-                        final normalizedLevel = ((value + 60) / 40).clamp(
-                          0.0,
-                          1.0,
-                        );
-                        return Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            _buildRipple(normalizedLevel, 180, 0.2),
-                            _buildRipple(normalizedLevel, 150, 0.3),
-                            Container(
-                              width: 100.0 + (normalizedLevel * 30.0),
-                              height: 100.0 + (normalizedLevel * 30.0),
-                              decoration: BoxDecoration(
-                                gradient: AppTheme.accentGradient,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppTheme.accentPink.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    blurRadius: 20 + (normalizedLevel * 10),
-                                    spreadRadius: 5 + (normalizedLevel * 5),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.mic,
-                                color: Colors.white,
-                                size: 48,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: AppTheme.spacing24),
-                    Text(
-                      'voice.listening'.tr(),
-                      style: AppTheme.lightTextTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (_recognizedText.isNotEmpty) ...[
-                      const SizedBox(height: AppTheme.spacing16),
-                      Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: AppTheme.spacing32,
-                        ),
-                        padding: const EdgeInsets.all(AppTheme.spacing16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: AppTheme.borderRadiusMedium,
-                          boxShadow: AppTheme.shadowLarge,
-                        ),
-                        child: Text(
-                          _recognizedText,
-                          style: AppTheme.lightTextTheme.titleMedium,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppTheme.spacing32),
-                    Text(
-                      'voice.slide_to_cancel'.tr(),
-                      style: AppTheme.lightTextTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-
-      // Voice FAB
-      floatingActionButton: _buildVoiceFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          // Voice FAB
+          floatingActionButton: _buildVoiceFAB(),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+        );
+      },
     );
   }
 
@@ -471,9 +748,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: AppTheme.spacing12),
                   Text(
                     _isRecording ? 'Recording...' : 'voice.hold_to_record'.tr(),
-                    style: AppTheme.lightTextTheme.labelLarge?.copyWith(
-                      color: Colors.white,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelLarge?.copyWith(color: Colors.white),
                   ),
                 ],
               ),

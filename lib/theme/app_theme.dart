@@ -11,10 +11,10 @@ class AppTheme {
   // COLOR PALETTE
   // ============================================
 
-  // Primary colors - Purple-Blue gradient theme
-  static const Color primaryPurple = Color(0xFF6C5CE7);
-  static const Color primaryBlue = Color(0xFF5F5CF1);
-  static const Color primaryDark = Color(0xFF5145CD);
+  // Primary colors - Mint Green gradient theme
+  static const Color primaryMint = Color(0xFF00D9A3);
+  static const Color primaryGreen = Color(0xFF00C896);
+  static const Color primaryDark = Color(0xFF00B386);
 
   // Secondary colors - Accent pops
   static const Color accentPink = Color(0xFFFF6B9D);
@@ -55,7 +55,7 @@ class AppTheme {
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [primaryPurple, primaryBlue],
+    colors: [primaryMint, primaryGreen],
   );
 
   static const LinearGradient accentGradient = LinearGradient(
@@ -223,10 +223,18 @@ class AppTheme {
   static const double radiusXLarge = 24.0;
   static const double radiusFull = 999.0;
 
-  static const BorderRadius borderRadiusSmall = BorderRadius.all(Radius.circular(radiusSmall));
-  static const BorderRadius borderRadiusMedium = BorderRadius.all(Radius.circular(radiusMedium));
-  static const BorderRadius borderRadiusLarge = BorderRadius.all(Radius.circular(radiusLarge));
-  static const BorderRadius borderRadiusXLarge = BorderRadius.all(Radius.circular(radiusXLarge));
+  static const BorderRadius borderRadiusSmall = BorderRadius.all(
+    Radius.circular(radiusSmall),
+  );
+  static const BorderRadius borderRadiusMedium = BorderRadius.all(
+    Radius.circular(radiusMedium),
+  );
+  static const BorderRadius borderRadiusLarge = BorderRadius.all(
+    Radius.circular(radiusLarge),
+  );
+  static const BorderRadius borderRadiusXLarge = BorderRadius.all(
+    Radius.circular(radiusXLarge),
+  );
 
   // ============================================
   // SHADOWS
@@ -279,9 +287,9 @@ class AppTheme {
 
       // Color scheme
       colorScheme: ColorScheme.light(
-        primary: primaryPurple,
+        primary: primaryMint,
         onPrimary: Colors.white,
-        primaryContainer: primaryPurple.withValues(alpha: 0.1),
+        primaryContainer: primaryMint.withValues(alpha: 0.1),
         onPrimaryContainer: primaryDark,
 
         secondary: accentPink,
@@ -312,7 +320,7 @@ class AppTheme {
 
         inverseSurface: neutral900,
         onInverseSurface: neutral50,
-        inversePrimary: primaryPurple.withValues(alpha: 0.7),
+        inversePrimary: primaryMint.withValues(alpha: 0.7),
       ),
 
       // Typography
@@ -363,7 +371,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: borderRadiusMedium,
-          borderSide: const BorderSide(color: primaryPurple, width: 2),
+          borderSide: const BorderSide(color: primaryMint, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: borderRadiusMedium,
@@ -380,15 +388,13 @@ class AppTheme {
       // Button themes
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: primaryPurple,
+          backgroundColor: primaryMint,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(
             horizontal: spacing24,
             vertical: spacing16,
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: borderRadiusMedium,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
           elevation: 0,
           textStyle: lightTextTheme.labelLarge,
         ),
@@ -397,14 +403,12 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
-          foregroundColor: primaryPurple,
+          foregroundColor: primaryMint,
           padding: const EdgeInsets.symmetric(
             horizontal: spacing24,
             vertical: spacing16,
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: borderRadiusMedium,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
           elevation: 0,
           shadowColor: neutral900.withValues(alpha: 0.1),
           textStyle: lightTextTheme.labelLarge,
@@ -413,14 +417,12 @@ class AppTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primaryPurple,
+          foregroundColor: primaryMint,
           padding: const EdgeInsets.symmetric(
             horizontal: spacing24,
             vertical: spacing16,
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: borderRadiusMedium,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
           side: BorderSide(color: neutral300, width: 1),
           textStyle: lightTextTheme.labelLarge,
         ),
@@ -428,21 +430,19 @@ class AppTheme {
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: primaryPurple,
+          foregroundColor: primaryMint,
           padding: const EdgeInsets.symmetric(
             horizontal: spacing16,
             vertical: spacing12,
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: borderRadiusMedium,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
           textStyle: lightTextTheme.labelLarge,
         ),
       ),
 
       // Floating action button theme
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: primaryPurple,
+        backgroundColor: primaryMint,
         foregroundColor: Colors.white,
         elevation: 4,
         shape: RoundedRectangleBorder(
@@ -453,7 +453,7 @@ class AppTheme {
       // Bottom navigation bar theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: Colors.white,
-        selectedItemColor: primaryPurple,
+        selectedItemColor: primaryMint,
         unselectedItemColor: neutral500,
         elevation: 8,
         type: BottomNavigationBarType.fixed,
@@ -464,25 +464,21 @@ class AppTheme {
       // Chip theme
       chipTheme: ChipThemeData(
         backgroundColor: neutral100,
-        selectedColor: primaryPurple.withValues(alpha: 0.15),
+        selectedColor: primaryMint.withValues(alpha: 0.15),
         disabledColor: neutral200,
         labelStyle: lightTextTheme.labelMedium,
         padding: const EdgeInsets.symmetric(
           horizontal: spacing12,
           vertical: spacing8,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: borderRadiusSmall,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: borderRadiusSmall),
       ),
 
       // Dialog theme
       dialogTheme: DialogThemeData(
         backgroundColor: Colors.white,
         elevation: 24,
-        shape: RoundedRectangleBorder(
-          borderRadius: borderRadiusLarge,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: borderRadiusLarge),
         titleTextStyle: lightTextTheme.headlineSmall,
         contentTextStyle: lightTextTheme.bodyMedium,
       ),
@@ -493,24 +489,15 @@ class AppTheme {
         contentTextStyle: lightTextTheme.bodyMedium?.copyWith(
           color: Colors.white,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: borderRadiusMedium,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
         behavior: SnackBarBehavior.floating,
       ),
 
       // Divider theme
-      dividerTheme: DividerThemeData(
-        color: neutral200,
-        thickness: 1,
-        space: 1,
-      ),
+      dividerTheme: DividerThemeData(color: neutral200, thickness: 1, space: 1),
 
       // Icon theme
-      iconTheme: IconThemeData(
-        color: neutral700,
-        size: 24,
-      ),
+      iconTheme: IconThemeData(color: neutral700, size: 24),
     );
   }
 
@@ -525,10 +512,10 @@ class AppTheme {
 
       // Color scheme
       colorScheme: ColorScheme.dark(
-        primary: primaryPurple,
+        primary: primaryMint,
         onPrimary: Colors.white,
-        primaryContainer: primaryPurple.withValues(alpha: 0.2),
-        onPrimaryContainer: primaryPurple.withValues(alpha: 0.9),
+        primaryContainer: primaryMint.withValues(alpha: 0.2),
+        onPrimaryContainer: primaryMint.withValues(alpha: 0.9),
 
         secondary: accentPink,
         onSecondary: Colors.white,
@@ -591,8 +578,149 @@ class AppTheme {
         margin: const EdgeInsets.all(0),
       ),
 
-      // Similar theme configurations for dark mode...
-      // (Following the same pattern as light theme but with dark colors)
+      // Input decoration theme
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: neutral800,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: spacing16,
+          vertical: spacing16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: borderRadiusMedium,
+          borderSide: BorderSide(color: neutral600, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: borderRadiusMedium,
+          borderSide: BorderSide(color: neutral600, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: borderRadiusMedium,
+          borderSide: const BorderSide(color: primaryMint, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: borderRadiusMedium,
+          borderSide: const BorderSide(color: error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: borderRadiusMedium,
+          borderSide: const BorderSide(color: error, width: 2),
+        ),
+        labelStyle: darkTextTheme.bodyMedium?.copyWith(color: neutral400),
+        hintStyle: darkTextTheme.bodyMedium?.copyWith(color: neutral500),
+      ),
+
+      // Button themes
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: primaryMint,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacing24,
+            vertical: spacing16,
+          ),
+          shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
+          elevation: 0,
+          textStyle: darkTextTheme.labelLarge,
+        ),
+      ),
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: neutral800,
+          foregroundColor: primaryMint,
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacing24,
+            vertical: spacing16,
+          ),
+          shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
+          elevation: 0,
+          shadowColor: Colors.black.withValues(alpha: 0.3),
+          textStyle: darkTextTheme.labelLarge,
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryMint,
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacing24,
+            vertical: spacing16,
+          ),
+          shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
+          side: BorderSide(color: neutral600, width: 1),
+          textStyle: darkTextTheme.labelLarge,
+        ),
+      ),
+
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: primaryMint,
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacing16,
+            vertical: spacing12,
+          ),
+          shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
+          textStyle: darkTextTheme.labelLarge,
+        ),
+      ),
+
+      // Floating action button theme
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryMint,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusMedium),
+        ),
+      ),
+
+      // Bottom navigation bar theme
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: neutral800,
+        selectedItemColor: primaryMint,
+        unselectedItemColor: neutral500,
+        elevation: 8,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: darkTextTheme.labelSmall,
+        unselectedLabelStyle: darkTextTheme.labelSmall,
+      ),
+
+      // Chip theme
+      chipTheme: ChipThemeData(
+        backgroundColor: neutral800,
+        selectedColor: primaryMint.withValues(alpha: 0.3),
+        disabledColor: neutral700,
+        labelStyle: darkTextTheme.labelMedium,
+        padding: const EdgeInsets.symmetric(
+          horizontal: spacing12,
+          vertical: spacing8,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: borderRadiusSmall),
+      ),
+
+      // Dialog theme
+      dialogTheme: DialogThemeData(
+        backgroundColor: neutral800,
+        elevation: 24,
+        shape: RoundedRectangleBorder(borderRadius: borderRadiusLarge),
+        titleTextStyle: darkTextTheme.headlineSmall,
+        contentTextStyle: darkTextTheme.bodyMedium,
+      ),
+
+      // Snackbar theme
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: neutral800,
+        contentTextStyle: darkTextTheme.bodyMedium?.copyWith(color: neutral50),
+        shape: RoundedRectangleBorder(borderRadius: borderRadiusMedium),
+        behavior: SnackBarBehavior.floating,
+      ),
+
+      // Divider theme
+      dividerTheme: DividerThemeData(color: neutral700, thickness: 1, space: 1),
+
+      // Icon theme
+      iconTheme: IconThemeData(color: neutral300, size: 24),
     );
   }
 }

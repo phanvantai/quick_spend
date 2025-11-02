@@ -56,89 +56,101 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const HomeScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.neutral50,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Page indicator
-            Padding(
-              padding: const EdgeInsets.all(AppTheme.spacing16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  3,
-                  (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacing4),
-                    width: _currentPage == index ? 32 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      gradient: _currentPage == index
-                          ? AppTheme.primaryGradient
-                          : null,
-                      color: _currentPage == index
-                          ? null
-                          : AppTheme.neutral300,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Consumer<AppConfigProvider>(
+      builder: (context, configProvider, _) {
+        return Scaffold(
+          backgroundColor: colorScheme.surface,
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Page indicator
+                Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacing16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      3,
+                      (index) => Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacing4,
+                        ),
+                        width: _currentPage == index ? 32 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          gradient: _currentPage == index
+                              ? AppTheme.primaryGradient
+                              : null,
+                          color: _currentPage == index
+                              ? null
+                              : colorScheme.outline,
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusSmall,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            // PageView
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (page) {
-                  setState(() {
-                    _currentPage = page;
-                  });
-                },
-                children: [
-                  _buildWelcomePage(),
-                  _buildLanguagePage(),
-                  _buildCurrencyPage(),
-                ],
-              ),
-            ),
-            // Navigation buttons
-            Padding(
-              padding: const EdgeInsets.all(AppTheme.spacing24),
-              child: Row(
-                children: [
-                  if (_currentPage > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _previousPage,
-                        child: const Text('Back'),
-                      ),
-                    ),
-                  if (_currentPage > 0) const SizedBox(width: AppTheme.spacing16),
-                  Expanded(
-                    child: GradientButton(
-                      text: _currentPage == 2
-                          ? 'onboarding.get_started'.tr()
-                          : 'Next',
-                      icon: _currentPage == 2 ? Icons.check : Icons.arrow_forward,
-                      onPressed: _nextPage,
-                      gradient: AppTheme.primaryGradient,
-                    ),
+                // PageView
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: (page) {
+                      setState(() {
+                        _currentPage = page;
+                      });
+                    },
+                    children: [
+                      _buildWelcomePage(),
+                      _buildLanguagePage(),
+                      _buildCurrencyPage(),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                // Navigation buttons
+                Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacing24),
+                  child: Row(
+                    children: [
+                      if (_currentPage > 0)
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _previousPage,
+                            child: const Text('Back'),
+                          ),
+                        ),
+                      if (_currentPage > 0)
+                        const SizedBox(width: AppTheme.spacing16),
+                      Expanded(
+                        child: GradientButton(
+                          text: _currentPage == 2
+                              ? 'onboarding.get_started'.tr()
+                              : 'Next',
+                          icon: _currentPage == 2
+                              ? Icons.check
+                              : Icons.arrow_forward,
+                          onPressed: _nextPage,
+                          gradient: AppTheme.primaryGradient,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -166,16 +178,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: AppTheme.spacing32),
           Text(
             'app.name'.tr(),
-            style: AppTheme.lightTextTheme.displaySmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppTheme.spacing16),
           Text(
             'app.tagline'.tr(),
-            style: AppTheme.lightTextTheme.titleLarge?.copyWith(
-              color: AppTheme.neutral600,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -205,7 +217,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildFeatureItem(IconData icon, String title, String description, Color color) {
+  Widget _buildFeatureItem(
+    IconData icon,
+    String title,
+    String description,
+    Color color,
+  ) {
     return Row(
       children: [
         Container(
@@ -215,11 +232,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             color: color.withValues(alpha: 0.15),
             borderRadius: AppTheme.borderRadiusMedium,
           ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 28,
-          ),
+          child: Icon(icon, color: color, size: 28),
         ),
         const SizedBox(width: AppTheme.spacing16),
         Expanded(
@@ -261,11 +274,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               gradient: AppTheme.primaryGradient,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.language,
-              size: 56,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.language, size: 56, color: Colors.white),
           ),
           const SizedBox(height: AppTheme.spacing24),
           Text(
@@ -294,10 +303,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 // Update locale immediately for preview
                 context.setLocale(Locale(option.code));
               },
-              leading: Text(
-                option.flag,
-                style: const TextStyle(fontSize: 32),
-              ),
+              leading: Text(option.flag, style: const TextStyle(fontSize: 32)),
               title: option.displayName,
             );
           }),
@@ -400,23 +406,18 @@ class _OptionCard extends StatelessWidget {
             padding: const EdgeInsets.all(AppTheme.spacing16),
             decoration: BoxDecoration(
               border: Border.all(
-                color: isSelected
-                    ? AppTheme.primaryPurple
-                    : AppTheme.neutral300,
+                color: isSelected ? AppTheme.primaryMint : AppTheme.neutral300,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: AppTheme.borderRadiusMedium,
               color: isSelected
-                  ? AppTheme.primaryPurple.withValues(alpha: 0.08)
+                  ? AppTheme.primaryMint.withValues(alpha: 0.08)
                   : Colors.white,
               boxShadow: isSelected ? AppTheme.shadowSmall : null,
             ),
             child: Row(
               children: [
-                SizedBox(
-                  width: 48,
-                  child: Center(child: leading),
-                ),
+                SizedBox(width: 48, child: Center(child: leading)),
                 const SizedBox(width: AppTheme.spacing16),
                 Expanded(
                   child: Column(
@@ -425,7 +426,9 @@ class _OptionCard extends StatelessWidget {
                       Text(
                         title,
                         style: AppTheme.lightTextTheme.titleMedium?.copyWith(
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
                         ),
                       ),
                       if (subtitle != null) ...[

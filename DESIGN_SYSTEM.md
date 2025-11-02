@@ -330,7 +330,7 @@ theme: AppTheme.lightTheme,
 darkTheme: AppTheme.darkTheme,
 
 // Accessing colors
-color: AppTheme.primaryPurple,
+color: AppTheme.primaryMint,
 gradient: AppTheme.primaryGradient,
 
 // Accessing spacing
@@ -374,7 +374,7 @@ StatCard(
   title: 'Total Spent',
   value: '\$1,234.56',
   icon: Icons.account_balance_wallet,
-  color: AppTheme.primaryPurple,
+  color: AppTheme.primaryMint,
   trend: '+12%',
   isPositiveTrend: false,
 )

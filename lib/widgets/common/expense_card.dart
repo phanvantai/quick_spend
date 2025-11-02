@@ -20,6 +20,8 @@ class ExpenseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final categoryData = Category.getByType(expense.category);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Card(
       margin: const EdgeInsets.only(bottom: AppTheme.spacing12),
@@ -54,7 +56,7 @@ class ExpenseCard extends StatelessWidget {
                   children: [
                     Text(
                       expense.description,
-                      style: AppTheme.lightTextTheme.titleMedium,
+                      style: theme.textTheme.titleMedium,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -63,19 +65,23 @@ class ExpenseCard extends StatelessWidget {
                       children: [
                         Text(
                           categoryData.getLabel(expense.language),
-                          style: AppTheme.lightTextTheme.bodySmall?.copyWith(
+                          style: theme.textTheme.bodySmall?.copyWith(
                             color: categoryData.color,
                           ),
                         ),
                         const SizedBox(width: AppTheme.spacing8),
                         Text(
                           '•',
-                          style: AppTheme.lightTextTheme.bodySmall,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(width: AppTheme.spacing8),
                         Text(
                           _formatDate(expense.date),
-                          style: AppTheme.lightTextTheme.bodySmall,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -89,7 +95,7 @@ class ExpenseCard extends StatelessWidget {
                 children: [
                   Text(
                     expense.getFormattedAmount(),
-                    style: AppTheme.lightTextTheme.titleMedium?.copyWith(
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppTheme.error,
                     ),
@@ -107,7 +113,7 @@ class ExpenseCard extends StatelessWidget {
                       ),
                       child: Text(
                         'Low confidence',
-                        style: AppTheme.lightTextTheme.labelSmall?.copyWith(
+                        style: theme.textTheme.labelSmall?.copyWith(
                           color: AppTheme.warning,
                         ),
                       ),

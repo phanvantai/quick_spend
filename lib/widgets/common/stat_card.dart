@@ -24,7 +24,7 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? AppTheme.primaryPurple;
+    final effectiveColor = color ?? AppTheme.primaryMint;
 
     return Card(
       child: Padding(
@@ -40,11 +40,7 @@ class StatCard extends StatelessWidget {
                     color: effectiveColor.withValues(alpha: 0.15),
                     borderRadius: AppTheme.borderRadiusSmall,
                   ),
-                  child: Icon(
-                    icon,
-                    color: effectiveColor,
-                    size: 20,
-                  ),
+                  child: Icon(icon, color: effectiveColor, size: 20),
                 ),
                 const Spacer(),
                 if (trend != null)
@@ -54,8 +50,9 @@ class StatCard extends StatelessWidget {
                       vertical: AppTheme.spacing4,
                     ),
                     decoration: BoxDecoration(
-                      color: (isPositiveTrend ? AppTheme.success : AppTheme.error)
-                          .withValues(alpha: 0.15),
+                      color:
+                          (isPositiveTrend ? AppTheme.success : AppTheme.error)
+                              .withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                     ),
                     child: Row(
@@ -65,8 +62,9 @@ class StatCard extends StatelessWidget {
                               ? Icons.trending_up
                               : Icons.trending_down,
                           size: 14,
-                          color:
-                              isPositiveTrend ? AppTheme.success : AppTheme.error,
+                          color: isPositiveTrend
+                              ? AppTheme.success
+                              : AppTheme.error,
                         ),
                         const SizedBox(width: AppTheme.spacing4),
                         Text(

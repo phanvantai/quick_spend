@@ -83,9 +83,13 @@ class VoiceService {
       }
     }
 
-    if (_isListening) {
-      debugPrint('⚠️ [VoiceService] Already listening');
-      return false;
+    // If already listening or speech service is still active, stop it first
+    if (_isListening || _speechToText.isListening) {
+      debugPrint('⚠️ [VoiceService] Already listening, stopping first...');
+      await _speechToText.stop();
+      _isListening = false;
+      // Add small delay to ensure service is fully stopped
+      await Future.delayed(const Duration(milliseconds: 100));
     }
 
     try {
@@ -103,9 +107,13 @@ class VoiceService {
           debugPrint('   Final: ${result.finalResult}');
           debugPrint('   Confidence: ${result.confidence}');
 
+          // Always update with latest recognized words, even if not final
+          if (result.recognizedWords.isNotEmpty) {
+            onResult(result.recognizedWords);
+          }
+
           if (result.finalResult) {
             debugPrint('✅ [VoiceService] Final result: "${result.recognizedWords}"');
-            onResult(result.recognizedWords);
           }
         },
         localeId: localeId,

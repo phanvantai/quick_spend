@@ -24,6 +24,9 @@ class AppConfigProvider extends ChangeNotifier {
   /// Current currency
   String get currency => _config.currency;
 
+  /// Current theme mode
+  String get themeMode => _config.themeMode;
+
   /// Whether onboarding is complete
   bool get isOnboardingComplete => _config.isOnboardingComplete;
 
@@ -52,6 +55,12 @@ class AppConfigProvider extends ChangeNotifier {
   /// Update currency
   Future<void> setCurrency(String currency) async {
     final newConfig = _config.copyWith(currency: currency);
+    await _updateConfig(newConfig);
+  }
+
+  /// Update theme mode
+  Future<void> setThemeMode(String themeMode) async {
+    final newConfig = _config.copyWith(themeMode: themeMode);
     await _updateConfig(newConfig);
   }
 

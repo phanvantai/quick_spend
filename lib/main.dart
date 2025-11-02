@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'firebase_options.dart';
 import 'providers/app_config_provider.dart';
+import 'providers/expense_provider.dart';
 import 'services/preferences_service.dart';
+import 'services/expense_service.dart';
 import 'services/gemini_expense_parser.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/home_screen.dart';
@@ -20,9 +22,12 @@ void main() async {
   // Initialize EasyLocalization
   await EasyLocalization.ensureInitialized();
 
-  // Initialize preferences service
+  // Initialize services
   final preferencesService = PreferencesService();
   await preferencesService.init();
+
+  final expenseService = ExpenseService();
+  await expenseService.init();
 
   // Initialize Gemini parser
   GeminiExpenseParser.initialize();
@@ -32,15 +37,23 @@ void main() async {
       supportedLocales: const [Locale('en'), Locale('vi')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
-      child: MyApp(preferencesService: preferencesService),
+      child: MyApp(
+        preferencesService: preferencesService,
+        expenseService: expenseService,
+      ),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
   final PreferencesService preferencesService;
+  final ExpenseService expenseService;
 
-  const MyApp({super.key, required this.preferencesService});
+  const MyApp({
+    super.key,
+    required this.preferencesService,
+    required this.expenseService,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +62,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AppConfigProvider(preferencesService),
         ),
+        ChangeNotifierProvider(create: (_) => ExpenseProvider(expenseService)),
       ],
       child: Consumer<AppConfigProvider>(
         builder: (context, configProvider, _) {
@@ -59,9 +73,7 @@ class MyApp extends StatelessWidget {
               theme: AppTheme.lightTheme,
               home: Scaffold(
                 body: Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.primaryPurple,
-                  ),
+                  child: CircularProgressIndicator(color: AppTheme.primaryMint),
                 ),
               ),
             );
@@ -73,6 +85,21 @@ class MyApp extends StatelessWidget {
             context.setLocale(locale);
           }
 
+          // Convert theme mode string to ThemeMode enum
+          ThemeMode themeMode;
+          switch (configProvider.themeMode) {
+            case 'light':
+              themeMode = ThemeMode.light;
+              break;
+            case 'dark':
+              themeMode = ThemeMode.dark;
+              break;
+            case 'system':
+            default:
+              themeMode = ThemeMode.system;
+              break;
+          }
+
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'Quick Spend',
@@ -81,8 +108,7 @@ class MyApp extends StatelessWidget {
             locale: context.locale,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode:
-                ThemeMode.light, // TODO: Add dark mode toggle in settings
+            themeMode: themeMode,
             // Show onboarding if not completed, otherwise show home
             home: configProvider.isOnboardingComplete
                 ? const HomeScreen()

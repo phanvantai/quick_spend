@@ -1,12 +1,16 @@
+import 'package:flutter/material.dart';
+
 /// App configuration model for user preferences
 class AppConfig {
   final String language; // 'en' or 'vi'
   final String currency; // 'USD', 'VND'
+  final String themeMode; // 'light', 'dark', 'system'
   final bool isOnboardingComplete;
 
   const AppConfig({
     this.language = 'en',
     this.currency = 'USD',
+    this.themeMode = 'system',
     this.isOnboardingComplete = false,
   });
 
@@ -15,6 +19,7 @@ class AppConfig {
     return AppConfig(
       language: json['language'] as String? ?? 'en',
       currency: json['currency'] as String? ?? 'USD',
+      themeMode: json['themeMode'] as String? ?? 'system',
       isOnboardingComplete: json['isOnboardingComplete'] as bool? ?? false,
     );
   }
@@ -24,6 +29,7 @@ class AppConfig {
     return {
       'language': language,
       'currency': currency,
+      'themeMode': themeMode,
       'isOnboardingComplete': isOnboardingComplete,
     };
   }
@@ -32,11 +38,13 @@ class AppConfig {
   AppConfig copyWith({
     String? language,
     String? currency,
+    String? themeMode,
     bool? isOnboardingComplete,
   }) {
     return AppConfig(
       language: language ?? this.language,
       currency: currency ?? this.currency,
+      themeMode: themeMode ?? this.themeMode,
       isOnboardingComplete: isOnboardingComplete ?? this.isOnboardingComplete,
     );
   }
@@ -67,7 +75,7 @@ class AppConfig {
 
   @override
   String toString() {
-    return 'AppConfig(language: $language, currency: $currency, isOnboardingComplete: $isOnboardingComplete)';
+    return 'AppConfig(language: $language, currency: $currency, themeMode: $themeMode, isOnboardingComplete: $isOnboardingComplete)';
   }
 
   @override
@@ -77,12 +85,13 @@ class AppConfig {
     return other is AppConfig &&
         other.language == language &&
         other.currency == currency &&
+        other.themeMode == themeMode &&
         other.isOnboardingComplete == isOnboardingComplete;
   }
 
   @override
   int get hashCode {
-    return Object.hash(language, currency, isOnboardingComplete);
+    return Object.hash(language, currency, themeMode, isOnboardingComplete);
   }
 }
 
@@ -134,6 +143,37 @@ class CurrencyOption {
       code: 'VND',
       displayName: 'Vietnamese Dong',
       symbol: 'đ',
+    ),
+  ];
+}
+
+/// Theme mode option for selection
+class ThemeModeOption {
+  final String code;
+  final String displayNameKey; // Translation key
+  final IconData icon;
+
+  const ThemeModeOption({
+    required this.code,
+    required this.displayNameKey,
+    required this.icon,
+  });
+
+  static const List<ThemeModeOption> options = [
+    ThemeModeOption(
+      code: 'light',
+      displayNameKey: 'settings.theme_light',
+      icon: Icons.light_mode,
+    ),
+    ThemeModeOption(
+      code: 'dark',
+      displayNameKey: 'settings.theme_dark',
+      icon: Icons.dark_mode,
+    ),
+    ThemeModeOption(
+      code: 'system',
+      displayNameKey: 'settings.theme_system',
+      icon: Icons.brightness_auto,
     ),
   ];
 }
