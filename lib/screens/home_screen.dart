@@ -10,7 +10,6 @@ import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
-import 'settings_screen.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 /// Home Screen with modern UI and voice input
@@ -499,22 +498,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    actions: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.settings_outlined,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SettingsScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
                   ),
 
                   // Content - Expense List

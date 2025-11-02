@@ -9,7 +9,7 @@ import 'services/preferences_service.dart';
 import 'services/expense_service.dart';
 import 'services/gemini_expense_parser.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -109,9 +109,9 @@ class MyApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
-            // Show onboarding if not completed, otherwise show home
+            // Show onboarding if not completed, otherwise show main screen
             home: configProvider.isOnboardingComplete
-                ? const HomeScreen()
+                ? const MainScreen()
                 : const OnboardingScreen(),
           );
         },

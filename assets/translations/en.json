@@ -49,6 +49,11 @@
     "permission_denied_title": "Permission Denied",
     "permission_denied_message": "Microphone access is required to record voice expenses. Please enable it in your device settings."
   },
+  "navigation": {
+    "input": "Input",
+    "report": "Report",
+    "settings": "Settings"
+  },
   "common": {
     "ok": "OK",
     "cancel": "Cancel",

@@ -25,9 +25,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           backgroundColor: colorScheme.surface,
           appBar: AppBar(
             title: Text('settings.title'.tr()),
-            backgroundColor: AppTheme.primaryMint,
-            foregroundColor: Colors.white,
-            elevation: 0,
           ),
           body: configProvider.isLoading
               ? const Center(child: CircularProgressIndicator())

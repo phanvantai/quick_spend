@@ -5,7 +5,7 @@ import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/gradient_button.dart';
-import 'home_screen.dart';
+import 'main_screen.dart';
 
 /// Onboarding screen with multi-step flow
 class OnboardingScreen extends StatefulWidget {
@@ -56,7 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const MainScreen()),
       );
     }
   }
