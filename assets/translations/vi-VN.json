@@ -26,7 +26,32 @@
     "coming_soon": "Giao diện chính sẽ có sớm!",
     "features": "Bạn sẽ có thể:\n• Thêm chi tiêu bằng giọng nói hoặc gõ\n• Xem danh sách chi tiêu\n• Xem thống kê chi tiêu\n• Và nhiều tính năng khác!",
     "add_expense": "Thêm Chi Tiêu",
-    "settings": "Cài Đặt"
+    "settings": "Cài Đặt",
+    "parsing_expense": "Đang phân tích chi tiêu...",
+    "parse_failed": "Không thể phân tích chi tiêu",
+    "expenses_parsed_multiple": "Đã phân tích {count} chi tiêu!",
+    "expense_parsed_single": "Đã phân tích chi tiêu!",
+    "expense_number": "Chi tiêu {number}",
+    "expenses_saved_multiple": "Đã lưu {count} chi tiêu!",
+    "expense_saved_single": "Đã lưu chi tiêu!",
+    "error_saving_expenses": "Lỗi khi lưu chi tiêu: {error}",
+    "delete_expense_title": "Xóa Chi Tiêu?",
+    "delete_expense_message": "Bạn có chắc muốn xóa chi tiêu này? Hành động này không thể hoàn tác.",
+    "expense_deleted": "Đã xóa chi tiêu",
+    "error_deleting_expense": "Lỗi khi xóa chi tiêu: {error}",
+    "amount": "Số Tiền",
+    "category": "Danh Mục",
+    "date": "Ngày",
+    "language": "Ngôn Ngữ",
+    "language_vietnamese": "Tiếng Việt",
+    "language_english": "Tiếng Anh",
+    "original_input": "Dữ Liệu Gốc",
+    "low_confidence_percent": "Độ tin cậy thấp ({percent}%)",
+    "low_confidence_verify": "Độ tin cậy thấp - vui lòng kiểm tra",
+    "description": "Mô Tả",
+    "no_expenses_title": "Chưa có chi tiêu",
+    "no_expenses_message": "Bắt đầu theo dõi chi tiêu của bạn bằng cách thêm chi tiêu đầu tiên bằng giọng nói hoặc văn bản.",
+    "recording": "Đang ghi âm..."
   },
   "settings": {
     "title": "Cài Đặt",
@@ -67,7 +92,10 @@
   "common": {
     "ok": "OK",
     "cancel": "Hủy",
-    "allow": "Cho Phép"
+    "allow": "Cho Phép",
+    "save": "Lưu",
+    "close": "Đóng",
+    "delete": "Xóa"
   },
   "categories": {
     "food": "Ăn Uống",

@@ -26,7 +26,32 @@
     "coming_soon": "Main interface coming soon!",
     "features": "You will be able to:\n• Add expenses by voice or typing\n• View expense list\n• See spending statistics\n• And much more!",
     "add_expense": "Add Expense",
-    "settings": "Settings"
+    "settings": "Settings",
+    "parsing_expense": "Parsing expense...",
+    "parse_failed": "Failed to parse expense",
+    "expenses_parsed_multiple": "{count} Expenses Parsed!",
+    "expense_parsed_single": "Expense Parsed!",
+    "expense_number": "Expense {number}",
+    "expenses_saved_multiple": "{count} expenses saved!",
+    "expense_saved_single": "Expense saved!",
+    "error_saving_expenses": "Error saving expenses: {error}",
+    "delete_expense_title": "Delete Expense?",
+    "delete_expense_message": "Are you sure you want to delete this expense? This action cannot be undone.",
+    "expense_deleted": "Expense deleted",
+    "error_deleting_expense": "Error deleting expense: {error}",
+    "amount": "Amount",
+    "category": "Category",
+    "date": "Date",
+    "language": "Language",
+    "language_vietnamese": "Vietnamese",
+    "language_english": "English",
+    "original_input": "Original Input",
+    "low_confidence_percent": "Low confidence ({percent}%)",
+    "low_confidence_verify": "Low confidence - please verify",
+    "description": "Description",
+    "no_expenses_title": "No expenses yet",
+    "no_expenses_message": "Start tracking your spending by adding your first expense using voice or text input.",
+    "recording": "Recording..."
   },
   "settings": {
     "title": "Settings",
@@ -67,7 +92,10 @@
   "common": {
     "ok": "OK",
     "cancel": "Cancel",
-    "allow": "Allow"
+    "allow": "Allow",
+    "save": "Save",
+    "close": "Close",
+    "delete": "Delete"
   },
   "categories": {
     "food": "Food",
