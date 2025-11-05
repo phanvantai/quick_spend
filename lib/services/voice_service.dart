@@ -70,6 +70,7 @@ class VoiceService {
   /// On iOS: both microphone and speech permissions needed
   Future<bool> hasPermission() async {
     final micStatus = await Permission.microphone.status;
+    debugPrint('🔐 [VoiceService.hasPermission] Microphone status: ${micStatus.name} (isGranted: ${micStatus.isGranted})');
 
     // On Android, only microphone permission is needed
     if (Platform.isAndroid) {
@@ -78,7 +79,11 @@ class VoiceService {
 
     // On iOS, both microphone and speech permissions are needed
     final speechStatus = await Permission.speech.status;
-    return micStatus.isGranted && speechStatus.isGranted;
+    debugPrint('🔐 [VoiceService.hasPermission] Speech status: ${speechStatus.name} (isGranted: ${speechStatus.isGranted})');
+
+    final hasPermission = micStatus.isGranted && speechStatus.isGranted;
+    debugPrint('🔐 [VoiceService.hasPermission] Result: $hasPermission');
+    return hasPermission;
   }
 
   /// Request required permissions

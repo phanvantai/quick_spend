@@ -40,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen>
   late AnimationController _swipeTextController;
   late Animation<double> _listeningFadeAnimation;
   late Animation<double> _swipeSlideAnimation;
+  late WidgetsBindingObserver _lifecycleObserver;
 
   @override
   void initState() {
@@ -47,6 +48,15 @@ class _HomeScreenState extends State<HomeScreen>
 
     // Check permission status on init
     _checkPermissionStatus();
+
+    // Listen for app lifecycle changes to refresh permission status
+    _lifecycleObserver = _AppLifecycleObserver(
+      onResume: () {
+        debugPrint('📱 [HomeScreen] App resumed, rechecking permissions...');
+        _checkPermissionStatus();
+      },
+    );
+    WidgetsBinding.instance.addObserver(_lifecycleObserver);
 
     // Listening text fade animation
     _listeningTextController = AnimationController(
@@ -78,29 +88,33 @@ class _HomeScreenState extends State<HomeScreen>
     _listeningTextController.dispose();
     _swipeTextController.dispose();
     _voiceService.dispose();
+    WidgetsBinding.instance.removeObserver(_lifecycleObserver);
     super.dispose();
   }
 
   Future<void> _checkPermissionStatus() async {
     debugPrint('🔐 [HomeScreen] Checking permission status...');
+    debugPrint('🔐 [HomeScreen] Platform: ${Platform.isIOS ? "iOS" : "Android"}');
+
     final hasPermission = await _voiceService.hasPermission();
+    debugPrint('🔐 [HomeScreen] hasPermission result: $hasPermission');
 
     if (hasPermission) {
       setState(() {
         _permissionState = VoicePermissionState.granted;
       });
-      debugPrint('✅ [HomeScreen] Permissions already granted');
+      debugPrint('✅ [HomeScreen] Setting state to GRANTED');
     } else {
       // Check if permissions were previously denied
       final micStatus = await Permission.microphone.status;
-      debugPrint('   Microphone: ${micStatus.name}');
+      debugPrint('🔐 [HomeScreen] Microphone status: ${micStatus.name} (isGranted: ${micStatus.isGranted}, isDenied: ${micStatus.isDenied}, isPermanentlyDenied: ${micStatus.isPermanentlyDenied})');
 
       bool isDenied = micStatus.isPermanentlyDenied || micStatus.isDenied;
 
       // On iOS, also check speech permission
       if (Platform.isIOS) {
         final speechStatus = await Permission.speech.status;
-        debugPrint('   Speech: ${speechStatus.name}');
+        debugPrint('🔐 [HomeScreen] Speech status: ${speechStatus.name} (isGranted: ${speechStatus.isGranted}, isDenied: ${speechStatus.isDenied}, isPermanentlyDenied: ${speechStatus.isPermanentlyDenied})');
         isDenied = isDenied ||
             speechStatus.isPermanentlyDenied ||
             speechStatus.isDenied;
@@ -110,14 +124,16 @@ class _HomeScreenState extends State<HomeScreen>
         setState(() {
           _permissionState = VoicePermissionState.denied;
         });
-        debugPrint('❌ [HomeScreen] Permission denied');
+        debugPrint('❌ [HomeScreen] Setting state to DENIED');
       } else {
         setState(() {
           _permissionState = VoicePermissionState.notDetermined;
         });
-        debugPrint('❓ [HomeScreen] Permission not determined');
+        debugPrint('❓ [HomeScreen] Setting state to NOT_DETERMINED');
       }
     }
+
+    debugPrint('🔐 [HomeScreen] Final permission state: ${_permissionState.name}');
   }
 
   Future<void> _requestPermission() async {
@@ -1056,5 +1072,19 @@ class _HomeScreenState extends State<HomeScreen>
         ],
       ),
     );
+  }
+}
+
+/// Observer for app lifecycle changes
+class _AppLifecycleObserver extends WidgetsBindingObserver {
+  final VoidCallback onResume;
+
+  _AppLifecycleObserver({required this.onResume});
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      onResume();
+    }
   }
 }
