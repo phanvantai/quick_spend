@@ -37,10 +37,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: _onTabTapped,
@@ -48,17 +45,17 @@ class _MainScreenState extends State<MainScreen> {
           NavigationDestination(
             icon: const Icon(Icons.add_circle_outline),
             selectedIcon: const Icon(Icons.add_circle),
-            label: 'navigation.input'.tr(),
+            label: context.tr('navigation.input'),
           ),
           NavigationDestination(
             icon: const Icon(Icons.bar_chart_outlined),
             selectedIcon: const Icon(Icons.bar_chart),
-            label: 'navigation.report'.tr(),
+            label: context.tr('navigation.report'),
           ),
           NavigationDestination(
             icon: const Icon(Icons.settings_outlined),
             selectedIcon: const Icon(Icons.settings),
-            label: 'navigation.settings'.tr(),
+            label: context.tr('navigation.settings'),
           ),
         ],
       ),

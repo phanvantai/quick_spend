@@ -98,11 +98,13 @@ class AppConfig {
 /// Language option for selection
 class LanguageOption {
   final String code;
+  final String countryCode;
   final String displayName;
   final String flag;
 
   const LanguageOption({
     required this.code,
+    required this.countryCode,
     required this.displayName,
     required this.flag,
   });
@@ -112,11 +114,13 @@ class LanguageOption {
       code: 'en',
       displayName: 'English',
       flag: '🇺🇸',
+      countryCode: 'US',
     ),
     LanguageOption(
       code: 'vi',
       displayName: 'Tiếng Việt',
       flag: '🇻🇳',
+      countryCode: 'VN',
     ),
   ];
 }
@@ -134,16 +138,8 @@ class CurrencyOption {
   });
 
   static const List<CurrencyOption> options = [
-    CurrencyOption(
-      code: 'USD',
-      displayName: 'US Dollar',
-      symbol: '\$',
-    ),
-    CurrencyOption(
-      code: 'VND',
-      displayName: 'Vietnamese Dong',
-      symbol: 'đ',
-    ),
+    CurrencyOption(code: 'USD', displayName: 'US Dollar', symbol: '\$'),
+    CurrencyOption(code: 'VND', displayName: 'Vietnamese Dong', symbol: 'đ'),
   ];
 }
 

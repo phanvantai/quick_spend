@@ -62,6 +62,7 @@ class ExpenseCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppTheme.spacing4),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           categoryData.getLabel(expense.language),
@@ -77,10 +78,13 @@ class ExpenseCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: AppTheme.spacing8),
-                        Text(
-                          _formatDate(expense.date),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+                        Flexible(
+                          child: Text(
+                            _formatDate(expense.date),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -109,7 +113,9 @@ class ExpenseCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: AppTheme.warning.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusSmall,
+                        ),
                       ),
                       child: Text(
                         'Low confidence',

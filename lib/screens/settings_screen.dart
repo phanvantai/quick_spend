@@ -23,9 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, configProvider, _) {
         return Scaffold(
           backgroundColor: colorScheme.surface,
-          appBar: AppBar(
-            title: Text('settings.title'.tr()),
-          ),
+          appBar: AppBar(title: Text('settings.title'.tr())),
           body: configProvider.isLoading
               ? const Center(child: CircularProgressIndicator())
               : ListView(
@@ -238,7 +236,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 isSelected: isSelected,
                 onTap: () {
                   Navigator.pop(dialogContext);
-                  _changeLanguage(context, option.code);
+                  _changeLanguage(context, option.code, option.countryCode);
                 },
               );
             }).toList(),
@@ -382,12 +380,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _changeLanguage(
     BuildContext context,
     String languageCode,
+    String countryCode,
   ) async {
     final configProvider = context.read<AppConfigProvider>();
     if (configProvider.language == languageCode) return;
 
     final messenger = ScaffoldMessenger.of(context);
-    final locale = Locale(languageCode);
+    final locale = Locale(languageCode, countryCode);
 
     try {
       // First set the locale
