@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('voice.error'.tr()),
+          content: Text(context.tr('voice.error')),
           backgroundColor: AppTheme.error,
         ),
       );
@@ -130,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const CircularProgressIndicator(),
                 const SizedBox(height: AppTheme.spacing16),
                 Text(
-                  'Parsing expense...',
+                  context.tr('home.parsing_expense'),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
@@ -151,8 +151,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (results.isEmpty || !results.any((r) => r.success)) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to parse expense'),
+            SnackBar(
+              content: Text(context.tr('home.parse_failed')),
               backgroundColor: AppTheme.error,
             ),
           );
@@ -183,8 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           results.length > 1
-              ? '${results.length} Expenses Parsed!'
-              : 'Expense Parsed!',
+              ? context.tr('home.expenses_parsed_multiple', namedArgs: {'count': results.length.toString()})
+              : context.tr('home.expense_parsed_single'),
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         content: SingleChildScrollView(
@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
               for (var i = 0; i < results.length; i++) ...[
                 if (results.length > 1) ...[
                   Text(
-                    'Expense ${i + 1}',
+                    context.tr('home.expense_number', namedArgs: {'number': (i + 1).toString()}),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: AppTheme.spacing8),
@@ -211,11 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(context.tr('common.cancel')),
           ),
           FilledButton(
             onPressed: () => _saveExpenses(results),
-            child: const Text('Save'),
+            child: Text(context.tr('common.save')),
           ),
         ],
       ),
@@ -251,8 +251,8 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(
             content: Text(
               expenses.length > 1
-                  ? '${expenses.length} expenses saved!'
-                  : 'Expense saved!',
+                  ? context.tr('home.expenses_saved_multiple', namedArgs: {'count': expenses.length.toString()})
+                  : context.tr('home.expense_saved_single'),
             ),
             backgroundColor: AppTheme.success,
           ),
@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving expenses: $e'),
+            content: Text(context.tr('home.error_saving_expenses', namedArgs: {'error': e.toString()})),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -276,19 +276,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Expense?'),
-        content: const Text(
-          'Are you sure you want to delete this expense? This action cannot be undone.',
+        title: Text(context.tr('home.delete_expense_title')),
+        content: Text(
+          context.tr('home.delete_expense_message'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('common.cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
-            child: const Text('Delete'),
+            child: Text(context.tr('common.delete')),
           ),
         ],
       ),
@@ -300,8 +300,8 @@ class _HomeScreenState extends State<HomeScreen> {
       await context.read<ExpenseProvider>().deleteExpense(expenseId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Expense deleted'),
+          SnackBar(
+            content: Text(context.tr('home.expense_deleted')),
             backgroundColor: AppTheme.success,
           ),
         );
@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error deleting expense: $e'),
+            content: Text(context.tr('home.error_deleting_expense', namedArgs: {'error': e.toString()})),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -340,25 +340,25 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow('Amount', expense.getFormattedAmount()),
+            _buildDetailRow(context.tr('home.amount'), expense.getFormattedAmount()),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
-              'Category',
+              context.tr('home.category'),
               categoryData.getLabel(expense.language),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
-              'Date',
+              context.tr('home.date'),
               DateFormat.yMMMd().add_jm().format(expense.date),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
-              'Language',
-              expense.language == 'vi' ? 'Vietnamese' : 'English',
+              context.tr('home.language'),
+              expense.language == 'vi' ? context.tr('home.language_vietnamese') : context.tr('home.language_english'),
             ),
             if (expense.rawInput.isNotEmpty) ...[
               const SizedBox(height: AppTheme.spacing12),
-              _buildDetailRow('Original Input', expense.rawInput),
+              _buildDetailRow(context.tr('home.original_input'), expense.rawInput),
             ],
             if (expense.confidence < 0.8) ...[
               const SizedBox(height: AppTheme.spacing12),
@@ -378,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: AppTheme.spacing8),
                     Expanded(
                       child: Text(
-                        'Low confidence (${(expense.confidence * 100).toStringAsFixed(0)}%)',
+                        context.tr('home.low_confidence_percent', namedArgs: {'percent': (expense.confidence * 100).toStringAsFixed(0)}),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppTheme.warning,
                         ),
@@ -393,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(context.tr('common.close')),
           ),
         ],
       ),
@@ -431,12 +431,12 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Amount: ${expense.getFormattedAmount()}'),
-        Text('Description: ${expense.description}'),
-        Text('Category: ${expense.category.toString().split('.').last}'),
+        Text('${context.tr('home.amount')}: ${expense.getFormattedAmount()}'),
+        Text('${context.tr('home.description')}: ${expense.description}'),
+        Text('${context.tr('home.category')}: ${expense.category.toString().split('.').last}'),
         if (result.overallConfidence != null && result.overallConfidence! < 0.7)
           Text(
-            '\nLow confidence - please verify',
+            '\n${context.tr('home.low_confidence_verify')}',
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: AppTheme.warning),
@@ -485,7 +485,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 const SizedBox(height: AppTheme.spacing12),
                                 Text(
-                                  'home.welcome'.tr(),
+                                  context.tr('home.welcome'),
                                   style: textTheme.headlineSmall?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
@@ -518,15 +518,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             delegate: SliverChildListDelegate([
                               EmptyState(
                                 icon: Icons.receipt_long_outlined,
-                                title: 'No expenses yet',
+                                title: context.tr('home.no_expenses_title'),
                                 message:
-                                    'Start tracking your spending by adding your first expense using voice or text input.',
-                                actionLabel: 'Add Expense',
+                                    context.tr('home.no_expenses_message'),
+                                actionLabel: context.tr('home.add_expense'),
                                 onAction: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        'voice.hold_instruction'.tr(),
+                                        context.tr('voice.hold_instruction'),
                                       ),
                                       duration: const Duration(seconds: 2),
                                     ),
@@ -557,7 +557,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     backgroundColor: AppTheme.error,
                                     foregroundColor: Colors.white,
                                     icon: Icons.delete,
-                                    label: 'Delete',
+                                    label: context.tr('common.delete'),
                                   ),
                                 ],
                               ),
@@ -633,7 +633,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: AppTheme.spacing24),
                         Text(
-                          'voice.listening'.tr(),
+                          context.tr('voice.listening'),
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
                                 color: Colors.white,
@@ -661,7 +661,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                         const SizedBox(height: AppTheme.spacing32),
                         Text(
-                          'voice.slide_to_cancel'.tr(),
+                          context.tr('voice.slide_to_cancel'),
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 color: Colors.white.withValues(alpha: 0.7),
@@ -710,7 +710,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 : () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('voice.hold_instruction'.tr()),
+                        content: Text(context.tr('voice.hold_instruction')),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -730,7 +730,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: AppTheme.spacing12),
                   Text(
-                    _isRecording ? 'Recording...' : 'voice.hold_to_record'.tr(),
+                    _isRecording ? context.tr('home.recording') : context.tr('voice.hold_to_record'),
                     style: Theme.of(
                       context,
                     ).textTheme.labelLarge?.copyWith(color: Colors.white),
@@ -780,18 +780,18 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const Icon(Icons.mic, color: AppTheme.info),
             const SizedBox(width: AppTheme.spacing12),
-            Text('voice.permission_title'.tr()),
+            Text(context.tr('voice.permission_title')),
           ],
         ),
-        content: Text('voice.permission_rationale'.tr()),
+        content: Text(context.tr('voice.permission_rationale')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('common.cancel'.tr()),
+            child: Text(context.tr('common.cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('common.allow'.tr()),
+            child: Text(context.tr('common.allow')),
           ),
         ],
       ),
@@ -807,14 +807,14 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const Icon(Icons.warning, color: AppTheme.warning),
             const SizedBox(width: AppTheme.spacing12),
-            Text('voice.permission_denied_title'.tr()),
+            Text(context.tr('voice.permission_denied_title')),
           ],
         ),
-        content: Text('voice.permission_denied_message'.tr()),
+        content: Text(context.tr('voice.permission_denied_message')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('common.ok'.tr()),
+            child: Text(context.tr('common.ok')),
           ),
         ],
       ),
