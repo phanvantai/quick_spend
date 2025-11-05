@@ -73,6 +73,8 @@
   },
   "voice": {
     "hold_to_record": "Hold to Record",
+    "tap_to_enable": "Tap to Enable Voice",
+    "voice_disabled": "Voice Disabled - Tap for Help",
     "hold_instruction": "Hold the button to record your expense",
     "recording": "Recording...",
     "release_to_send": "Release to send",
@@ -81,8 +83,11 @@
     "error": "Could not start voice recording. Please check microphone permissions.",
     "permission_title": "Microphone Permission",
     "permission_rationale": "Quick Spend needs access to your microphone to record voice expenses. This allows you to quickly add expenses by speaking.",
-    "permission_denied_title": "Permission Denied",
-    "permission_denied_message": "Microphone access is required to record voice expenses. Please enable it in your device settings."
+    "permission_granted": "Permission granted! Hold button to record",
+    "permission_denied_title": "Microphone Access Required",
+    "permission_denied_message": "Voice recording requires microphone access. Please grant permission in Settings to use this feature.",
+    "permission_settings_hint": "You can enable microphone access in your device Settings app",
+    "open_settings": "Open Settings"
   },
   "navigation": {
     "input": "Input",
