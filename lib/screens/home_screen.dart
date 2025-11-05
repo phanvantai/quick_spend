@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
 import '../services/voice_service.dart';
@@ -12,6 +13,13 @@ import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
+/// Permission states for voice recording
+enum VoicePermissionState {
+  notDetermined, // Not yet requested
+  granted,       // Permission granted
+  denied,        // Permission denied
+}
+
 /// Home Screen with modern UI and voice input
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,41 +28,133 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with TickerProviderStateMixin {
   final VoiceService _voiceService = VoiceService();
   bool _isRecording = false;
   double _soundLevel = 0.0;
   String _recognizedText = '';
+  VoicePermissionState _permissionState = VoicePermissionState.notDetermined;
+  late AnimationController _listeningTextController;
+  late AnimationController _swipeTextController;
+  late Animation<double> _listeningFadeAnimation;
+  late Animation<double> _swipeSlideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Check permission status on init
+    _checkPermissionStatus();
+
+    // Listening text fade animation
+    _listeningTextController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _listeningFadeAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _listeningTextController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Swipe text slide animation
+    _swipeTextController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+    _swipeSlideAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
+      CurvedAnimation(
+        parent: _swipeTextController,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
 
   @override
   void dispose() {
+    _listeningTextController.dispose();
+    _swipeTextController.dispose();
     _voiceService.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkPermissionStatus() async {
+    debugPrint('🔐 [HomeScreen] Checking permission status...');
+    final hasPermission = await _voiceService.hasPermission();
+
+    if (hasPermission) {
+      setState(() {
+        _permissionState = VoicePermissionState.granted;
+      });
+      debugPrint('✅ [HomeScreen] Permissions already granted');
+    } else {
+      // Check if either permission was previously denied
+      final micStatus = await Permission.microphone.status;
+      final speechStatus = await Permission.speech.status;
+
+      if (micStatus.isPermanentlyDenied ||
+          micStatus.isDenied ||
+          speechStatus.isPermanentlyDenied ||
+          speechStatus.isDenied) {
+        setState(() {
+          _permissionState = VoicePermissionState.denied;
+        });
+        debugPrint('❌ [HomeScreen] Permission denied');
+        debugPrint('   Microphone: ${micStatus.name}');
+        debugPrint('   Speech: ${speechStatus.name}');
+      } else {
+        setState(() {
+          _permissionState = VoicePermissionState.notDetermined;
+        });
+        debugPrint('❓ [HomeScreen] Permission not determined');
+      }
+    }
+  }
+
+  Future<void> _requestPermission() async {
+    debugPrint('🔐 [HomeScreen] Requesting permission...');
+
+    final shouldRequest = await _showPermissionRationale();
+    if (!shouldRequest || !mounted) {
+      debugPrint('❌ [HomeScreen] User declined permission rationale');
+      return;
+    }
+
+    final granted = await _voiceService.requestPermission();
+    debugPrint('🔐 [HomeScreen] Permission granted: $granted');
+
+    if (granted) {
+      setState(() {
+        _permissionState = VoicePermissionState.granted;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('voice.permission_granted')),
+            backgroundColor: AppTheme.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      setState(() {
+        _permissionState = VoicePermissionState.denied;
+      });
+      if (mounted) {
+        _showPermissionDeniedDialog();
+      }
+    }
   }
 
   Future<void> _startRecording() async {
     debugPrint('🎤 [HomeScreen] Starting recording...');
 
-    final hasPermission = await _voiceService.hasPermission();
-    debugPrint('🔐 [HomeScreen] Has microphone permission: $hasPermission');
-
-    if (!hasPermission) {
-      final shouldRequest = await _showPermissionRationale();
-      if (!shouldRequest || !mounted) {
-        debugPrint('❌ [HomeScreen] User declined permission rationale');
-        return;
-      }
-
-      final granted = await _voiceService.requestPermission();
-      debugPrint('🔐 [HomeScreen] Permission granted: $granted');
-
-      if (!granted) {
-        debugPrint('❌ [HomeScreen] Microphone permission denied');
-        if (mounted) {
-          _showPermissionDeniedDialog();
-        }
-        return;
-      }
+    // Permission should already be granted at this point
+    if (_permissionState != VoicePermissionState.granted) {
+      debugPrint('❌ [HomeScreen] Cannot record - permission not granted');
+      return;
     }
 
     if (!mounted) return;
@@ -65,6 +165,10 @@ class _HomeScreenState extends State<HomeScreen> {
       _isRecording = true;
       _recognizedText = '';
     });
+
+    // Start animations
+    _listeningTextController.repeat(reverse: true);
+    _swipeTextController.repeat(reverse: true);
 
     final success = await _voiceService.startListening(
       language: language,
@@ -81,6 +185,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (!success && mounted) {
+      // Stop animations if recording failed
+      _listeningTextController.stop();
+      _swipeTextController.stop();
+
       setState(() {
         _isRecording = false;
       });
@@ -96,6 +204,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _stopRecording() async {
     debugPrint('🛑 [HomeScreen] Stopping recording...');
     await _voiceService.stopListening();
+
+    // Stop animations
+    _listeningTextController.stop();
+    _swipeTextController.stop();
+
     setState(() {
       _isRecording = false;
     });
@@ -108,6 +221,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _cancelRecording() async {
     debugPrint('❌ [HomeScreen] Canceling recording...');
     await _voiceService.cancelListening();
+
+    // Stop animations
+    _listeningTextController.stop();
+    _swipeTextController.stop();
+
     setState(() {
       _isRecording = false;
       _recognizedText = '';
@@ -462,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 slivers: [
                   // App bar with gradient
                   SliverAppBar(
-                    expandedHeight: 160,
+                    expandedHeight: 120,
                     floating: false,
                     pinned: true,
                     backgroundColor: AppTheme.primaryMint,
@@ -478,15 +596,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.account_balance_wallet_outlined,
-                                  size: 48,
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                ),
-                                const SizedBox(height: AppTheme.spacing12),
                                 Text(
-                                  context.tr('home.welcome'),
-                                  style: textTheme.headlineSmall?.copyWith(
+                                  context.tr('home.hello'),
+                                  style: textTheme.headlineMedium?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -632,13 +744,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         ),
                         const SizedBox(height: AppTheme.spacing24),
-                        Text(
-                          context.tr('voice.listening'),
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
+                        AnimatedBuilder(
+                          animation: _listeningFadeAnimation,
+                          builder: (context, child) {
+                            return Opacity(
+                              opacity: _listeningFadeAnimation.value,
+                              child: Text(
+                                context.tr('voice.listening'),
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
+                            );
+                          },
                         ),
                         if (_recognizedText.isNotEmpty) ...[
                           const SizedBox(height: AppTheme.spacing16),
@@ -660,12 +780,34 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                         const SizedBox(height: AppTheme.spacing32),
-                        Text(
-                          context.tr('voice.slide_to_cancel'),
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.7),
+                        AnimatedBuilder(
+                          animation: _swipeSlideAnimation,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _swipeSlideAnimation.value),
+                              child: Opacity(
+                                opacity: 0.7 + (_listeningFadeAnimation.value * 0.3),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_upward,
+                                      color: Colors.white.withValues(alpha: 0.7),
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: AppTheme.spacing8),
+                                    Text(
+                                      context.tr('voice.slide_to_cancel'),
+                                      style: Theme.of(context).textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: Colors.white.withValues(alpha: 0.7),
+                                          ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -684,8 +826,62 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildVoiceFAB() {
+    // Determine button appearance based on permission state
+    final String buttonText;
+    final IconData buttonIcon;
+    final Gradient buttonGradient;
+    final VoidCallback? onTapAction;
+    final bool enableHold;
+
+    if (_isRecording) {
+      // Recording state
+      buttonText = context.tr('home.recording');
+      buttonIcon = Icons.mic;
+      buttonGradient = AppTheme.accentGradient;
+      onTapAction = null;
+      enableHold = true;
+    } else {
+      switch (_permissionState) {
+        case VoicePermissionState.granted:
+          // Permission granted - ready to record
+          buttonText = context.tr('voice.hold_to_record');
+          buttonIcon = Icons.mic_none;
+          buttonGradient = AppTheme.primaryGradient;
+          onTapAction = () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.tr('voice.hold_instruction')),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          };
+          enableHold = true;
+          break;
+
+        case VoicePermissionState.notDetermined:
+          // Permission not requested yet
+          buttonText = context.tr('voice.tap_to_enable');
+          buttonIcon = Icons.mic_off;
+          buttonGradient = AppTheme.primaryGradient;
+          onTapAction = _requestPermission;
+          enableHold = false;
+          break;
+
+        case VoicePermissionState.denied:
+          // Permission denied
+          buttonText = context.tr('voice.voice_disabled');
+          buttonIcon = Icons.mic_off;
+          buttonGradient = LinearGradient(
+            colors: [AppTheme.error, AppTheme.error.withValues(alpha: 0.8)],
+          );
+          onTapAction = _showPermissionDeniedDialog;
+          enableHold = false;
+          break;
+      }
+    }
+
     return GestureDetector(
-      onLongPressStart: _isRecording ? null : (_) => _startRecording(),
+      onLongPressStart: enableHold && !_isRecording ? (_) => _startRecording() : null,
       onLongPressEnd: _isRecording ? (_) => _stopRecording() : null,
       onVerticalDragUpdate: _isRecording
           ? (details) {
@@ -696,25 +892,14 @@ class _HomeScreenState extends State<HomeScreen> {
           : null,
       child: Container(
         decoration: BoxDecoration(
-          gradient: _isRecording
-              ? AppTheme.accentGradient
-              : AppTheme.primaryGradient,
+          gradient: buttonGradient,
           borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
           boxShadow: AppTheme.shadowLarge,
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: _isRecording
-                ? null
-                : () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(context.tr('voice.hold_instruction')),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
+            onTap: onTapAction,
             borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -725,15 +910,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _isRecording ? Icons.mic : Icons.mic_none,
+                    buttonIcon,
                     color: Colors.white,
                   ),
                   const SizedBox(width: AppTheme.spacing12),
                   Text(
-                    _isRecording ? context.tr('home.recording') : context.tr('voice.hold_to_record'),
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelLarge?.copyWith(color: Colors.white),
+                    buttonText,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
+                        ),
                   ),
                 ],
               ),
@@ -807,14 +992,59 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const Icon(Icons.warning, color: AppTheme.warning),
             const SizedBox(width: AppTheme.spacing12),
-            Text(context.tr('voice.permission_denied_title')),
+            Expanded(
+              child: Text(context.tr('voice.permission_denied_title')),
+            ),
           ],
         ),
-        content: Text(context.tr('voice.permission_denied_message')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(context.tr('voice.permission_denied_message')),
+            const SizedBox(height: AppTheme.spacing16),
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing12),
+              decoration: BoxDecoration(
+                color: AppTheme.info.withValues(alpha: 0.1),
+                borderRadius: AppTheme.borderRadiusSmall,
+                border: Border.all(
+                  color: AppTheme.info.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: AppTheme.info, size: 20),
+                  const SizedBox(width: AppTheme.spacing8),
+                  Expanded(
+                    child: Text(
+                      context.tr('voice.permission_settings_hint'),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.info,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(context.tr('common.ok')),
+            child: Text(context.tr('common.cancel')),
+          ),
+          FilledButton.icon(
+            onPressed: () async {
+              Navigator.pop(context);
+              await openAppSettings();
+              // Recheck permission after returning from settings
+              if (mounted) {
+                await _checkPermissionStatus();
+              }
+            },
+            icon: const Icon(Icons.settings),
+            label: Text(context.tr('voice.open_settings')),
           ),
         ],
       ),
