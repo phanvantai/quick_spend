@@ -20,6 +20,7 @@
   },
   "home": {
     "title": "Quick Spend",
+    "hello": "Xin chào",
     "welcome": "Chào mừng đến Quick Spend!",
     "language_label": "Ngôn ngữ: Tiếng Việt",
     "currency_label": "Tiền tệ: {currency}",
@@ -73,16 +74,21 @@
   },
   "voice": {
     "hold_to_record": "Giữ để ghi âm",
+    "tap_to_enable": "Chạm để bật giọng nói",
+    "voice_disabled": "Giọng nói bị tắt - Chạm để được trợ giúp",
     "hold_instruction": "Giữ nút để ghi âm chi tiêu",
     "recording": "Đang ghi âm...",
     "release_to_send": "Thả ra để gửi",
     "slide_to_cancel": "Vuốt lên để hủy",
     "listening": "Đang nghe...",
-    "error": "Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền microphone.",
-    "permission_title": "Quyền Microphone",
-    "permission_rationale": "Quick Spend cần truy cập microphone để ghi âm chi tiêu. Điều này cho phép bạn nhanh chóng thêm chi tiêu bằng giọng nói.",
-    "permission_denied_title": "Từ Chối Quyền",
-    "permission_denied_message": "Cần quyền truy cập microphone để ghi âm chi tiêu. Vui lòng bật trong cài đặt thiết bị."
+    "error": "Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.",
+    "permission_title": "Quyền Ghi Âm Giọng Nói",
+    "permission_rationale": "Quick Spend cần quyền truy cập microphone và nhận dạng giọng nói để ghi âm chi tiêu. Điều này cho phép bạn nhanh chóng thêm chi tiêu bằng giọng nói.",
+    "permission_granted": "Đã cấp quyền! Giữ nút để ghi âm",
+    "permission_denied_title": "Cần Quyền Ghi Âm Giọng Nói",
+    "permission_denied_message": "Ghi âm yêu cầu quyền microphone và nhận dạng giọng nói. Vui lòng cấp cả hai quyền trong Cài đặt để sử dụng tính năng này.",
+    "permission_settings_hint": "Bật quyền Microphone và Nhận dạng Giọng nói trong ứng dụng Cài đặt",
+    "open_settings": "Mở Cài Đặt"
   },
   "navigation": {
     "input": "Nhập",
