@@ -126,7 +126,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: _previousPage,
-                            child: Text('onboarding.back'.tr()),
+                            child: Text(context.tr('onboarding.back')),
                           ),
                         ),
                       if (_currentPage > 0)
@@ -134,8 +134,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Expanded(
                         child: GradientButton(
                           text: _currentPage == 2
-                              ? 'onboarding.get_started'.tr()
-                              : 'onboarding.next'.tr(),
+                              ? context.tr('onboarding.get_started')
+                              : context.tr('onboarding.next'),
                           icon: _currentPage == 2
                               ? Icons.check
                               : Icons.arrow_forward,
@@ -177,7 +177,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: AppTheme.spacing32),
           Text(
-            'app.name'.tr(),
+            context.tr('app.name'),
             style: Theme.of(
               context,
             ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
@@ -185,7 +185,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: AppTheme.spacing16),
           Text(
-            'app.tagline'.tr(),
+            context.tr('app.tagline'),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -194,22 +194,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: AppTheme.spacing48),
           _buildFeatureItem(
             Icons.speed,
-            'onboarding.feature_quick_entry'.tr(),
-            'onboarding.feature_quick_entry_desc'.tr(),
+            context.tr('onboarding.feature_quick_entry'),
+            context.tr('onboarding.feature_quick_entry_desc'),
             AppTheme.accentOrange,
           ),
           const SizedBox(height: AppTheme.spacing16),
           _buildFeatureItem(
             Icons.language,
-            'onboarding.feature_bilingual'.tr(),
-            'onboarding.feature_bilingual_desc'.tr(),
+            context.tr('onboarding.feature_bilingual'),
+            context.tr('onboarding.feature_bilingual_desc'),
             AppTheme.accentTeal,
           ),
           const SizedBox(height: AppTheme.spacing16),
           _buildFeatureItem(
             Icons.auto_awesome,
-            'onboarding.feature_smart_categories'.tr(),
-            'onboarding.feature_smart_categories_desc'.tr(),
+            context.tr('onboarding.feature_smart_categories'),
+            context.tr('onboarding.feature_smart_categories_desc'),
             AppTheme.accentPink,
           ),
         ],
@@ -278,7 +278,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: AppTheme.spacing24),
           Text(
-            'onboarding.choose_language'.tr(),
+            context.tr('onboarding.choose_language'),
             style: AppTheme.lightTextTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -286,7 +286,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: AppTheme.spacing8),
           Text(
-            'onboarding.select_language_subtitle'.tr(),
+            context.tr('onboarding.select_language_subtitle'),
             style: AppTheme.lightTextTheme.bodyLarge?.copyWith(
               color: AppTheme.neutral600,
             ),
@@ -338,7 +338,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: AppTheme.spacing24),
           Text(
-            'onboarding.choose_currency'.tr(),
+            context.tr('onboarding.choose_currency'),
             style: AppTheme.lightTextTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -346,7 +346,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: AppTheme.spacing8),
           Text(
-            'onboarding.select_currency_subtitle'.tr(),
+            context.tr('onboarding.select_currency_subtitle'),
             style: AppTheme.lightTextTheme.bodyLarge?.copyWith(
               color: AppTheme.neutral600,
             ),
