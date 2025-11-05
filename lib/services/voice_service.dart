@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -23,22 +24,26 @@ class VoiceService {
     }
 
     try {
-      // Request both microphone and speech permissions
+      // Request microphone permission (required on all platforms)
       debugPrint('🔐 [VoiceService] Requesting permissions...');
       final micStatus = await Permission.microphone.request();
-      final speechStatus = await Permission.speech.request();
 
       debugPrint('📋 [VoiceService] Microphone permission: ${micStatus.name}');
-      debugPrint('📋 [VoiceService] Speech permission: ${speechStatus.name}');
 
       if (!micStatus.isGranted) {
         debugPrint('❌ [VoiceService] Microphone permission denied');
         return false;
       }
 
-      if (!speechStatus.isGranted) {
-        debugPrint('❌ [VoiceService] Speech recognition permission denied');
-        return false;
+      // Request speech permission only on iOS (doesn't exist on Android)
+      if (Platform.isIOS) {
+        final speechStatus = await Permission.speech.request();
+        debugPrint('📋 [VoiceService] Speech permission: ${speechStatus.name}');
+
+        if (!speechStatus.isGranted) {
+          debugPrint('❌ [VoiceService] Speech recognition permission denied');
+          return false;
+        }
       }
 
       // Initialize speech to text
@@ -60,26 +65,50 @@ class VoiceService {
     }
   }
 
-  /// Check if both microphone and speech permissions are granted
+  /// Check if required permissions are granted
+  /// On Android: only microphone permission needed
+  /// On iOS: both microphone and speech permissions needed
   Future<bool> hasPermission() async {
     final micStatus = await Permission.microphone.status;
+
+    // On Android, only microphone permission is needed
+    if (Platform.isAndroid) {
+      return micStatus.isGranted;
+    }
+
+    // On iOS, both microphone and speech permissions are needed
     final speechStatus = await Permission.speech.status;
     return micStatus.isGranted && speechStatus.isGranted;
   }
 
-  /// Request both microphone and speech permissions
+  /// Request required permissions
+  /// On Android: only microphone permission needed
+  /// On iOS: both microphone and speech permissions needed
   Future<bool> requestPermission() async {
     final micStatus = await Permission.microphone.request();
+
+    // On Android, only microphone permission is needed
+    if (Platform.isAndroid) {
+      return micStatus.isGranted;
+    }
+
+    // On iOS, both microphone and speech permissions are needed
     final speechStatus = await Permission.speech.request();
     return micStatus.isGranted && speechStatus.isGranted;
   }
 
   /// Get detailed permission status
   Future<Map<String, PermissionStatus>> getPermissionStatus() async {
-    return {
+    final status = {
       'microphone': await Permission.microphone.status,
-      'speech': await Permission.speech.status,
     };
+
+    // Only add speech permission on iOS
+    if (Platform.isIOS) {
+      status['speech'] = await Permission.speech.status;
+    }
+
+    return status;
   }
 
   /// Start listening for speech

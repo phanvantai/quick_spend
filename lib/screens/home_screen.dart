@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -90,20 +91,26 @@ class _HomeScreenState extends State<HomeScreen>
       });
       debugPrint('✅ [HomeScreen] Permissions already granted');
     } else {
-      // Check if either permission was previously denied
+      // Check if permissions were previously denied
       final micStatus = await Permission.microphone.status;
-      final speechStatus = await Permission.speech.status;
+      debugPrint('   Microphone: ${micStatus.name}');
 
-      if (micStatus.isPermanentlyDenied ||
-          micStatus.isDenied ||
-          speechStatus.isPermanentlyDenied ||
-          speechStatus.isDenied) {
+      bool isDenied = micStatus.isPermanentlyDenied || micStatus.isDenied;
+
+      // On iOS, also check speech permission
+      if (Platform.isIOS) {
+        final speechStatus = await Permission.speech.status;
+        debugPrint('   Speech: ${speechStatus.name}');
+        isDenied = isDenied ||
+            speechStatus.isPermanentlyDenied ||
+            speechStatus.isDenied;
+      }
+
+      if (isDenied) {
         setState(() {
           _permissionState = VoicePermissionState.denied;
         });
         debugPrint('❌ [HomeScreen] Permission denied');
-        debugPrint('   Microphone: ${micStatus.name}');
-        debugPrint('   Speech: ${speechStatus.name}');
       } else {
         setState(() {
           _permissionState = VoicePermissionState.notDetermined;
