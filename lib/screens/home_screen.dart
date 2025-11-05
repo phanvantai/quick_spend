@@ -20,14 +20,50 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with TickerProviderStateMixin {
   final VoiceService _voiceService = VoiceService();
   bool _isRecording = false;
   double _soundLevel = 0.0;
   String _recognizedText = '';
+  late AnimationController _listeningTextController;
+  late AnimationController _swipeTextController;
+  late Animation<double> _listeningFadeAnimation;
+  late Animation<double> _swipeSlideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Listening text fade animation
+    _listeningTextController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _listeningFadeAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _listeningTextController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Swipe text slide animation
+    _swipeTextController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+    _swipeSlideAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
+      CurvedAnimation(
+        parent: _swipeTextController,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
 
   @override
   void dispose() {
+    _listeningTextController.dispose();
+    _swipeTextController.dispose();
     _voiceService.dispose();
     super.dispose();
   }
@@ -66,6 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
       _recognizedText = '';
     });
 
+    // Start animations
+    _listeningTextController.repeat(reverse: true);
+    _swipeTextController.repeat(reverse: true);
+
     final success = await _voiceService.startListening(
       language: language,
       onResult: (text) {
@@ -81,6 +121,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (!success && mounted) {
+      // Stop animations if recording failed
+      _listeningTextController.stop();
+      _swipeTextController.stop();
+
       setState(() {
         _isRecording = false;
       });
@@ -96,6 +140,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _stopRecording() async {
     debugPrint('🛑 [HomeScreen] Stopping recording...');
     await _voiceService.stopListening();
+
+    // Stop animations
+    _listeningTextController.stop();
+    _swipeTextController.stop();
+
     setState(() {
       _isRecording = false;
     });
@@ -108,6 +157,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _cancelRecording() async {
     debugPrint('❌ [HomeScreen] Canceling recording...');
     await _voiceService.cancelListening();
+
+    // Stop animations
+    _listeningTextController.stop();
+    _swipeTextController.stop();
+
     setState(() {
       _isRecording = false;
       _recognizedText = '';
@@ -632,13 +686,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         ),
                         const SizedBox(height: AppTheme.spacing24),
-                        Text(
-                          context.tr('voice.listening'),
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
+                        AnimatedBuilder(
+                          animation: _listeningFadeAnimation,
+                          builder: (context, child) {
+                            return Opacity(
+                              opacity: _listeningFadeAnimation.value,
+                              child: Text(
+                                context.tr('voice.listening'),
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
+                            );
+                          },
                         ),
                         if (_recognizedText.isNotEmpty) ...[
                           const SizedBox(height: AppTheme.spacing16),
@@ -660,12 +722,34 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                         const SizedBox(height: AppTheme.spacing32),
-                        Text(
-                          context.tr('voice.slide_to_cancel'),
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.7),
+                        AnimatedBuilder(
+                          animation: _swipeSlideAnimation,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _swipeSlideAnimation.value),
+                              child: Opacity(
+                                opacity: 0.7 + (_listeningFadeAnimation.value * 0.3),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_upward,
+                                      color: Colors.white.withValues(alpha: 0.7),
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: AppTheme.spacing8),
+                                    Text(
+                                      context.tr('voice.slide_to_cancel'),
+                                      style: Theme.of(context).textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: Colors.white.withValues(alpha: 0.7),
+                                          ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            );
+                          },
                         ),
                       ],
                     ),
