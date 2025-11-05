@@ -34,9 +34,9 @@ void main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('en'), Locale('vi')],
+      supportedLocales: const [Locale('en', 'US'), Locale('vi', 'VN')],
       path: 'assets/translations',
-      fallbackLocale: const Locale('en'),
+      fallbackLocale: const Locale('en', 'US'),
       child: MyApp(
         preferencesService: preferencesService,
         expenseService: expenseService,
@@ -69,6 +69,9 @@ class MyApp extends StatelessWidget {
           // Show loading screen while config is being loaded
           if (configProvider.isLoading) {
             return MaterialApp(
+              localizationsDelegates: context.localizationDelegates,
+              supportedLocales: context.supportedLocales,
+              locale: context.locale,
               debugShowCheckedModeBanner: false,
               theme: AppTheme.lightTheme,
               home: Scaffold(
@@ -77,12 +80,6 @@ class MyApp extends StatelessWidget {
                 ),
               ),
             );
-          }
-
-          // Set locale based on user preference
-          final locale = Locale(configProvider.language);
-          if (context.locale != locale) {
-            context.setLocale(locale);
           }
 
           // Convert theme mode string to ThemeMode enum
@@ -102,7 +99,6 @@ class MyApp extends StatelessWidget {
 
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            title: 'Quick Spend',
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,
             locale: context.locale,

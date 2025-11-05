@@ -296,12 +296,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ...LanguageOption.options.map((option) {
             return _OptionCard(
               isSelected: _selectedLanguage == option.code,
-              onTap: () {
+              onTap: () async {
                 setState(() {
                   _selectedLanguage = option.code;
                 });
                 // Update locale immediately for preview
-                context.setLocale(Locale(option.code));
+                await context.setLocale(
+                  Locale(option.code, option.countryCode),
+                );
               },
               leading: Text(option.flag, style: const TextStyle(fontSize: 32)),
               title: option.displayName,
