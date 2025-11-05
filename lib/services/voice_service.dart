@@ -23,13 +23,21 @@ class VoiceService {
     }
 
     try {
-      // Request microphone permission
-      debugPrint('🔐 [VoiceService] Requesting microphone permission...');
-      final status = await Permission.microphone.request();
-      debugPrint('📋 [VoiceService] Permission status: ${status.name}');
+      // Request both microphone and speech permissions
+      debugPrint('🔐 [VoiceService] Requesting permissions...');
+      final micStatus = await Permission.microphone.request();
+      final speechStatus = await Permission.speech.request();
 
-      if (!status.isGranted) {
+      debugPrint('📋 [VoiceService] Microphone permission: ${micStatus.name}');
+      debugPrint('📋 [VoiceService] Speech permission: ${speechStatus.name}');
+
+      if (!micStatus.isGranted) {
         debugPrint('❌ [VoiceService] Microphone permission denied');
+        return false;
+      }
+
+      if (!speechStatus.isGranted) {
+        debugPrint('❌ [VoiceService] Speech recognition permission denied');
         return false;
       }
 
@@ -52,16 +60,26 @@ class VoiceService {
     }
   }
 
-  /// Check if microphone permission is granted
+  /// Check if both microphone and speech permissions are granted
   Future<bool> hasPermission() async {
-    final status = await Permission.microphone.status;
-    return status.isGranted;
+    final micStatus = await Permission.microphone.status;
+    final speechStatus = await Permission.speech.status;
+    return micStatus.isGranted && speechStatus.isGranted;
   }
 
-  /// Request microphone permission
+  /// Request both microphone and speech permissions
   Future<bool> requestPermission() async {
-    final status = await Permission.microphone.request();
-    return status.isGranted;
+    final micStatus = await Permission.microphone.request();
+    final speechStatus = await Permission.speech.request();
+    return micStatus.isGranted && speechStatus.isGranted;
+  }
+
+  /// Get detailed permission status
+  Future<Map<String, PermissionStatus>> getPermissionStatus() async {
+    return {
+      'microphone': await Permission.microphone.status,
+      'speech': await Permission.speech.status,
+    };
   }
 
   /// Start listening for speech

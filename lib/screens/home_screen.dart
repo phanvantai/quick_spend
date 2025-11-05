@@ -88,15 +88,22 @@ class _HomeScreenState extends State<HomeScreen>
       setState(() {
         _permissionState = VoicePermissionState.granted;
       });
-      debugPrint('✅ [HomeScreen] Permission already granted');
+      debugPrint('✅ [HomeScreen] Permissions already granted');
     } else {
-      // Check if permission was previously denied
-      final status = await Permission.microphone.status;
-      if (status.isPermanentlyDenied || status.isDenied) {
+      // Check if either permission was previously denied
+      final micStatus = await Permission.microphone.status;
+      final speechStatus = await Permission.speech.status;
+
+      if (micStatus.isPermanentlyDenied ||
+          micStatus.isDenied ||
+          speechStatus.isPermanentlyDenied ||
+          speechStatus.isDenied) {
         setState(() {
           _permissionState = VoicePermissionState.denied;
         });
         debugPrint('❌ [HomeScreen] Permission denied');
+        debugPrint('   Microphone: ${micStatus.name}');
+        debugPrint('   Speech: ${speechStatus.name}');
       } else {
         setState(() {
           _permissionState = VoicePermissionState.notDetermined;
