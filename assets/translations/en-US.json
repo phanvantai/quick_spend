@@ -6,7 +6,17 @@
   "onboarding": {
     "choose_language": "Choose your language",
     "choose_currency": "Choose your currency",
-    "get_started": "Get Started"
+    "get_started": "Get Started",
+    "next": "Next",
+    "back": "Back",
+    "select_language_subtitle": "Select your preferred language",
+    "select_currency_subtitle": "Select your primary currency",
+    "feature_quick_entry": "Quick Entry",
+    "feature_quick_entry_desc": "Log expenses in seconds with voice or text",
+    "feature_bilingual": "Bilingual",
+    "feature_bilingual_desc": "Full support for English & Vietnamese",
+    "feature_smart_categories": "Smart Categories",
+    "feature_smart_categories_desc": "Automatic categorization powered by AI"
   },
   "home": {
     "title": "Quick Spend",

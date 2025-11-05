@@ -126,7 +126,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: _previousPage,
-                            child: const Text('Back'),
+                            child: Text('onboarding.back'.tr()),
                           ),
                         ),
                       if (_currentPage > 0)
@@ -135,7 +135,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: GradientButton(
                           text: _currentPage == 2
                               ? 'onboarding.get_started'.tr()
-                              : 'Next',
+                              : 'onboarding.next'.tr(),
                           icon: _currentPage == 2
                               ? Icons.check
                               : Icons.arrow_forward,
@@ -194,22 +194,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: AppTheme.spacing48),
           _buildFeatureItem(
             Icons.speed,
-            'Quick Entry',
-            'Log expenses in seconds with voice or text',
+            'onboarding.feature_quick_entry'.tr(),
+            'onboarding.feature_quick_entry_desc'.tr(),
             AppTheme.accentOrange,
           ),
           const SizedBox(height: AppTheme.spacing16),
           _buildFeatureItem(
             Icons.language,
-            'Bilingual',
-            'Full support for English & Vietnamese',
+            'onboarding.feature_bilingual'.tr(),
+            'onboarding.feature_bilingual_desc'.tr(),
             AppTheme.accentTeal,
           ),
           const SizedBox(height: AppTheme.spacing16),
           _buildFeatureItem(
             Icons.auto_awesome,
-            'Smart Categories',
-            'Automatic categorization powered by AI',
+            'onboarding.feature_smart_categories'.tr(),
+            'onboarding.feature_smart_categories_desc'.tr(),
             AppTheme.accentPink,
           ),
         ],
@@ -286,7 +286,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: AppTheme.spacing8),
           Text(
-            'Select your preferred language',
+            'onboarding.select_language_subtitle'.tr(),
             style: AppTheme.lightTextTheme.bodyLarge?.copyWith(
               color: AppTheme.neutral600,
             ),
@@ -346,7 +346,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: AppTheme.spacing8),
           Text(
-            'Select your primary currency',
+            'onboarding.select_currency_subtitle'.tr(),
             style: AppTheme.lightTextTheme.bodyLarge?.copyWith(
               color: AppTheme.neutral600,
             ),

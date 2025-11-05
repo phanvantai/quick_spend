@@ -6,7 +6,17 @@
   "onboarding": {
     "choose_language": "Chọn ngôn ngữ",
     "choose_currency": "Chọn đơn vị tiền tệ",
-    "get_started": "Bắt Đầu"
+    "get_started": "Bắt Đầu",
+    "next": "Tiếp Theo",
+    "back": "Quay Lại",
+    "select_language_subtitle": "Chọn ngôn ngữ ưa thích của bạn",
+    "select_currency_subtitle": "Chọn đơn vị tiền tệ chính của bạn",
+    "feature_quick_entry": "Nhập Nhanh",
+    "feature_quick_entry_desc": "Ghi lại chi tiêu trong vài giây bằng giọng nói hoặc văn bản",
+    "feature_bilingual": "Song Ngữ",
+    "feature_bilingual_desc": "Hỗ trợ đầy đủ tiếng Anh & tiếng Việt",
+    "feature_smart_categories": "Phân Loại Thông Minh",
+    "feature_smart_categories_desc": "Tự động phân loại được hỗ trợ bởi AI"
   },
   "home": {
     "title": "Quick Spend",
