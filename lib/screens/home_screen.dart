@@ -580,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen>
                 slivers: [
                   // App bar with gradient
                   SliverAppBar(
-                    expandedHeight: 160,
+                    expandedHeight: 120,
                     floating: false,
                     pinned: true,
                     backgroundColor: AppTheme.primaryMint,
@@ -596,15 +596,9 @@ class _HomeScreenState extends State<HomeScreen>
                               mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.account_balance_wallet_outlined,
-                                  size: 48,
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                ),
-                                const SizedBox(height: AppTheme.spacing12),
                                 Text(
-                                  context.tr('home.welcome'),
-                                  style: textTheme.headlineSmall?.copyWith(
+                                  context.tr('home.hello'),
+                                  style: textTheme.headlineMedium?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
                                   ),

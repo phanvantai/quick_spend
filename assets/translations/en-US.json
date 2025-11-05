@@ -20,6 +20,7 @@
   },
   "home": {
     "title": "Quick Spend",
+    "hello": "Hello",
     "welcome": "Welcome to Quick Spend!",
     "language_label": "Language: English",
     "currency_label": "Currency: {currency}",

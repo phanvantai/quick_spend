@@ -20,6 +20,7 @@
   },
   "home": {
     "title": "Quick Spend",
+    "hello": "Xin chào",
     "welcome": "Chào mừng đến Quick Spend!",
     "language_label": "Ngôn ngữ: Tiếng Việt",
     "currency_label": "Tiền tệ: {currency}",
