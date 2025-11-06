@@ -244,23 +244,26 @@ class _HomeScreenState extends State<HomeScreen> {
             itemCount: expenses.length,
             itemBuilder: (context, index) {
               final expense = expenses[index];
-              return Slidable(
-                key: ValueKey(expense.id),
-                endActionPane: ActionPane(
-                  motion: const ScrollMotion(),
-                  children: [
-                    SlidableAction(
-                      onPressed: (_) => _deleteExpense(expense.id),
-                      backgroundColor: AppTheme.error,
-                      foregroundColor: Colors.white,
-                      icon: Icons.delete,
-                      label: context.tr('common.delete'),
-                    ),
-                  ],
-                ),
-                child: ExpenseCard(
-                  expense: expense,
-                  onTap: () => _showExpenseDetailsDialog(expense),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
+                child: Slidable(
+                  key: ValueKey(expense.id),
+                  endActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    children: [
+                      SlidableAction(
+                        onPressed: (_) => _deleteExpense(expense.id),
+                        backgroundColor: AppTheme.error,
+                        foregroundColor: Colors.white,
+                        icon: Icons.delete,
+                        label: context.tr('common.delete'),
+                      ),
+                    ],
+                  ),
+                  child: ExpenseCard(
+                    expense: expense,
+                    onTap: () => _showExpenseDetailsDialog(expense),
+                  ),
                 ),
               );
             },

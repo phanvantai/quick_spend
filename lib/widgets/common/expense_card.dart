@@ -24,7 +24,7 @@ class ExpenseCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: AppTheme.spacing12),
+      margin: EdgeInsets.zero,
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
