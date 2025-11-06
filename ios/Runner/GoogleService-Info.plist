@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.quickSpend</string>
+	<string>com.randomtech.quickSpend</string>
 	<key>PROJECT_ID</key>
 	<string>gen-lang-client-0627362600</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:592034003051:ios:435118a25650fd1302592e</string>
+	<string>1:592034003051:ios:04a13e5dcbe6e1f202592e</string>
 </dict>
 </plist>

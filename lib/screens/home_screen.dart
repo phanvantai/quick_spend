@@ -245,9 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
             tooltip: context.tr('navigation.settings'),
@@ -269,17 +267,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.receipt_long_outlined,
                 title: context.tr('home.no_expenses_title'),
                 message: context.tr('home.no_expenses_message'),
-                actionLabel: context.tr('home.add_expense'),
-                onAction: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        context.tr('voice.hold_instruction'),
-                      ),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
+                // actionLabel: context.tr('home.add_expense'),
+                // onAction: () {
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     SnackBar(
+                //       content: Text(
+                //         context.tr('voice.hold_instruction'),
+                //       ),
+                //       duration: const Duration(seconds: 2),
+                //     ),
+                //   );
+                // },
               ),
             );
           }

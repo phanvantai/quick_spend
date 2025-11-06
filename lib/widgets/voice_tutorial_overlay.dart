@@ -49,17 +49,18 @@ class _VoiceTutorialOverlayState extends State<VoiceTutorialOverlay>
     );
 
     // Animate hand pressing down and up repeatedly
-    _pressAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 30),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 20),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 30),
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.0), weight: 20),
-    ]).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
-      ),
-    );
+    _pressAnimation =
+        TweenSequence<double>([
+          TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 30),
+          TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 20),
+          TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 30),
+          TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.0), weight: 20),
+        ]).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
+          ),
+        );
 
     _animationController.forward();
     // Repeat the press animation
@@ -84,30 +85,11 @@ class _VoiceTutorialOverlayState extends State<VoiceTutorialOverlay>
         animation: _fadeAnimation,
         builder: (context, child) {
           return Container(
-            color: Colors.black.withValues(alpha: 0.85 * _fadeAnimation.value),
+            color: Colors.transparent.withValues(
+              alpha: 0.85 * _fadeAnimation.value,
+            ),
             child: Stack(
               children: [
-                // Spotlight on FAB
-                Positioned(
-                  left: widget.fabPosition.dx - 60,
-                  bottom: widget.fabPosition.dy - 60,
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black
-                              .withValues(alpha: 0.7 * _fadeAnimation.value),
-                          blurRadius: 50,
-                          spreadRadius: 50,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
                 // Instructions at the top
                 Positioned(
                   top: MediaQuery.of(context).size.height * 0.2,
@@ -127,9 +109,7 @@ class _VoiceTutorialOverlayState extends State<VoiceTutorialOverlay>
                           const SizedBox(height: AppTheme.spacing16),
                           Text(
                             context.tr('voice.tutorial_title'),
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
+                            style: Theme.of(context).textTheme.headlineSmall
                                 ?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,
@@ -143,9 +123,7 @@ class _VoiceTutorialOverlayState extends State<VoiceTutorialOverlay>
                             ),
                             child: Text(
                               context.tr('voice.tutorial_description'),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
+                              style: Theme.of(context).textTheme.bodyLarge
                                   ?.copyWith(
                                     color: Colors.white.withValues(alpha: 0.9),
                                   ),
@@ -160,25 +138,43 @@ class _VoiceTutorialOverlayState extends State<VoiceTutorialOverlay>
 
                 // Animated hand gesture - positioned relative to FAB
                 Positioned(
-                  left: widget.fabPosition.dx + 20,
-                  top: widget.fabPosition.dy - 60,
-                  child: AnimatedBuilder(
-                    animation: _pressAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, 10 * _pressAnimation.value),
-                        child: Opacity(
-                          opacity: 0.3 +
-                              (0.7 * _fadeAnimation.value) *
-                                  (1 - _pressAnimation.value * 0.3),
-                          child: Icon(
-                            Icons.touch_app,
-                            size: 40,
-                            color: AppTheme.accentOrange,
+                  left: widget.fabPosition.dx - 50,
+                  top: widget.fabPosition.dy - 50,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withValues(
+                            alpha: 0.25 * _fadeAnimation.value,
                           ),
+                          blurRadius: 50,
+                          spreadRadius: 50,
                         ),
-                      );
-                    },
+                      ],
+                    ),
+                    alignment: Alignment.bottomCenter,
+                    child: AnimatedBuilder(
+                      animation: _pressAnimation,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 10 * _pressAnimation.value),
+                          child: Opacity(
+                            opacity:
+                                0.3 +
+                                (0.7 * _fadeAnimation.value) *
+                                    (1 - _pressAnimation.value * 0.3),
+                            child: Icon(
+                              Icons.touch_app,
+                              size: 40,
+                              color: AppTheme.accentOrange,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
 
@@ -186,7 +182,7 @@ class _VoiceTutorialOverlayState extends State<VoiceTutorialOverlay>
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: MediaQuery.of(context).size.height * 0.15,
+                  bottom: MediaQuery.of(context).size.height * 0.3,
                   child: Opacity(
                     opacity: _fadeAnimation.value,
                     child: Center(
@@ -208,9 +204,7 @@ class _VoiceTutorialOverlayState extends State<VoiceTutorialOverlay>
                               ),
                               child: Text(
                                 context.tr('voice.tutorial_got_it'),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
+                                style: Theme.of(context).textTheme.labelLarge
                                     ?.copyWith(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
@@ -228,14 +222,14 @@ class _VoiceTutorialOverlayState extends State<VoiceTutorialOverlay>
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: MediaQuery.of(context).size.height * 0.08,
+                  bottom: MediaQuery.of(context).size.height * 0.25,
                   child: Opacity(
                     opacity: 0.6 * _fadeAnimation.value,
                     child: Text(
                       context.tr('voice.tutorial_tap_anywhere'),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
                   ),

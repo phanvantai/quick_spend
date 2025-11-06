@@ -55,7 +55,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyD85sNNnkOwATsY0YHLXh4dxZ1PvvyzDfg',
-    appId: '1:592034003051:android:53cb40e3f2baab9602592e',
+    appId: '1:592034003051:android:1ead9c36afec829f02592e',
     messagingSenderId: '592034003051',
     projectId: 'gen-lang-client-0627362600',
     storageBucket: 'gen-lang-client-0627362600.firebasestorage.app',
@@ -63,11 +63,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCFjpseIIaQgIbB0J2tl6MmKIAcCQGq_bQ',
-    appId: '1:592034003051:ios:435118a25650fd1302592e',
+    appId: '1:592034003051:ios:04a13e5dcbe6e1f202592e',
     messagingSenderId: '592034003051',
     projectId: 'gen-lang-client-0627362600',
     storageBucket: 'gen-lang-client-0627362600.firebasestorage.app',
-    iosBundleId: 'com.example.quickSpend',
+    iosBundleId: 'com.randomtech.quickSpend',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -78,4 +78,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'gen-lang-client-0627362600.firebasestorage.app',
     iosBundleId: 'com.example.quickSpend',
   );
+
 }

@@ -1,4 +1,4 @@
-package com.example.quick_spend
+package com.randomtech.quick_spend
 
 import io.flutter.embedding.android.FlutterActivity
 
