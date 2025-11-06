@@ -849,10 +849,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       onLongPressStart: enableHold && !_isRecording
           ? (_) => _startRecording()
           : null,
-      onLongPressEnd: _isRecording ? (_) => _stopRecording() : null,
-      onVerticalDragUpdate: _isRecording
+      onLongPressEnd: enableHold
+          ? (_) {
+              if (_isRecording) {
+                _stopRecording();
+              }
+            }
+          : null,
+      onVerticalDragUpdate: enableHold
           ? (details) {
-              if (details.primaryDelta! < -10) {
+              if (_isRecording && details.primaryDelta! < -10) {
                 _cancelRecording();
               }
             }
