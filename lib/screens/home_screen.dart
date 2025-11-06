@@ -7,6 +7,7 @@ import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
+import '../widgets/edit_expense_dialog.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'settings_screen.dart';
 
@@ -59,6 +60,42 @@ class _HomeScreenState extends State<HomeScreen> {
             content: Text(
               context.tr(
                 'home.error_deleting_expense',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _editExpense(Expense expense) async {
+    final updatedExpense = await showDialog<Expense>(
+      context: context,
+      builder: (context) => EditExpenseDialog(expense: expense),
+    );
+
+    if (updatedExpense == null || !mounted) return;
+
+    try {
+      await context.read<ExpenseProvider>().updateExpense(updatedExpense);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('home.expense_updated')),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [HomeScreen] Error updating expense: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.tr(
+                'home.error_updating_expense',
                 namedArgs: {'error': e.toString()},
               ),
             ),
@@ -158,6 +195,14 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(context.tr('common.close')),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _editExpense(expense);
+            },
+            icon: const Icon(Icons.edit),
+            label: Text(context.tr('common.edit')),
           ),
         ],
       ),

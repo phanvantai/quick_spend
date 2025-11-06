@@ -52,7 +52,13 @@
     "description": "Mô Tả",
     "no_expenses_title": "Chưa có chi tiêu",
     "no_expenses_message": "Bắt đầu theo dõi chi tiêu của bạn bằng cách thêm chi tiêu đầu tiên bằng giọng nói hoặc văn bản.",
-    "recording": "Đang ghi âm..."
+    "recording": "Đang ghi âm...",
+    "edit_expense": "Sửa Chi Tiêu",
+    "expense_updated": "Đã cập nhật chi tiêu thành công",
+    "error_updating_expense": "Lỗi khi cập nhật chi tiêu: {error}",
+    "description_required": "Mô tả là bắt buộc",
+    "amount_required": "Số tiền là bắt buộc",
+    "amount_invalid": "Vui lòng nhập số tiền hợp lệ"
   },
   "settings": {
     "title": "Cài Đặt",
@@ -113,7 +119,8 @@
     "allow": "Cho Phép",
     "save": "Lưu",
     "close": "Đóng",
-    "delete": "Xóa"
+    "delete": "Xóa",
+    "edit": "Sửa"
   },
   "categories": {
     "food": "Ăn Uống",

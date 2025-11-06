@@ -52,7 +52,13 @@
     "description": "Description",
     "no_expenses_title": "No expenses yet",
     "no_expenses_message": "Start tracking your spending by adding your first expense using voice or text input.",
-    "recording": "Recording..."
+    "recording": "Recording...",
+    "edit_expense": "Edit Expense",
+    "expense_updated": "Expense updated successfully",
+    "error_updating_expense": "Error updating expense: {error}",
+    "description_required": "Description is required",
+    "amount_required": "Amount is required",
+    "amount_invalid": "Please enter a valid amount"
   },
   "settings": {
     "title": "Settings",
@@ -113,7 +119,8 @@
     "allow": "Allow",
     "save": "Save",
     "close": "Close",
-    "delete": "Delete"
+    "delete": "Delete",
+    "edit": "Edit"
   },
   "categories": {
     "food": "Food",
