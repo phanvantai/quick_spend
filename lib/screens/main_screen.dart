@@ -546,51 +546,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     });
   }
 
-  Widget _buildBottomNavItem({
-    required IconData icon,
-    required IconData selectedIcon,
-    required String label,
-    required int index,
-  }) {
-    final isSelected = _currentIndex == index;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Expanded(
-      child: InkWell(
-        onTap: () => _onTabTapped(index),
-        borderRadius: AppTheme.borderRadiusSmall,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isSelected ? selectedIcon : icon,
-                color: isSelected
-                    ? colorScheme.primary
-                    : colorScheme.onSurfaceVariant,
-                size: 24,
-              ),
-              const SizedBox(height: AppTheme.spacing4),
-              Text(
-                label,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Stack(
       children: [
         // Main Scaffold with content and bottom navigation
@@ -603,18 +562,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildBottomNavItem(
-                  icon: Icons.home_outlined,
-                  selectedIcon: Icons.home,
-                  label: context.tr('navigation.input'),
-                  index: 0,
+                IconButton(
+                  icon: Icon(_currentIndex == 0 ? Icons.home : Icons.home_outlined),
+                  color: _currentIndex == 0 ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                  onPressed: () => _onTabTapped(0),
+                  tooltip: context.tr('navigation.input'),
                 ),
-                const SizedBox(width: 80), // Space for the FAB
-                _buildBottomNavItem(
-                  icon: Icons.bar_chart_outlined,
-                  selectedIcon: Icons.bar_chart,
-                  label: context.tr('navigation.report'),
-                  index: 1,
+                const SizedBox(width: 48), // Space for the FAB
+                IconButton(
+                  icon: Icon(_currentIndex == 1 ? Icons.bar_chart : Icons.bar_chart_outlined),
+                  color: _currentIndex == 1 ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                  onPressed: () => _onTabTapped(1),
+                  tooltip: context.tr('navigation.report'),
                 ),
               ],
             ),
