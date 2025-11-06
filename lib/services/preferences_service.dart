@@ -5,6 +5,8 @@ import '../models/app_config.dart';
 /// Service for managing app preferences using SharedPreferences
 class PreferencesService {
   static const String _configKey = 'app_config';
+  static const String _voiceTutorialShownKey = 'voice_tutorial_shown';
+  static const String _voiceRecordingCountKey = 'voice_recording_count';
 
   SharedPreferences? _prefs;
 
@@ -68,6 +70,43 @@ class PreferencesService {
   Future<void> clearAll() async {
     await _ensureInitialized();
     await _prefs!.clear();
+  }
+
+  // ============================================
+  // Voice Tutorial Tracking
+  // ============================================
+
+  /// Check if voice tutorial has been shown
+  Future<bool> hasShownVoiceTutorial() async {
+    await _ensureInitialized();
+    return _prefs!.getBool(_voiceTutorialShownKey) ?? false;
+  }
+
+  /// Mark voice tutorial as shown
+  Future<void> markVoiceTutorialShown() async {
+    await _ensureInitialized();
+    await _prefs!.setBool(_voiceTutorialShownKey, true);
+  }
+
+  /// Get the number of times user has recorded voice input
+  Future<int> getVoiceRecordingCount() async {
+    await _ensureInitialized();
+    return _prefs!.getInt(_voiceRecordingCountKey) ?? 0;
+  }
+
+  /// Increment voice recording count
+  Future<void> incrementVoiceRecordingCount() async {
+    await _ensureInitialized();
+    final count = await getVoiceRecordingCount();
+    await _prefs!.setInt(_voiceRecordingCountKey, count + 1);
+  }
+
+  /// Check if we should show pulsing hint (first 3 uses after tutorial)
+  Future<bool> shouldShowVoicePulsingHint() async {
+    final tutorialShown = await hasShownVoiceTutorial();
+    final recordingCount = await getVoiceRecordingCount();
+    // Show pulsing hint for first 3 uses after tutorial is dismissed
+    return tutorialShown && recordingCount < 3;
   }
 
   /// Ensure preferences are initialized

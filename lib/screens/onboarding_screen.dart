@@ -234,6 +234,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     String description,
     Color color,
   ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       children: [
         Container(
@@ -252,15 +255,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: [
               Text(
                 title,
-                style: AppTheme.lightTextTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: AppTheme.spacing4),
               Text(
                 description,
-                style: AppTheme.lightTextTheme.bodyMedium?.copyWith(
-                  color: AppTheme.neutral600,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -272,6 +275,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   // Language selection page
   Widget _buildLanguagePage() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.all(AppTheme.spacing24),
       child: Column(
@@ -290,7 +296,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: AppTheme.spacing24),
           Text(
             context.tr('onboarding.choose_language'),
-            style: AppTheme.lightTextTheme.headlineMedium?.copyWith(
+            style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
             textAlign: TextAlign.center,
@@ -298,8 +304,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: AppTheme.spacing8),
           Text(
             context.tr('onboarding.select_language_subtitle'),
-            style: AppTheme.lightTextTheme.bodyLarge?.copyWith(
-              color: AppTheme.neutral600,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -328,6 +334,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   // Currency selection page
   Widget _buildCurrencyPage() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.all(AppTheme.spacing24),
       child: Column(
@@ -350,7 +359,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: AppTheme.spacing24),
           Text(
             context.tr('onboarding.choose_currency'),
-            style: AppTheme.lightTextTheme.headlineMedium?.copyWith(
+            style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
             textAlign: TextAlign.center,
@@ -358,8 +367,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: AppTheme.spacing8),
           Text(
             context.tr('onboarding.select_currency_subtitle'),
-            style: AppTheme.lightTextTheme.bodyLarge?.copyWith(
-              color: AppTheme.neutral600,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -408,6 +417,9 @@ class _OptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
       child: Material(
@@ -419,13 +431,13 @@ class _OptionCard extends StatelessWidget {
             padding: const EdgeInsets.all(AppTheme.spacing16),
             decoration: BoxDecoration(
               border: Border.all(
-                color: isSelected ? AppTheme.primaryMint : AppTheme.neutral300,
+                color: isSelected ? AppTheme.primaryMint : colorScheme.outline,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: AppTheme.borderRadiusMedium,
               color: isSelected
                   ? AppTheme.primaryMint.withValues(alpha: 0.08)
-                  : Colors.white,
+                  : colorScheme.surfaceContainerHighest,
               boxShadow: isSelected ? AppTheme.shadowSmall : null,
             ),
             child: Row(
@@ -438,7 +450,7 @@ class _OptionCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: AppTheme.lightTextTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: isSelected
                               ? FontWeight.w600
                               : FontWeight.w500,
@@ -448,8 +460,8 @@ class _OptionCard extends StatelessWidget {
                         const SizedBox(height: AppTheme.spacing4),
                         Text(
                           subtitle!,
-                          style: AppTheme.lightTextTheme.bodySmall?.copyWith(
-                            color: AppTheme.neutral600,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],

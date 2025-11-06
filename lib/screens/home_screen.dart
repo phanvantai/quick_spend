@@ -7,6 +7,7 @@ import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
+import '../widgets/edit_expense_dialog.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'settings_screen.dart';
 
@@ -59,6 +60,42 @@ class _HomeScreenState extends State<HomeScreen> {
             content: Text(
               context.tr(
                 'home.error_deleting_expense',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _editExpense(Expense expense) async {
+    final updatedExpense = await showDialog<Expense>(
+      context: context,
+      builder: (context) => EditExpenseDialog(expense: expense),
+    );
+
+    if (updatedExpense == null || !mounted) return;
+
+    try {
+      await context.read<ExpenseProvider>().updateExpense(updatedExpense);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('home.expense_updated')),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [HomeScreen] Error updating expense: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.tr(
+                'home.error_updating_expense',
                 namedArgs: {'error': e.toString()},
               ),
             ),
@@ -159,6 +196,14 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => Navigator.pop(context),
             child: Text(context.tr('common.close')),
           ),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _editExpense(expense);
+            },
+            icon: const Icon(Icons.edit),
+            label: Text(context.tr('common.edit')),
+          ),
         ],
       ),
     );
@@ -191,129 +236,82 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: CustomScrollView(
-        slivers: [
-          // App bar with gradient
-          SliverAppBar(
-            expandedHeight: 80,
-            floating: false,
-            pinned: true,
-            backgroundColor: AppTheme.primaryMint,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined, color: Colors.white),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsScreen(),
-                    ),
-                  );
-                },
-                tooltip: context.tr('navigation.settings'),
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacing16),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          context.tr('home.hello'),
-                          style: textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: AppTheme.spacing16),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+      appBar: AppBar(
+        title: Text(context.tr('home.hello')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+            tooltip: context.tr('navigation.settings'),
           ),
+        ],
+      ),
+      body: Consumer<ExpenseProvider>(
+        builder: (context, expenseProvider, _) {
+          if (expenseProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          // Content - Expense List
-          Consumer<ExpenseProvider>(
-            builder: (context, expenseProvider, _) {
-              if (expenseProvider.isLoading) {
-                return const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
+          final expenses = expenseProvider.expenses;
 
-              final expenses = expenseProvider.expenses;
+          if (expenses.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(AppTheme.spacing16),
+              child: EmptyState(
+                icon: Icons.receipt_long_outlined,
+                title: context.tr('home.no_expenses_title'),
+                message: context.tr('home.no_expenses_message'),
+                // actionLabel: context.tr('home.add_expense'),
+                // onAction: () {
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     SnackBar(
+                //       content: Text(
+                //         context.tr('voice.hold_instruction'),
+                //       ),
+                //       duration: const Duration(seconds: 2),
+                //     ),
+                //   );
+                // },
+              ),
+            );
+          }
 
-              if (expenses.isEmpty) {
-                return SliverPadding(
-                  padding: const EdgeInsets.all(AppTheme.spacing16),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      EmptyState(
-                        icon: Icons.receipt_long_outlined,
-                        title: context.tr('home.no_expenses_title'),
-                        message: context.tr('home.no_expenses_message'),
-                        actionLabel: context.tr('home.add_expense'),
-                        onAction: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                context.tr('voice.hold_instruction'),
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        },
+          return ListView.builder(
+            padding: const EdgeInsets.all(AppTheme.spacing16),
+            itemCount: expenses.length,
+            itemBuilder: (context, index) {
+              final expense = expenses[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
+                child: Slidable(
+                  key: ValueKey(expense.id),
+                  endActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    children: [
+                      SlidableAction(
+                        onPressed: (_) => _deleteExpense(expense.id),
+                        backgroundColor: AppTheme.error,
+                        foregroundColor: Colors.white,
+                        icon: Icons.delete,
+                        label: context.tr('common.delete'),
                       ),
-                    ]),
+                    ],
                   ),
-                );
-              }
-
-              return SliverPadding(
-                padding: const EdgeInsets.all(AppTheme.spacing16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final expense = expenses[index];
-                    return Slidable(
-                      key: ValueKey(expense.id),
-                      endActionPane: ActionPane(
-                        motion: const ScrollMotion(),
-                        children: [
-                          SlidableAction(
-                            onPressed: (_) => _deleteExpense(expense.id),
-                            backgroundColor: AppTheme.error,
-                            foregroundColor: Colors.white,
-                            icon: Icons.delete,
-                            label: context.tr('common.delete'),
-                          ),
-                        ],
-                      ),
-                      child: ExpenseCard(
-                        expense: expense,
-                        onTap: () => _showExpenseDetailsDialog(expense),
-                      ),
-                    );
-                  }, childCount: expenses.length),
+                  child: ExpenseCard(
+                    expense: expense,
+                    onTap: () => _showExpenseDetailsDialog(expense),
+                  ),
                 ),
               );
             },
-          ),
-        ],
+          );
+        },
       ),
     );
   }

@@ -52,7 +52,13 @@
     "description": "Mô Tả",
     "no_expenses_title": "Chưa có chi tiêu",
     "no_expenses_message": "Bắt đầu theo dõi chi tiêu của bạn bằng cách thêm chi tiêu đầu tiên bằng giọng nói hoặc văn bản.",
-    "recording": "Đang ghi âm..."
+    "recording": "Đang ghi âm...",
+    "edit_expense": "Sửa Chi Tiêu",
+    "expense_updated": "Đã cập nhật chi tiêu thành công",
+    "error_updating_expense": "Lỗi khi cập nhật chi tiêu: {error}",
+    "description_required": "Mô tả là bắt buộc",
+    "amount_required": "Số tiền là bắt buộc",
+    "amount_invalid": "Vui lòng nhập số tiền hợp lệ"
   },
   "settings": {
     "title": "Cài Đặt",
@@ -73,12 +79,13 @@
     "add_coming_soon": "Thêm chi tiêu sẽ có sớm!"
   },
   "voice": {
-    "hold_to_record": "Giữ để ghi âm",
+    "hold_to_record": "Chạm để Ghi Âm",
     "tap_to_enable": "Chạm để bật giọng nói",
     "voice_disabled": "Giọng nói bị tắt - Chạm để được trợ giúp",
-    "hold_instruction": "Giữ nút để ghi âm chi tiêu",
+    "hold_instruction": "Chạm nút để ghi âm chi tiêu",
     "recording": "Đang ghi âm...",
-    "release_to_send": "Thả ra để gửi",
+    "release_to_send": "Chạm để dừng",
+    "tap_to_stop": "Chạm để dừng",
     "slide_to_cancel": "Vuốt lên để hủy",
     "listening": "Đang nghe...",
     "error": "Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.",
@@ -88,7 +95,7 @@
     "permission_rationale": "Quick Spend cần quyền truy cập microphone và nhận dạng giọng nói để ghi âm chi tiêu. Điều này cho phép bạn nhanh chóng thêm chi tiêu bằng giọng nói.",
     "permission_rationale_android": "Quick Spend cần quyền microphone để ghi âm chi tiêu của bạn. Điều này cho phép bạn nhanh chóng thêm chi tiêu bằng giọng nói.",
     "permission_rationale_ios": "Quick Spend cần quyền microphone và nhận dạng giọng nói để ghi âm chi tiêu. Điều này cho phép bạn nhanh chóng thêm chi tiêu bằng giọng nói.",
-    "permission_granted": "Đã cấp quyền! Giữ nút để ghi âm",
+    "permission_granted": "Đã cấp quyền! Chạm nút để ghi âm",
     "permission_denied_title": "Cần Quyền Ghi Âm Giọng Nói",
     "permission_denied_message": "Ghi âm yêu cầu quyền microphone và nhận dạng giọng nói. Vui lòng cấp cả hai quyền trong Cài đặt để sử dụng tính năng này.",
     "permission_denied_message_android": "Ghi âm yêu cầu quyền microphone. Vui lòng cấp quyền này trong Cài đặt để sử dụng tính năng này.",
@@ -96,7 +103,11 @@
     "permission_settings_hint": "Bật quyền Microphone và Nhận dạng Giọng nói trong ứng dụng Cài đặt",
     "permission_settings_hint_android": "Bật quyền Microphone trong ứng dụng Cài đặt",
     "permission_settings_hint_ios": "Bật quyền Microphone và Nhận dạng Giọng nói trong Cài đặt",
-    "open_settings": "Mở Cài Đặt"
+    "open_settings": "Mở Cài Đặt",
+    "tutorial_title": "Chạm để Ghi Âm",
+    "tutorial_description": "Chạm nút để bắt đầu ghi âm chi tiêu bằng giọng nói. Chạm lại để dừng, hoặc vuốt lên để hủy.",
+    "tutorial_got_it": "Đã Hiểu!",
+    "tutorial_tap_anywhere": "hoặc chạm bất kỳ đâu để đóng"
   },
   "navigation": {
     "input": "Nhập",
@@ -109,7 +120,8 @@
     "allow": "Cho Phép",
     "save": "Lưu",
     "close": "Đóng",
-    "delete": "Xóa"
+    "delete": "Xóa",
+    "edit": "Sửa"
   },
   "categories": {
     "food": "Ăn Uống",
