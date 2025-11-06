@@ -107,6 +107,25 @@ class _HomeScreenState extends State<HomeScreen>
     });
 
     debugPrint('🔐 [HomeScreen] Permission status updated');
+
+    // If microphone is granted, initialize VoiceService
+    // This will trigger iOS speech permission dialog if not yet granted
+    if (micStatus.isGranted && !_voiceService.isInitialized) {
+      debugPrint('🎙️ [HomeScreen] Microphone granted, initializing VoiceService...');
+      final initialized = await _voiceService.initialize();
+      debugPrint('🎙️ [HomeScreen] VoiceService initialized: $initialized');
+
+      // Recheck speech permission after initialization
+      // (iOS might have just granted it via the auto-request dialog)
+      if (Platform.isIOS && mounted) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        final updatedSpeechStatus = await Permission.speech.status;
+        debugPrint('🔐 [HomeScreen] Speech status after initialization: ${updatedSpeechStatus.name}');
+        setState(() {
+          _speechPermissionStatus = updatedSpeechStatus;
+        });
+      }
+    }
   }
 
   bool _hasRequiredPermissions() {
@@ -152,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen>
     final micStatus = await Permission.microphone.request();
     debugPrint('🔐 [HomeScreen] Microphone result: ${micStatus.name}');
 
-    // Recheck permission status
+    // Recheck permission status (this will also initialize VoiceService if mic is granted)
     if (mounted) {
       await _checkPermissionStatus();
     }
