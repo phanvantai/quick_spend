@@ -646,31 +646,33 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         // Full-screen recording overlay (covers everything including bottom nav and FAB)
         if (_isRecording)
           Positioned.fill(
-            child: GestureDetector(
-              onPanEnd: (_) {
-                debugPrint('👆 [MainScreen] Pan END on overlay - stopping recording');
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              onPointerUp: (_) {
+                debugPrint('👆 [MainScreen] Pointer UP detected - stopping recording');
                 _stopRecording();
               },
-              onVerticalDragUpdate: (details) {
-                debugPrint('👆 [MainScreen] Vertical drag on overlay: ${details.primaryDelta}');
-                if (details.primaryDelta! < -10) {
-                  _cancelRecording();
-                }
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.7),
-                    Colors.black.withValues(alpha: 0.9),
-                  ],
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+              child: GestureDetector(
+                onVerticalDragUpdate: (details) {
+                  debugPrint('👆 [MainScreen] Vertical drag on overlay: ${details.primaryDelta}');
+                  if (details.primaryDelta! < -10) {
+                    _cancelRecording();
+                  }
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.7),
+                        Colors.black.withValues(alpha: 0.9),
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                   // Animated microphone
                   TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0.0, end: _soundLevel),
@@ -782,8 +784,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            ),
           ),
+        ),
 
         // Tutorial overlay
         if (_showTutorial)
