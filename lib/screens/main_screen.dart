@@ -784,12 +784,27 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Offset _getFABPosition() {
-    // Get FAB position from the screen
-    // FAB is centered horizontally and docked at the bottom
+    // Get actual FAB position from its RenderBox
+    try {
+      final RenderBox? renderBox = _fabKey.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        final position = renderBox.localToGlobal(Offset.zero);
+        final size = renderBox.size;
+        // Return the center of the FAB
+        return Offset(
+          position.dx + size.width / 2,
+          position.dy + size.height / 2,
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ [MainScreen] Could not get FAB position: $e');
+    }
+
+    // Fallback to approximation if RenderBox not available yet
     final size = MediaQuery.of(context).size;
     return Offset(
       size.width / 2,
-      size.height - 80, // Approximate bottom position with padding
+      size.height - 80,
     );
   }
 
