@@ -730,7 +730,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       enableHold = true;
     } else if (_hasRequiredPermissions()) {
       buttonIcon = Icons.mic_none;
-      buttonGradient = AppTheme.primaryGradient;
+      buttonGradient = AppTheme.accentGradient;
       onTapAction = () {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -749,7 +749,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       enableHold = false;
     } else {
       buttonIcon = Icons.mic_off;
-      buttonGradient = AppTheme.primaryGradient;
+      buttonGradient = AppTheme.accentGradient;
       onTapAction = _requestPermission;
       enableHold = false;
     }
