@@ -191,129 +191,81 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: CustomScrollView(
-        slivers: [
-          // App bar with gradient
-          SliverAppBar(
-            expandedHeight: 80,
-            floating: false,
-            pinned: true,
-            backgroundColor: AppTheme.primaryMint,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined, color: Colors.white),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsScreen(),
-                    ),
-                  );
-                },
-                tooltip: context.tr('navigation.settings'),
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacing16),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          context.tr('home.hello'),
-                          style: textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: AppTheme.spacing16),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Content - Expense List
-          Consumer<ExpenseProvider>(
-            builder: (context, expenseProvider, _) {
-              if (expenseProvider.isLoading) {
-                return const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-
-              final expenses = expenseProvider.expenses;
-
-              if (expenses.isEmpty) {
-                return SliverPadding(
-                  padding: const EdgeInsets.all(AppTheme.spacing16),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      EmptyState(
-                        icon: Icons.receipt_long_outlined,
-                        title: context.tr('home.no_expenses_title'),
-                        message: context.tr('home.no_expenses_message'),
-                        actionLabel: context.tr('home.add_expense'),
-                        onAction: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                context.tr('voice.hold_instruction'),
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                      ),
-                    ]),
-                  ),
-                );
-              }
-
-              return SliverPadding(
-                padding: const EdgeInsets.all(AppTheme.spacing16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final expense = expenses[index];
-                    return Slidable(
-                      key: ValueKey(expense.id),
-                      endActionPane: ActionPane(
-                        motion: const ScrollMotion(),
-                        children: [
-                          SlidableAction(
-                            onPressed: (_) => _deleteExpense(expense.id),
-                            backgroundColor: AppTheme.error,
-                            foregroundColor: Colors.white,
-                            icon: Icons.delete,
-                            label: context.tr('common.delete'),
-                          ),
-                        ],
-                      ),
-                      child: ExpenseCard(
-                        expense: expense,
-                        onTap: () => _showExpenseDetailsDialog(expense),
-                      ),
-                    );
-                  }, childCount: expenses.length),
+      appBar: AppBar(
+        title: Text(context.tr('home.hello')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
                 ),
               );
             },
+            tooltip: context.tr('navigation.settings'),
           ),
         ],
+      ),
+      body: Consumer<ExpenseProvider>(
+        builder: (context, expenseProvider, _) {
+          if (expenseProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final expenses = expenseProvider.expenses;
+
+          if (expenses.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(AppTheme.spacing16),
+              child: EmptyState(
+                icon: Icons.receipt_long_outlined,
+                title: context.tr('home.no_expenses_title'),
+                message: context.tr('home.no_expenses_message'),
+                actionLabel: context.tr('home.add_expense'),
+                onAction: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        context.tr('voice.hold_instruction'),
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(AppTheme.spacing16),
+            itemCount: expenses.length,
+            itemBuilder: (context, index) {
+              final expense = expenses[index];
+              return Slidable(
+                key: ValueKey(expense.id),
+                endActionPane: ActionPane(
+                  motion: const ScrollMotion(),
+                  children: [
+                    SlidableAction(
+                      onPressed: (_) => _deleteExpense(expense.id),
+                      backgroundColor: AppTheme.error,
+                      foregroundColor: Colors.white,
+                      icon: Icons.delete,
+                      label: context.tr('common.delete'),
+                    ),
+                  ],
+                ),
+                child: ExpenseCard(
+                  expense: expense,
+                  onTap: () => _showExpenseDetailsDialog(expense),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
