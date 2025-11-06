@@ -89,7 +89,8 @@ class VoiceService {
   /// Request required permissions
   /// On Android: only microphone permission needed
   /// On iOS: both microphone and speech permissions needed
-  Future<bool> requestPermission() async {
+  /// Returns a map with 'granted' status and 'speechPermanentlyDenied' flag
+  Future<Map<String, bool>> requestPermissionDetailed() async {
     debugPrint('🔐 [VoiceService.requestPermission] Starting permission request...');
     debugPrint('🔐 [VoiceService.requestPermission] Platform: ${Platform.isIOS ? "iOS" : "Android"}');
 
@@ -98,7 +99,10 @@ class VoiceService {
 
     // On Android, only microphone permission is needed
     if (Platform.isAndroid) {
-      return micStatus.isGranted;
+      return {
+        'granted': micStatus.isGranted,
+        'speechPermanentlyDenied': false,
+      };
     }
 
     // On iOS, both microphone and speech permissions are needed
@@ -111,12 +115,29 @@ class VoiceService {
     // Request speech permission after microphone
     debugPrint('🔐 [VoiceService.requestPermission] Requesting speech permission...');
     final speechStatus = await Permission.speech.request();
-    debugPrint('🔐 [VoiceService.requestPermission] Speech request result: ${speechStatus.name} (isGranted: ${speechStatus.isGranted})');
+    debugPrint('🔐 [VoiceService.requestPermission] Speech request result: ${speechStatus.name} (isGranted: ${speechStatus.isGranted}, isPermanentlyDenied: ${speechStatus.isPermanentlyDenied}, isRestricted: ${speechStatus.isRestricted})');
+
+    // Check if speech permission is permanently denied or restricted
+    final speechPermanentlyDenied = speechStatus.isPermanentlyDenied || speechStatus.isRestricted;
+
+    if (speechPermanentlyDenied) {
+      debugPrint('⚠️ [VoiceService.requestPermission] Speech permission is permanently denied or restricted!');
+      debugPrint('⚠️ [VoiceService.requestPermission] User must enable it manually in Settings');
+    }
 
     final allGranted = micStatus.isGranted && speechStatus.isGranted;
     debugPrint('🔐 [VoiceService.requestPermission] Final result: $allGranted');
 
-    return allGranted;
+    return {
+      'granted': allGranted,
+      'speechPermanentlyDenied': speechPermanentlyDenied,
+    };
+  }
+
+  /// Request required permissions (simple version for backward compatibility)
+  Future<bool> requestPermission() async {
+    final result = await requestPermissionDetailed();
+    return result['granted'] ?? false;
   }
 
   /// Get detailed permission status

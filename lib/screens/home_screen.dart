@@ -110,23 +110,27 @@ class _HomeScreenState extends State<HomeScreen>
       debugPrint('🔐 [HomeScreen] Microphone status: ${micStatus.name} (isGranted: ${micStatus.isGranted}, isDenied: ${micStatus.isDenied}, isPermanentlyDenied: ${micStatus.isPermanentlyDenied})');
 
       bool isPermanentlyDenied = micStatus.isPermanentlyDenied;
+      bool isRestricted = micStatus.isRestricted;
 
       // On iOS, also check speech permission
       if (Platform.isIOS) {
         final speechStatus = await Permission.speech.status;
-        debugPrint('🔐 [HomeScreen] Speech status: ${speechStatus.name} (isGranted: ${speechStatus.isGranted}, isDenied: ${speechStatus.isDenied}, isPermanentlyDenied: ${speechStatus.isPermanentlyDenied})');
+        debugPrint('🔐 [HomeScreen] Speech status: ${speechStatus.name} (isGranted: ${speechStatus.isGranted}, isDenied: ${speechStatus.isDenied}, isPermanentlyDenied: ${speechStatus.isPermanentlyDenied}, isRestricted: ${speechStatus.isRestricted})');
         isPermanentlyDenied = isPermanentlyDenied || speechStatus.isPermanentlyDenied;
+        isRestricted = isRestricted || speechStatus.isRestricted;
       }
 
-      // Only treat as "denied" if permanently denied (user must open settings)
+      // Treat as "denied" if:
+      // 1. Permanently denied (user must open settings)
+      // 2. Restricted (device policy/parental controls)
       // Otherwise treat as "not determined" (can request permission)
       // Note: On first launch, iOS returns isDenied:true but isPermanentlyDenied:false
       // which should be treated as "not determined" so user can tap to enable
-      if (isPermanentlyDenied) {
+      if (isPermanentlyDenied || isRestricted) {
         setState(() {
           _permissionState = VoicePermissionState.denied;
         });
-        debugPrint('❌ [HomeScreen] Setting state to DENIED (permanently denied - requires settings)');
+        debugPrint('❌ [HomeScreen] Setting state to DENIED (isPermanentlyDenied: $isPermanentlyDenied, isRestricted: $isRestricted - requires settings)');
       } else {
         setState(() {
           _permissionState = VoicePermissionState.notDetermined;
@@ -149,13 +153,30 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     debugPrint('🔐 [HomeScreen] User accepted rationale, requesting permissions...');
-    final granted = await _voiceService.requestPermission();
-    debugPrint('🔐 [HomeScreen] Permission request completed. Result: $granted');
+    final result = await _voiceService.requestPermissionDetailed();
+    final granted = result['granted'] ?? false;
+    final speechPermanentlyDenied = result['speechPermanentlyDenied'] ?? false;
+    debugPrint('🔐 [HomeScreen] Permission request completed. granted: $granted, speechPermanentlyDenied: $speechPermanentlyDenied');
+
+    // If speech is permanently denied, immediately show settings dialog
+    if (Platform.isIOS && speechPermanentlyDenied && mounted) {
+      debugPrint('⚠️ [HomeScreen] Speech permanently denied on iOS, showing settings dialog immediately');
+      // Update state to denied
+      setState(() {
+        _permissionState = VoicePermissionState.denied;
+      });
+      _showPermissionDeniedDialog();
+      return;
+    }
+
+    // Add small delay to allow iOS to update permission states
+    // iOS sometimes takes a moment to update the status after .request() returns
+    await Future.delayed(const Duration(milliseconds: 200));
 
     // Always recheck permission status after requesting
     // This handles cases where permissions might be partially granted or timing issues
     if (mounted) {
-      debugPrint('🔐 [HomeScreen] Rechecking permission status...');
+      debugPrint('🔐 [HomeScreen] Rechecking permission status after delay...');
       await _checkPermissionStatus();
     }
 
@@ -171,13 +192,14 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         );
       } else if (_permissionState == VoicePermissionState.denied) {
-        // Only show denied dialog if permanently denied
-        debugPrint('⚠️ [HomeScreen] Showing permission denied dialog');
+        // Permission is permanently denied - show settings dialog
+        debugPrint('⚠️ [HomeScreen] Permission permanently denied, showing settings dialog');
         _showPermissionDeniedDialog();
       } else {
-        debugPrint('❓ [HomeScreen] Permission still not determined - user can try again');
+        // Still not determined - don't show any dialog
+        // User can tap the button again to retry
+        debugPrint('❓ [HomeScreen] Permission still not determined - user can try again by tapping button');
       }
-      // If notDetermined, user can try again by tapping button
     }
   }
 
