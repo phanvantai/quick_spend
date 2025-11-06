@@ -646,8 +646,19 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         // Full-screen recording overlay (covers everything including bottom nav and FAB)
         if (_isRecording)
           Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
+            child: GestureDetector(
+              onPanEnd: (_) {
+                debugPrint('👆 [MainScreen] Pan END on overlay - stopping recording');
+                _stopRecording();
+              },
+              onVerticalDragUpdate: (details) {
+                debugPrint('👆 [MainScreen] Vertical drag on overlay: ${details.primaryDelta}');
+                if (details.primaryDelta! < -10) {
+                  _cancelRecording();
+                }
+              },
+              child: Container(
+                decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -770,6 +781,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   ),
                 ],
               ),
+            ),
             ),
           ),
 
