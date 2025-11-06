@@ -24,9 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(context.tr('home.delete_expense_title')),
-        content: Text(
-          context.tr('home.delete_expense_message'),
-        ),
+        content: Text(context.tr('home.delete_expense_message')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -58,7 +56,12 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.tr('home.error_deleting_expense', namedArgs: {'error': e.toString()})),
+            content: Text(
+              context.tr(
+                'home.error_deleting_expense',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -87,7 +90,10 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow(context.tr('home.amount'), expense.getFormattedAmount()),
+            _buildDetailRow(
+              context.tr('home.amount'),
+              expense.getFormattedAmount(),
+            ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.category'),
@@ -101,11 +107,16 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.language'),
-              expense.language == 'vi' ? context.tr('home.language_vietnamese') : context.tr('home.language_english'),
+              expense.language == 'vi'
+                  ? context.tr('home.language_vietnamese')
+                  : context.tr('home.language_english'),
             ),
             if (expense.rawInput.isNotEmpty) ...[
               const SizedBox(height: AppTheme.spacing12),
-              _buildDetailRow(context.tr('home.original_input'), expense.rawInput),
+              _buildDetailRow(
+                context.tr('home.original_input'),
+                expense.rawInput,
+              ),
             ],
             if (expense.confidence < 0.8) ...[
               const SizedBox(height: AppTheme.spacing12),
@@ -125,7 +136,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: AppTheme.spacing8),
                     Expanded(
                       child: Text(
-                        context.tr('home.low_confidence_percent', namedArgs: {'percent': (expense.confidence * 100).toStringAsFixed(0)}),
+                        context.tr(
+                          'home.low_confidence_percent',
+                          namedArgs: {
+                            'percent': (expense.confidence * 100)
+                                .toStringAsFixed(0),
+                          },
+                        ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppTheme.warning,
                         ),
@@ -184,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
         slivers: [
           // App bar with gradient
           SliverAppBar(
-            expandedHeight: 120,
+            expandedHeight: 80,
             floating: false,
             pinned: true,
             backgroundColor: AppTheme.primaryMint,
@@ -209,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacing24),
+                    padding: const EdgeInsets.all(AppTheme.spacing16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,8 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       EmptyState(
                         icon: Icons.receipt_long_outlined,
                         title: context.tr('home.no_expenses_title'),
-                        message:
-                            context.tr('home.no_expenses_message'),
+                        message: context.tr('home.no_expenses_message'),
                         actionLabel: context.tr('home.add_expense'),
                         onAction: () {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -271,10 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return SliverPadding(
                 padding: const EdgeInsets.all(AppTheme.spacing16),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((
-                    context,
-                    index,
-                  ) {
+                  delegate: SliverChildBuilderDelegate((context, index) {
                     final expense = expenses[index];
                     return Slidable(
                       key: ValueKey(expense.id),
@@ -282,8 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         motion: const ScrollMotion(),
                         children: [
                           SlidableAction(
-                            onPressed: (_) =>
-                                _deleteExpense(expense.id),
+                            onPressed: (_) => _deleteExpense(expense.id),
                             backgroundColor: AppTheme.error,
                             foregroundColor: Colors.white,
                             icon: Icons.delete,
