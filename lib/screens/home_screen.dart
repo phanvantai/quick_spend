@@ -93,10 +93,12 @@ class _HomeScreenState extends State<HomeScreen>
     final micStatus = await Permission.microphone.status;
     debugPrint('🔐 [HomeScreen] Microphone: ${micStatus.name}');
 
+    // We still check speech status for display/debugging purposes
+    // But we don't require it to be granted for the button to work
     PermissionStatus? speechStatus;
     if (Platform.isIOS) {
       speechStatus = await Permission.speech.status;
-      debugPrint('🔐 [HomeScreen] Speech: ${speechStatus.name}');
+      debugPrint('🔐 [HomeScreen] Speech: ${speechStatus.name} (will be auto-requested by VoiceService)');
     }
 
     setState(() {
@@ -110,25 +112,25 @@ class _HomeScreenState extends State<HomeScreen>
   bool _hasRequiredPermissions() {
     if (_micPermissionStatus == null) return false;
 
-    if (Platform.isAndroid) {
-      return _micPermissionStatus!.isGranted;
-    } else {
-      // iOS needs both mic and speech
-      return _micPermissionStatus!.isGranted &&
-             _speechPermissionStatus?.isGranted == true;
-    }
+    // Both Android and iOS just need microphone granted
+    // Speech permission on iOS will be requested by VoiceService when needed
+    return _micPermissionStatus!.isGranted;
   }
 
   bool _isPermissionPermanentlyDenied() {
     if (_micPermissionStatus == null) return false;
 
-    if (Platform.isAndroid) {
-      return _micPermissionStatus!.isPermanentlyDenied;
-    } else {
-      // iOS: permanently denied if either permission is permanently denied
-      return _micPermissionStatus!.isPermanentlyDenied ||
-             _speechPermissionStatus?.isPermanentlyDenied == true;
+    // Check if microphone is permanently denied
+    if (_micPermissionStatus!.isPermanentlyDenied) return true;
+
+    // On iOS, also check if speech is permanently denied
+    // Even though we don't manually request it, if it's permanently denied
+    // VoiceService won't be able to initialize
+    if (Platform.isIOS && _speechPermissionStatus?.isPermanentlyDenied == true) {
+      return true;
     }
+
+    return false;
   }
 
   Future<void> _requestPermission() async {
@@ -142,28 +144,13 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
 
-    debugPrint('🔐 [HomeScreen] User accepted rationale, requesting permissions...');
+    debugPrint('🔐 [HomeScreen] User accepted rationale, requesting microphone permission...');
 
-    if (Platform.isAndroid) {
-      // Android: Request microphone only
-      debugPrint('🔐 [HomeScreen] Requesting microphone permission (Android)');
-      final micStatus = await Permission.microphone.request();
-      debugPrint('🔐 [HomeScreen] Microphone result: ${micStatus.name}');
-    } else {
-      // iOS: Request microphone then speech
-      debugPrint('🔐 [HomeScreen] Requesting microphone permission (iOS)');
-      final micStatus = await Permission.microphone.request();
-      debugPrint('🔐 [HomeScreen] Microphone result: ${micStatus.name}');
-
-      // Add small delay before speech request
-      if (micStatus.isGranted) {
-        await Future.delayed(const Duration(milliseconds: 300));
-      }
-
-      debugPrint('🔐 [HomeScreen] Requesting speech permission (iOS)');
-      final speechStatus = await Permission.speech.request();
-      debugPrint('🔐 [HomeScreen] Speech result: ${speechStatus.name}');
-    }
+    // Both Android and iOS: Only request microphone
+    // Speech permission on iOS will be auto-requested by VoiceService when initialized
+    debugPrint('🔐 [HomeScreen] Requesting microphone permission');
+    final micStatus = await Permission.microphone.request();
+    debugPrint('🔐 [HomeScreen] Microphone result: ${micStatus.name}');
 
     // Recheck permission status
     if (mounted) {
