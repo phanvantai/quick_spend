@@ -625,15 +625,25 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: Icon(_currentIndex == 0 ? Icons.home : Icons.home_outlined),
-                  color: _currentIndex == 0 ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                  icon: Icon(
+                    _currentIndex == 0 ? Icons.home : Icons.home_outlined,
+                  ),
+                  color: _currentIndex == 0
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
                   onPressed: () => _onTabTapped(0),
                   tooltip: context.tr('navigation.input'),
                 ),
                 const SizedBox(width: 48), // Space for the FAB
                 IconButton(
-                  icon: Icon(_currentIndex == 1 ? Icons.bar_chart : Icons.bar_chart_outlined),
-                  color: _currentIndex == 1 ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                  icon: Icon(
+                    _currentIndex == 1
+                        ? Icons.bar_chart
+                        : Icons.bar_chart_outlined,
+                  ),
+                  color: _currentIndex == 1
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
                   onPressed: () => _onTabTapped(1),
                   tooltip: context.tr('navigation.report'),
                 ),
@@ -652,7 +662,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             child: Listener(
               behavior: HitTestBehavior.opaque,
               onPointerUp: (_) {
-                debugPrint('👆 [MainScreen] Pointer UP detected, _isSwiping: $_isSwiping');
+                debugPrint(
+                  '👆 [MainScreen] Pointer UP detected, _isSwiping: $_isSwiping',
+                );
                 // Only stop recording if user didn't swipe to cancel
                 if (!_isSwiping) {
                   _stopRecording();
@@ -686,150 +698,155 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                  // Animated microphone
-                  TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0.0, end: _soundLevel),
-                    duration: const Duration(milliseconds: 100),
-                    builder: (context, value, child) {
-                      final normalizedLevel = ((value + 60) / 40).clamp(
-                        0.0,
-                        1.0,
-                      );
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          _buildRipple(normalizedLevel, 180, 0.2),
-                          _buildRipple(normalizedLevel, 150, 0.3),
-                          Container(
-                            width: 100.0 + (normalizedLevel * 30.0),
-                            height: 100.0 + (normalizedLevel * 30.0),
-                            decoration: BoxDecoration(
-                              gradient: AppTheme.accentGradient,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.accentPink.withValues(
-                                    alpha: 0.5,
+                      // Animated microphone
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: _soundLevel),
+                        duration: const Duration(milliseconds: 100),
+                        builder: (context, value, child) {
+                          final normalizedLevel = ((value + 60) / 40).clamp(
+                            0.0,
+                            1.0,
+                          );
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              _buildRipple(normalizedLevel, 180, 0.2),
+                              _buildRipple(normalizedLevel, 150, 0.3),
+                              Container(
+                                width: 100.0 + (normalizedLevel * 30.0),
+                                height: 100.0 + (normalizedLevel * 30.0),
+                                decoration: BoxDecoration(
+                                  gradient: AppTheme.accentGradient,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.accentPink.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                      blurRadius: 20 + (normalizedLevel * 10),
+                                      spreadRadius: 5 + (normalizedLevel * 5),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.mic,
+                                  color: Colors.white,
+                                  size: 48,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: AppTheme.spacing24),
+                      AnimatedBuilder(
+                        animation: _listeningFadeAnimation,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _listeningFadeAnimation.value,
+                            child: Text(
+                              context.tr('voice.listening'),
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
                                   ),
-                                  blurRadius: 20 + (normalizedLevel * 10),
-                                  spreadRadius: 5 + (normalizedLevel * 5),
+                            ),
+                          );
+                        },
+                      ),
+                      if (_recognizedText.isNotEmpty) ...[
+                        const SizedBox(height: AppTheme.spacing16),
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacing32,
+                          ),
+                          padding: const EdgeInsets.all(AppTheme.spacing16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: AppTheme.borderRadiusMedium,
+                            boxShadow: AppTheme.shadowLarge,
+                          ),
+                          child: Text(
+                            _recognizedText,
+                            style: Theme.of(context).textTheme.titleMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: AppTheme.spacing32),
+                      // Tap to stop instruction
+                      AnimatedBuilder(
+                        animation: _listeningFadeAnimation,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity:
+                                0.7 + (_listeningFadeAnimation.value * 0.3),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.touch_app,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: AppTheme.spacing8),
+                                Text(
+                                  context.tr('voice.tap_to_stop'),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                      ),
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.mic,
-                              color: Colors.white,
-                              size: 48,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: AppTheme.spacing24),
-                  AnimatedBuilder(
-                    animation: _listeningFadeAnimation,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _listeningFadeAnimation.value,
-                        child: Text(
-                          context.tr('voice.listening'),
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      );
-                    },
-                  ),
-                  if (_recognizedText.isNotEmpty) ...[
-                    const SizedBox(height: AppTheme.spacing16),
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing32,
+                          );
+                        },
                       ),
-                      padding: const EdgeInsets.all(AppTheme.spacing16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: AppTheme.borderRadiusMedium,
-                        boxShadow: AppTheme.shadowLarge,
-                      ),
-                      child: Text(
-                        _recognizedText,
-                        style: Theme.of(context).textTheme.titleMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: AppTheme.spacing32),
-                  // Tap to stop instruction
-                  AnimatedBuilder(
-                    animation: _listeningFadeAnimation,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: 0.7 + (_listeningFadeAnimation.value * 0.3),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.touch_app,
-                              color: Colors.white.withValues(alpha: 0.7),
-                              size: 20,
-                            ),
-                            const SizedBox(width: AppTheme.spacing8),
-                            Text(
-                              context.tr('voice.tap_to_stop'),
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: Colors.white.withValues(
-                                      alpha: 0.7,
-                                    ),
+                      const SizedBox(height: AppTheme.spacing12),
+                      // Swipe to cancel instruction
+                      AnimatedBuilder(
+                        animation: _swipeSlideAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, _swipeSlideAnimation.value),
+                            child: Opacity(
+                              opacity:
+                                  0.7 + (_listeningFadeAnimation.value * 0.3),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.arrow_upward,
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    size: 20,
                                   ),
+                                  const SizedBox(width: AppTheme.spacing8),
+                                  Text(
+                                    context.tr('voice.slide_to_cancel'),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.7,
+                                          ),
+                                        ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
-                      );
-                    },
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: AppTheme.spacing12),
-                  // Swipe to cancel instruction
-                  AnimatedBuilder(
-                    animation: _swipeSlideAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, _swipeSlideAnimation.value),
-                        child: Opacity(
-                          opacity: 0.7 + (_listeningFadeAnimation.value * 0.3),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.arrow_upward,
-                                color: Colors.white.withValues(alpha: 0.7),
-                                size: 20,
-                              ),
-                              const SizedBox(width: AppTheme.spacing8),
-                              Text(
-                                context.tr('voice.slide_to_cancel'),
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.7,
-                                      ),
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
 
         // Tutorial overlay
         if (_showTutorial)
@@ -844,7 +861,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Offset _getFABPosition() {
     // Get actual FAB position from its RenderBox
     try {
-      final RenderBox? renderBox = _fabKey.currentContext?.findRenderObject() as RenderBox?;
+      final RenderBox? renderBox =
+          _fabKey.currentContext?.findRenderObject() as RenderBox?;
       if (renderBox != null) {
         final position = renderBox.localToGlobal(Offset.zero);
         final size = renderBox.size;
@@ -860,10 +878,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     // Fallback to approximation if RenderBox not available yet
     final size = MediaQuery.of(context).size;
-    return Offset(
-      size.width / 2,
-      size.height - 80,
-    );
+    return Offset(size.width / 2, size.height - 80);
   }
 
   Widget _buildVoiceFAB() {
@@ -936,8 +951,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppTheme.accentPink
-                        .withValues(alpha: 0.3 * (2 - _pulseAnimation.value)),
+                    color: AppTheme.accentPink.withValues(
+                      alpha: 0.3 * (2 - _pulseAnimation.value),
+                    ),
                     width: 2,
                   ),
                 ),
@@ -949,8 +965,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppTheme.accentOrange
-                        .withValues(alpha: 0.4 * (2 - _pulseAnimation.value)),
+                    color: AppTheme.accentOrange.withValues(
+                      alpha: 0.4 * (2 - _pulseAnimation.value),
+                    ),
                     width: 2,
                   ),
                 ),
@@ -967,10 +984,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     // Wrap entire FAB with key for position tracking
-    return Container(
-      key: _fabKey,
-      child: result,
-    );
+    return Container(key: _fabKey, child: result);
   }
 
   Widget _buildRipple(double level, double size, double opacity) {
