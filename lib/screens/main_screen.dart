@@ -847,10 +847,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     final fabWidget = GestureDetector(
       onLongPressStart: enableHold && !_isRecording
-          ? (_) => _startRecording()
+          ? (_) {
+              debugPrint('👆 [MainScreen] Long press START detected');
+              _startRecording();
+            }
           : null,
       onLongPressEnd: enableHold
           ? (_) {
+              debugPrint('👆 [MainScreen] Long press END detected, _isRecording: $_isRecording');
               if (_isRecording) {
                 _stopRecording();
               }
@@ -858,6 +862,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           : null,
       onVerticalDragUpdate: enableHold
           ? (details) {
+              debugPrint('👆 [MainScreen] Drag update: ${details.primaryDelta}, _isRecording: $_isRecording');
               if (_isRecording && details.primaryDelta! < -10) {
                 _cancelRecording();
               }
