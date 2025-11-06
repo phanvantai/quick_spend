@@ -20,12 +20,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
   late String _selectedLanguage;
   String _selectedCurrency = 'USD';
+  bool _isInitialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Initialize with current locale
-    _selectedLanguage = context.locale.languageCode;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize with current locale (only once)
+    if (!_isInitialized) {
+      _selectedLanguage = context.locale.languageCode;
+      _isInitialized = true;
+    }
   }
 
   @override
