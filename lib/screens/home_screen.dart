@@ -105,31 +105,33 @@ class _HomeScreenState extends State<HomeScreen>
       });
       debugPrint('✅ [HomeScreen] Setting state to GRANTED');
     } else {
-      // Check if permissions were previously denied
+      // Check if permissions were permanently denied (user must go to settings)
       final micStatus = await Permission.microphone.status;
       debugPrint('🔐 [HomeScreen] Microphone status: ${micStatus.name} (isGranted: ${micStatus.isGranted}, isDenied: ${micStatus.isDenied}, isPermanentlyDenied: ${micStatus.isPermanentlyDenied})');
 
-      bool isDenied = micStatus.isPermanentlyDenied || micStatus.isDenied;
+      bool isPermanentlyDenied = micStatus.isPermanentlyDenied;
 
       // On iOS, also check speech permission
       if (Platform.isIOS) {
         final speechStatus = await Permission.speech.status;
         debugPrint('🔐 [HomeScreen] Speech status: ${speechStatus.name} (isGranted: ${speechStatus.isGranted}, isDenied: ${speechStatus.isDenied}, isPermanentlyDenied: ${speechStatus.isPermanentlyDenied})');
-        isDenied = isDenied ||
-            speechStatus.isPermanentlyDenied ||
-            speechStatus.isDenied;
+        isPermanentlyDenied = isPermanentlyDenied || speechStatus.isPermanentlyDenied;
       }
 
-      if (isDenied) {
+      // Only treat as "denied" if permanently denied (user must open settings)
+      // Otherwise treat as "not determined" (can request permission)
+      // Note: On first launch, iOS returns isDenied:true but isPermanentlyDenied:false
+      // which should be treated as "not determined" so user can tap to enable
+      if (isPermanentlyDenied) {
         setState(() {
           _permissionState = VoicePermissionState.denied;
         });
-        debugPrint('❌ [HomeScreen] Setting state to DENIED');
+        debugPrint('❌ [HomeScreen] Setting state to DENIED (permanently denied - requires settings)');
       } else {
         setState(() {
           _permissionState = VoicePermissionState.notDetermined;
         });
-        debugPrint('❓ [HomeScreen] Setting state to NOT_DETERMINED');
+        debugPrint('❓ [HomeScreen] Setting state to NOT_DETERMINED (can request permission)');
       }
     }
 
