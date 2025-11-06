@@ -16,6 +16,7 @@ class VoiceService {
   bool get isListening => _isListening;
 
   /// Initialize the speech service
+  /// Note: Speech permission on iOS is auto-requested by SpeechToText.initialize()
   Future<bool> initialize() async {
     debugPrint('🎙️ [VoiceService] Initializing...');
     if (_isInitialized) {
@@ -24,30 +25,21 @@ class VoiceService {
     }
 
     try {
-      // Request microphone permission (required on all platforms)
-      debugPrint('🔐 [VoiceService] Requesting permissions...');
-      final micStatus = await Permission.microphone.request();
-
+      // Check microphone permission (should already be granted before calling this)
+      debugPrint('🔐 [VoiceService] Checking microphone permission...');
+      final micStatus = await Permission.microphone.status;
       debugPrint('📋 [VoiceService] Microphone permission: ${micStatus.name}');
 
       if (!micStatus.isGranted) {
-        debugPrint('❌ [VoiceService] Microphone permission denied');
+        debugPrint('❌ [VoiceService] Microphone permission not granted');
         return false;
       }
 
-      // Request speech permission only on iOS (doesn't exist on Android)
-      if (Platform.isIOS) {
-        final speechStatus = await Permission.speech.request();
-        debugPrint('📋 [VoiceService] Speech permission: ${speechStatus.name}');
-
-        if (!speechStatus.isGranted) {
-          debugPrint('❌ [VoiceService] Speech recognition permission denied');
-          return false;
-        }
-      }
-
       // Initialize speech to text
+      // On iOS, this will automatically request speech permission if needed
       debugPrint('🎤 [VoiceService] Initializing speech-to-text...');
+      debugPrint('💡 [VoiceService] iOS speech permission will be auto-requested if needed');
+
       _isInitialized = await _speechToText.initialize(
         onError: (error) {
           debugPrint('❌ [VoiceService] Speech recognition error: ${error.errorMsg}');
@@ -86,58 +78,15 @@ class VoiceService {
     return hasPermission;
   }
 
-  /// Request required permissions
-  /// On Android: only microphone permission needed
-  /// On iOS: both microphone and speech permissions needed
-  /// Returns a map with 'granted' status and 'speechPermanentlyDenied' flag
-  Future<Map<String, bool>> requestPermissionDetailed() async {
-    debugPrint('🔐 [VoiceService.requestPermission] Starting permission request...');
-    debugPrint('🔐 [VoiceService.requestPermission] Platform: ${Platform.isIOS ? "iOS" : "Android"}');
+  /// Request microphone permission
+  /// Note: Speech permission on iOS is auto-requested by SpeechToText.initialize()
+  Future<bool> requestPermission() async {
+    debugPrint('🔐 [VoiceService.requestPermission] Requesting microphone permission...');
 
     final micStatus = await Permission.microphone.request();
-    debugPrint('🔐 [VoiceService.requestPermission] Microphone request result: ${micStatus.name} (isGranted: ${micStatus.isGranted})');
+    debugPrint('🔐 [VoiceService.requestPermission] Microphone result: ${micStatus.name}');
 
-    // On Android, only microphone permission is needed
-    if (Platform.isAndroid) {
-      return {
-        'granted': micStatus.isGranted,
-        'speechPermanentlyDenied': false,
-      };
-    }
-
-    // On iOS, both microphone and speech permissions are needed
-    // Add small delay to ensure dialogs appear properly when mic is already granted
-    if (micStatus.isGranted) {
-      debugPrint('🔐 [VoiceService.requestPermission] Mic already granted, adding delay before speech request...');
-      await Future.delayed(const Duration(milliseconds: 300));
-    }
-
-    // Request speech permission after microphone
-    debugPrint('🔐 [VoiceService.requestPermission] Requesting speech permission...');
-    final speechStatus = await Permission.speech.request();
-    debugPrint('🔐 [VoiceService.requestPermission] Speech request result: ${speechStatus.name} (isGranted: ${speechStatus.isGranted}, isPermanentlyDenied: ${speechStatus.isPermanentlyDenied}, isRestricted: ${speechStatus.isRestricted})');
-
-    // Check if speech permission is permanently denied or restricted
-    final speechPermanentlyDenied = speechStatus.isPermanentlyDenied || speechStatus.isRestricted;
-
-    if (speechPermanentlyDenied) {
-      debugPrint('⚠️ [VoiceService.requestPermission] Speech permission is permanently denied or restricted!');
-      debugPrint('⚠️ [VoiceService.requestPermission] User must enable it manually in Settings');
-    }
-
-    final allGranted = micStatus.isGranted && speechStatus.isGranted;
-    debugPrint('🔐 [VoiceService.requestPermission] Final result: $allGranted');
-
-    return {
-      'granted': allGranted,
-      'speechPermanentlyDenied': speechPermanentlyDenied,
-    };
-  }
-
-  /// Request required permissions (simple version for backward compatibility)
-  Future<bool> requestPermission() async {
-    final result = await requestPermissionDetailed();
-    return result['granted'] ?? false;
+    return micStatus.isGranted;
   }
 
   /// Get detailed permission status
