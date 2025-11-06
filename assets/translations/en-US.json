@@ -52,7 +52,13 @@
     "description": "Description",
     "no_expenses_title": "No expenses yet",
     "no_expenses_message": "Start tracking your spending by adding your first expense using voice or text input.",
-    "recording": "Recording..."
+    "recording": "Recording...",
+    "edit_expense": "Edit Expense",
+    "expense_updated": "Expense updated successfully",
+    "error_updating_expense": "Error updating expense: {error}",
+    "description_required": "Description is required",
+    "amount_required": "Amount is required",
+    "amount_invalid": "Please enter a valid amount"
   },
   "settings": {
     "title": "Settings",
@@ -73,13 +79,14 @@
     "add_coming_soon": "Add expense coming soon!"
   },
   "voice": {
-    "hold_to_record": "Hold to Record",
+    "hold_to_record": "Tap to Record",
     "tap_to_enable": "Tap to Enable Voice",
     "voice_disabled": "Voice Disabled - Tap for Help",
-    "hold_instruction": "Hold the button to record your expense",
+    "hold_instruction": "Tap the button to record your expense",
     "recording": "Recording...",
-    "release_to_send": "Release to send",
-    "slide_to_cancel": "Slide up to cancel",
+    "release_to_send": "Tap to stop",
+    "tap_to_stop": "Tap to stop",
+    "slide_to_cancel": "Swipe up to cancel",
     "listening": "Listening...",
     "error": "Could not start voice recording. Please check permissions.",
     "permission_title": "Voice Recording Permission",
@@ -88,7 +95,7 @@
     "permission_rationale": "Quick Spend needs access to your microphone and speech recognition to record voice expenses. This allows you to quickly add expenses by speaking.",
     "permission_rationale_android": "Quick Spend needs microphone access to record your voice expenses. This allows you to quickly add expenses by speaking.",
     "permission_rationale_ios": "Quick Spend needs access to your microphone and speech recognition to record voice expenses. This allows you to quickly add expenses by speaking.",
-    "permission_granted": "Permissions granted! Hold button to record",
+    "permission_granted": "Permissions granted! Tap button to record",
     "permission_denied_title": "Voice Recording Access Required",
     "permission_denied_message": "Voice recording requires microphone and speech recognition permissions. Please grant both permissions in Settings to use this feature.",
     "permission_denied_message_android": "Voice recording requires microphone permission. Please grant this permission in Settings to use this feature.",
@@ -96,7 +103,11 @@
     "permission_settings_hint": "Enable Microphone and Speech Recognition in your device Settings app",
     "permission_settings_hint_android": "Enable Microphone in your device Settings app",
     "permission_settings_hint_ios": "Enable Microphone and Speech Recognition in Settings",
-    "open_settings": "Open Settings"
+    "open_settings": "Open Settings",
+    "tutorial_title": "Tap to Record",
+    "tutorial_description": "Tap the button to start recording your expense with voice. Tap again to stop, or swipe up to cancel.",
+    "tutorial_got_it": "Got It!",
+    "tutorial_tap_anywhere": "or tap anywhere to dismiss"
   },
   "navigation": {
     "input": "Input",
@@ -109,7 +120,8 @@
     "allow": "Allow",
     "save": "Save",
     "close": "Close",
-    "delete": "Delete"
+    "delete": "Delete",
+    "edit": "Edit"
   },
   "categories": {
     "food": "Food",

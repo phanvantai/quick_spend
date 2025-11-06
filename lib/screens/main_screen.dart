@@ -7,7 +7,9 @@ import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
 import '../services/voice_service.dart';
 import '../services/expense_parser.dart';
+import '../services/preferences_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/voice_tutorial_overlay.dart';
 import 'home_screen.dart';
 import 'report_screen.dart';
 
@@ -26,6 +28,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   // Voice service and state
   final VoiceService _voiceService = VoiceService();
   bool _isRecording = false;
+  bool _isSwiping = false; // Track if user is swiping to cancel
   double _soundLevel = 0.0;
   String _recognizedText = '';
   PermissionStatus? _micPermissionStatus;
@@ -36,11 +39,22 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   late Animation<double> _swipeSlideAnimation;
   late WidgetsBindingObserver _lifecycleObserver;
 
+  // Tutorial state
+  final PreferencesService _prefsService = PreferencesService();
+  bool _showTutorial = false;
+  bool _shouldShowPulse = false;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+  final GlobalKey _fabKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
 
     _screens = [const HomeScreen(), const ReportScreen()];
+
+    // Check tutorial status first (show immediately on first launch)
+    _checkTutorialStatus();
 
     // Check permission status on init
     _checkPermissionStatus();
@@ -74,12 +88,22 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _swipeSlideAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
       CurvedAnimation(parent: _swipeTextController, curve: Curves.easeInOut),
     );
+
+    // Pulse animation for tutorial hint
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
     _listeningTextController.dispose();
     _swipeTextController.dispose();
+    _pulseController.dispose();
     _voiceService.dispose();
     WidgetsBinding.instance.removeObserver(_lifecycleObserver);
     super.dispose();
@@ -120,6 +144,42 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         });
       }
     }
+  }
+
+  Future<void> _checkTutorialStatus() async {
+    debugPrint('📚 [MainScreen] Checking tutorial status...');
+    final hasShown = await _prefsService.hasShownVoiceTutorial();
+
+    debugPrint('📚 [MainScreen] Tutorial shown: $hasShown');
+
+    if (!hasShown) {
+      // Show tutorial immediately on first launch
+      await Future.delayed(const Duration(milliseconds: 800));
+      if (mounted) {
+        setState(() {
+          _showTutorial = true;
+        });
+      }
+    } else {
+      // Always show pulsing hint after tutorial is dismissed
+      setState(() {
+        _shouldShowPulse = true;
+      });
+      _pulseController.repeat(reverse: true);
+    }
+  }
+
+  Future<void> _dismissTutorial() async {
+    debugPrint('📚 [MainScreen] Dismissing tutorial...');
+    await _prefsService.markVoiceTutorialShown();
+
+    setState(() {
+      _showTutorial = false;
+      _shouldShowPulse = true;
+    });
+
+    // Start pulsing animation for next few uses
+    _pulseController.repeat(reverse: true);
   }
 
   bool _hasRequiredPermissions() {
@@ -216,6 +276,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     setState(() {
       _isRecording = false;
+      _isSwiping = false;
     });
 
     if (_recognizedText.isNotEmpty) {
@@ -232,6 +293,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     setState(() {
       _isRecording = false;
+      _isSwiping = false;
       _recognizedText = '';
     });
   }
@@ -563,15 +625,25 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: Icon(_currentIndex == 0 ? Icons.home : Icons.home_outlined),
-                  color: _currentIndex == 0 ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                  icon: Icon(
+                    _currentIndex == 0 ? Icons.home : Icons.home_outlined,
+                  ),
+                  color: _currentIndex == 0
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
                   onPressed: () => _onTabTapped(0),
                   tooltip: context.tr('navigation.input'),
                 ),
                 const SizedBox(width: 48), // Space for the FAB
                 IconButton(
-                  icon: Icon(_currentIndex == 1 ? Icons.bar_chart : Icons.bar_chart_outlined),
-                  color: _currentIndex == 1 ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                  icon: Icon(
+                    _currentIndex == 1
+                        ? Icons.bar_chart
+                        : Icons.bar_chart_outlined,
+                  ),
+                  color: _currentIndex == 1
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
                   onPressed: () => _onTabTapped(1),
                   tooltip: context.tr('navigation.report'),
                 ),
@@ -587,204 +659,332 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         // Full-screen recording overlay (covers everything including bottom nav and FAB)
         if (_isRecording)
           Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.7),
-                    Colors.black.withValues(alpha: 0.9),
-                  ],
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Animated microphone
-                  TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0.0, end: _soundLevel),
-                    duration: const Duration(milliseconds: 100),
-                    builder: (context, value, child) {
-                      final normalizedLevel = ((value + 60) / 40).clamp(
-                        0.0,
-                        1.0,
-                      );
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          _buildRipple(normalizedLevel, 180, 0.2),
-                          _buildRipple(normalizedLevel, 150, 0.3),
-                          Container(
-                            width: 100.0 + (normalizedLevel * 30.0),
-                            height: 100.0 + (normalizedLevel * 30.0),
-                            decoration: BoxDecoration(
-                              gradient: AppTheme.accentGradient,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.accentPink.withValues(
-                                    alpha: 0.5,
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              onPointerUp: (_) {
+                debugPrint(
+                  '👆 [MainScreen] Pointer UP detected, _isSwiping: $_isSwiping',
+                );
+                // Only stop recording if user didn't swipe to cancel
+                if (!_isSwiping) {
+                  _stopRecording();
+                }
+                // Reset swipe flag
+                setState(() {
+                  _isSwiping = false;
+                });
+              },
+              child: GestureDetector(
+                onVerticalDragUpdate: (details) {
+                  if (details.primaryDelta! < -10) {
+                    debugPrint('👆 [MainScreen] Swipe up detected - canceling');
+                    setState(() {
+                      _isSwiping = true;
+                    });
+                    _cancelRecording();
+                  }
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.7),
+                        Colors.black.withValues(alpha: 0.9),
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Animated microphone
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: _soundLevel),
+                        duration: const Duration(milliseconds: 100),
+                        builder: (context, value, child) {
+                          final normalizedLevel = ((value + 60) / 40).clamp(
+                            0.0,
+                            1.0,
+                          );
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              _buildRipple(normalizedLevel, 180, 0.2),
+                              _buildRipple(normalizedLevel, 150, 0.3),
+                              Container(
+                                width: 100.0 + (normalizedLevel * 30.0),
+                                height: 100.0 + (normalizedLevel * 30.0),
+                                decoration: BoxDecoration(
+                                  gradient: AppTheme.accentGradient,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.accentPink.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                      blurRadius: 20 + (normalizedLevel * 10),
+                                      spreadRadius: 5 + (normalizedLevel * 5),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.mic,
+                                  color: Colors.white,
+                                  size: 48,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: AppTheme.spacing24),
+                      AnimatedBuilder(
+                        animation: _listeningFadeAnimation,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _listeningFadeAnimation.value,
+                            child: Text(
+                              context.tr('voice.listening'),
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
                                   ),
-                                  blurRadius: 20 + (normalizedLevel * 10),
-                                  spreadRadius: 5 + (normalizedLevel * 5),
+                            ),
+                          );
+                        },
+                      ),
+                      if (_recognizedText.isNotEmpty) ...[
+                        const SizedBox(height: AppTheme.spacing16),
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacing32,
+                          ),
+                          padding: const EdgeInsets.all(AppTheme.spacing16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: AppTheme.borderRadiusMedium,
+                            boxShadow: AppTheme.shadowLarge,
+                          ),
+                          child: Text(
+                            _recognizedText,
+                            style: Theme.of(context).textTheme.titleMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: AppTheme.spacing32),
+                      // Tap to stop instruction
+                      AnimatedBuilder(
+                        animation: _listeningFadeAnimation,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity:
+                                0.7 + (_listeningFadeAnimation.value * 0.3),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.touch_app,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: AppTheme.spacing8),
+                                Text(
+                                  context.tr('voice.tap_to_stop'),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                      ),
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.mic,
-                              color: Colors.white,
-                              size: 48,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: AppTheme.spacing12),
+                      // Swipe to cancel instruction
+                      AnimatedBuilder(
+                        animation: _swipeSlideAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, _swipeSlideAnimation.value),
+                            child: Opacity(
+                              opacity:
+                                  0.7 + (_listeningFadeAnimation.value * 0.3),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.arrow_upward,
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: AppTheme.spacing8),
+                                  Text(
+                                    context.tr('voice.slide_to_cancel'),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.7,
+                                          ),
+                                        ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: AppTheme.spacing24),
-                  AnimatedBuilder(
-                    animation: _listeningFadeAnimation,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _listeningFadeAnimation.value,
-                        child: Text(
-                          context.tr('voice.listening'),
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      );
-                    },
-                  ),
-                  if (_recognizedText.isNotEmpty) ...[
-                    const SizedBox(height: AppTheme.spacing16),
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing32,
+                          );
+                        },
                       ),
-                      padding: const EdgeInsets.all(AppTheme.spacing16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: AppTheme.borderRadiusMedium,
-                        boxShadow: AppTheme.shadowLarge,
-                      ),
-                      child: Text(
-                        _recognizedText,
-                        style: Theme.of(context).textTheme.titleMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: AppTheme.spacing32),
-                  AnimatedBuilder(
-                    animation: _swipeSlideAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, _swipeSlideAnimation.value),
-                        child: Opacity(
-                          opacity: 0.7 + (_listeningFadeAnimation.value * 0.3),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.arrow_upward,
-                                color: Colors.white.withValues(alpha: 0.7),
-                                size: 20,
-                              ),
-                              const SizedBox(width: AppTheme.spacing8),
-                              Text(
-                                context.tr('voice.slide_to_cancel'),
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.7,
-                                      ),
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
+
+        // Tutorial overlay
+        if (_showTutorial)
+          VoiceTutorialOverlay(
+            onDismiss: _dismissTutorial,
+            fabPosition: _getFABPosition(),
+          ),
       ],
     );
+  }
+
+  Offset _getFABPosition() {
+    // Get actual FAB position from its RenderBox
+    try {
+      final RenderBox? renderBox =
+          _fabKey.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        final position = renderBox.localToGlobal(Offset.zero);
+        final size = renderBox.size;
+        // Return the center of the FAB
+        return Offset(
+          position.dx + size.width / 2,
+          position.dy + size.height / 2,
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ [MainScreen] Could not get FAB position: $e');
+    }
+
+    // Fallback to approximation if RenderBox not available yet
+    final size = MediaQuery.of(context).size;
+    return Offset(size.width / 2, size.height - 80);
   }
 
   Widget _buildVoiceFAB() {
     final IconData buttonIcon;
     final Gradient buttonGradient;
     final VoidCallback? onTapAction;
-    final bool enableHold;
 
     if (_isRecording) {
+      // Recording: tap to stop
       buttonIcon = Icons.mic;
       buttonGradient = AppTheme.accentGradient;
-      onTapAction = null;
-      enableHold = true;
-    } else if (_hasRequiredPermissions()) {
-      buttonIcon = Icons.mic_none;
-      buttonGradient = AppTheme.primaryGradient;
       onTapAction = () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.tr('voice.hold_instruction')),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        debugPrint('👆 [MainScreen] Tap to stop recording');
+        _stopRecording();
       };
-      enableHold = true;
+    } else if (_hasRequiredPermissions()) {
+      // Ready: tap to start recording
+      buttonIcon = Icons.mic_none;
+      buttonGradient = AppTheme.accentGradient;
+      onTapAction = () {
+        debugPrint('👆 [MainScreen] Tap to start recording');
+        _startRecording();
+      };
     } else if (_shouldShowDisabled()) {
+      // Permission denied: tap to show dialog
       buttonIcon = Icons.mic_off;
       buttonGradient = LinearGradient(
         colors: [AppTheme.error, AppTheme.error.withValues(alpha: 0.8)],
       );
       onTapAction = _showPermissionDeniedDialog;
-      enableHold = false;
     } else {
+      // No permission yet: tap to request
       buttonIcon = Icons.mic_off;
-      buttonGradient = AppTheme.primaryGradient;
+      buttonGradient = AppTheme.accentGradient;
       onTapAction = _requestPermission;
-      enableHold = false;
     }
 
-    return GestureDetector(
-      onLongPressStart: enableHold && !_isRecording
-          ? (_) => _startRecording()
-          : null,
-      onLongPressEnd: _isRecording ? (_) => _stopRecording() : null,
-      onVerticalDragUpdate: _isRecording
-          ? (details) {
-              if (details.primaryDelta! < -10) {
-                _cancelRecording();
-              }
-            }
-          : null,
-      child: Container(
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          gradient: buttonGradient,
-          shape: BoxShape.circle,
-          boxShadow: AppTheme.shadowLarge,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          child: InkWell(
-            onTap: onTapAction,
-            customBorder: const CircleBorder(),
-            child: Icon(buttonIcon, color: Colors.white, size: 28),
-          ),
+    final fabWidget = Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        gradient: buttonGradient,
+        shape: BoxShape.circle,
+        boxShadow: AppTheme.shadowLarge,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTapAction,
+          customBorder: const CircleBorder(),
+          child: Icon(buttonIcon, color: Colors.white, size: 32),
         ),
       ),
     );
+
+    // Wrap with pulsing rings if needed
+    final Widget result;
+    if (_shouldShowPulse && !_isRecording) {
+      result = AnimatedBuilder(
+        animation: _pulseAnimation,
+        builder: (context, child) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // Outer ring
+              Container(
+                width: 72 * _pulseAnimation.value * 1.2,
+                height: 72 * _pulseAnimation.value * 1.2,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.accentPink.withValues(
+                      alpha: 0.3 * (2 - _pulseAnimation.value),
+                    ),
+                    width: 2,
+                  ),
+                ),
+              ),
+              // Inner ring
+              Container(
+                width: 72 * _pulseAnimation.value,
+                height: 72 * _pulseAnimation.value,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.accentOrange.withValues(
+                      alpha: 0.4 * (2 - _pulseAnimation.value),
+                    ),
+                    width: 2,
+                  ),
+                ),
+              ),
+              // FAB
+              child!,
+            ],
+          );
+        },
+        child: fabWidget,
+      );
+    } else {
+      result = fabWidget;
+    }
+
+    // Wrap entire FAB with key for position tracking
+    return Container(key: _fabKey, child: result);
   }
 
   Widget _buildRipple(double level, double size, double opacity) {
