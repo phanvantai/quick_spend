@@ -140,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _requestPermission() async {
     debugPrint('🔐 [HomeScreen] Requesting permission...');
+    debugPrint('🔐 [HomeScreen] Platform: ${Platform.isIOS ? "iOS" : "Android"}');
 
     final shouldRequest = await _showPermissionRationale();
     if (!shouldRequest || !mounted) {
@@ -147,17 +148,20 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
 
+    debugPrint('🔐 [HomeScreen] User accepted rationale, requesting permissions...');
     final granted = await _voiceService.requestPermission();
     debugPrint('🔐 [HomeScreen] Permission request completed. Result: $granted');
 
     // Always recheck permission status after requesting
     // This handles cases where permissions might be partially granted or timing issues
     if (mounted) {
+      debugPrint('🔐 [HomeScreen] Rechecking permission status...');
       await _checkPermissionStatus();
     }
 
     // Show appropriate feedback based on final permission state
     if (mounted) {
+      debugPrint('🔐 [HomeScreen] Final state after request: ${_permissionState.name}');
       if (_permissionState == VoicePermissionState.granted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -168,7 +172,10 @@ class _HomeScreenState extends State<HomeScreen>
         );
       } else if (_permissionState == VoicePermissionState.denied) {
         // Only show denied dialog if permanently denied
+        debugPrint('⚠️ [HomeScreen] Showing permission denied dialog');
         _showPermissionDeniedDialog();
+      } else {
+        debugPrint('❓ [HomeScreen] Permission still not determined - user can try again');
       }
       // If notDetermined, user can try again by tapping button
     }
@@ -992,11 +999,19 @@ class _HomeScreenState extends State<HomeScreen>
             const Icon(Icons.mic, color: AppTheme.info),
             const SizedBox(width: AppTheme.spacing12),
             Expanded(
-              child: Text(context.tr('voice.permission_title')),
+              child: Text(
+                Platform.isIOS
+                    ? context.tr('voice.permission_title_ios')
+                    : context.tr('voice.permission_title_android'),
+              ),
             ),
           ],
         ),
-        content: Text(context.tr('voice.permission_rationale')),
+        content: Text(
+          Platform.isIOS
+              ? context.tr('voice.permission_rationale_ios')
+              : context.tr('voice.permission_rationale_android'),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -1029,7 +1044,11 @@ class _HomeScreenState extends State<HomeScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.tr('voice.permission_denied_message')),
+            Text(
+              Platform.isIOS
+                  ? context.tr('voice.permission_denied_message_ios')
+                  : context.tr('voice.permission_denied_message_android'),
+            ),
             const SizedBox(height: AppTheme.spacing16),
             Container(
               padding: const EdgeInsets.all(AppTheme.spacing12),
@@ -1046,7 +1065,9 @@ class _HomeScreenState extends State<HomeScreen>
                   const SizedBox(width: AppTheme.spacing8),
                   Expanded(
                     child: Text(
-                      context.tr('voice.permission_settings_hint'),
+                      Platform.isIOS
+                          ? context.tr('voice.permission_settings_hint_ios')
+                          : context.tr('voice.permission_settings_hint_android'),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppTheme.info,
                           ),

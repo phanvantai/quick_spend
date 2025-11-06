@@ -102,7 +102,14 @@ class VoiceService {
     }
 
     // On iOS, both microphone and speech permissions are needed
+    // Add small delay to ensure dialogs appear properly when mic is already granted
+    if (micStatus.isGranted) {
+      debugPrint('🔐 [VoiceService.requestPermission] Mic already granted, adding delay before speech request...');
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+
     // Request speech permission after microphone
+    debugPrint('🔐 [VoiceService.requestPermission] Requesting speech permission...');
     final speechStatus = await Permission.speech.request();
     debugPrint('🔐 [VoiceService.requestPermission] Speech request result: ${speechStatus.name} (isGranted: ${speechStatus.isGranted})');
 
