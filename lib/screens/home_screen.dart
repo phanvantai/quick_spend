@@ -29,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen>
   double _soundLevel = 0.0;
   String _recognizedText = '';
   PermissionStatus? _micPermissionStatus;
-  PermissionStatus? _speechPermissionStatus;
+  bool _voiceServiceInitFailed = false; // Track if initialization failed
   late AnimationController _listeningTextController;
   late AnimationController _swipeTextController;
   late Animation<double> _listeningFadeAnimation;
@@ -93,36 +93,29 @@ class _HomeScreenState extends State<HomeScreen>
     final micStatus = await Permission.microphone.status;
     debugPrint('🔐 [HomeScreen] Microphone: ${micStatus.name}');
 
-    // We still check speech status for display/debugging purposes
-    // But we don't require it to be granted for the button to work
-    PermissionStatus? speechStatus;
-    if (Platform.isIOS) {
-      speechStatus = await Permission.speech.status;
-      debugPrint('🔐 [HomeScreen] Speech: ${speechStatus.name} (will be auto-requested by VoiceService)');
-    }
-
     setState(() {
       _micPermissionStatus = micStatus;
-      _speechPermissionStatus = speechStatus;
     });
 
     debugPrint('🔐 [HomeScreen] Permission status updated');
 
-    // If microphone is granted, initialize VoiceService
+    // If microphone is granted, try to initialize VoiceService
     // This will trigger iOS speech permission dialog if not yet granted
     if (micStatus.isGranted && !_voiceService.isInitialized) {
       debugPrint('🎙️ [HomeScreen] Microphone granted, initializing VoiceService...');
       final initialized = await _voiceService.initialize();
       debugPrint('🎙️ [HomeScreen] VoiceService initialized: $initialized');
 
-      // Recheck speech permission after initialization
-      // (iOS might have just granted it via the auto-request dialog)
-      if (Platform.isIOS && mounted) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        final updatedSpeechStatus = await Permission.speech.status;
-        debugPrint('🔐 [HomeScreen] Speech status after initialization: ${updatedSpeechStatus.name}');
+      if (!initialized) {
+        // Initialization failed - likely speech permission denied on iOS
+        debugPrint('⚠️ [HomeScreen] VoiceService initialization failed');
         setState(() {
-          _speechPermissionStatus = updatedSpeechStatus;
+          _voiceServiceInitFailed = true;
+        });
+      } else {
+        // Success - reset failed flag if it was set
+        setState(() {
+          _voiceServiceInitFailed = false;
         });
       }
     }
@@ -131,25 +124,17 @@ class _HomeScreenState extends State<HomeScreen>
   bool _hasRequiredPermissions() {
     if (_micPermissionStatus == null) return false;
 
-    // Both Android and iOS just need microphone granted
-    // Speech permission on iOS will be requested by VoiceService when needed
-    return _micPermissionStatus!.isGranted;
+    // Need microphone granted AND VoiceService successfully initialized
+    return _micPermissionStatus!.isGranted && _voiceService.isInitialized;
   }
 
-  bool _isPermissionPermanentlyDenied() {
+  bool _shouldShowDisabled() {
     if (_micPermissionStatus == null) return false;
 
-    // Check if microphone is permanently denied
-    if (_micPermissionStatus!.isPermanentlyDenied) return true;
-
-    // On iOS, also check if speech is permanently denied
-    // Even though we don't manually request it, if it's permanently denied
-    // VoiceService won't be able to initialize
-    if (Platform.isIOS && _speechPermissionStatus?.isPermanentlyDenied == true) {
-      return true;
-    }
-
-    return false;
+    // Show disabled if:
+    // 1. Microphone is permanently denied, OR
+    // 2. Microphone is granted but VoiceService init failed (speech denied)
+    return _micPermissionStatus!.isPermanentlyDenied || _voiceServiceInitFailed;
   }
 
   Future<void> _requestPermission() async {
@@ -871,7 +856,7 @@ class _HomeScreenState extends State<HomeScreen>
       onTapAction = null;
       enableHold = true;
     } else if (_hasRequiredPermissions()) {
-      // Permission granted - ready to record
+      // VoiceService initialized successfully - ready to record
       buttonText = context.tr('voice.hold_to_record');
       buttonIcon = Icons.mic_none;
       buttonGradient = AppTheme.primaryGradient;
@@ -884,8 +869,8 @@ class _HomeScreenState extends State<HomeScreen>
         );
       };
       enableHold = true;
-    } else if (_isPermissionPermanentlyDenied()) {
-      // Permission permanently denied
+    } else if (_shouldShowDisabled()) {
+      // Permission permanently denied or VoiceService init failed
       buttonText = context.tr('voice.voice_disabled');
       buttonIcon = Icons.mic_off;
       buttonGradient = LinearGradient(
@@ -894,7 +879,7 @@ class _HomeScreenState extends State<HomeScreen>
       onTapAction = _showPermissionDeniedDialog;
       enableHold = false;
     } else {
-      // Permission not requested yet or denied (can request again)
+      // Permission not requested yet or can request again
       buttonText = context.tr('voice.tap_to_enable');
       buttonIcon = Icons.mic_off;
       buttonGradient = AppTheme.primaryGradient;
