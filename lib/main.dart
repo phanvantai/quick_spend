@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'firebase_options.dart';
 import 'providers/app_config_provider.dart';
 import 'providers/expense_provider.dart';
+import 'providers/report_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/expense_service.dart';
 import 'services/gemini_expense_parser.dart';
@@ -63,6 +64,13 @@ class MyApp extends StatelessWidget {
           create: (_) => AppConfigProvider(preferencesService),
         ),
         ChangeNotifierProvider(create: (_) => ExpenseProvider(expenseService)),
+        ChangeNotifierProxyProvider<ExpenseProvider, ReportProvider>(
+          create: (context) => ReportProvider(
+            Provider.of<ExpenseProvider>(context, listen: false),
+          ),
+          update: (context, expenseProvider, previous) =>
+              previous ?? ReportProvider(expenseProvider),
+        ),
       ],
       child: Consumer<AppConfigProvider>(
         builder: (context, configProvider, _) {
