@@ -580,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen>
                 slivers: [
                   // App bar with gradient
                   SliverAppBar(
-                    expandedHeight: 120,
+                    expandedHeight: 80,
                     floating: false,
                     pinned: true,
                     backgroundColor: AppTheme.primaryMint,
@@ -591,7 +591,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         child: SafeArea(
                           child: Padding(
-                            padding: const EdgeInsets.all(AppTheme.spacing24),
+                            padding: const EdgeInsets.all(AppTheme.spacing16),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -603,7 +603,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(height: AppTheme.spacing16),
+                                const SizedBox(height: AppTheme.spacing8),
                               ],
                             ),
                           ),
