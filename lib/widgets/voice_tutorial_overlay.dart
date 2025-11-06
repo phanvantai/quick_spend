@@ -158,15 +158,15 @@ class _VoiceTutorialOverlayState extends State<VoiceTutorialOverlay>
                   ),
                 ),
 
-                // Animated hand gesture
+                // Animated hand gesture - positioned relative to FAB
                 Positioned(
-                  left: widget.fabPosition.dx + 40,
-                  bottom: widget.fabPosition.dy + 40,
+                  left: widget.fabPosition.dx + 20,
+                  top: widget.fabPosition.dy - 60,
                   child: AnimatedBuilder(
                     animation: _pressAnimation,
                     builder: (context, child) {
                       return Transform.translate(
-                        offset: Offset(0, -10 * _pressAnimation.value),
+                        offset: Offset(0, 10 * _pressAnimation.value),
                         child: Opacity(
                           opacity: 0.3 +
                               (0.7 * _fadeAnimation.value) *
