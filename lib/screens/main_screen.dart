@@ -52,11 +52,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     _screens = [const HomeScreen(), const ReportScreen()];
 
+    // Check tutorial status first (show immediately on first launch)
+    _checkTutorialStatus();
+
     // Check permission status on init
     _checkPermissionStatus();
-
-    // Check tutorial status
-    _checkTutorialStatus();
 
     // Listen for app lifecycle changes to refresh permission status
     _lifecycleObserver = _AppLifecycleObserver(
@@ -143,9 +143,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         });
       }
     }
-
-    // Show tutorial after permissions are checked (if needed)
-    _maybeShowTutorial();
   }
 
   Future<void> _checkTutorialStatus() async {
@@ -156,25 +153,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     debugPrint('📚 [MainScreen] Tutorial shown: $hasShown');
     debugPrint('📚 [MainScreen] Should show pulse: $shouldPulse');
 
-    setState(() {
-      _shouldShowPulse = shouldPulse;
-    });
-
-    if (shouldPulse) {
-      _pulseController.repeat(reverse: true);
-    }
-  }
-
-  Future<void> _maybeShowTutorial() async {
-    final hasShown = await _prefsService.hasShownVoiceTutorial();
-    if (!hasShown && _hasRequiredPermissions() && mounted) {
-      // Wait a bit for the UI to settle, then show tutorial
-      await Future.delayed(const Duration(milliseconds: 500));
+    if (!hasShown) {
+      // Show tutorial immediately on first launch
+      await Future.delayed(const Duration(milliseconds: 800));
       if (mounted) {
         setState(() {
           _showTutorial = true;
         });
       }
+    } else if (shouldPulse) {
+      // Show pulsing hint for first 3 uses after tutorial
+      setState(() {
+        _shouldShowPulse = true;
+      });
+      _pulseController.repeat(reverse: true);
     }
   }
 
