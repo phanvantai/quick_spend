@@ -7,7 +7,6 @@ import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
 import '../services/voice_service.dart';
 import '../services/expense_parser.dart';
-import '../models/expense.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'report_screen.dart';
@@ -41,10 +40,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    _screens = [
-      const HomeScreen(),
-      const ReportScreen(),
-    ];
+    _screens = [const HomeScreen(), const ReportScreen()];
 
     // Check permission status on init
     _checkPermissionStatus();
@@ -76,10 +72,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1800),
     );
     _swipeSlideAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
-      CurvedAnimation(
-        parent: _swipeTextController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _swipeTextController, curve: Curves.easeInOut),
     );
   }
 
@@ -94,7 +87,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Future<void> _checkPermissionStatus() async {
     debugPrint('🔐 [MainScreen] Checking permission status...');
-    debugPrint('🔐 [MainScreen] Platform: ${Platform.isIOS ? "iOS" : "Android"}');
+    debugPrint(
+      '🔐 [MainScreen] Platform: ${Platform.isIOS ? "iOS" : "Android"}',
+    );
 
     final micStatus = await Permission.microphone.status;
     debugPrint('🔐 [MainScreen] Microphone: ${micStatus.name}');
@@ -108,7 +103,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     // If microphone is granted, try to initialize VoiceService
     // This will trigger iOS speech permission dialog if not yet granted
     if (micStatus.isGranted && !_voiceService.isInitialized) {
-      debugPrint('🎙️ [MainScreen] Microphone granted, initializing VoiceService...');
+      debugPrint(
+        '🎙️ [MainScreen] Microphone granted, initializing VoiceService...',
+      );
       final initialized = await _voiceService.initialize();
       debugPrint('🎙️ [MainScreen] VoiceService initialized: $initialized');
 
@@ -137,7 +134,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Future<void> _requestPermission() async {
     debugPrint('🔐 [MainScreen] Requesting permission...');
-    debugPrint('🔐 [MainScreen] Platform: ${Platform.isIOS ? "iOS" : "Android"}');
+    debugPrint(
+      '🔐 [MainScreen] Platform: ${Platform.isIOS ? "iOS" : "Android"}',
+    );
 
     final shouldRequest = await _showPermissionRationale();
     if (!shouldRequest || !mounted) {
@@ -145,7 +144,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       return;
     }
 
-    debugPrint('🔐 [MainScreen] User accepted rationale, requesting microphone permission...');
+    debugPrint(
+      '🔐 [MainScreen] User accepted rationale, requesting microphone permission...',
+    );
 
     final micStatus = await Permission.microphone.request();
     debugPrint('🔐 [MainScreen] Microphone result: ${micStatus.name}');
@@ -304,7 +305,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       builder: (context) => AlertDialog(
         title: Text(
           results.length > 1
-              ? context.tr('home.expenses_parsed_multiple', namedArgs: {'count': results.length.toString()})
+              ? context.tr(
+                  'home.expenses_parsed_multiple',
+                  namedArgs: {'count': results.length.toString()},
+                )
               : context.tr('home.expense_parsed_single'),
           style: Theme.of(context).textTheme.headlineSmall,
         ),
@@ -316,7 +320,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               for (var i = 0; i < results.length; i++) ...[
                 if (results.length > 1) ...[
                   Text(
-                    context.tr('home.expense_number', namedArgs: {'number': (i + 1).toString()}),
+                    context.tr(
+                      'home.expense_number',
+                      namedArgs: {'number': (i + 1).toString()},
+                    ),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: AppTheme.spacing8),
@@ -351,7 +358,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       children: [
         Text('${context.tr('home.amount')}: ${expense.getFormattedAmount()}'),
         Text('${context.tr('home.description')}: ${expense.description}'),
-        Text('${context.tr('home.category')}: ${expense.category.toString().split('.').last}'),
+        Text(
+          '${context.tr('home.category')}: ${expense.category.toString().split('.').last}',
+        ),
         if (result.overallConfidence != null && result.overallConfidence! < 0.7)
           Text(
             '\n${context.tr('home.low_confidence_verify')}',
@@ -391,7 +400,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           SnackBar(
             content: Text(
               expenses.length > 1
-                  ? context.tr('home.expenses_saved_multiple', namedArgs: {'count': expenses.length.toString()})
+                  ? context.tr(
+                      'home.expenses_saved_multiple',
+                      namedArgs: {'count': expenses.length.toString()},
+                    )
                   : context.tr('home.expense_saved_single'),
             ),
             backgroundColor: AppTheme.success,
@@ -404,7 +416,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.tr('home.error_saving_expenses', namedArgs: {'error': e.toString()})),
+            content: Text(
+              context.tr(
+                'home.error_saving_expenses',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -457,9 +474,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           children: [
             const Icon(Icons.warning, color: AppTheme.warning),
             const SizedBox(width: AppTheme.spacing12),
-            Expanded(
-              child: Text(context.tr('voice.permission_denied_title')),
-            ),
+            Expanded(child: Text(context.tr('voice.permission_denied_title'))),
           ],
         ),
         content: Column(
@@ -477,22 +492,26 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: AppTheme.info.withValues(alpha: 0.1),
                 borderRadius: AppTheme.borderRadiusSmall,
-                border: Border.all(
-                  color: AppTheme.info.withValues(alpha: 0.3),
-                ),
+                border: Border.all(color: AppTheme.info.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: AppTheme.info, size: 20),
+                  const Icon(
+                    Icons.info_outline,
+                    color: AppTheme.info,
+                    size: 20,
+                  ),
                   const SizedBox(width: AppTheme.spacing8),
                   Expanded(
                     child: Text(
                       Platform.isIOS
                           ? context.tr('voice.permission_settings_hint_ios')
-                          : context.tr('voice.permission_settings_hint_android'),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.info,
-                          ),
+                          : context.tr(
+                              'voice.permission_settings_hint_android',
+                            ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: AppTheme.info),
                     ),
                   ),
                 ],
@@ -548,14 +567,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             children: [
               Icon(
                 isSelected ? selectedIcon : icon,
-                color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
                 size: 24,
               ),
               const SizedBox(height: AppTheme.spacing4),
               Text(
                 label,
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                  color: isSelected
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -572,10 +595,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       children: [
         // Main Scaffold with content and bottom navigation
         Scaffold(
-          body: IndexedStack(
-            index: _currentIndex,
-            children: _screens,
-          ),
+          body: IndexedStack(index: _currentIndex, children: _screens),
           // Notched BottomAppBar with navigation items
           bottomNavigationBar: BottomAppBar(
             shape: const CircularNotchedRectangle(),
@@ -601,7 +621,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           ),
           // Voice FAB docked in the center
           floatingActionButton: _buildVoiceFAB(),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
         ),
 
         // Full-screen recording overlay (covers everything including bottom nav and FAB)
@@ -718,7 +739,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                 context.tr('voice.slide_to_cancel'),
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
-                                      color: Colors.white.withValues(alpha: 0.7),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.7,
+                                      ),
                                     ),
                               ),
                             ],
@@ -773,7 +796,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     return GestureDetector(
-      onLongPressStart: enableHold && !_isRecording ? (_) => _startRecording() : null,
+      onLongPressStart: enableHold && !_isRecording
+          ? (_) => _startRecording()
+          : null,
       onLongPressEnd: _isRecording ? (_) => _stopRecording() : null,
       onVerticalDragUpdate: _isRecording
           ? (details) {
@@ -796,11 +821,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           child: InkWell(
             onTap: onTapAction,
             customBorder: const CircleBorder(),
-            child: Icon(
-              buttonIcon,
-              color: Colors.white,
-              size: 28,
-            ),
+            child: Icon(buttonIcon, color: Colors.white, size: 28),
           ),
         ),
       ),
