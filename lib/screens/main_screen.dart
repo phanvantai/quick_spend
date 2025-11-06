@@ -28,6 +28,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   // Voice service and state
   final VoiceService _voiceService = VoiceService();
   bool _isRecording = false;
+  bool _isSwiping = false; // Track if user is swiping to cancel
   double _soundLevel = 0.0;
   String _recognizedText = '';
   PermissionStatus? _micPermissionStatus;
@@ -275,6 +276,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     setState(() {
       _isRecording = false;
+      _isSwiping = false;
     });
 
     if (_recognizedText.isNotEmpty) {
@@ -291,6 +293,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     setState(() {
       _isRecording = false;
+      _isSwiping = false;
       _recognizedText = '';
     });
   }
@@ -649,13 +652,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             child: Listener(
               behavior: HitTestBehavior.opaque,
               onPointerUp: (_) {
-                debugPrint('👆 [MainScreen] Pointer UP detected - stopping recording');
-                _stopRecording();
+                debugPrint('👆 [MainScreen] Pointer UP detected, _isSwiping: $_isSwiping');
+                // Only stop recording if user didn't swipe to cancel
+                if (!_isSwiping) {
+                  _stopRecording();
+                }
+                // Reset swipe flag
+                setState(() {
+                  _isSwiping = false;
+                });
               },
               child: GestureDetector(
                 onVerticalDragUpdate: (details) {
-                  debugPrint('👆 [MainScreen] Vertical drag on overlay: ${details.primaryDelta}');
                   if (details.primaryDelta! < -10) {
+                    debugPrint('👆 [MainScreen] Swipe up detected - canceling');
+                    setState(() {
+                      _isSwiping = true;
+                    });
                     _cancelRecording();
                   }
                 },
@@ -826,79 +839,53 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     final IconData buttonIcon;
     final Gradient buttonGradient;
     final VoidCallback? onTapAction;
-    final bool enableHold;
 
     if (_isRecording) {
+      // Recording: tap to stop
       buttonIcon = Icons.mic;
       buttonGradient = AppTheme.accentGradient;
-      onTapAction = null;
-      enableHold = true;
+      onTapAction = () {
+        debugPrint('👆 [MainScreen] Tap to stop recording');
+        _stopRecording();
+      };
     } else if (_hasRequiredPermissions()) {
+      // Ready: tap to start recording
       buttonIcon = Icons.mic_none;
       buttonGradient = AppTheme.accentGradient;
       onTapAction = () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.tr('voice.hold_instruction')),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        debugPrint('👆 [MainScreen] Tap to start recording');
+        _startRecording();
       };
-      enableHold = true;
     } else if (_shouldShowDisabled()) {
+      // Permission denied: tap to show dialog
       buttonIcon = Icons.mic_off;
       buttonGradient = LinearGradient(
         colors: [AppTheme.error, AppTheme.error.withValues(alpha: 0.8)],
       );
       onTapAction = _showPermissionDeniedDialog;
-      enableHold = false;
     } else {
+      // No permission yet: tap to request
       buttonIcon = Icons.mic_off;
       buttonGradient = AppTheme.accentGradient;
       onTapAction = _requestPermission;
-      enableHold = false;
     }
 
-    final fabWidget = GestureDetector(
-      onLongPressStart: enableHold && !_isRecording
-          ? (_) {
-              debugPrint('👆 [MainScreen] Long press START detected');
-              _startRecording();
-            }
-          : null,
-      onLongPressEnd: enableHold
-          ? (_) {
-              debugPrint('👆 [MainScreen] Long press END detected, _isRecording: $_isRecording');
-              if (_isRecording) {
-                _stopRecording();
-              }
-            }
-          : null,
-      onVerticalDragUpdate: enableHold
-          ? (details) {
-              debugPrint('👆 [MainScreen] Drag update: ${details.primaryDelta}, _isRecording: $_isRecording');
-              if (_isRecording && details.primaryDelta! < -10) {
-                _cancelRecording();
-              }
-            }
-          : null,
-      child: Container(
-        key: _fabKey,
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          gradient: buttonGradient,
-          shape: BoxShape.circle,
-          boxShadow: AppTheme.shadowLarge,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          child: InkWell(
-            onTap: onTapAction,
-            customBorder: const CircleBorder(),
-            child: Icon(buttonIcon, color: Colors.white, size: 32),
-          ),
+    final fabWidget = Container(
+      key: _fabKey,
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        gradient: buttonGradient,
+        shape: BoxShape.circle,
+        boxShadow: AppTheme.shadowLarge,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTapAction,
+          customBorder: const CircleBorder(),
+          child: Icon(buttonIcon, color: Colors.white, size: 32),
         ),
       ),
     );
