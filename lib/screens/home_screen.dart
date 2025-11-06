@@ -14,13 +14,6 @@ import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-/// Permission states for voice recording
-enum VoicePermissionState {
-  notDetermined, // Not yet requested
-  granted,       // Permission granted
-  denied,        // Permission denied
-}
-
 /// Home Screen with modern UI and voice input
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,7 +28,8 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isRecording = false;
   double _soundLevel = 0.0;
   String _recognizedText = '';
-  VoicePermissionState _permissionState = VoicePermissionState.notDetermined;
+  PermissionStatus? _micPermissionStatus;
+  PermissionStatus? _speechPermissionStatus;
   late AnimationController _listeningTextController;
   late AnimationController _swipeTextController;
   late Animation<double> _listeningFadeAnimation;
@@ -96,56 +90,52 @@ class _HomeScreenState extends State<HomeScreen>
     debugPrint('🔐 [HomeScreen] Checking permission status...');
     debugPrint('🔐 [HomeScreen] Platform: ${Platform.isIOS ? "iOS" : "Android"}');
 
-    final hasPermission = await _voiceService.hasPermission();
-    debugPrint('🔐 [HomeScreen] hasPermission result: $hasPermission');
+    final micStatus = await Permission.microphone.status;
+    debugPrint('🔐 [HomeScreen] Microphone: ${micStatus.name}');
 
-    if (hasPermission) {
-      setState(() {
-        _permissionState = VoicePermissionState.granted;
-      });
-      debugPrint('✅ [HomeScreen] Setting state to GRANTED');
-    } else {
-      // Check if permissions were permanently denied (user must go to settings)
-      final micStatus = await Permission.microphone.status;
-      debugPrint('🔐 [HomeScreen] Microphone status: ${micStatus.name} (isGranted: ${micStatus.isGranted}, isDenied: ${micStatus.isDenied}, isPermanentlyDenied: ${micStatus.isPermanentlyDenied})');
-
-      bool isPermanentlyDenied = micStatus.isPermanentlyDenied;
-      bool isRestricted = micStatus.isRestricted;
-
-      // On iOS, also check speech permission
-      if (Platform.isIOS) {
-        final speechStatus = await Permission.speech.status;
-        debugPrint('🔐 [HomeScreen] Speech status: ${speechStatus.name} (isGranted: ${speechStatus.isGranted}, isDenied: ${speechStatus.isDenied}, isPermanentlyDenied: ${speechStatus.isPermanentlyDenied}, isRestricted: ${speechStatus.isRestricted})');
-        isPermanentlyDenied = isPermanentlyDenied || speechStatus.isPermanentlyDenied;
-        isRestricted = isRestricted || speechStatus.isRestricted;
-      }
-
-      // Treat as "denied" if:
-      // 1. Permanently denied (user must open settings)
-      // 2. Restricted (device policy/parental controls)
-      // Otherwise treat as "not determined" (can request permission)
-      // Note: On first launch, iOS returns isDenied:true but isPermanentlyDenied:false
-      // which should be treated as "not determined" so user can tap to enable
-      if (isPermanentlyDenied || isRestricted) {
-        setState(() {
-          _permissionState = VoicePermissionState.denied;
-        });
-        debugPrint('❌ [HomeScreen] Setting state to DENIED (isPermanentlyDenied: $isPermanentlyDenied, isRestricted: $isRestricted - requires settings)');
-      } else {
-        setState(() {
-          _permissionState = VoicePermissionState.notDetermined;
-        });
-        debugPrint('❓ [HomeScreen] Setting state to NOT_DETERMINED (can request permission)');
-      }
+    PermissionStatus? speechStatus;
+    if (Platform.isIOS) {
+      speechStatus = await Permission.speech.status;
+      debugPrint('🔐 [HomeScreen] Speech: ${speechStatus.name}');
     }
 
-    debugPrint('🔐 [HomeScreen] Final permission state: ${_permissionState.name}');
+    setState(() {
+      _micPermissionStatus = micStatus;
+      _speechPermissionStatus = speechStatus;
+    });
+
+    debugPrint('🔐 [HomeScreen] Permission status updated');
+  }
+
+  bool _hasRequiredPermissions() {
+    if (_micPermissionStatus == null) return false;
+
+    if (Platform.isAndroid) {
+      return _micPermissionStatus!.isGranted;
+    } else {
+      // iOS needs both mic and speech
+      return _micPermissionStatus!.isGranted &&
+             _speechPermissionStatus?.isGranted == true;
+    }
+  }
+
+  bool _isPermissionPermanentlyDenied() {
+    if (_micPermissionStatus == null) return false;
+
+    if (Platform.isAndroid) {
+      return _micPermissionStatus!.isPermanentlyDenied;
+    } else {
+      // iOS: permanently denied if either permission is permanently denied
+      return _micPermissionStatus!.isPermanentlyDenied ||
+             _speechPermissionStatus?.isPermanentlyDenied == true;
+    }
   }
 
   Future<void> _requestPermission() async {
     debugPrint('🔐 [HomeScreen] Requesting permission...');
     debugPrint('🔐 [HomeScreen] Platform: ${Platform.isIOS ? "iOS" : "Android"}');
 
+    // Show platform-specific rationale dialog
     final shouldRequest = await _showPermissionRationale();
     if (!shouldRequest || !mounted) {
       debugPrint('❌ [HomeScreen] User declined permission rationale');
@@ -153,62 +143,41 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     debugPrint('🔐 [HomeScreen] User accepted rationale, requesting permissions...');
-    final result = await _voiceService.requestPermissionDetailed();
-    final granted = result['granted'] ?? false;
-    final speechPermanentlyDenied = result['speechPermanentlyDenied'] ?? false;
-    debugPrint('🔐 [HomeScreen] Permission request completed. granted: $granted, speechPermanentlyDenied: $speechPermanentlyDenied');
 
-    // If speech is permanently denied, immediately show settings dialog
-    if (Platform.isIOS && speechPermanentlyDenied && mounted) {
-      debugPrint('⚠️ [HomeScreen] Speech permanently denied on iOS, showing settings dialog immediately');
-      // Update state to denied
-      setState(() {
-        _permissionState = VoicePermissionState.denied;
-      });
-      _showPermissionDeniedDialog();
-      return;
-    }
+    if (Platform.isAndroid) {
+      // Android: Request microphone only
+      debugPrint('🔐 [HomeScreen] Requesting microphone permission (Android)');
+      final micStatus = await Permission.microphone.request();
+      debugPrint('🔐 [HomeScreen] Microphone result: ${micStatus.name}');
+    } else {
+      // iOS: Request microphone then speech
+      debugPrint('🔐 [HomeScreen] Requesting microphone permission (iOS)');
+      final micStatus = await Permission.microphone.request();
+      debugPrint('🔐 [HomeScreen] Microphone result: ${micStatus.name}');
 
-    // Add small delay to allow iOS to update permission states
-    // iOS sometimes takes a moment to update the status after .request() returns
-    await Future.delayed(const Duration(milliseconds: 200));
-
-    // Always recheck permission status after requesting
-    // This handles cases where permissions might be partially granted or timing issues
-    if (mounted) {
-      debugPrint('🔐 [HomeScreen] Rechecking permission status after delay...');
-      await _checkPermissionStatus();
-    }
-
-    // Show appropriate feedback based on final permission state
-    if (mounted) {
-      debugPrint('🔐 [HomeScreen] Final state after request: ${_permissionState.name}');
-      if (_permissionState == VoicePermissionState.granted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.tr('voice.permission_granted')),
-            backgroundColor: AppTheme.success,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      } else if (_permissionState == VoicePermissionState.denied) {
-        // Permission is permanently denied - show settings dialog
-        debugPrint('⚠️ [HomeScreen] Permission permanently denied, showing settings dialog');
-        _showPermissionDeniedDialog();
-      } else {
-        // Still not determined - don't show any dialog
-        // User can tap the button again to retry
-        debugPrint('❓ [HomeScreen] Permission still not determined - user can try again by tapping button');
+      // Add small delay before speech request
+      if (micStatus.isGranted) {
+        await Future.delayed(const Duration(milliseconds: 300));
       }
+
+      debugPrint('🔐 [HomeScreen] Requesting speech permission (iOS)');
+      final speechStatus = await Permission.speech.request();
+      debugPrint('🔐 [HomeScreen] Speech result: ${speechStatus.name}');
+    }
+
+    // Recheck permission status
+    if (mounted) {
+      await _checkPermissionStatus();
     }
   }
 
   Future<void> _startRecording() async {
     debugPrint('🎤 [HomeScreen] Starting recording...');
 
-    // Permission should already be granted at this point
-    if (_permissionState != VoicePermissionState.granted) {
-      debugPrint('❌ [HomeScreen] Cannot record - permission not granted');
+    // Check permissions are granted
+    final hasPermission = _hasRequiredPermissions();
+    if (!hasPermission) {
+      debugPrint('❌ [HomeScreen] Cannot record - permissions not granted');
       return;
     }
 
@@ -895,44 +864,36 @@ class _HomeScreenState extends State<HomeScreen>
       buttonGradient = AppTheme.accentGradient;
       onTapAction = null;
       enableHold = true;
+    } else if (_hasRequiredPermissions()) {
+      // Permission granted - ready to record
+      buttonText = context.tr('voice.hold_to_record');
+      buttonIcon = Icons.mic_none;
+      buttonGradient = AppTheme.primaryGradient;
+      onTapAction = () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('voice.hold_instruction')),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      };
+      enableHold = true;
+    } else if (_isPermissionPermanentlyDenied()) {
+      // Permission permanently denied
+      buttonText = context.tr('voice.voice_disabled');
+      buttonIcon = Icons.mic_off;
+      buttonGradient = LinearGradient(
+        colors: [AppTheme.error, AppTheme.error.withValues(alpha: 0.8)],
+      );
+      onTapAction = _showPermissionDeniedDialog;
+      enableHold = false;
     } else {
-      switch (_permissionState) {
-        case VoicePermissionState.granted:
-          // Permission granted - ready to record
-          buttonText = context.tr('voice.hold_to_record');
-          buttonIcon = Icons.mic_none;
-          buttonGradient = AppTheme.primaryGradient;
-          onTapAction = () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.tr('voice.hold_instruction')),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          };
-          enableHold = true;
-          break;
-
-        case VoicePermissionState.notDetermined:
-          // Permission not requested yet
-          buttonText = context.tr('voice.tap_to_enable');
-          buttonIcon = Icons.mic_off;
-          buttonGradient = AppTheme.primaryGradient;
-          onTapAction = _requestPermission;
-          enableHold = false;
-          break;
-
-        case VoicePermissionState.denied:
-          // Permission denied
-          buttonText = context.tr('voice.voice_disabled');
-          buttonIcon = Icons.mic_off;
-          buttonGradient = LinearGradient(
-            colors: [AppTheme.error, AppTheme.error.withValues(alpha: 0.8)],
-          );
-          onTapAction = _showPermissionDeniedDialog;
-          enableHold = false;
-          break;
-      }
+      // Permission not requested yet or denied (can request again)
+      buttonText = context.tr('voice.tap_to_enable');
+      buttonIcon = Icons.mic_off;
+      buttonGradient = AppTheme.primaryGradient;
+      onTapAction = _requestPermission;
+      enableHold = false;
     }
 
     return GestureDetector(
