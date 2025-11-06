@@ -568,170 +568,170 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Main content with tabs
-          IndexedStack(
+    return Stack(
+      children: [
+        // Main Scaffold with content and bottom navigation
+        Scaffold(
+          body: IndexedStack(
             index: _currentIndex,
             children: _screens,
           ),
-
-          // Full-screen recording overlay (covers everything including bottom nav)
-          if (_isRecording)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.7),
-                      Colors.black.withValues(alpha: 0.9),
-                    ],
-                  ),
+          // Notched BottomAppBar with navigation items
+          bottomNavigationBar: BottomAppBar(
+            shape: const CircularNotchedRectangle(),
+            notchMargin: 8.0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildBottomNavItem(
+                  icon: Icons.home_outlined,
+                  selectedIcon: Icons.home,
+                  label: context.tr('navigation.input'),
+                  index: 0,
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Animated microphone
-                    TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: _soundLevel),
-                      duration: const Duration(milliseconds: 100),
-                      builder: (context, value, child) {
-                        final normalizedLevel = ((value + 60) / 40).clamp(
-                          0.0,
-                          1.0,
-                        );
-                        return Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            _buildRipple(normalizedLevel, 180, 0.2),
-                            _buildRipple(normalizedLevel, 150, 0.3),
-                            Container(
-                              width: 100.0 + (normalizedLevel * 30.0),
-                              height: 100.0 + (normalizedLevel * 30.0),
-                              decoration: BoxDecoration(
-                                gradient: AppTheme.accentGradient,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppTheme.accentPink.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    blurRadius: 20 + (normalizedLevel * 10),
-                                    spreadRadius: 5 + (normalizedLevel * 5),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.mic,
-                                color: Colors.white,
-                                size: 48,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: AppTheme.spacing24),
-                    AnimatedBuilder(
-                      animation: _listeningFadeAnimation,
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: _listeningFadeAnimation.value,
-                          child: Text(
-                            context.tr('voice.listening'),
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                          ),
-                        );
-                      },
-                    ),
-                    if (_recognizedText.isNotEmpty) ...[
-                      const SizedBox(height: AppTheme.spacing16),
-                      Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: AppTheme.spacing32,
-                        ),
-                        padding: const EdgeInsets.all(AppTheme.spacing16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: AppTheme.borderRadiusMedium,
-                          boxShadow: AppTheme.shadowLarge,
-                        ),
-                        child: Text(
-                          _recognizedText,
-                          style: Theme.of(context).textTheme.titleMedium,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppTheme.spacing32),
-                    AnimatedBuilder(
-                      animation: _swipeSlideAnimation,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: Offset(0, _swipeSlideAnimation.value),
-                          child: Opacity(
-                            opacity: 0.7 + (_listeningFadeAnimation.value * 0.3),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.arrow_upward,
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  size: 20,
-                                ),
-                                const SizedBox(width: AppTheme.spacing8),
-                                Text(
-                                  context.tr('voice.slide_to_cancel'),
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: Colors.white.withValues(alpha: 0.7),
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                const SizedBox(width: 80), // Space for the FAB
+                _buildBottomNavItem(
+                  icon: Icons.bar_chart_outlined,
+                  selectedIcon: Icons.bar_chart,
+                  label: context.tr('navigation.report'),
+                  index: 1,
+                ),
+              ],
+            ),
+          ),
+          // Voice FAB docked in the center
+          floatingActionButton: _buildVoiceFAB(),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        ),
+
+        // Full-screen recording overlay (covers everything including bottom nav and FAB)
+        if (_isRecording)
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.7),
+                    Colors.black.withValues(alpha: 0.9),
                   ],
                 ),
               ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Animated microphone
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: _soundLevel),
+                    duration: const Duration(milliseconds: 100),
+                    builder: (context, value, child) {
+                      final normalizedLevel = ((value + 60) / 40).clamp(
+                        0.0,
+                        1.0,
+                      );
+                      return Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          _buildRipple(normalizedLevel, 180, 0.2),
+                          _buildRipple(normalizedLevel, 150, 0.3),
+                          Container(
+                            width: 100.0 + (normalizedLevel * 30.0),
+                            height: 100.0 + (normalizedLevel * 30.0),
+                            decoration: BoxDecoration(
+                              gradient: AppTheme.accentGradient,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.accentPink.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                  blurRadius: 20 + (normalizedLevel * 10),
+                                  spreadRadius: 5 + (normalizedLevel * 5),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.mic,
+                              color: Colors.white,
+                              size: 48,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: AppTheme.spacing24),
+                  AnimatedBuilder(
+                    animation: _listeningFadeAnimation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _listeningFadeAnimation.value,
+                        child: Text(
+                          context.tr('voice.listening'),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                  if (_recognizedText.isNotEmpty) ...[
+                    const SizedBox(height: AppTheme.spacing16),
+                    Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacing32,
+                      ),
+                      padding: const EdgeInsets.all(AppTheme.spacing16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: AppTheme.borderRadiusMedium,
+                        boxShadow: AppTheme.shadowLarge,
+                      ),
+                      child: Text(
+                        _recognizedText,
+                        style: Theme.of(context).textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: AppTheme.spacing32),
+                  AnimatedBuilder(
+                    animation: _swipeSlideAnimation,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(0, _swipeSlideAnimation.value),
+                        child: Opacity(
+                          opacity: 0.7 + (_listeningFadeAnimation.value * 0.3),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.arrow_upward,
+                                color: Colors.white.withValues(alpha: 0.7),
+                                size: 20,
+                              ),
+                              const SizedBox(width: AppTheme.spacing8),
+                              Text(
+                                context.tr('voice.slide_to_cancel'),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.white.withValues(alpha: 0.7),
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-        ],
-      ),
-      // Notched BottomAppBar with navigation items
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildBottomNavItem(
-              icon: Icons.home_outlined,
-              selectedIcon: Icons.home,
-              label: context.tr('navigation.input'),
-              index: 0,
-            ),
-            const SizedBox(width: 80), // Space for the FAB
-            _buildBottomNavItem(
-              icon: Icons.bar_chart_outlined,
-              selectedIcon: Icons.bar_chart,
-              label: context.tr('navigation.report'),
-              index: 1,
-            ),
-          ],
-        ),
-      ),
-      // Voice FAB docked in the center
-      floatingActionButton: _buildVoiceFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          ),
+      ],
     );
   }
 
