@@ -85,6 +85,7 @@
     "hold_instruction": "Tap the button to record your expense",
     "recording": "Recording...",
     "release_to_send": "Tap to stop",
+    "tap_to_stop": "Tap to stop",
     "slide_to_cancel": "Swipe up to cancel",
     "listening": "Listening...",
     "error": "Could not start voice recording. Please check permissions.",

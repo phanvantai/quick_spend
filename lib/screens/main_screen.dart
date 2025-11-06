@@ -763,6 +763,37 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     ),
                   ],
                   const SizedBox(height: AppTheme.spacing32),
+                  // Tap to stop instruction
+                  AnimatedBuilder(
+                    animation: _listeningFadeAnimation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: 0.7 + (_listeningFadeAnimation.value * 0.3),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.touch_app,
+                              color: Colors.white.withValues(alpha: 0.7),
+                              size: 20,
+                            ),
+                            const SizedBox(width: AppTheme.spacing8),
+                            Text(
+                              context.tr('voice.tap_to_stop'),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.white.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                  ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: AppTheme.spacing12),
+                  // Swipe to cancel instruction
                   AnimatedBuilder(
                     animation: _swipeSlideAnimation,
                     builder: (context, child) {
