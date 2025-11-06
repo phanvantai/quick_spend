@@ -18,8 +18,15 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  String _selectedLanguage = 'en';
+  late String _selectedLanguage;
   String _selectedCurrency = 'USD';
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with current locale
+    _selectedLanguage = context.locale.languageCode;
+  }
 
   @override
   void dispose() {
