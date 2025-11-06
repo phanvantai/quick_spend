@@ -148,13 +148,17 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     final granted = await _voiceService.requestPermission();
-    debugPrint('🔐 [HomeScreen] Permission granted: $granted');
+    debugPrint('🔐 [HomeScreen] Permission request completed. Result: $granted');
 
-    if (granted) {
-      setState(() {
-        _permissionState = VoicePermissionState.granted;
-      });
-      if (mounted) {
+    // Always recheck permission status after requesting
+    // This handles cases where permissions might be partially granted or timing issues
+    if (mounted) {
+      await _checkPermissionStatus();
+    }
+
+    // Show appropriate feedback based on final permission state
+    if (mounted) {
+      if (_permissionState == VoicePermissionState.granted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.tr('voice.permission_granted')),
@@ -162,14 +166,11 @@ class _HomeScreenState extends State<HomeScreen>
             duration: const Duration(seconds: 2),
           ),
         );
-      }
-    } else {
-      setState(() {
-        _permissionState = VoicePermissionState.denied;
-      });
-      if (mounted) {
+      } else if (_permissionState == VoicePermissionState.denied) {
+        // Only show denied dialog if permanently denied
         _showPermissionDeniedDialog();
       }
+      // If notDetermined, user can try again by tapping button
     }
   }
 
