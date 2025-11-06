@@ -96,7 +96,11 @@
     "permission_settings_hint": "Enable Microphone and Speech Recognition in your device Settings app",
     "permission_settings_hint_android": "Enable Microphone in your device Settings app",
     "permission_settings_hint_ios": "Enable Microphone and Speech Recognition in Settings",
-    "open_settings": "Open Settings"
+    "open_settings": "Open Settings",
+    "tutorial_title": "Hold to Record",
+    "tutorial_description": "Press and hold the button to record your expense with voice. Release to process.",
+    "tutorial_got_it": "Got It!",
+    "tutorial_tap_anywhere": "or tap anywhere to dismiss"
   },
   "navigation": {
     "input": "Input",

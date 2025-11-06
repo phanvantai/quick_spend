@@ -96,7 +96,11 @@
     "permission_settings_hint": "Bật quyền Microphone và Nhận dạng Giọng nói trong ứng dụng Cài đặt",
     "permission_settings_hint_android": "Bật quyền Microphone trong ứng dụng Cài đặt",
     "permission_settings_hint_ios": "Bật quyền Microphone và Nhận dạng Giọng nói trong Cài đặt",
-    "open_settings": "Mở Cài Đặt"
+    "open_settings": "Mở Cài Đặt",
+    "tutorial_title": "Giữ để Ghi Âm",
+    "tutorial_description": "Nhấn và giữ nút để ghi âm chi tiêu bằng giọng nói. Thả ra để xử lý.",
+    "tutorial_got_it": "Đã Hiểu!",
+    "tutorial_tap_anywhere": "hoặc chạm bất kỳ đâu để đóng"
   },
   "navigation": {
     "input": "Nhập",

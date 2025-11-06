@@ -7,7 +7,9 @@ import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
 import '../services/voice_service.dart';
 import '../services/expense_parser.dart';
+import '../services/preferences_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/voice_tutorial_overlay.dart';
 import 'home_screen.dart';
 import 'report_screen.dart';
 
@@ -36,6 +38,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   late Animation<double> _swipeSlideAnimation;
   late WidgetsBindingObserver _lifecycleObserver;
 
+  // Tutorial state
+  final PreferencesService _prefsService = PreferencesService();
+  bool _showTutorial = false;
+  bool _shouldShowPulse = false;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+  final GlobalKey _fabKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +54,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     // Check permission status on init
     _checkPermissionStatus();
+
+    // Check tutorial status
+    _checkTutorialStatus();
 
     // Listen for app lifecycle changes to refresh permission status
     _lifecycleObserver = _AppLifecycleObserver(
@@ -74,12 +87,22 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _swipeSlideAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
       CurvedAnimation(parent: _swipeTextController, curve: Curves.easeInOut),
     );
+
+    // Pulse animation for tutorial hint
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
     _listeningTextController.dispose();
     _swipeTextController.dispose();
+    _pulseController.dispose();
     _voiceService.dispose();
     WidgetsBinding.instance.removeObserver(_lifecycleObserver);
     super.dispose();
@@ -120,6 +143,52 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         });
       }
     }
+
+    // Show tutorial after permissions are checked (if needed)
+    _maybeShowTutorial();
+  }
+
+  Future<void> _checkTutorialStatus() async {
+    debugPrint('📚 [MainScreen] Checking tutorial status...');
+    final hasShown = await _prefsService.hasShownVoiceTutorial();
+    final shouldPulse = await _prefsService.shouldShowVoicePulsingHint();
+
+    debugPrint('📚 [MainScreen] Tutorial shown: $hasShown');
+    debugPrint('📚 [MainScreen] Should show pulse: $shouldPulse');
+
+    setState(() {
+      _shouldShowPulse = shouldPulse;
+    });
+
+    if (shouldPulse) {
+      _pulseController.repeat(reverse: true);
+    }
+  }
+
+  Future<void> _maybeShowTutorial() async {
+    final hasShown = await _prefsService.hasShownVoiceTutorial();
+    if (!hasShown && _hasRequiredPermissions() && mounted) {
+      // Wait a bit for the UI to settle, then show tutorial
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        setState(() {
+          _showTutorial = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _dismissTutorial() async {
+    debugPrint('📚 [MainScreen] Dismissing tutorial...');
+    await _prefsService.markVoiceTutorialShown();
+
+    setState(() {
+      _showTutorial = false;
+      _shouldShowPulse = true;
+    });
+
+    // Start pulsing animation for next few uses
+    _pulseController.repeat(reverse: true);
   }
 
   bool _hasRequiredPermissions() {
@@ -163,6 +232,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     if (!hasPermission) {
       debugPrint('❌ [MainScreen] Cannot record - permissions not granted');
       return;
+    }
+
+    // Increment recording count and stop pulse hint
+    await _prefsService.incrementVoiceRecordingCount();
+    final shouldStopPulse = await _prefsService.getVoiceRecordingCount() >= 3;
+    if (shouldStopPulse && _shouldShowPulse) {
+      _pulseController.stop();
+      setState(() {
+        _shouldShowPulse = false;
+      });
     }
 
     if (!mounted) return;
@@ -713,7 +792,24 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
+
+        // Tutorial overlay
+        if (_showTutorial)
+          VoiceTutorialOverlay(
+            onDismiss: _dismissTutorial,
+            fabPosition: _getFABPosition(),
+          ),
       ],
+    );
+  }
+
+  Offset _getFABPosition() {
+    // Get FAB position from the screen
+    // FAB is centered horizontally and docked at the bottom
+    final size = MediaQuery.of(context).size;
+    return Offset(
+      size.width / 2,
+      size.height - 80, // Approximate bottom position with padding
     );
   }
 
@@ -754,7 +850,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       enableHold = false;
     }
 
-    return GestureDetector(
+    final fabWidget = GestureDetector(
       onLongPressStart: enableHold && !_isRecording
           ? (_) => _startRecording()
           : null,
@@ -767,6 +863,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             }
           : null,
       child: Container(
+        key: _fabKey,
         width: 64,
         height: 64,
         decoration: BoxDecoration(
@@ -785,6 +882,51 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ),
       ),
     );
+
+    // Wrap with pulsing rings if needed
+    if (_shouldShowPulse && !_isRecording) {
+      return AnimatedBuilder(
+        animation: _pulseAnimation,
+        builder: (context, child) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // Outer ring
+              Container(
+                width: 64 * _pulseAnimation.value * 1.2,
+                height: 64 * _pulseAnimation.value * 1.2,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.accentPink
+                        .withValues(alpha: 0.3 * (2 - _pulseAnimation.value)),
+                    width: 2,
+                  ),
+                ),
+              ),
+              // Inner ring
+              Container(
+                width: 64 * _pulseAnimation.value,
+                height: 64 * _pulseAnimation.value,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.accentOrange
+                        .withValues(alpha: 0.4 * (2 - _pulseAnimation.value)),
+                    width: 2,
+                  ),
+                ),
+              ),
+              // FAB
+              child!,
+            ],
+          );
+        },
+        child: fabWidget,
+      );
+    }
+
+    return fabWidget;
   }
 
   Widget _buildRipple(double level, double size, double opacity) {
