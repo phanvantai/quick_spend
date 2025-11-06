@@ -148,10 +148,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Future<void> _checkTutorialStatus() async {
     debugPrint('📚 [MainScreen] Checking tutorial status...');
     final hasShown = await _prefsService.hasShownVoiceTutorial();
-    final shouldPulse = await _prefsService.shouldShowVoicePulsingHint();
 
     debugPrint('📚 [MainScreen] Tutorial shown: $hasShown');
-    debugPrint('📚 [MainScreen] Should show pulse: $shouldPulse');
 
     if (!hasShown) {
       // Show tutorial immediately on first launch
@@ -161,8 +159,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           _showTutorial = true;
         });
       }
-    } else if (shouldPulse) {
-      // Show pulsing hint for first 3 uses after tutorial
+    } else {
+      // Always show pulsing hint after tutorial is dismissed
       setState(() {
         _shouldShowPulse = true;
       });
@@ -224,16 +222,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     if (!hasPermission) {
       debugPrint('❌ [MainScreen] Cannot record - permissions not granted');
       return;
-    }
-
-    // Increment recording count and stop pulse hint
-    await _prefsService.incrementVoiceRecordingCount();
-    final shouldStopPulse = await _prefsService.getVoiceRecordingCount() >= 3;
-    if (shouldStopPulse && _shouldShowPulse) {
-      _pulseController.stop();
-      setState(() {
-        _shouldShowPulse = false;
-      });
     }
 
     if (!mounted) return;
@@ -856,8 +844,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           : null,
       child: Container(
         key: _fabKey,
-        width: 64,
-        height: 64,
+        width: 72,
+        height: 72,
         decoration: BoxDecoration(
           gradient: buttonGradient,
           shape: BoxShape.circle,
@@ -869,7 +857,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           child: InkWell(
             onTap: onTapAction,
             customBorder: const CircleBorder(),
-            child: Icon(buttonIcon, color: Colors.white, size: 28),
+            child: Icon(buttonIcon, color: Colors.white, size: 32),
           ),
         ),
       ),
@@ -885,8 +873,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             children: [
               // Outer ring
               Container(
-                width: 64 * _pulseAnimation.value * 1.2,
-                height: 64 * _pulseAnimation.value * 1.2,
+                width: 72 * _pulseAnimation.value * 1.2,
+                height: 72 * _pulseAnimation.value * 1.2,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -898,8 +886,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               ),
               // Inner ring
               Container(
-                width: 64 * _pulseAnimation.value,
-                height: 64 * _pulseAnimation.value,
+                width: 72 * _pulseAnimation.value,
+                height: 72 * _pulseAnimation.value,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
