@@ -11,7 +11,6 @@ import '../models/expense.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'report_screen.dart';
-import 'settings_screen.dart';
 
 /// Main screen with bottom navigation bar and global voice input
 class MainScreen extends StatefulWidget {
@@ -45,7 +44,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _screens = [
       const HomeScreen(),
       const ReportScreen(),
-      const SettingsScreen(),
     ];
 
     // Check permission status on init
@@ -529,43 +527,54 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     });
   }
 
+  Widget _buildBottomNavItem({
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+    required int index,
+  }) {
+    final isSelected = _currentIndex == index;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Expanded(
+      child: InkWell(
+        onTap: () => _onTabTapped(index),
+        borderRadius: AppTheme.borderRadiusSmall,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isSelected ? selectedIcon : icon,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                size: 24,
+              ),
+              const SizedBox(height: AppTheme.spacing4),
+              Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
           // Main content with tabs
-          Column(
-            children: [
-              Expanded(
-                child: IndexedStack(
-                  index: _currentIndex,
-                  children: _screens,
-                ),
-              ),
-              // Bottom navigation
-              NavigationBar(
-                selectedIndex: _currentIndex,
-                onDestinationSelected: _onTabTapped,
-                destinations: [
-                  NavigationDestination(
-                    icon: const Icon(Icons.add_circle_outline),
-                    selectedIcon: const Icon(Icons.add_circle),
-                    label: context.tr('navigation.input'),
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.bar_chart_outlined),
-                    selectedIcon: const Icon(Icons.bar_chart),
-                    label: context.tr('navigation.report'),
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.settings_outlined),
-                    selectedIcon: const Icon(Icons.settings),
-                    label: context.tr('navigation.settings'),
-                  ),
-                ],
-              ),
-            ],
+          IndexedStack(
+            index: _currentIndex,
+            children: _screens,
           ),
 
           // Full-screen recording overlay (covers everything including bottom nav)
@@ -695,33 +704,49 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 ),
               ),
             ),
-
-          // Voice FAB positioned on the left above bottom nav
-          Positioned(
-            left: AppTheme.spacing16,
-            bottom: AppTheme.spacing16 + 80, // 80 is approximate height of NavigationBar
-            child: _buildVoiceFAB(),
-          ),
         ],
       ),
+      // Notched BottomAppBar with navigation items
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildBottomNavItem(
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home,
+              label: context.tr('navigation.input'),
+              index: 0,
+            ),
+            const SizedBox(width: 80), // Space for the FAB
+            _buildBottomNavItem(
+              icon: Icons.bar_chart_outlined,
+              selectedIcon: Icons.bar_chart,
+              label: context.tr('navigation.report'),
+              index: 1,
+            ),
+          ],
+        ),
+      ),
+      // Voice FAB docked in the center
+      floatingActionButton: _buildVoiceFAB(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   Widget _buildVoiceFAB() {
-    final String buttonText;
     final IconData buttonIcon;
     final Gradient buttonGradient;
     final VoidCallback? onTapAction;
     final bool enableHold;
 
     if (_isRecording) {
-      buttonText = context.tr('home.recording');
       buttonIcon = Icons.mic;
       buttonGradient = AppTheme.accentGradient;
       onTapAction = null;
       enableHold = true;
     } else if (_hasRequiredPermissions()) {
-      buttonText = context.tr('voice.hold_to_record');
       buttonIcon = Icons.mic_none;
       buttonGradient = AppTheme.primaryGradient;
       onTapAction = () {
@@ -734,7 +759,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       };
       enableHold = true;
     } else if (_shouldShowDisabled()) {
-      buttonText = context.tr('voice.voice_disabled');
       buttonIcon = Icons.mic_off;
       buttonGradient = LinearGradient(
         colors: [AppTheme.error, AppTheme.error.withValues(alpha: 0.8)],
@@ -742,7 +766,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       onTapAction = _showPermissionDeniedDialog;
       enableHold = false;
     } else {
-      buttonText = context.tr('voice.tap_to_enable');
       buttonIcon = Icons.mic_off;
       buttonGradient = AppTheme.primaryGradient;
       onTapAction = _requestPermission;
@@ -760,37 +783,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             }
           : null,
       child: Container(
+        width: 64,
+        height: 64,
         decoration: BoxDecoration(
           gradient: buttonGradient,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          shape: BoxShape.circle,
           boxShadow: AppTheme.shadowLarge,
         ),
         child: Material(
           color: Colors.transparent,
+          shape: const CircleBorder(),
           child: InkWell(
             onTap: onTapAction,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacing24,
-                vertical: AppTheme.spacing16,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    buttonIcon,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: AppTheme.spacing12),
-                  Text(
-                    buttonText,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                        ),
-                  ),
-                ],
-              ),
+            customBorder: const CircleBorder(),
+            child: Icon(
+              buttonIcon,
+              color: Colors.white,
+              size: 28,
             ),
           ),
         ),

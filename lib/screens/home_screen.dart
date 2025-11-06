@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'settings_screen.dart';
 
 /// Home Screen showing expense list
 class HomeScreen extends StatefulWidget {
@@ -187,6 +188,20 @@ class _HomeScreenState extends State<HomeScreen> {
             floating: false,
             pinned: true,
             backgroundColor: AppTheme.primaryMint,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings_outlined, color: Colors.white),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
+                },
+                tooltip: context.tr('navigation.settings'),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: const BoxDecoration(
