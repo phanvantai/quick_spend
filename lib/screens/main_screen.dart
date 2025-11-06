@@ -871,7 +871,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     final fabWidget = Container(
-      key: _fabKey,
       width: 72,
       height: 72,
       decoration: BoxDecoration(
@@ -891,8 +890,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
 
     // Wrap with pulsing rings if needed
+    final Widget result;
     if (_shouldShowPulse && !_isRecording) {
-      return AnimatedBuilder(
+      result = AnimatedBuilder(
         animation: _pulseAnimation,
         builder: (context, child) {
           return Stack(
@@ -931,9 +931,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         },
         child: fabWidget,
       );
+    } else {
+      result = fabWidget;
     }
 
-    return fabWidget;
+    // Wrap entire FAB with key for position tracking
+    return Container(
+      key: _fabKey,
+      child: result,
+    );
   }
 
   Widget _buildRipple(double level, double size, double opacity) {
