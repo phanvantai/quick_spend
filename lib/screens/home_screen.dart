@@ -990,7 +990,9 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             const Icon(Icons.mic, color: AppTheme.info),
             const SizedBox(width: AppTheme.spacing12),
-            Text(context.tr('voice.permission_title')),
+            Expanded(
+              child: Text(context.tr('voice.permission_title')),
+            ),
           ],
         ),
         content: Text(context.tr('voice.permission_rationale')),
