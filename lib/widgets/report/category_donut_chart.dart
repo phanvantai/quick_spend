@@ -47,8 +47,9 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
             LayoutBuilder(
               builder: (context, constraints) {
                 // Use the available width to determine chart size
-                final chartSize = constraints.maxWidth * 0.6; // 60% for chart
-                final legendWidth = constraints.maxWidth * 0.35; // 35% for legend
+                final chartSize = constraints.maxWidth * 0.65; // 65% for chart
+                final legendWidth =
+                    constraints.maxWidth * 0.30; // 30% for legend
 
                 return SizedBox(
                   height: 200,
@@ -57,7 +58,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                       // Donut Chart
                       SizedBox(
                         width: chartSize,
-                        height: 200,
+                        height: chartSize,
                         child: PieChart(
                           PieChartData(
                             pieTouchData: PieTouchData(
@@ -66,7 +67,8 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                                     setState(() {
                                       if (!event.isInterestedForInteractions ||
                                           pieTouchResponse == null ||
-                                          pieTouchResponse.touchedSection == null) {
+                                          pieTouchResponse.touchedSection ==
+                                              null) {
                                         touchedIndex = -1;
                                         return;
                                       }
@@ -78,8 +80,8 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                             ),
                             borderData: FlBorderData(show: false),
                             sectionsSpace: 2,
-                            centerSpaceRadius: 40,
-                            sections: _buildPieChartSections(),
+                            centerSpaceRadius: chartSize / 4.5,
+                            sections: _buildPieChartSections(chartSize),
                           ),
                         ),
                       ),
@@ -100,12 +102,12 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
     );
   }
 
-  List<PieChartSectionData> _buildPieChartSections() {
+  List<PieChartSectionData> _buildPieChartSections(double chartSize) {
     return List.generate(widget.categoryStats.length, (i) {
       final isTouched = i == touchedIndex;
       // Dynamic radius - smaller to fit in container
-      final radius = isTouched ? 50.0 : 45.0;
-      final fontSize = isTouched ? 14.0 : 12.0;
+      final radius = isTouched ? chartSize / 4 : chartSize / 4.5;
+      final fontSize = isTouched ? chartSize / 12 : chartSize / 15;
       final stat = widget.categoryStats[i];
 
       return PieChartSectionData(

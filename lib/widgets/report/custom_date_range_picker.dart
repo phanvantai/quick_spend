@@ -61,7 +61,7 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
             child: const Icon(Icons.date_range, color: Colors.white, size: 20),
           ),
           const SizedBox(width: AppTheme.spacing12),
-          Text('report.custom_date_range'.tr()),
+          Flexible(child: Text('report.custom_date_range'.tr())),
         ],
       ),
       content: Column(
@@ -175,7 +175,7 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
       onTap: onTap,
       borderRadius: AppTheme.borderRadiusMedium,
       child: Container(
-        padding: const EdgeInsets.all(AppTheme.spacing16),
+        padding: const EdgeInsets.all(AppTheme.spacing8),
         decoration: BoxDecoration(
           border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
           borderRadius: AppTheme.borderRadiusMedium,

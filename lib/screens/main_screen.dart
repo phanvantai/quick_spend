@@ -619,6 +619,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           body: IndexedStack(index: _currentIndex, children: _screens),
           // Notched BottomAppBar with navigation items
           bottomNavigationBar: BottomAppBar(
+            color: Colors.transparent,
+            elevation: 0,
             shape: const CircularNotchedRectangle(),
             notchMargin: 8.0,
             child: Row(
@@ -653,7 +655,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           // Voice FAB docked in the center
           floatingActionButton: _buildVoiceFAB(),
           floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerDocked,
+              FloatingActionButtonLocation.miniCenterDocked,
         ),
 
         // Full-screen recording overlay (covers everything including bottom nav and FAB)
@@ -990,7 +992,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Widget _buildRipple(double level, double size, double opacity) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1000),
       curve: Curves.easeOut,
       onEnd: () {
         if (mounted && _isRecording) {
