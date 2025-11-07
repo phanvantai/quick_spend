@@ -75,9 +75,9 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
                     },
                     touchTooltipData: BarTouchTooltipData(
                       getTooltipColor: (_) => colorScheme.inverseSurface,
-                      tooltipRoundedRadius: 8,
                       tooltipPadding: const EdgeInsets.all(8),
                       tooltipMargin: 8,
+                      tooltipBorder: const BorderSide(color: Colors.transparent),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         final entries = widget.stats.dailySpending.entries.toList()
                           ..sort((a, b) => a.key.compareTo(b.key));
@@ -170,7 +170,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
                 : LinearGradient(
                     colors: [
                       AppTheme.primaryMint.withValues(alpha: 0.7),
-                      AppTheme.primaryPurple.withValues(alpha: 0.7),
+                      AppTheme.primaryGreen.withValues(alpha: 0.7),
                     ],
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
@@ -202,6 +202,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
 
     return SideTitleWidget(
       axisSide: meta.axisSide,
+      space: 8,
       child: Text(
         text,
         style: theme.textTheme.bodySmall?.copyWith(
@@ -237,6 +238,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
 
     return SideTitleWidget(
       axisSide: meta.axisSide,
+      space: 8,
       child: Text(
         text,
         style: theme.textTheme.bodySmall?.copyWith(
