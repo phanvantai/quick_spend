@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -616,6 +617,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       children: [
         // Main Scaffold with content and bottom navigation
         Scaffold(
+          extendBody: true,
           body: IndexedStack(index: _currentIndex, children: _screens),
           // Notched BottomAppBar with navigation items
           bottomNavigationBar: BottomAppBar(
@@ -626,28 +628,38 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                IconButton(
-                  icon: Icon(
-                    _currentIndex == 0 ? Icons.home : Icons.home_outlined,
+                LiquidGlassLayer(
+                  child: LiquidGlass(
+                    shape: LiquidRoundedSuperellipse(borderRadius: 30),
+                    child: IconButton(
+                      icon: Icon(
+                        _currentIndex == 0 ? Icons.home : Icons.home_outlined,
+                      ),
+                      color: _currentIndex == 0
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                      onPressed: () => _onTabTapped(0),
+                      tooltip: context.tr('navigation.home'),
+                    ),
                   ),
-                  color: _currentIndex == 0
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  onPressed: () => _onTabTapped(0),
-                  tooltip: context.tr('navigation.input'),
                 ),
                 const SizedBox(width: 48), // Space for the FAB
-                IconButton(
-                  icon: Icon(
-                    _currentIndex == 1
-                        ? Icons.bar_chart
-                        : Icons.bar_chart_outlined,
+                LiquidGlassLayer(
+                  child: LiquidGlass(
+                    shape: LiquidRoundedSuperellipse(borderRadius: 30),
+                    child: IconButton(
+                      icon: Icon(
+                        _currentIndex == 1
+                            ? Icons.bar_chart
+                            : Icons.bar_chart_outlined,
+                      ),
+                      color: _currentIndex == 1
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                      onPressed: () => _onTabTapped(1),
+                      tooltip: context.tr('navigation.report'),
+                    ),
                   ),
-                  color: _currentIndex == 1
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  onPressed: () => _onTabTapped(1),
-                  tooltip: context.tr('navigation.report'),
                 ),
               ],
             ),
@@ -918,21 +930,26 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       onTapAction = _requestPermission;
     }
 
-    final fabWidget = Container(
-      width: 72,
-      height: 72,
-      decoration: BoxDecoration(
-        gradient: buttonGradient,
-        shape: BoxShape.circle,
-        boxShadow: AppTheme.shadowLarge,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onTapAction,
-          customBorder: const CircleBorder(),
-          child: Icon(buttonIcon, color: Colors.white, size: 32),
+    final fabWidget = LiquidGlassLayer(
+      child: LiquidGlass(
+        shape: LiquidRoundedSuperellipse(borderRadius: 60),
+        child: Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            gradient: buttonGradient.withOpacity(0.5),
+            shape: BoxShape.circle,
+            boxShadow: AppTheme.shadowLarge,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              onTap: onTapAction,
+              customBorder: const CircleBorder(),
+              child: Icon(buttonIcon, color: Colors.white, size: 32),
+            ),
+          ),
         ),
       ),
     );

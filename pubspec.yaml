@@ -40,6 +40,8 @@ dependencies:
   # Charts
   fl_chart: ^1.1.1
 
+  liquid_glass_renderer: ^0.2.0-dev.3
+
   # UI Components
   flutter_slidable: ^4.0.3
 
