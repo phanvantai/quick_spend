@@ -58,7 +58,14 @@
     "error_updating_expense": "Lỗi khi cập nhật chi tiêu: {error}",
     "description_required": "Mô tả là bắt buộc",
     "amount_required": "Số tiền là bắt buộc",
-    "amount_invalid": "Vui lòng nhập số tiền hợp lệ"
+    "amount_invalid": "Vui lòng nhập số tiền hợp lệ",
+    "quick_summary": "Tổng Quan Nhanh",
+    "today": "Hôm Nay",
+    "this_week": "Tuần Này",
+    "this_month": "Tháng Này",
+    "recent_expenses": "Chi Tiêu Gần Đây",
+    "see_all": "Xem Tất Cả",
+    "all_expenses": "Tất Cả Chi Tiêu"
   },
   "settings": {
     "title": "Cài Đặt",

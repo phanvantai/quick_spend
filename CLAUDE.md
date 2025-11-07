@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Quick Spend is a Flutter expense tracking mobile app with voice input support and bilingual functionality (English/Vietnamese). The app uses Firebase for backend services (Auth, Firestore, AI) and features **AI-powered expense parsing** using **Gemini 2.5 Flash via Firebase AI**, with automatic categorization and Vietnamese slang support.
+Quick Spend is a Flutter expense tracking mobile app with voice input support and bilingual functionality (English/Vietnamese). The app uses **SQLite for local storage** and features **AI-powered expense parsing** using **Gemini 2.5 Flash via Firebase AI**, with automatic categorization and Vietnamese slang support. The app includes comprehensive statistics and reporting with interactive charts.
 
 ## Development Commands
 
@@ -37,6 +37,8 @@ flutter clean
 
 - **Provider**: Primary state management solution
 - **AppConfigProvider**: Manages user preferences (language, currency, onboarding status)
+- **ExpenseProvider**: Manages expense CRUD operations and state
+- **ReportProvider**: Manages statistics calculations and period filtering
 - Provider pattern with `ChangeNotifier` for reactive UI updates
 
 ### Core Services Layer
@@ -91,10 +93,19 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Wrapper around SharedPreferences
    - Handles app configuration persistence
 
+8. **ExpenseService** ([lib/services/expense_service.dart](lib/services/expense_service.dart))
+   - SQLite database operations for expense persistence
+   - CRUD operations: create, read, update, delete expenses
+   - Efficient querying and filtering by date range, category
+   - Local-first architecture (no cloud dependency)
+   - Database schema managed with sqflite migrations
+
 ### Models
 
-- **Expense** ([lib/models/expense.dart](lib/models/expense.dart)): Core data model with Firestore integration
+- **Expense** ([lib/models/expense.dart](lib/models/expense.dart)): Core data model with SQLite serialization
 - **Category** ([lib/models/category.dart](lib/models/category.dart)): 7 predefined categories with bilingual keywords/labels
+- **CategoryStats** ([lib/models/category_stats.dart](lib/models/category_stats.dart)): Statistics for individual expense categories
+- **PeriodStats** ([lib/models/period_stats.dart](lib/models/period_stats.dart)): Aggregated statistics for time periods
 - **AppConfig** ([lib/models/app_config.dart](lib/models/app_config.dart)): User preference model
 
 ### Localization
@@ -104,11 +115,12 @@ The app uses a hybrid AI + rule-based parsing architecture:
 - Access translations with `.tr()` extension: `'key.path'.tr()`
 - Named arguments supported: `'key'.tr(namedArgs: {'param': value})`
 
-### Firebase Integration
+### Database Integration
 
-- **firebase_core**: Core Firebase functionality
-- **firebase_auth**: Authentication (prepared for anonymous sign-in)
-- **cloud_firestore**: Database for expense storage (models have serialization ready)
+- **sqflite**: Local SQLite database for expense storage
+- **path_provider**: Path utilities for database file location
+- **Local-first**: All data stored locally, no cloud dependency
+- **Future-ready**: Models have serialization ready for potential cloud backup
 
 ## Key Implementation Patterns
 
@@ -154,16 +166,27 @@ for (final result in results) {
 - User selects language (en/vi) and currency (USD/VND)
 - Settings saved via PreferencesService
 - AppConfigProvider manages onboarding state
-- Subsequent launches go directly to HomeScreen
+- Subsequent launches go directly to MainScreen with bottom navigation
+
+### Navigation Flow
+
+- **MainScreen** serves as the navigation container with bottom navigation bar
+- **Home tab**: Expense list with add/edit/delete functionality
+- **Report tab**: Statistics dashboard with charts and analytics
+- **Global FAB**: Voice input button accessible from all tabs
+- Settings accessible from app bar actions
 
 ## Project Structure
 
 ```bash
 lib/
 ├── main.dart                    # App entry point with EasyLocalization setup
+├── firebase_options.dart        # Firebase AI configuration
 ├── models/                      # Data models
-│   ├── expense.dart            # Expense with Firestore serialization
+│   ├── expense.dart            # Expense with SQLite serialization
 │   ├── category.dart           # Categories with bilingual support
+│   ├── category_stats.dart     # Category statistics model
+│   ├── period_stats.dart       # Period statistics model
 │   └── app_config.dart         # User preferences model
 ├── services/                    # Business logic layer
 │   ├── gemini_expense_parser.dart # AI parser (Gemini 2.5 Flash via Firebase)
@@ -172,14 +195,41 @@ lib/
 │   ├── language_detector.dart  # Fallback language detection
 │   ├── categorizer.dart        # Fallback keyword categorization
 │   ├── voice_service.dart      # Speech-to-text wrapper
+│   ├── expense_service.dart    # SQLite database operations
 │   └── preferences_service.dart # SharedPreferences wrapper
 ├── providers/                   # State management
-│   └── app_config_provider.dart # App configuration state
+│   ├── app_config_provider.dart # App configuration state
+│   ├── expense_provider.dart   # Expense CRUD state
+│   └── report_provider.dart    # Statistics and reports state
 ├── screens/                     # UI screens
 │   ├── onboarding_screen.dart  # Language/currency selection
-│   └── home_screen.dart        # Main app with voice input
-└── widgets/                     # Reusable UI components
-    └── voice_input_button.dart
+│   ├── main_screen.dart        # Main container with bottom navigation
+│   ├── home_screen.dart        # Expense list tab
+│   ├── report_screen.dart      # Statistics and charts tab
+│   └── settings_screen.dart    # App settings
+├── widgets/                     # Reusable UI components
+│   ├── common/                 # Common widgets
+│   │   ├── expense_card.dart   # Swipeable expense card
+│   │   ├── category_chip.dart  # Category badge
+│   │   ├── empty_state.dart    # Empty list placeholder
+│   │   ├── gradient_button.dart # Custom button
+│   │   └── stat_card.dart      # Statistics card
+│   ├── report/                 # Report-specific widgets
+│   │   ├── category_donut_chart.dart # Category breakdown chart
+│   │   ├── spending_trend_chart.dart # Spending trend line chart
+│   │   ├── category_list.dart        # Category statistics list
+│   │   ├── top_expenses_list.dart    # Top expenses widget
+│   │   ├── summary_card.dart         # Summary statistics
+│   │   ├── stats_grid.dart           # Statistics grid
+│   │   ├── period_filter.dart        # Period selector chips
+│   │   └── custom_date_range_picker.dart # Date range picker
+│   ├── voice_input_button.dart     # Voice recording FAB
+│   ├── voice_tutorial_overlay.dart # First-time tutorial
+│   └── edit_expense_dialog.dart    # Edit expense modal
+├── theme/                       # Design system
+│   └── app_theme.dart          # Theme configuration and constants
+└── utils/                       # Utilities
+    └── date_range_helper.dart  # Date range calculations
 ```
 
 ## Configuration
@@ -250,8 +300,106 @@ This makes voice input more natural for Vietnamese users.
 - Categorizer matches keywords in description against category keyword lists
 - User can override auto-categorization using `parseWithCategory()`
 
-### Material Design 3
+### Design System & Theming
 
-- App uses Material 3 theme with deep purple seed color
-- Custom CardTheme with 12px border radius
-- Consistent elevation and shape patterns
+**[lib/theme/app_theme.dart](lib/theme/app_theme.dart)**
+
+The app uses a comprehensive design system:
+
+- **Material Design 3**: Full MD3 compliance with custom theme
+- **Color Palette**: Mint green gradient theme with vibrant accents
+  - Primary: Mint green (#00D9A3) to Green (#00C896)
+  - Accents: Pink (#FF6B9D), Orange (#FF8C42), Teal (#00D9C0)
+  - Neutrals: 10-level grayscale from #1A1A2E to #FBFBFD
+  - Semantic: Success, Warning, Error, Info colors
+  - Category colors: Unique color for each expense category
+- **Spacing System**: Consistent 4px-based spacing (4, 8, 12, 16, 20, 24, 32, 40, 48)
+- **Typography**: Material Design 3 type scale with custom weights
+- **Gradients**: Primary gradient (mint to green), accent gradient (pink to orange)
+- **Light & Dark Mode**: Complete theme support for both modes
+
+**[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)**
+
+Comprehensive design documentation including:
+
+- Complete color palette with hex codes
+- Typography scale and usage guidelines
+- Component patterns and best practices
+- Spacing and layout system
+- Accessibility guidelines
+
+### UI Components
+
+**Common Widgets** ([lib/widgets/common/](lib/widgets/common/)):
+
+- **ExpenseCard**: Swipeable card with edit/delete actions (uses flutter_slidable)
+- **CategoryChip**: Color-coded category badge
+- **EmptyState**: Friendly empty list placeholder with icon and message
+- **GradientButton**: Custom button with gradient background
+- **StatCard**: Statistics display card
+
+**Report Widgets** ([lib/widgets/report/](lib/widgets/report/)):
+
+- **CategoryDonutChart**: Interactive donut chart with category breakdown (fl_chart)
+- **SpendingTrendChart**: Line chart showing spending over time (fl_chart)
+- **CategoryList**: List view of category statistics with percentages
+- **TopExpensesList**: Widget showing largest expenses
+- **SummaryCard**: Overall statistics summary
+- **StatsGrid**: Grid of key metrics (average, highest, trend)
+- **PeriodFilter**: Chip-based period selector (Today/Week/Month/Year/Custom)
+- **CustomDateRangePicker**: Calendar-based custom date range picker
+
+### Statistics & Reporting
+
+**[lib/providers/report_provider.dart](lib/providers/report_provider.dart)**
+
+The ReportProvider manages all statistics calculations:
+
+- Period-based filtering (today, this week, this month, this year, custom range)
+- Category aggregations with percentages
+- Spending trends over time
+- Top expenses tracking
+- Average daily spending
+- Comparison with previous periods
+- Real-time updates when expenses change
+
+**Period Options:**
+
+- **Today**: Current day's expenses
+- **Week**: Last 7 days
+- **Month**: Last 30 days
+- **Year**: Last 365 days
+- **Custom**: User-selected date range
+
+### Database Operations
+
+**[lib/services/expense_service.dart](lib/services/expense_service.dart)**
+
+SQLite operations with sqflite:
+
+```dart
+// Create expense
+await expenseService.addExpense(expense);
+
+// Read expenses (all or filtered)
+final expenses = await expenseService.getExpenses();
+final filtered = await expenseService.getExpensesByDateRange(startDate, endDate);
+
+// Update expense
+await expenseService.updateExpense(expense);
+
+// Delete expense
+await expenseService.deleteExpense(expenseId);
+```
+
+Database schema:
+
+- id (TEXT PRIMARY KEY)
+- amount (REAL)
+- description (TEXT)
+- category (TEXT)
+- language (TEXT)
+- date (TEXT - ISO 8601)
+- userId (TEXT)
+- rawInput (TEXT)
+- confidence (REAL)

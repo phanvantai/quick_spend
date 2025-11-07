@@ -17,27 +17,35 @@ A Flutter mobile app for quickly logging expenses with voice input and automatic
   - "1 củ xăng" → 1,000,000 VND (Vietnamese slang!)
 - 📊 **Smart Categorization**: AI categorizes based on context (food, transport, shopping, etc.)
 - 🔄 **Hybrid Architecture**: Gemini AI primary + rule-based fallback for reliability
-- 📈 **Statistics Dashboard**: Visual spending insights (coming soon)
+- 📈 **Statistics Dashboard**: Visual spending insights with charts and analytics
+- 📱 **Bottom Navigation**: Seamless navigation between Home, Report, and Settings
+- ✏️ **Edit & Delete**: Swipeable cards to edit or delete expenses
+- 🎯 **Period Filtering**: View expenses by Today, Week, Month, Year, or Custom range
+- 📊 **Multiple Charts**: Donut chart, trend chart, category breakdown, and top expenses
 
 ## Tech Stack
 
 - **Flutter** (latest stable)
-- **Firebase** (Auth, Firestore, AI)
+- **SQLite** (sqflite - Local database)
 - **Firebase AI** (Gemini 2.5 Flash for expense parsing)
 - **Provider** (State management)
 - **easy_localization** (i18n/l10n)
 - **speech_to_text** (Voice input)
 - **fl_chart** (Charts and graphs)
-- **shared_preferences** (Local storage)
+- **flutter_slidable** (Swipeable cards)
+- **shared_preferences** (User preferences)
+- **permission_handler** (Microphone permissions)
 
 ## Project Structure
 
 ```bash
 lib/
 ├── models/           # Data models
-│   ├── expense.dart       # Expense model with Firestore integration
-│   ├── category.dart      # Category definitions with bilingual support
-│   └── app_config.dart    # App configuration and preferences
+│   ├── expense.dart         # Expense model with SQLite integration
+│   ├── category.dart        # Category definitions with bilingual support
+│   ├── category_stats.dart  # Statistics for expense categories
+│   ├── period_stats.dart    # Statistics for time periods
+│   └── app_config.dart      # App configuration and preferences
 ├── services/         # Business logic
 │   ├── gemini_expense_parser.dart # AI-powered parser (Gemini 2.5 Flash)
 │   ├── expense_parser.dart        # Main parser orchestrator (AI + fallback)
@@ -45,14 +53,41 @@ lib/
 │   ├── language_detector.dart     # Fallback language detection
 │   ├── categorizer.dart           # Fallback keyword categorization
 │   ├── voice_service.dart         # Speech-to-text wrapper
+│   ├── expense_service.dart       # SQLite database operations
 │   └── preferences_service.dart   # SharedPreferences wrapper
 ├── providers/        # State management
-│   └── app_config_provider.dart # App configuration state
+│   ├── app_config_provider.dart # App configuration state
+│   ├── expense_provider.dart    # Expense management state
+│   └── report_provider.dart     # Statistics and reports state
 ├── screens/          # UI screens
-│   ├── onboarding_screen.dart   # Language/currency selection
-│   └── home_screen.dart         # Main app screen
-├── widgets/          # Reusable widgets (TBD)
-└── utils/            # Constants and helpers (TBD)
+│   ├── onboarding_screen.dart # Language/currency selection
+│   ├── main_screen.dart       # Main screen with bottom navigation
+│   ├── home_screen.dart       # Expense list and input
+│   ├── report_screen.dart     # Statistics and charts
+│   └── settings_screen.dart   # App settings
+├── widgets/          # Reusable widgets
+│   ├── common/                    # Common UI components
+│   │   ├── expense_card.dart      # Expense list item
+│   │   ├── category_chip.dart     # Category badge
+│   │   ├── empty_state.dart       # Empty list placeholder
+│   │   ├── gradient_button.dart   # Custom button
+│   │   └── stat_card.dart         # Statistics card
+│   ├── report/                    # Report-specific widgets
+│   │   ├── category_donut_chart.dart    # Category breakdown chart
+│   │   ├── spending_trend_chart.dart    # Spending over time chart
+│   │   ├── category_list.dart           # Category statistics list
+│   │   ├── top_expenses_list.dart       # Largest expenses list
+│   │   ├── summary_card.dart            # Summary statistics
+│   │   ├── stats_grid.dart              # Statistics grid
+│   │   ├── period_filter.dart           # Date range selector
+│   │   └── custom_date_range_picker.dart # Custom date picker
+│   ├── voice_input_button.dart    # Voice recording FAB
+│   ├── voice_tutorial_overlay.dart # Voice input tutorial
+│   └── edit_expense_dialog.dart   # Edit expense modal
+├── theme/            # Design system
+│   └── app_theme.dart # Theme configuration and constants
+└── utils/            # Utilities
+    └── date_range_helper.dart # Date range calculations
 
 assets/
 └── translations/     # Localization files
@@ -255,39 +290,157 @@ Text('welcome.title'.tr(namedArgs: {'appName': 'Quick Spend'}))
 Text('welcome.message'.tr())
 ```
 
-## Next Steps (Phase 3-6)
+## Phase 3 ✅ Complete - Database & Voice Input
 
-### Phase 3: Firebase Integration
+### Local Database (SQLite)
 
-- [ ] Firebase configuration
-- [ ] Authentication service (anonymous sign-in)
-- [ ] Firestore service (CRUD operations)
-- [ ] ExpenseProvider for state management
+**[lib/services/expense_service.dart](lib/services/expense_service.dart)**
 
-### Phase 4: Voice Input
+- SQLite database with sqflite
+- CRUD operations for expenses
+- Efficient querying and filtering
+- Local-first architecture (no cloud dependency)
 
-- [ ] VoiceService with speech_to_text
-- [ ] Permission handling
-- [ ] Bilingual voice recognition (en-US, vi-VN)
+**[lib/providers/expense_provider.dart](lib/providers/expense_provider.dart)**
 
-### Phase 5: Main UI Components
+- State management for expenses
+- Real-time UI updates
+- Expense creation, editing, deletion
+- Automatic persistence
 
-- [ ] ExpenseInputWidget (input bar with voice button)
-- [ ] ExpenseListItem (swipeable cards)
-- [ ] Expense list with real data
+### Voice Service
 
-### Phase 6: Statistics
+**[lib/services/voice_service.dart](lib/services/voice_service.dart)**
 
-- [ ] StatsScreen with charts
-- [ ] Period selector (Today/Week/Month)
-- [ ] Category breakdown
+- Speech-to-text integration
+- Bilingual recognition (English/Vietnamese)
+- Microphone permission handling
+- Sound level feedback
+- Real-time transcription
 
-### Phase 7: Settings & Polish
+**[lib/widgets/voice_input_button.dart](lib/widgets/voice_input_button.dart)**
 
-- [ ] SettingsScreen (change language/currency)
-- [ ] Bottom navigation
-- [ ] Edit/delete expenses
-- [ ] Search and filters
+- Global floating action button
+- Long-press to record, release to send
+- Swipe up to cancel recording
+- Visual feedback with animations
+- Tutorial overlay for first-time users
+
+## Phase 4 ✅ Complete - Main UI & Navigation
+
+### Main Screen & Navigation
+
+**[lib/screens/main_screen.dart](lib/screens/main_screen.dart)**
+
+- Bottom navigation bar (Home, Report)
+- Global voice input button available on all tabs
+- Smooth transitions between screens
+- Persistent state management
+
+### Home Screen
+
+**[lib/screens/home_screen.dart](lib/screens/home_screen.dart)**
+
+- Expense list with swipeable cards
+- Edit and delete functionality
+- Empty state with helpful message
+- Real-time expense updates
+
+**[lib/widgets/common/expense_card.dart](lib/widgets/common/expense_card.dart)**
+
+- Beautiful card design
+- Swipe to edit or delete (flutter_slidable)
+- Category icons and colors
+- Formatted amounts with currency
+
+**[lib/widgets/edit_expense_dialog.dart](lib/widgets/edit_expense_dialog.dart)**
+
+- Edit expense amount, description, category
+- Date picker for expense date
+- Form validation
+- Smooth modal animations
+
+## Phase 5 ✅ Complete - Statistics & Reports
+
+### Report Screen
+
+**[lib/screens/report_screen.dart](lib/screens/report_screen.dart)**
+
+- Comprehensive statistics dashboard
+- Multiple visualization types
+- Period filtering (Today, Week, Month, Year, Custom)
+- Real-time data updates
+
+**[lib/providers/report_provider.dart](lib/providers/report_provider.dart)**
+
+- Statistics calculations
+- Period-based filtering
+- Category aggregations
+- Top expenses tracking
+
+### Report Widgets
+
+**Charts:**
+
+- **[category_donut_chart.dart](lib/widgets/report/category_donut_chart.dart)**: Interactive donut chart showing spending by category
+- **[spending_trend_chart.dart](lib/widgets/report/spending_trend_chart.dart)**: Line chart showing spending over time
+
+**Lists & Statistics:**
+
+- **[summary_card.dart](lib/widgets/report/summary_card.dart)**: Total spending and expense count
+- **[stats_grid.dart](lib/widgets/report/stats_grid.dart)**: Key metrics (average, highest, trend)
+- **[category_list.dart](lib/widgets/report/category_list.dart)**: Breakdown by category with percentages
+- **[top_expenses_list.dart](lib/widgets/report/top_expenses_list.dart)**: Largest individual expenses
+
+**Filters:**
+
+- **[period_filter.dart](lib/widgets/report/period_filter.dart)**: Quick period selection chips
+- **[custom_date_range_picker.dart](lib/widgets/report/custom_date_range_picker.dart)**: Custom date range selector
+
+## Phase 6 ✅ Complete - Settings & Design System
+
+### Settings Screen
+
+**[lib/screens/settings_screen.dart](lib/screens/settings_screen.dart)**
+
+- Language selection (English/Vietnamese)
+- Currency selection (USD/VND)
+- App information and version
+- Clean, organized UI
+
+### Design System
+
+**[lib/theme/app_theme.dart](lib/theme/app_theme.dart)**
+
+- Complete Material Design 3 theme
+- Mint green gradient color scheme
+- Consistent spacing system (4px, 8px, 12px, 16px, etc.)
+- Semantic colors (success, warning, error, info)
+- Category colors for visual categorization
+- Light and dark mode support
+- Typography scale
+
+**[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)**
+
+- Comprehensive design documentation
+- Color palette with hex codes
+- Typography guidelines
+- Component usage patterns
+- Spacing and layout system
+
+## Next Steps (Future Enhancements)
+
+### Potential Features
+
+- [ ] Search and filter expenses
+- [ ] Expense tags and notes
+- [ ] Recurring expenses
+- [ ] Budget tracking and alerts
+- [ ] Data export (CSV, PDF)
+- [ ] Multiple currency support in single session
+- [ ] Cloud backup and sync (Firebase Firestore)
+- [ ] Expense attachments (receipts/photos)
+- [ ] Split expenses with others
 
 ## Development
 

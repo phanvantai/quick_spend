@@ -58,7 +58,14 @@
     "error_updating_expense": "Error updating expense: {error}",
     "description_required": "Description is required",
     "amount_required": "Amount is required",
-    "amount_invalid": "Please enter a valid amount"
+    "amount_invalid": "Please enter a valid amount",
+    "quick_summary": "Quick Summary",
+    "today": "Today",
+    "this_week": "This Week",
+    "this_month": "This Month",
+    "recent_expenses": "Recent Expenses",
+    "see_all": "See All",
+    "all_expenses": "All Expenses"
   },
   "settings": {
     "title": "Settings",
