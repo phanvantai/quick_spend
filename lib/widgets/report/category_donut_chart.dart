@@ -44,43 +44,55 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
               ),
             ),
             const SizedBox(height: AppTheme.spacing24),
-            SizedBox(
-              height: 220,
-              child: Row(
-                children: [
-                  // Donut Chart
-                  Expanded(
-                    flex: 3,
-                    child: PieChart(
-                      PieChartData(
-                        pieTouchData: PieTouchData(
-                          touchCallback:
-                              (FlTouchEvent event, pieTouchResponse) {
-                                setState(() {
-                                  if (!event.isInterestedForInteractions ||
-                                      pieTouchResponse == null ||
-                                      pieTouchResponse.touchedSection == null) {
-                                    touchedIndex = -1;
-                                    return;
-                                  }
-                                  touchedIndex = pieTouchResponse
-                                      .touchedSection!
-                                      .touchedSectionIndex;
-                                });
-                              },
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Use the available width to determine chart size
+                final chartSize = constraints.maxWidth * 0.6; // 60% for chart
+                final legendWidth = constraints.maxWidth * 0.35; // 35% for legend
+
+                return SizedBox(
+                  height: 200,
+                  child: Row(
+                    children: [
+                      // Donut Chart
+                      SizedBox(
+                        width: chartSize,
+                        height: 200,
+                        child: PieChart(
+                          PieChartData(
+                            pieTouchData: PieTouchData(
+                              touchCallback:
+                                  (FlTouchEvent event, pieTouchResponse) {
+                                    setState(() {
+                                      if (!event.isInterestedForInteractions ||
+                                          pieTouchResponse == null ||
+                                          pieTouchResponse.touchedSection == null) {
+                                        touchedIndex = -1;
+                                        return;
+                                      }
+                                      touchedIndex = pieTouchResponse
+                                          .touchedSection!
+                                          .touchedSectionIndex;
+                                    });
+                                  },
+                            ),
+                            borderData: FlBorderData(show: false),
+                            sectionsSpace: 2,
+                            centerSpaceRadius: 40,
+                            sections: _buildPieChartSections(),
+                          ),
                         ),
-                        borderData: FlBorderData(show: false),
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 60,
-                        sections: _buildPieChartSections(),
                       ),
-                    ),
+                      const SizedBox(width: AppTheme.spacing16),
+                      // Legend
+                      SizedBox(
+                        width: legendWidth,
+                        child: _buildLegend(context),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: AppTheme.spacing16),
-                  // Legend
-                  Expanded(flex: 2, child: _buildLegend(context)),
-                ],
-              ),
+                );
+              },
             ),
           ],
         ),
@@ -91,8 +103,9 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
   List<PieChartSectionData> _buildPieChartSections() {
     return List.generate(widget.categoryStats.length, (i) {
       final isTouched = i == touchedIndex;
-      final radius = isTouched ? 70.0 : 60.0;
-      final fontSize = isTouched ? 16.0 : 14.0;
+      // Dynamic radius - smaller to fit in container
+      final radius = isTouched ? 50.0 : 45.0;
+      final fontSize = isTouched ? 14.0 : 12.0;
       final stat = widget.categoryStats[i];
 
       return PieChartSectionData(
