@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/expense_provider.dart';
+import '../providers/app_config_provider.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
 import '../widgets/edit_expense_dialog.dart';
+import '../widgets/home/home_summary_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'settings_screen.dart';
+import 'all_expenses_screen.dart';
 
-/// Home Screen showing expense list
+/// Home Screen showing quick summary and recent expenses
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -234,6 +237,42 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Calculate period totals
+  double _getTodayTotal(List<Expense> expenses) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return expenses
+        .where((e) => e.date.isAfter(today))
+        .fold(0.0, (sum, e) => sum + e.amount);
+  }
+
+  double _getWeekTotal(List<Expense> expenses) {
+    final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+    return expenses
+        .where((e) => e.date.isAfter(weekAgo))
+        .fold(0.0, (sum, e) => sum + e.amount);
+  }
+
+  double _getMonthTotal(List<Expense> expenses) {
+    final monthAgo = DateTime.now().subtract(const Duration(days: 30));
+    return expenses
+        .where((e) => e.date.isAfter(monthAgo))
+        .fold(0.0, (sum, e) => sum + e.amount);
+  }
+
+  String _formatAmount(double amount, String currency) {
+    if (currency == 'VND') {
+      if (amount >= 1000000) {
+        return '${(amount / 1000000).toStringAsFixed(1)}M';
+      } else if (amount >= 1000) {
+        return '${(amount / 1000).toStringAsFixed(0)}k';
+      }
+      return amount.toStringAsFixed(0);
+    } else {
+      return '\$${amount.toStringAsFixed(0)}';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -252,13 +291,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Consumer<ExpenseProvider>(
-        builder: (context, expenseProvider, _) {
+      body: Consumer2<ExpenseProvider, AppConfigProvider>(
+        builder: (context, expenseProvider, configProvider, _) {
           if (expenseProvider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
           final expenses = expenseProvider.expenses;
+          final currency = configProvider.currency;
 
           if (expenses.isEmpty) {
             return Padding(
@@ -267,49 +307,145 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.receipt_long_outlined,
                 title: context.tr('home.no_expenses_title'),
                 message: context.tr('home.no_expenses_message'),
-                // actionLabel: context.tr('home.add_expense'),
-                // onAction: () {
-                //   ScaffoldMessenger.of(context).showSnackBar(
-                //     SnackBar(
-                //       content: Text(
-                //         context.tr('voice.hold_instruction'),
-                //       ),
-                //       duration: const Duration(seconds: 2),
-                //     ),
-                //   );
-                // },
               ),
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(AppTheme.spacing16),
-            itemCount: expenses.length,
-            itemBuilder: (context, index) {
-              final expense = expenses[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
-                child: Slidable(
-                  key: ValueKey(expense.id),
-                  endActionPane: ActionPane(
-                    motion: const ScrollMotion(),
+          // Calculate totals
+          final todayTotal = _getTodayTotal(expenses);
+          final weekTotal = _getWeekTotal(expenses);
+          final monthTotal = _getMonthTotal(expenses);
+
+          // Get recent expenses (last 10)
+          final recentExpenses = expenses.take(10).toList();
+
+          return CustomScrollView(
+            slivers: [
+              // Summary Cards Section
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacing16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SlidableAction(
-                        onPressed: (_) => _deleteExpense(expense.id),
-                        backgroundColor: AppTheme.error,
-                        foregroundColor: Colors.white,
-                        icon: Icons.delete,
-                        label: context.tr('common.delete'),
+                      Text(
+                        context.tr('home.quick_summary'),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: AppTheme.spacing12),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            HomeSummaryCard(
+                              title: context.tr('home.today'),
+                              value: _formatAmount(todayTotal, currency),
+                              icon: Icons.today_outlined,
+                              color: AppTheme.accentOrange,
+                            ),
+                            const SizedBox(width: AppTheme.spacing12),
+                            HomeSummaryCard(
+                              title: context.tr('home.this_week'),
+                              value: _formatAmount(weekTotal, currency),
+                              icon: Icons.calendar_view_week_outlined,
+                              color: AppTheme.accentTeal,
+                            ),
+                            const SizedBox(width: AppTheme.spacing12),
+                            HomeSummaryCard(
+                              title: context.tr('home.this_month'),
+                              value: _formatAmount(monthTotal, currency),
+                              icon: Icons.calendar_month_outlined,
+                              color: AppTheme.primaryMint,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  child: ExpenseCard(
-                    expense: expense,
-                    onTap: () => _showExpenseDetailsDialog(expense),
+                ),
+              ),
+
+              // Recent Expenses Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppTheme.spacing16,
+                    AppTheme.spacing8,
+                    AppTheme.spacing16,
+                    AppTheme.spacing12,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        context.tr('home.recent_expenses'),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      if (expenses.length > 10)
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AllExpensesScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.arrow_forward, size: 16),
+                          label: Text(context.tr('home.see_all')),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppTheme.primaryMint,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-              );
-            },
+              ),
+
+              // Recent Expenses List
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.spacing16,
+                  0,
+                  AppTheme.spacing16,
+                  AppTheme.spacing16,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final expense = recentExpenses[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
+                        child: Slidable(
+                          key: ValueKey(expense.id),
+                          endActionPane: ActionPane(
+                            motion: const ScrollMotion(),
+                            children: [
+                              SlidableAction(
+                                onPressed: (_) => _deleteExpense(expense.id),
+                                backgroundColor: AppTheme.error,
+                                foregroundColor: Colors.white,
+                                icon: Icons.delete,
+                                label: context.tr('common.delete'),
+                              ),
+                            ],
+                          ),
+                          child: ExpenseCard(
+                            expense: expense,
+                            onTap: () => _showExpenseDetailsDialog(expense),
+                          ),
+                        ),
+                      );
+                    },
+                    childCount: recentExpenses.length,
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),
