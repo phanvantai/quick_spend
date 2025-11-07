@@ -34,7 +34,7 @@ class ReportScreen extends StatelessWidget {
             onPressed: () {
               context.read<ReportProvider>().refresh();
             },
-            tooltip: 'Refresh',
+            tooltip: 'report.refresh_tooltip'.tr(),
           ),
         ],
       ),
@@ -48,7 +48,7 @@ class ReportScreen extends StatelessWidget {
                   const CircularProgressIndicator(),
                   const SizedBox(height: AppTheme.spacing16),
                   Text(
-                    'Loading report...',
+                    'report.loading'.tr(),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -81,9 +81,8 @@ class ReportScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(AppTheme.spacing16),
                     child: EmptyState(
                       icon: Icons.bar_chart_outlined,
-                      title: 'No expenses yet',
-                      message:
-                          'Start adding expenses to see your spending reports and insights',
+                      title: 'report.empty_title'.tr(),
+                      message: 'report.empty_message'.tr(),
                     ),
                   ),
                 ],

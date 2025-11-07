@@ -106,14 +106,18 @@ class StatsGrid extends StatelessWidget {
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return currency == 'VND' ? '$formattedđ' : '\$$formatted';
+      return currency == 'VND'
+          ? '$formatted${'currency.symbol_vnd'.tr()}'
+          : '${'currency.symbol_usd'.tr()}$formatted';
     } else {
       // English format
       final formatted = amount.toStringAsFixed(2).replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return currency == 'USD' ? '\$$formatted' : '$formatted đ';
+      return currency == 'USD'
+          ? '${'currency.symbol_usd'.tr()}$formatted'
+          : '$formatted ${'currency.symbol_vnd'.tr()}';
     }
   }
 }

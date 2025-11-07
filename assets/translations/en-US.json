@@ -77,9 +77,17 @@
     "theme_dark": "Dark",
     "theme_system": "System Default",
     "about": "About",
+    "version": "Version 1.0.0",
     "language_changed": "Language changed successfully",
     "currency_changed": "Currency changed successfully",
     "theme_changed": "Theme changed successfully",
+    "error_changing_language": "Error changing language: {error}",
+    "error_changing_currency": "Error changing currency: {error}",
+    "error_changing_theme": "Error changing theme: {error}",
+    "language_vi": "Tiếng Việt",
+    "language_en": "English",
+    "currency_vnd_display": "Vietnamese Dong (đ)",
+    "currency_usd_display": "US Dollar ($)",
     "coming_soon": "Settings coming soon!"
   },
   "expense": {
@@ -129,7 +137,8 @@
     "close": "Close",
     "delete": "Delete",
     "edit": "Edit",
-    "apply": "Apply"
+    "apply": "Apply",
+    "error": "Error: {error}"
   },
   "categories": {
     "food": "Food",
@@ -177,6 +186,16 @@
     "end_date_before_start": "End date must be after start date",
     "no_category_data": "No spending data available for this period",
     "no_trend_data": "No trend data available for this period",
-    "apply": "Apply"
+    "apply": "Apply",
+    "refresh_tooltip": "Refresh",
+    "loading": "Loading report...",
+    "empty_title": "No expenses yet",
+    "empty_message": "Start adding expenses to see your spending reports and insights"
+  },
+  "currency": {
+    "symbol_vnd": "đ",
+    "symbol_usd": "$",
+    "suffix_million": "M",
+    "suffix_thousand": "k"
   }
 }

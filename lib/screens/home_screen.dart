@@ -263,13 +263,13 @@ class _HomeScreenState extends State<HomeScreen> {
   String _formatAmount(double amount, String currency) {
     if (currency == 'VND') {
       if (amount >= 1000000) {
-        return '${(amount / 1000000).toStringAsFixed(1)}M';
+        return '${(amount / 1000000).toStringAsFixed(1)}${'currency.suffix_million'.tr()}';
       } else if (amount >= 1000) {
-        return '${(amount / 1000).toStringAsFixed(0)}k';
+        return '${(amount / 1000).toStringAsFixed(0)}${'currency.suffix_thousand'.tr()}';
       }
       return amount.toStringAsFixed(0);
     } else {
-      return '\$${amount.toStringAsFixed(0)}';
+      return '${'currency.symbol_usd'.tr()}${amount.toStringAsFixed(0)}';
     }
   }
 

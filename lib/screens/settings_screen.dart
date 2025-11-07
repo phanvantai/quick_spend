@@ -99,7 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                   const SizedBox(height: AppTheme.spacing4),
                                   Text(
-                                    'Version 1.0.0',
+                                    'settings.version'.tr(),
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: colorScheme.onSurfaceVariant,
                                     ),
@@ -187,20 +187,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _getLanguageDisplayName(String languageCode) {
     switch (languageCode) {
       case 'vi':
-        return 'Tiếng Việt';
+        return 'settings.language_vi'.tr();
       case 'en':
       default:
-        return 'English';
+        return 'settings.language_en'.tr();
     }
   }
 
   String _getCurrencyDisplayName(String currencyCode) {
     switch (currencyCode) {
       case 'VND':
-        return 'Vietnamese Dong (đ)';
+        return 'settings.currency_vnd_display'.tr();
       case 'USD':
       default:
-        return 'US Dollar (\$)';
+        return 'settings.currency_usd_display'.tr();
     }
   }
 
@@ -412,7 +412,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Error changing language: $e'),
+            content: Text(
+              'settings.error_changing_language'.tr(
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -446,7 +450,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Error changing currency: $e'),
+            content: Text(
+              'settings.error_changing_currency'.tr(
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -480,7 +488,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Error changing theme: $e'),
+            content: Text(
+              'settings.error_changing_theme'.tr(
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
             backgroundColor: AppTheme.error,
           ),
         );

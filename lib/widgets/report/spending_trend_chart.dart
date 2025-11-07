@@ -225,18 +225,18 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
     if (widget.language == 'vi') {
       // Vietnamese: Show in thousands (k)
       if (value >= 1000000) {
-        text = '${(value / 1000000).toStringAsFixed(0)}M';
+        text = '${(value / 1000000).toStringAsFixed(0)}${'currency.suffix_million'.tr()}';
       } else if (value >= 1000) {
-        text = '${(value / 1000).toStringAsFixed(0)}k';
+        text = '${(value / 1000).toStringAsFixed(0)}${'currency.suffix_thousand'.tr()}';
       } else {
         text = value.toStringAsFixed(0);
       }
     } else {
       // English: Show in dollars
       if (value >= 1000) {
-        text = '\$${(value / 1000).toStringAsFixed(0)}k';
+        text = '${'currency.symbol_usd'.tr()}${(value / 1000).toStringAsFixed(0)}${'currency.suffix_thousand'.tr()}';
       } else {
-        text = '\$${value.toStringAsFixed(0)}';
+        text = '${'currency.symbol_usd'.tr()}${value.toStringAsFixed(0)}';
       }
     }
 
@@ -314,7 +314,9 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return widget.currency == 'VND' ? '$formattedđ' : '\$$formatted';
+      return widget.currency == 'VND'
+          ? '$formatted${'currency.symbol_vnd'.tr()}'
+          : '${'currency.symbol_usd'.tr()}$formatted';
     } else {
       final formatted = amount
           .toStringAsFixed(2)
@@ -322,7 +324,9 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return widget.currency == 'USD' ? '\$$formatted' : '$formatted đ';
+      return widget.currency == 'USD'
+          ? '${'currency.symbol_usd'.tr()}$formatted'
+          : '$formatted ${'currency.symbol_vnd'.tr()}';
     }
   }
 }
