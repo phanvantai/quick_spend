@@ -48,7 +48,6 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return AlertDialog(
       title: Row(
@@ -59,11 +58,7 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
               gradient: AppTheme.primaryGradient,
               borderRadius: AppTheme.borderRadiusSmall,
             ),
-            child: const Icon(
-              Icons.date_range,
-              color: Colors.white,
-              size: 20,
-            ),
+            child: const Icon(Icons.date_range, color: Colors.white, size: 20),
           ),
           const SizedBox(width: AppTheme.spacing12),
           Text('report.custom_date_range'.tr()),
@@ -182,18 +177,12 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
       child: Container(
         padding: const EdgeInsets.all(AppTheme.spacing16),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: colorScheme.outline.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
           borderRadius: AppTheme.borderRadiusMedium,
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: AppTheme.primaryMint,
-              size: 20,
-            ),
+            Icon(icon, color: AppTheme.primaryMint, size: 20),
             const SizedBox(width: AppTheme.spacing12),
             Expanded(
               child: Column(
@@ -215,10 +204,7 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_drop_down,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            Icon(Icons.arrow_drop_down, color: colorScheme.onSurfaceVariant),
           ],
         ),
       ),
@@ -244,9 +230,7 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,
           borderRadius: AppTheme.borderRadiusSmall,
-          border: Border.all(
-            color: colorScheme.outline.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
         ),
         child: Text(
           label,
@@ -267,9 +251,9 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: AppTheme.primaryMint,
-                ),
+            colorScheme: Theme.of(
+              context,
+            ).colorScheme.copyWith(primary: AppTheme.primaryMint),
           ),
           child: child!,
         );
@@ -292,9 +276,9 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: AppTheme.primaryMint,
-                ),
+            colorScheme: Theme.of(
+              context,
+            ).colorScheme.copyWith(primary: AppTheme.primaryMint),
           ),
           child: child!,
         );

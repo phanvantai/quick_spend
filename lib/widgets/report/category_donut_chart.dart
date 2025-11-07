@@ -25,7 +25,6 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     if (widget.categoryStats.isEmpty) {
       return _buildEmptyState(context);
@@ -55,18 +54,20 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                     child: PieChart(
                       PieChartData(
                         pieTouchData: PieTouchData(
-                          touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                            setState(() {
-                              if (!event.isInterestedForInteractions ||
-                                  pieTouchResponse == null ||
-                                  pieTouchResponse.touchedSection == null) {
-                                touchedIndex = -1;
-                                return;
-                              }
-                              touchedIndex = pieTouchResponse
-                                  .touchedSection!.touchedSectionIndex;
-                            });
-                          },
+                          touchCallback:
+                              (FlTouchEvent event, pieTouchResponse) {
+                                setState(() {
+                                  if (!event.isInterestedForInteractions ||
+                                      pieTouchResponse == null ||
+                                      pieTouchResponse.touchedSection == null) {
+                                    touchedIndex = -1;
+                                    return;
+                                  }
+                                  touchedIndex = pieTouchResponse
+                                      .touchedSection!
+                                      .touchedSectionIndex;
+                                });
+                              },
                         ),
                         borderData: FlBorderData(show: false),
                         sectionsSpace: 2,
@@ -77,10 +78,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                   ),
                   const SizedBox(width: AppTheme.spacing16),
                   // Legend
-                  Expanded(
-                    flex: 2,
-                    child: _buildLegend(context),
-                  ),
+                  Expanded(flex: 2, child: _buildLegend(context)),
                 ],
               ),
             ),
@@ -106,9 +104,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
           fontSize: fontSize,
           fontWeight: FontWeight.bold,
           color: Colors.white,
-          shadows: const [
-            Shadow(color: Colors.black26, blurRadius: 2),
-          ],
+          shadows: const [Shadow(color: Colors.black26, blurRadius: 2)],
         ),
       );
     });

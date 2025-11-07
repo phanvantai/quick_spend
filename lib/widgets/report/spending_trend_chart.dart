@@ -70,17 +70,21 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
                           touchedIndex = -1;
                           return;
                         }
-                        touchedIndex = barTouchResponse.spot!.touchedBarGroupIndex;
+                        touchedIndex =
+                            barTouchResponse.spot!.touchedBarGroupIndex;
                       });
                     },
                     touchTooltipData: BarTouchTooltipData(
                       getTooltipColor: (_) => colorScheme.inverseSurface,
                       tooltipPadding: const EdgeInsets.all(8),
                       tooltipMargin: 8,
-                      tooltipBorder: const BorderSide(color: Colors.transparent),
+                      tooltipBorder: const BorderSide(
+                        color: Colors.transparent,
+                      ),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        final entries = widget.stats.dailySpending.entries.toList()
-                          ..sort((a, b) => a.key.compareTo(b.key));
+                        final entries =
+                            widget.stats.dailySpending.entries.toList()
+                              ..sort((a, b) => a.key.compareTo(b.key));
                         final date = entries[groupIndex].key;
                         final amount = entries[groupIndex].value;
 
@@ -202,7 +206,6 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
 
     return SideTitleWidget(
       meta: meta,
-      axisSide: meta.axisSide,
       space: 8,
       child: Text(
         text,
@@ -239,7 +242,6 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
 
     return SideTitleWidget(
       meta: meta,
-      axisSide: meta.axisSide,
       space: 8,
       child: Text(
         text,
@@ -306,13 +308,17 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
 
   String _formatAmount(double amount) {
     if (widget.language == 'vi') {
-      final formatted = amount.toStringAsFixed(0).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(0)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
       return widget.currency == 'VND' ? '$formattedđ' : '\$$formatted';
     } else {
-      final formatted = amount.toStringAsFixed(2).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(2)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
