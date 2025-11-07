@@ -23,18 +23,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, configProvider, _) {
         return Scaffold(
           backgroundColor: colorScheme.surface,
-          appBar: AppBar(title: Text('settings.title'.tr())),
+          appBar: AppBar(title: Text(context.tr('settings.title'))),
           body: configProvider.isLoading
               ? const Center(child: CircularProgressIndicator())
               : ListView(
                   children: [
                     // Preferences Section
-                    _buildSectionHeader('settings.preferences'.tr()),
+                    _buildSectionHeader(context.tr('settings.preferences')),
 
                     _buildListTile(
                       icon: Icons.language,
                       iconColor: AppTheme.primaryMint,
-                      title: 'settings.language'.tr(),
+                      title: context.tr('settings.language'),
                       subtitle: _getLanguageDisplayName(
                         configProvider.language,
                       ),
@@ -44,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildListTile(
                       icon: Icons.attach_money,
                       iconColor: AppTheme.accentOrange,
-                      title: 'settings.currency'.tr(),
+                      title: context.tr('settings.currency'),
                       subtitle: _getCurrencyDisplayName(
                         configProvider.currency,
                       ),
@@ -54,7 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildListTile(
                       icon: Icons.palette_outlined,
                       iconColor: AppTheme.accentPink,
-                      title: 'settings.theme'.tr(),
+                      title: context.tr('settings.theme'),
                       subtitle: _getThemeDisplayName(configProvider.themeMode),
                       onTap: () => _showThemeDialog(context),
                     ),
@@ -62,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const Divider(height: 32),
 
                     // About Section
-                    _buildSectionHeader('settings.about'.tr()),
+                    _buildSectionHeader(context.tr('settings.about')),
 
                     Card(
                       margin: const EdgeInsets.symmetric(
@@ -92,21 +92,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'app.name'.tr(),
+                                    context.tr('app.name'),
                                     style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(height: AppTheme.spacing4),
                                   Text(
-                                    'settings.version'.tr(),
+                                    context.tr('settings.version'),
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                   const SizedBox(height: AppTheme.spacing8),
                                   Text(
-                                    'app.tagline'.tr(),
+                                    context.tr('app.tagline'),
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: colorScheme.onSurfaceVariant,
                                     ),
@@ -187,32 +187,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _getLanguageDisplayName(String languageCode) {
     switch (languageCode) {
       case 'vi':
-        return 'settings.language_vi'.tr();
+        return context.tr('settings.language_vi');
       case 'en':
       default:
-        return 'settings.language_en'.tr();
+        return context.tr('settings.language_en');
     }
   }
 
   String _getCurrencyDisplayName(String currencyCode) {
     switch (currencyCode) {
       case 'VND':
-        return 'settings.currency_vnd_display'.tr();
+        return context.tr('settings.currency_vnd_display');
       case 'USD':
       default:
-        return 'settings.currency_usd_display'.tr();
+        return context.tr('settings.currency_usd_display');
     }
   }
 
   String _getThemeDisplayName(String themeMode) {
     switch (themeMode) {
       case 'light':
-        return 'settings.theme_light'.tr();
+        return context.tr('settings.theme_light');
       case 'dark':
-        return 'settings.theme_dark'.tr();
+        return context.tr('settings.theme_dark');
       case 'system':
       default:
-        return 'settings.theme_system'.tr();
+        return context.tr('settings.theme_system');
     }
   }
 
@@ -222,7 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (dialogContext) => Consumer<AppConfigProvider>(
         builder: (ctx, configProvider, _) => AlertDialog(
-          title: Text('settings.language'.tr()),
+          title: Text(ctx.tr('settings.language')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: LanguageOption.options.map((option) {
@@ -252,7 +252,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (dialogContext) => Consumer<AppConfigProvider>(
         builder: (ctx, configProvider, _) => AlertDialog(
-          title: Text('settings.currency'.tr()),
+          title: Text(ctx.tr('settings.currency')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: CurrencyOption.options.map((option) {
@@ -289,7 +289,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           final colorScheme = Theme.of(ctx).colorScheme;
 
           return AlertDialog(
-            title: Text('settings.theme'.tr()),
+            title: Text(ctx.tr('settings.theme')),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: ThemeModeOption.options.map((option) {
@@ -302,7 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ? colorScheme.primary
                         : colorScheme.onSurfaceVariant,
                   ),
-                  title: option.displayNameKey.tr(),
+                  title: ctx.tr(option.displayNameKey),
                   isSelected: isSelected,
                   onTap: () {
                     Navigator.pop(dialogContext);
@@ -401,7 +401,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         messenger.showSnackBar(
           SnackBar(
-            content: Text('settings.language_changed'.tr()),
+            content: Text(context.tr('settings.language_changed')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 2),
           ),
@@ -413,7 +413,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
-              'settings.error_changing_language'.tr(
+              context.tr(
+                'settings.error_changing_language',
                 namedArgs: {'error': e.toString()},
               ),
             ),
@@ -439,7 +440,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('settings.currency_changed'.tr()),
+            content: Text(context.tr('settings.currency_changed')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 2),
           ),
@@ -451,7 +452,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
-              'settings.error_changing_currency'.tr(
+              context.tr(
+                'settings.error_changing_currency',
                 namedArgs: {'error': e.toString()},
               ),
             ),
@@ -477,7 +479,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('settings.theme_changed'.tr()),
+            content: Text(context.tr('settings.theme_changed')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 2),
           ),
@@ -489,7 +491,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
-              'settings.error_changing_theme'.tr(
+              context.tr(
+                'settings.error_changing_theme',
                 namedArgs: {'error': e.toString()},
               ),
             ),

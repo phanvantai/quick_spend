@@ -25,8 +25,8 @@ class StatsGrid extends StatelessWidget {
             context,
             icon: Icons.calendar_today,
             iconColor: Colors.blue,
-            value: _formatAmount(stats.averagePerDay),
-            label: 'report.avg_per_day'.tr(),
+            value: _formatAmount(context, stats.averagePerDay),
+            label: context.tr('report.avg_per_day'),
           ),
         ),
         const SizedBox(width: AppTheme.spacing12),
@@ -36,9 +36,9 @@ class StatsGrid extends StatelessWidget {
             icon: Icons.trending_up,
             iconColor: Colors.red,
             value: stats.highestExpense != null
-                ? _formatAmount(stats.highestExpense!.amount)
-                : _formatAmount(0),
-            label: 'report.highest_expense'.tr(),
+                ? _formatAmount(context, stats.highestExpense!.amount)
+                : _formatAmount(context, 0),
+            label: context.tr('report.highest_expense'),
           ),
         ),
       ],
@@ -99,7 +99,7 @@ class StatsGrid extends StatelessWidget {
     );
   }
 
-  String _formatAmount(double amount) {
+  String _formatAmount(BuildContext context, double amount) {
     if (language == 'vi') {
       // Vietnamese format
       final formatted = amount.toStringAsFixed(0).replaceAllMapped(
@@ -107,8 +107,8 @@ class StatsGrid extends StatelessWidget {
             (Match m) => '${m[1]},',
           );
       return currency == 'VND'
-          ? '$formatted${'currency.symbol_vnd'.tr()}'
-          : '${'currency.symbol_usd'.tr()}$formatted';
+          ? '$formatted${context.tr('currency.symbol_vnd')}'
+          : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
       // English format
       final formatted = amount.toStringAsFixed(2).replaceAllMapped(
@@ -116,8 +116,8 @@ class StatsGrid extends StatelessWidget {
             (Match m) => '${m[1]},',
           );
       return currency == 'USD'
-          ? '${'currency.symbol_usd'.tr()}$formatted'
-          : '$formatted ${'currency.symbol_vnd'.tr()}';
+          ? '${context.tr('currency.symbol_usd')}$formatted'
+          : '$formatted ${context.tr('currency.symbol_vnd')}';
     }
   }
 }

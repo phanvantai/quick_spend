@@ -358,7 +358,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'common.error'.tr(namedArgs: {'error': e.toString()}),
+              context.tr('common.error', namedArgs: {'error': e.toString()}),
             ),
             backgroundColor: AppTheme.error,
           ),

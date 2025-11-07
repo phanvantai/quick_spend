@@ -26,7 +26,7 @@ class ReportScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: Text('navigation.report'.tr()),
+        title: Text(context.tr('navigation.report')),
         actions: [
           // Refresh button
           IconButton(
@@ -34,7 +34,7 @@ class ReportScreen extends StatelessWidget {
             onPressed: () {
               context.read<ReportProvider>().refresh();
             },
-            tooltip: 'report.refresh_tooltip'.tr(),
+            tooltip: context.tr('report.refresh_tooltip'),
           ),
         ],
       ),
@@ -48,7 +48,7 @@ class ReportScreen extends StatelessWidget {
                   const CircularProgressIndicator(),
                   const SizedBox(height: AppTheme.spacing16),
                   Text(
-                    'report.loading'.tr(),
+                    context.tr('report.loading'),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -81,8 +81,8 @@ class ReportScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(AppTheme.spacing16),
                     child: EmptyState(
                       icon: Icons.bar_chart_outlined,
-                      title: 'report.empty_title'.tr(),
-                      message: 'report.empty_message'.tr(),
+                      title: context.tr('report.empty_title'),
+                      message: context.tr('report.empty_message'),
                     ),
                   ),
                 ],

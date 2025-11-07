@@ -260,16 +260,16 @@ class _HomeScreenState extends State<HomeScreen> {
         .fold(0.0, (sum, e) => sum + e.amount);
   }
 
-  String _formatAmount(double amount, String currency) {
+  String _formatAmount(BuildContext context, double amount, String currency) {
     if (currency == 'VND') {
       if (amount >= 1000000) {
-        return '${(amount / 1000000).toStringAsFixed(1)}${'currency.suffix_million'.tr()}';
+        return '${(amount / 1000000).toStringAsFixed(1)}${context.tr('currency.suffix_million')}';
       } else if (amount >= 1000) {
-        return '${(amount / 1000).toStringAsFixed(0)}${'currency.suffix_thousand'.tr()}';
+        return '${(amount / 1000).toStringAsFixed(0)}${context.tr('currency.suffix_thousand')}';
       }
       return amount.toStringAsFixed(0);
     } else {
-      return '${'currency.symbol_usd'.tr()}${amount.toStringAsFixed(0)}';
+      return '${context.tr('currency.symbol_usd')}${amount.toStringAsFixed(0)}';
     }
   }
 
@@ -341,21 +341,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             HomeSummaryCard(
                               title: context.tr('home.today'),
-                              value: _formatAmount(todayTotal, currency),
+                              value: _formatAmount(context, todayTotal, currency),
                               icon: Icons.today_outlined,
                               color: AppTheme.accentOrange,
                             ),
                             const SizedBox(width: AppTheme.spacing12),
                             HomeSummaryCard(
                               title: context.tr('home.this_week'),
-                              value: _formatAmount(weekTotal, currency),
+                              value: _formatAmount(context, weekTotal, currency),
                               icon: Icons.calendar_view_week_outlined,
                               color: AppTheme.accentTeal,
                             ),
                             const SizedBox(width: AppTheme.spacing12),
                             HomeSummaryCard(
                               title: context.tr('home.this_month'),
-                              value: _formatAmount(monthTotal, currency),
+                              value: _formatAmount(context, monthTotal, currency),
                               icon: Icons.calendar_month_outlined,
                               color: AppTheme.primaryMint,
                             ),
