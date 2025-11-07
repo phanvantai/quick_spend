@@ -121,7 +121,8 @@
     "save": "Save",
     "close": "Close",
     "delete": "Delete",
-    "edit": "Edit"
+    "edit": "Edit",
+    "apply": "Apply"
   },
   "categories": {
     "food": "Food",
@@ -145,5 +146,30 @@
   "languages": {
     "en": "English",
     "vi": "Tiếng Việt"
+  },
+  "report": {
+    "total_spending": "Total Spending",
+    "avg_per_transaction": "Avg/Transaction",
+    "avg_per_day": "Avg/Day",
+    "highest_expense": "Highest",
+    "expense": "expense",
+    "expenses": "expenses",
+    "category_breakdown": "Category Breakdown",
+    "spending_by_category": "Spending by Category",
+    "transaction": "transaction",
+    "transactions": "transactions",
+    "spending_trend": "Spending Trend",
+    "daily_spending": "Daily spending over time",
+    "top_expenses": "Top Expenses",
+    "custom_date_range": "Custom Date Range",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "last_7_days": "Last 7 Days",
+    "last_30_days": "Last 30 Days",
+    "this_month": "This Month",
+    "end_date_before_start": "End date must be after start date",
+    "no_category_data": "No spending data available for this period",
+    "no_trend_data": "No trend data available for this period",
+    "apply": "Apply"
   }
 }

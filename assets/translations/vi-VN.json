@@ -121,7 +121,8 @@
     "save": "Lưu",
     "close": "Đóng",
     "delete": "Xóa",
-    "edit": "Sửa"
+    "edit": "Sửa",
+    "apply": "Áp Dụng"
   },
   "categories": {
     "food": "Ăn Uống",
@@ -145,5 +146,30 @@
   "languages": {
     "en": "English",
     "vi": "Tiếng Việt"
+  },
+  "report": {
+    "total_spending": "Tổng Chi Tiêu",
+    "avg_per_transaction": "TB/Giao dịch",
+    "avg_per_day": "TB/Ngày",
+    "highest_expense": "Cao nhất",
+    "expense": "chi tiêu",
+    "expenses": "chi tiêu",
+    "category_breakdown": "Phân Loại Danh Mục",
+    "spending_by_category": "Chi Tiêu Theo Danh Mục",
+    "transaction": "giao dịch",
+    "transactions": "giao dịch",
+    "spending_trend": "Xu Hướng Chi Tiêu",
+    "daily_spending": "Chi tiêu hàng ngày theo thời gian",
+    "top_expenses": "Chi Tiêu Cao Nhất",
+    "custom_date_range": "Tùy Chỉnh Khoảng Thời Gian",
+    "start_date": "Ngày Bắt Đầu",
+    "end_date": "Ngày Kết Thúc",
+    "last_7_days": "7 Ngày Qua",
+    "last_30_days": "30 Ngày Qua",
+    "this_month": "Tháng Này",
+    "end_date_before_start": "Ngày kết thúc phải sau ngày bắt đầu",
+    "no_category_data": "Không có dữ liệu chi tiêu trong khoảng thời gian này",
+    "no_trend_data": "Không có dữ liệu xu hướng trong khoảng thời gian này",
+    "apply": "Áp Dụng"
   }
 }

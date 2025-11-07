@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../providers/expense_provider.dart';
+import '../providers/report_provider.dart';
+import '../providers/app_config_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/report/period_filter.dart';
+import '../widgets/report/summary_card.dart';
+import '../widgets/report/stats_grid.dart';
+import '../widgets/report/category_donut_chart.dart';
+import '../widgets/report/category_list.dart';
+import '../widgets/report/spending_trend_chart.dart';
+import '../widgets/report/top_expenses_list.dart';
+import '../widgets/report/custom_date_range_picker.dart';
+import '../widgets/common/empty_state.dart';
 
 /// Report screen for viewing expense statistics and charts
 class ReportScreen extends StatelessWidget {
@@ -17,129 +27,178 @@ class ReportScreen extends StatelessWidget {
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text('navigation.report'.tr()),
+        actions: [
+          // Refresh button
+          IconButton(
+            icon: const Icon(Icons.refresh_outlined),
+            onPressed: () {
+              context.read<ReportProvider>().refresh();
+            },
+            tooltip: 'Refresh',
+          ),
+        ],
       ),
-      body: Consumer<ExpenseProvider>(
-        builder: (context, expenseProvider, _) {
-          if (expenseProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final expenses = expenseProvider.expenses;
-          final total = expenseProvider.totalAmount;
-
-          if (expenses.isEmpty) {
+      body: Consumer2<ReportProvider, AppConfigProvider>(
+        builder: (context, reportProvider, configProvider, _) {
+          if (reportProvider.isLoading) {
             return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppTheme.spacing32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.bar_chart_outlined,
-                      size: 80,
-                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: AppTheme.spacing16),
+                  Text(
+                    'Loading report...',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                    const SizedBox(height: AppTheme.spacing24),
-                    Text(
-                      'No data yet',
-                      style: theme.textTheme.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppTheme.spacing12),
-                    Text(
-                      'Start adding expenses to see your spending reports',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           }
 
-          return ListView(
-            padding: const EdgeInsets.all(AppTheme.spacing16),
-            children: [
-              // Total spending card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppTheme.spacing24),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Total Spending',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: AppTheme.spacing12),
-                      Text(
-                        NumberFormat.currency(
-                          locale: 'vi_VN',
-                          symbol: 'đ',
-                          decimalDigits: 0,
-                        ).format(total),
-                        style: theme.textTheme.displayMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.primaryMint,
-                        ),
-                      ),
-                      const SizedBox(height: AppTheme.spacing8),
-                      Text(
-                        '${expenses.length} ${expenses.length == 1 ? 'expense' : 'expenses'}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppTheme.spacing24),
+          final stats = reportProvider.currentStats;
 
-              // Coming soon placeholder
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppTheme.spacing24),
+          // Empty state - no expenses at all
+          if (stats == null || stats.transactionCount == 0) {
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Period filter (still show even when empty)
+                  PeriodFilter(
+                    selectedPeriod: reportProvider.selectedPeriod,
+                    onPeriodChanged: (period) {
+                      reportProvider.selectPeriod(period);
+                    },
+                    onCustomTap: () => _showCustomDatePicker(
+                      context,
+                      reportProvider,
+                    ),
+                  ),
+                  // Empty state
+                  Padding(
+                    padding: const EdgeInsets.all(AppTheme.spacing16),
+                    child: EmptyState(
+                      icon: Icons.bar_chart_outlined,
+                      title: 'No expenses yet',
+                      message:
+                          'Start adding expenses to see your spending reports and insights',
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Main report view with data
+          return RefreshIndicator(
+            onRefresh: () => reportProvider.refresh(),
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: AppTheme.spacing24),
+              children: [
+                // Period filter
+                PeriodFilter(
+                  selectedPeriod: reportProvider.selectedPeriod,
+                  onPeriodChanged: (period) {
+                    reportProvider.selectPeriod(period);
+                  },
+                  onCustomTap: () => _showCustomDatePicker(
+                    context,
+                    reportProvider,
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing16,
+                  ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.analytics_outlined,
-                          size: 64,
-                          color: Colors.white,
-                        ),
+                      // Summary card with trend
+                      SummaryCard(
+                        stats: stats,
+                        trendPercentage: reportProvider.trendPercentage,
+                        isTrendPositive: reportProvider.isTrendPositive,
+                        currency: configProvider.currency,
+                        language: context.locale.languageCode,
                       ),
-                      const SizedBox(height: AppTheme.spacing24),
-                      Text(
-                        'More insights coming soon!',
-                        style: theme.textTheme.titleLarge,
-                        textAlign: TextAlign.center,
+                      const SizedBox(height: AppTheme.spacing16),
+
+                      // Stats grid (avg/day, highest expense)
+                      StatsGrid(
+                        stats: stats,
+                        currency: configProvider.currency,
+                        language: context.locale.languageCode,
                       ),
-                      const SizedBox(height: AppTheme.spacing12),
-                      Text(
-                        'We\'re working on charts, category breakdowns, and spending trends.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                      const SizedBox(height: AppTheme.spacing16),
+
+                      // Category donut chart
+                      if (stats.categoryBreakdown.isNotEmpty)
+                        CategoryDonutChart(
+                          categoryStats: stats.categoryBreakdown,
+                          language: context.locale.languageCode,
                         ),
-                        textAlign: TextAlign.center,
+                      const SizedBox(height: AppTheme.spacing16),
+
+                      // Category list with progress bars
+                      if (stats.categoryBreakdown.isNotEmpty)
+                        CategoryList(
+                          categoryStats: stats.categoryBreakdown,
+                          currency: configProvider.currency,
+                          language: context.locale.languageCode,
+                        ),
+                      const SizedBox(height: AppTheme.spacing16),
+
+                      // Spending trend chart
+                      if (stats.dailySpending.isNotEmpty)
+                        SpendingTrendChart(
+                          stats: stats,
+                          currency: configProvider.currency,
+                          language: context.locale.languageCode,
+                        ),
+                      const SizedBox(height: AppTheme.spacing16),
+
+                      // Top expenses list
+                      FutureBuilder(
+                        future: reportProvider.getTopExpenses(limit: 5),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                            return TopExpensesList(
+                              expenses: snapshot.data!,
+                              currency: configProvider.currency,
+                              language: context.locale.languageCode,
+                              limit: 5,
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
     );
+  }
+
+  /// Show custom date range picker dialog
+  Future<void> _showCustomDatePicker(
+    BuildContext context,
+    ReportProvider reportProvider,
+  ) async {
+    final dateRange = await CustomDateRangePicker.show(
+      context,
+      initialStartDate: reportProvider.customDateRange?.start,
+      initialEndDate: reportProvider.customDateRange?.end,
+    );
+
+    if (dateRange != null) {
+      reportProvider.setCustomDateRange(dateRange.start, dateRange.end);
+    }
   }
 }
