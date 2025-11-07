@@ -617,45 +617,26 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         // Main Scaffold with content and bottom navigation
         Scaffold(
           body: IndexedStack(index: _currentIndex, children: _screens),
-          // Notched BottomAppBar with navigation items
-          bottomNavigationBar: BottomAppBar(
-            color: Colors.transparent,
-            elevation: 0,
-            shape: const CircularNotchedRectangle(),
-            notchMargin: 8.0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    _currentIndex == 0 ? Icons.home : Icons.home_outlined,
-                  ),
-                  color: _currentIndex == 0
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  onPressed: () => _onTabTapped(0),
-                  tooltip: context.tr('navigation.input'),
-                ),
-                const SizedBox(width: 48), // Space for the FAB
-                IconButton(
-                  icon: Icon(
-                    _currentIndex == 1
-                        ? Icons.bar_chart
-                        : Icons.bar_chart_outlined,
-                  ),
-                  color: _currentIndex == 1
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  onPressed: () => _onTabTapped(1),
-                  tooltip: context.tr('navigation.report'),
-                ),
-              ],
-            ),
+          // Standard BottomNavigationBar
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: _onTabTapped,
+            items: [
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.home_outlined),
+                activeIcon: const Icon(Icons.home),
+                label: context.tr('navigation.input'),
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.bar_chart_outlined),
+                activeIcon: const Icon(Icons.bar_chart),
+                label: context.tr('navigation.report'),
+              ),
+            ],
           ),
-          // Voice FAB docked in the center
+          // Voice FAB positioned at bottom right
           floatingActionButton: _buildVoiceFAB(),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.miniCenterDocked,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         ),
 
         // Full-screen recording overlay (covers everything including bottom nav and FAB)
