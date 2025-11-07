@@ -201,6 +201,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
     final text = DateFormat('d').format(date);
 
     return SideTitleWidget(
+      meta: meta,
       axisSide: meta.axisSide,
       space: 8,
       child: Text(
@@ -237,6 +238,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
     }
 
     return SideTitleWidget(
+      meta: meta,
       axisSide: meta.axisSide,
       space: 8,
       child: Text(
