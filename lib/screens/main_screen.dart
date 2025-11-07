@@ -617,10 +617,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         // Main Scaffold with content and bottom navigation
         Scaffold(
           body: IndexedStack(index: _currentIndex, children: _screens),
-          // Standard BottomNavigationBar
+          // Standard BottomNavigationBar with transparency
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: _onTabTapped,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            type: BottomNavigationBarType.fixed,
             items: [
               BottomNavigationBarItem(
                 icon: const Icon(Icons.home_outlined),
