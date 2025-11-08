@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
 import '../providers/app_config_provider.dart';
+import '../providers/expense_provider.dart';
 import '../theme/app_theme.dart';
 
 /// Full screen for adding or editing expenses
@@ -80,12 +81,13 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   void _save() {
     if (_formKey.currentState?.validate() ?? false) {
       final language = context.read<AppConfigProvider>().language;
+      final userId = context.read<ExpenseProvider>().currentUserId;
 
       final expense = Expense(
         id: _isEditMode
             ? widget.expense!.id
             : DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: _isEditMode ? widget.expense!.userId : 'default_user',
+        userId: _isEditMode ? widget.expense!.userId : userId,
         amount: double.parse(_amountController.text),
         description: _descriptionController.text.trim(),
         category: _selectedCategory,
