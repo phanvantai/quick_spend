@@ -11,25 +11,7 @@ class ExpenseProvider extends ChangeNotifier {
   String _currentUserId = AppConstants.defaultUserId;
 
   ExpenseProvider(this._expenseService) {
-    _initializeAndMigrate();
-  }
-
-  /// Initialize provider and migrate any legacy data
-  Future<void> _initializeAndMigrate() async {
-    await _migrateWrongUserIds();
-    await _loadExpenses();
-  }
-
-  /// Migrate expenses with incorrect userIds to the correct one
-  Future<void> _migrateWrongUserIds() async {
-    try {
-      debugPrint('🔄 [ExpenseProvider] Checking for userId migration...');
-      await _expenseService.migrateUserIds(AppConstants.defaultUserId);
-      debugPrint('✅ [ExpenseProvider] UserId migration completed');
-    } catch (e) {
-      debugPrint('❌ [ExpenseProvider] Error during userId migration: $e');
-      // Don't throw - continue loading even if migration fails
-    }
+    _loadExpenses();
   }
 
   /// Current list of expenses
