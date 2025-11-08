@@ -114,9 +114,7 @@ class TopExpensesList extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 gradient: rank <= 3 ? AppTheme.primaryGradient : null,
-                color: rank > 3
-                    ? colorScheme.surfaceContainerHighest
-                    : null,
+                color: rank > 3 ? colorScheme.surfaceContainerHighest : null,
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -183,6 +181,7 @@ class TopExpensesList extends StatelessWidget {
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -207,13 +206,17 @@ class TopExpensesList extends StatelessWidget {
 
   String _formatAmount(double amount) {
     if (language == 'vi') {
-      final formatted = amount.toStringAsFixed(0).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(0)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
       return currency == 'VND' ? '$formattedđ' : '\$$formatted';
     } else {
-      final formatted = amount.toStringAsFixed(2).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(2)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
