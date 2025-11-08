@@ -141,13 +141,13 @@ class ExpenseCard extends StatelessWidget {
     final dateOnly = DateTime(date.year, date.month, date.day);
 
     if (dateOnly == today) {
-      return 'Today ${DateFormat.Hm().format(date)}';
+      return 'Today';
     } else if (dateOnly == yesterday) {
-      return 'Yesterday ${DateFormat.Hm().format(date)}';
+      return 'Yesterday';
     } else if (now.difference(date).inDays < 7) {
-      return DateFormat.E().add_Hm().format(date);
+      return DateFormat.E().format(date); // Day of week (e.g., "Mon")
     } else {
-      return DateFormat.MMMd().add_Hm().format(date);
+      return DateFormat.MMMd().format(date); // Month and day (e.g., "Jan 15")
     }
   }
 }
