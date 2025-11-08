@@ -6,7 +6,7 @@ class Expense {
   final String id;
   final double amount;
   final String description;
-  final ExpenseCategory category;
+  final String categoryId; // Category ID instead of enum
   final String language; // 'en' or 'vi'
   final DateTime date;
   final String userId;
@@ -17,13 +17,22 @@ class Expense {
     required this.id,
     required this.amount,
     required this.description,
-    required this.category,
+    required this.categoryId,
     required this.language,
     required this.date,
     required this.userId,
     required this.rawInput,
     this.confidence = 1.0,
   });
+
+  /// Legacy: Get category as enum (for backward compatibility)
+  /// @deprecated Use categoryId directly
+  ExpenseCategory get category {
+    return ExpenseCategory.values.firstWhere(
+      (e) => e.toString().split('.').last == categoryId,
+      orElse: () => ExpenseCategory.other,
+    );
+  }
 
   /// Create Expense from Firestore document
   factory Expense.fromFirestore(DocumentSnapshot doc) {
@@ -32,10 +41,7 @@ class Expense {
       id: doc.id,
       amount: (data['amount'] as num).toDouble(),
       description: data['description'] as String,
-      category: ExpenseCategory.values.firstWhere(
-        (e) => e.toString() == 'ExpenseCategory.${data['category']}',
-        orElse: () => ExpenseCategory.other,
-      ),
+      categoryId: data['categoryId'] as String? ?? data['category'] as String? ?? 'other',
       language: data['language'] as String? ?? 'en',
       date: (data['date'] as Timestamp).toDate(),
       userId: data['userId'] as String,
@@ -49,7 +55,7 @@ class Expense {
     return {
       'amount': amount,
       'description': description,
-      'category': category.toString().split('.').last,
+      'categoryId': categoryId,
       'language': language,
       'date': Timestamp.fromDate(date),
       'userId': userId,
@@ -64,7 +70,7 @@ class Expense {
       'id': id,
       'amount': amount,
       'description': description,
-      'category': category.toString().split('.').last,
+      'categoryId': categoryId,
       'language': language,
       'date': date.toIso8601String(),
       'userId': userId,
@@ -75,14 +81,16 @@ class Expense {
 
   /// Create Expense from JSON (SQLite)
   factory Expense.fromJson(Map<String, dynamic> json) {
+    // Handle migration from old 'category' field to new 'categoryId'
+    String catId = json['categoryId'] as String? ??
+                   json['category'] as String? ??
+                   'other';
+
     return Expense(
       id: json['id'] as String,
       amount: (json['amount'] as num).toDouble(),
       description: json['description'] as String,
-      category: ExpenseCategory.values.firstWhere(
-        (e) => e.toString() == 'ExpenseCategory.${json['category']}',
-        orElse: () => ExpenseCategory.other,
-      ),
+      categoryId: catId,
       language: json['language'] as String? ?? 'en',
       date: DateTime.parse(json['date'] as String),
       userId: json['userId'] as String,
@@ -96,7 +104,7 @@ class Expense {
     String? id,
     double? amount,
     String? description,
-    ExpenseCategory? category,
+    String? categoryId,
     String? language,
     DateTime? date,
     String? userId,
@@ -107,7 +115,7 @@ class Expense {
       id: id ?? this.id,
       amount: amount ?? this.amount,
       description: description ?? this.description,
-      category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
       language: language ?? this.language,
       date: date ?? this.date,
       userId: userId ?? this.userId,
@@ -137,7 +145,7 @@ class Expense {
 
   @override
   String toString() {
-    return 'Expense(id: $id, amount: $amount, description: $description, category: $category, date: $date)';
+    return 'Expense(id: $id, amount: $amount, description: $description, categoryId: $categoryId, date: $date)';
   }
 
   @override
@@ -148,7 +156,7 @@ class Expense {
         other.id == id &&
         other.amount == amount &&
         other.description == description &&
-        other.category == category &&
+        other.categoryId == categoryId &&
         other.language == language &&
         other.date == date &&
         other.userId == userId &&
@@ -162,7 +170,7 @@ class Expense {
       id,
       amount,
       description,
-      category,
+      categoryId,
       language,
       date,
       userId,
