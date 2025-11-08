@@ -27,7 +27,14 @@ class ExpenseParser {
     if (GeminiExpenseParser.isAvailable) {
       debugPrint('🤖 [ExpenseParser] Using Gemini AI parser');
       try {
-        final geminiResults = await GeminiExpenseParser.parse(rawInput, userId);
+        // Detect language for Gemini
+        final language = LanguageDetector.detectLanguage(rawInput);
+        final geminiResults = await GeminiExpenseParser.parse(
+          rawInput,
+          userId,
+          categories,
+          language,
+        );
         if (geminiResults.isNotEmpty) {
           debugPrint('✅ [ExpenseParser] Gemini returned ${geminiResults.length} result(s)');
           return geminiResults;

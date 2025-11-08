@@ -38,7 +38,12 @@ class GeminiExpenseParser {
 
   /// Parse expense using Gemini AI
   /// Returns a list of ParseResult (can be multiple expenses from one input)
-  static Future<List<ParseResult>> parse(String input, String userId) async {
+  static Future<List<ParseResult>> parse(
+    String input,
+    String userId,
+    List<QuickCategory> categories,
+    String language,
+  ) async {
     debugPrint('🤖 [GeminiParser] Parsing input: "$input"');
 
     if (!isAvailable) {
@@ -47,7 +52,7 @@ class GeminiExpenseParser {
     }
 
     try {
-      final prompt = _buildPrompt(input);
+      final prompt = _buildPrompt(input, categories, language);
       debugPrint('📝 [GeminiParser] Sending prompt to Gemini...');
       debugPrint('⏱️ [GeminiParser] Timeout set to $_apiTimeout seconds');
 
@@ -88,7 +93,21 @@ class GeminiExpenseParser {
   }
 
   /// Build the prompt for Gemini
-  static String _buildPrompt(String input) {
+  static String _buildPrompt(
+    String input,
+    List<QuickCategory> categories,
+    String language,
+  ) {
+    // Build category list with keywords dynamically
+    final categoryDescriptions = categories.map((cat) {
+      final keywords = cat.getKeywords(language);
+      final label = cat.getLabel(language);
+      return '- ${cat.id}: $label (${keywords.take(5).join(", ")}, etc.)';
+    }).join('\n');
+
+    // Get all category IDs for the rule
+    final categoryIds = categories.map((c) => c.id).join(', ');
+
     return '''
 You are an expense extraction assistant. Extract expense information from user input.
 
@@ -109,17 +128,11 @@ Rules:
      - "1.5 củ" = 1500000
      - "1 cọc" or "1coc" = 1000000 (cọc = million)
      - Listen for "ca", "củ", "cọc" and convert properly
-4. Categorize into: food, transport, shopping, bills, health, entertainment, or other
+4. Categorize into: $categoryIds
 5. Extract clear descriptions (e.g., "tiền cơ" should be "tiền cơm" for food)
 
 Categories:
-- food: coffee, lunch, dinner, restaurant, cafe, phở, cơm, etc.
-- transport: taxi, grab, gas, xăng, bus, parking, etc.
-- shopping: clothes, mall, buy, mua, quần áo, etc.
-- bills: rent, electricity, internet, hóa đơn, etc.
-- health: medicine, doctor, hospital, thuốc, bác sĩ, etc.
-- entertainment: movie, game, concert, phim, etc.
-- other: anything that doesn't fit above
+$categoryDescriptions
 
 Return JSON in this EXACT format:
 {
