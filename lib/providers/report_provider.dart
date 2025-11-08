@@ -12,6 +12,7 @@ class ReportProvider extends ChangeNotifier {
   DateRange? _customDateRange;
   PeriodStats? _currentStats;
   PeriodStats? _previousStats;
+  List<Expense> _topExpenses = [];
   bool _isCalculating = false;
 
   ReportProvider(this._expenseProvider) {
@@ -41,6 +42,9 @@ class ReportProvider extends ChangeNotifier {
 
   /// Previous period statistics (for comparison)
   PeriodStats? get previousStats => _previousStats;
+
+  /// Top expenses for current period
+  List<Expense> get topExpenses => _topExpenses;
 
   /// Whether statistics are being calculated
   bool get isCalculating => _isCalculating;
@@ -109,6 +113,10 @@ class ReportProvider extends ChangeNotifier {
         endDate: dateRange.end,
       );
 
+      // Calculate top expenses (sorted by amount, descending)
+      _topExpenses = List<Expense>.from(currentExpenses)
+        ..sort((a, b) => b.amount.compareTo(a.amount));
+
       // Get previous period for comparison
       final previousRange = DateRangeHelper.getPreviousPeriod(
         dateRange.start,
@@ -130,6 +138,7 @@ class ReportProvider extends ChangeNotifier {
       debugPrint('❌ [ReportProvider] Error calculating stats: $e');
       _currentStats = null;
       _previousStats = null;
+      _topExpenses = [];
     } finally {
       _isCalculating = false;
       notifyListeners();
@@ -148,13 +157,5 @@ class ReportProvider extends ChangeNotifier {
       dateRange.start,
       dateRange.end,
     );
-  }
-
-  /// Get top expenses for current period
-  Future<List<Expense>> getTopExpenses({int limit = 5}) async {
-    final expenses = await getCurrentExpenses();
-    final sortedExpenses = List<Expense>.from(expenses)
-      ..sort((a, b) => b.amount.compareTo(a.amount));
-    return sortedExpenses.take(limit).toList();
   }
 }

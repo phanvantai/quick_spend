@@ -160,20 +160,13 @@ class ReportScreen extends StatelessWidget {
                       const SizedBox(height: AppTheme.spacing16),
 
                       // Top expenses list
-                      FutureBuilder(
-                        future: reportProvider.getTopExpenses(limit: 5),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                            return TopExpensesList(
-                              expenses: snapshot.data!,
-                              currency: configProvider.currency,
-                              language: context.locale.languageCode,
-                              limit: 5,
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
+                      if (reportProvider.topExpenses.isNotEmpty)
+                        TopExpensesList(
+                          expenses: reportProvider.topExpenses,
+                          currency: configProvider.currency,
+                          language: context.locale.languageCode,
+                          limit: 5,
+                        ),
                     ],
                   ),
                 ),
