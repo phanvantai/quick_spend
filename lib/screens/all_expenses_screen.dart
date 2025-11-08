@@ -8,7 +8,7 @@ import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
-import '../widgets/edit_expense_dialog.dart';
+import 'expense_form_screen.dart';
 
 /// Screen showing all expenses with full list
 class AllExpensesScreen extends StatefulWidget {
@@ -70,9 +70,11 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
   }
 
   Future<void> _editExpense(Expense expense) async {
-    final updatedExpense = await showDialog<Expense>(
-      context: context,
-      builder: (context) => EditExpenseDialog(expense: expense),
+    final updatedExpense = await Navigator.push<Expense>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExpenseFormScreen(expense: expense),
+      ),
     );
 
     if (updatedExpense == null || !mounted) return;

@@ -8,8 +8,7 @@ import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
-import '../widgets/edit_expense_dialog.dart';
-import '../widgets/add_expense_dialog.dart';
+import 'expense_form_screen.dart';
 import '../widgets/home/home_summary_card.dart';
 import '../widgets/report/top_expenses_list.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -76,9 +75,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _editExpense(Expense expense) async {
-    final updatedExpense = await showDialog<Expense>(
-      context: context,
-      builder: (context) => EditExpenseDialog(expense: expense),
+    final updatedExpense = await Navigator.push<Expense>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExpenseFormScreen(expense: expense),
+      ),
     );
 
     if (updatedExpense == null || !mounted) return;
@@ -112,9 +113,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _addExpense() async {
-    final newExpense = await showDialog<Expense>(
-      context: context,
-      builder: (context) => const AddExpenseDialog(),
+    final newExpense = await Navigator.push<Expense>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ExpenseFormScreen(),
+      ),
     );
 
     if (newExpense == null || !mounted) return;
