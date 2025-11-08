@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
+import '../providers/category_provider.dart';
 import '../services/voice_service.dart';
 import '../services/expense_parser.dart';
 import '../services/preferences_service.dart';
@@ -327,9 +328,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     try {
       final expenseProvider = context.read<ExpenseProvider>();
+      final categoryProvider = context.read<CategoryProvider>();
       final results = await ExpenseParser.parse(
         input,
         expenseProvider.currentUserId,
+        categoryProvider.categories,
       );
       if (mounted) Navigator.pop(context);
 

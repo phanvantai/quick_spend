@@ -3,10 +3,14 @@ import '../models/expense.dart';
 import '../models/period_stats.dart';
 import '../utils/date_range_helper.dart';
 import 'expense_provider.dart';
+import 'category_provider.dart';
+import 'app_config_provider.dart';
 
 /// Provider for managing report data and filtering
 class ReportProvider extends ChangeNotifier {
   final ExpenseProvider _expenseProvider;
+  final CategoryProvider _categoryProvider;
+  final AppConfigProvider _appConfigProvider;
 
   TimePeriod _selectedPeriod = TimePeriod.thisMonth;
   DateRange? _customDateRange;
@@ -15,19 +19,30 @@ class ReportProvider extends ChangeNotifier {
   List<Expense> _topExpenses = [];
   bool _isCalculating = false;
 
-  ReportProvider(this._expenseProvider) {
+  ReportProvider(
+    this._expenseProvider,
+    this._categoryProvider,
+    this._appConfigProvider,
+  ) {
     _expenseProvider.addListener(_onExpensesChanged);
+    _categoryProvider.addListener(_onCategoriesChanged);
     _calculateStats();
   }
 
   @override
   void dispose() {
     _expenseProvider.removeListener(_onExpensesChanged);
+    _categoryProvider.removeListener(_onCategoriesChanged);
     super.dispose();
   }
 
   /// Called when expenses change in ExpenseProvider
   void _onExpensesChanged() {
+    _calculateStats();
+  }
+
+  /// Called when categories change in CategoryProvider
+  void _onCategoriesChanged() {
     _calculateStats();
   }
 
@@ -107,11 +122,16 @@ class ReportProvider extends ChangeNotifier {
       );
 
       // Calculate current period stats
-      _currentStats = PeriodStats.fromExpenses(
+      final currentStatsRaw = PeriodStats.fromExpenses(
         expenses: currentExpenses,
         startDate: dateRange.start,
         endDate: dateRange.end,
       );
+
+      // Add category breakdown using CategoryProvider
+      final language = _appConfigProvider.language;
+      final categories = _categoryProvider.categories;
+      _currentStats = currentStatsRaw.withCategoryBreakdown(categories, language);
 
       // Calculate top expenses (sorted by amount, descending)
       _topExpenses = List<Expense>.from(currentExpenses)
@@ -129,11 +149,12 @@ class ReportProvider extends ChangeNotifier {
       );
 
       // Calculate previous period stats
-      _previousStats = PeriodStats.fromExpenses(
+      final previousStatsRaw = PeriodStats.fromExpenses(
         expenses: previousExpenses,
         startDate: previousRange.start,
         endDate: previousRange.end,
       );
+      _previousStats = previousStatsRaw.withCategoryBreakdown(categories, language);
     } catch (e) {
       debugPrint('❌ [ReportProvider] Error calculating stats: $e');
       _currentStats = null;

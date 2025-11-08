@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../../models/expense.dart';
 import '../../models/category.dart';
+import '../../providers/category_provider.dart';
 import '../../theme/app_theme.dart';
 
 /// Card widget for displaying expense information
@@ -20,7 +22,10 @@ class ExpenseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoryData = Category.getByType(expense.category);
+    final categoryProvider = context.watch<CategoryProvider>();
+    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+        categoryProvider.getCategoryById('other') ??
+        Category.getByType(ExpenseCategory.other); // Fallback
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 

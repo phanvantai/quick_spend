@@ -66,12 +66,21 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => ExpenseProvider(expenseService)),
         ChangeNotifierProvider(create: (_) => CategoryProvider(expenseService)),
-        ChangeNotifierProxyProvider<ExpenseProvider, ReportProvider>(
+        ChangeNotifierProxyProvider3<ExpenseProvider, CategoryProvider,
+            AppConfigProvider, ReportProvider>(
           create: (context) => ReportProvider(
             Provider.of<ExpenseProvider>(context, listen: false),
+            Provider.of<CategoryProvider>(context, listen: false),
+            Provider.of<AppConfigProvider>(context, listen: false),
           ),
-          update: (context, expenseProvider, previous) =>
-              previous ?? ReportProvider(expenseProvider),
+          update: (context, expenseProvider, categoryProvider, appConfigProvider,
+                  previous) =>
+              previous ??
+              ReportProvider(
+                expenseProvider,
+                categoryProvider,
+                appConfigProvider,
+              ),
         ),
       ],
       child: Consumer<AppConfigProvider>(

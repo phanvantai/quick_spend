@@ -6,6 +6,7 @@ import '../models/expense.dart';
 import '../models/category.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
+import '../providers/category_provider.dart';
 import '../theme/app_theme.dart';
 
 /// Full screen for adding or editing expenses
@@ -22,7 +23,7 @@ class ExpenseFormScreen extends StatefulWidget {
 class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   late TextEditingController _descriptionController;
   late TextEditingController _amountController;
-  late ExpenseCategory _selectedCategory;
+  late String _selectedCategoryId;
   late DateTime _selectedDate;
   final _formKey = GlobalKey<FormState>();
   bool _isEditMode = false;
@@ -38,7 +39,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     _amountController = TextEditingController(
       text: widget.expense?.amount.toString() ?? '',
     );
-    _selectedCategory = widget.expense?.category ?? ExpenseCategory.other;
+    _selectedCategoryId = widget.expense?.categoryId ?? 'other';
 
     // Initialize date: use existing date for edit mode, or today at noon for new expenses
     if (_isEditMode && widget.expense != null) {
@@ -90,7 +91,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
         userId: _isEditMode ? widget.expense!.userId : userId,
         amount: double.parse(_amountController.text),
         description: _descriptionController.text.trim(),
-        category: _selectedCategory,
+        categoryId: _selectedCategoryId,
         date: _selectedDate,
         language: _isEditMode ? widget.expense!.language : language,
         confidence: _isEditMode ? widget.expense!.confidence : 1.0,
@@ -193,54 +194,69 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
               ),
             ),
             const SizedBox(height: AppTheme.spacing12),
-            Wrap(
-              spacing: AppTheme.spacing8,
-              runSpacing: AppTheme.spacing8,
-              children: ExpenseCategory.values.map((category) {
-                final categoryData = Category.getByType(category);
-                final isSelected = _selectedCategory == category;
+            Consumer<CategoryProvider>(
+              builder: (context, categoryProvider, child) {
+                if (categoryProvider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                return ChoiceChip(
-                  selected: isSelected,
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        categoryData.icon,
-                        size: 18,
-                        color: isSelected ? Colors.white : categoryData.color,
+                final categories = categoryProvider.categories;
+                if (categories.isEmpty) {
+                  return Text(
+                    'No categories available',
+                    style: theme.textTheme.bodyMedium,
+                  );
+                }
+
+                return Wrap(
+                  spacing: AppTheme.spacing8,
+                  runSpacing: AppTheme.spacing8,
+                  children: categories.map((category) {
+                    final isSelected = _selectedCategoryId == category.id;
+
+                    return ChoiceChip(
+                      selected: isSelected,
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            category.icon,
+                            size: 18,
+                            color: isSelected ? Colors.white : category.color,
+                          ),
+                          const SizedBox(width: AppTheme.spacing8),
+                          Text(category.getLabel(language)),
+                        ],
                       ),
-                      const SizedBox(width: AppTheme.spacing8),
-                      Text(categoryData.getLabel(language)),
-                    ],
-                  ),
-                  backgroundColor: categoryData.color.withValues(alpha: 0.15),
-                  selectedColor: categoryData.color,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : categoryData.color,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    fontSize: 14,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing12,
-                    vertical: AppTheme.spacing8,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color: isSelected
-                          ? categoryData.color
-                          : categoryData.color.withValues(alpha: 0.3),
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedCategory = category;
-                    });
-                  },
+                      backgroundColor: category.color.withValues(alpha: 0.15),
+                      selectedColor: category.color,
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.white : category.color,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacing12,
+                        vertical: AppTheme.spacing8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: isSelected
+                              ? category.color
+                              : category.color.withValues(alpha: 0.3),
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedCategoryId = category.id;
+                        });
+                      },
+                    );
+                  }).toList(),
                 );
-              }).toList(),
+              },
             ),
             const SizedBox(height: AppTheme.spacing24),
 

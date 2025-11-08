@@ -3,7 +3,8 @@ import 'category.dart';
 
 /// Statistics for a single expense category
 class CategoryStats {
-  final ExpenseCategory category;
+  final String categoryId;
+  final String categoryName; // Store name for display
   final double totalAmount;
   final int count;
   final double percentage;
@@ -11,7 +12,8 @@ class CategoryStats {
   final IconData icon;
 
   CategoryStats({
-    required this.category,
+    required this.categoryId,
+    required this.categoryName,
     required this.totalAmount,
     required this.count,
     required this.percentage,
@@ -19,31 +21,41 @@ class CategoryStats {
     required this.icon,
   });
 
-  /// Create CategoryStats from list of expenses
+  /// Create CategoryStats from category data
   factory CategoryStats.fromCategory({
-    required ExpenseCategory category,
+    required Category category,
     required double totalAmount,
     required int count,
     required double grandTotal,
+    required String language,
   }) {
-    final categoryData = Category.getByType(category);
     return CategoryStats(
-      category: category,
+      categoryId: category.id,
+      categoryName: category.getLabel(language),
       totalAmount: totalAmount,
       count: count,
       percentage: grandTotal > 0 ? (totalAmount / grandTotal * 100) : 0,
-      color: categoryData.color,
-      icon: categoryData.icon,
+      color: category.color,
+      icon: category.icon,
     );
   }
 
-  /// Get category label in specified language
+  /// Legacy: Get category enum (for backward compatibility)
+  /// @deprecated Use categoryId directly
+  ExpenseCategory get category {
+    return ExpenseCategory.values.firstWhere(
+      (e) => e.toString().split('.').last == categoryId,
+      orElse: () => ExpenseCategory.other,
+    );
+  }
+
+  /// Get category label
   String getLabel(String language) {
-    return Category.getByType(category).getLabel(language);
+    return categoryName; // Already stored with language
   }
 
   @override
   String toString() {
-    return 'CategoryStats(category: $category, amount: $totalAmount, count: $count, percentage: ${percentage.toStringAsFixed(1)}%)';
+    return 'CategoryStats(categoryId: $categoryId, amount: $totalAmount, count: $count, percentage: ${percentage.toStringAsFixed(1)}%)';
   }
 }

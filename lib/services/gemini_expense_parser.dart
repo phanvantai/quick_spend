@@ -186,15 +186,15 @@ Now extract from the input above. Return ONLY valid JSON, no other text.
             continue;
           }
 
-          // Map category string to ExpenseCategory
-          final category = _mapCategory(categoryStr);
+          // Normalize category string to lowercase ID
+          final categoryId = _normalizeCategoryId(categoryStr);
 
           // Create expense object
           final expense = Expense(
             id: const Uuid().v4(),
             amount: amount,
             description: description.isEmpty ? 'Expense' : description,
-            category: category,
+            categoryId: categoryId,
             language: language,
             date: DateTime.now(),
             userId: userId,
@@ -228,23 +228,20 @@ Now extract from the input above. Return ONLY valid JSON, no other text.
     return results;
   }
 
-  /// Map category string to ExpenseCategory enum
-  static ExpenseCategory _mapCategory(String categoryStr) {
-    switch (categoryStr.toLowerCase()) {
-      case 'food':
-        return ExpenseCategory.food;
-      case 'transport':
-        return ExpenseCategory.transport;
-      case 'shopping':
-        return ExpenseCategory.shopping;
-      case 'bills':
-        return ExpenseCategory.bills;
-      case 'health':
-        return ExpenseCategory.health;
-      case 'entertainment':
-        return ExpenseCategory.entertainment;
-      default:
-        return ExpenseCategory.other;
-    }
+  /// Normalize category string to category ID
+  static String _normalizeCategoryId(String categoryStr) {
+    final normalized = categoryStr.toLowerCase().trim();
+    // Map to known system category IDs
+    const validCategories = {
+      'food',
+      'transport',
+      'shopping',
+      'bills',
+      'health',
+      'entertainment',
+      'other',
+    };
+
+    return validCategories.contains(normalized) ? normalized : 'other';
   }
 }
