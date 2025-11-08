@@ -200,22 +200,39 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 final categoryData = Category.getByType(category);
                 final isSelected = _selectedCategory == category;
 
-                return FilterChip(
+                return ChoiceChip(
                   selected: isSelected,
-                  label: Text(categoryData.getLabel(language)),
-                  avatar: Icon(
-                    categoryData.icon,
-                    size: 18,
-                    color: isSelected ? Colors.white : categoryData.color,
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        categoryData.icon,
+                        size: 18,
+                        color: isSelected ? Colors.white : categoryData.color,
+                      ),
+                      const SizedBox(width: AppTheme.spacing8),
+                      Text(categoryData.getLabel(language)),
+                    ],
                   ),
-                  backgroundColor: categoryData.color.withValues(alpha: 0.1),
+                  backgroundColor: categoryData.color.withValues(alpha: 0.15),
                   selectedColor: categoryData.color,
-                  checkmarkColor: Colors.white,
                   labelStyle: TextStyle(
                     color: isSelected ? Colors.white : categoryData.color,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    fontSize: 14,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing12,
+                    vertical: AppTheme.spacing8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: isSelected
+                          ? categoryData.color
+                          : categoryData.color.withValues(alpha: 0.3),
+                      width: isSelected ? 2 : 1,
+                    ),
                   ),
                   onSelected: (selected) {
                     setState(() {
