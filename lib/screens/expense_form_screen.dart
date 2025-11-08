@@ -39,7 +39,14 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       text: widget.expense?.amount.toString() ?? '',
     );
     _selectedCategory = widget.expense?.category ?? ExpenseCategory.other;
-    _selectedDate = widget.expense?.date ?? DateTime.now();
+
+    // Initialize date: use existing date for edit mode, or today at noon for new expenses
+    if (_isEditMode && widget.expense != null) {
+      _selectedDate = widget.expense!.date;
+    } else {
+      final now = DateTime.now();
+      _selectedDate = DateTime(now.year, now.month, now.day, 12, 0);
+    }
   }
 
   @override
@@ -57,24 +64,17 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       lastDate: DateTime.now(),
     );
 
-    if (pickedDate != null) {
-      if (!mounted) return;
-      final pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(_selectedDate),
-      );
-
-      if (pickedTime != null && mounted) {
-        setState(() {
-          _selectedDate = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-        });
-      }
+    if (pickedDate != null && mounted) {
+      setState(() {
+        // Set time to noon (12:00) for consistency
+        _selectedDate = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          12,
+          0,
+        );
+      });
     }
   }
 
@@ -270,7 +270,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                     ),
                     const SizedBox(width: AppTheme.spacing16),
                     Text(
-                      DateFormat.yMMMd().add_jm().format(_selectedDate),
+                      DateFormat.yMMMd().format(_selectedDate),
                       style: theme.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
