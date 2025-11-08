@@ -1,16 +1,35 @@
 import 'package:flutter/foundation.dart';
 import '../models/expense.dart';
 import '../services/expense_service.dart';
+import '../utils/constants.dart';
 
 /// Provider for managing expense state
 class ExpenseProvider extends ChangeNotifier {
   final ExpenseService _expenseService;
   List<Expense> _expenses = [];
   bool _isLoading = true;
-  String _currentUserId = 'local_user'; // Default user ID for local storage
+  String _currentUserId = AppConstants.defaultUserId;
 
   ExpenseProvider(this._expenseService) {
-    _loadExpenses();
+    _initializeAndMigrate();
+  }
+
+  /// Initialize provider and migrate any legacy data
+  Future<void> _initializeAndMigrate() async {
+    await _migrateWrongUserIds();
+    await _loadExpenses();
+  }
+
+  /// Migrate expenses with incorrect userIds to the correct one
+  Future<void> _migrateWrongUserIds() async {
+    try {
+      debugPrint('🔄 [ExpenseProvider] Checking for userId migration...');
+      await _expenseService.migrateUserIds(AppConstants.defaultUserId);
+      debugPrint('✅ [ExpenseProvider] UserId migration completed');
+    } catch (e) {
+      debugPrint('❌ [ExpenseProvider] Error during userId migration: $e');
+      // Don't throw - continue loading even if migration fails
+    }
   }
 
   /// Current list of expenses

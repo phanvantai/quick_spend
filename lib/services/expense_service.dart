@@ -171,4 +171,35 @@ class ExpenseService {
     await _ensureInitialized();
     await _database!.delete(_tableName);
   }
+
+  /// Migrate expenses with incorrect userIds to the correct one
+  ///
+  /// This fixes legacy data where expenses may have been created with
+  /// different userId values (e.g., 'default_user' instead of 'local_user').
+  Future<void> migrateUserIds(String correctUserId) async {
+    await _ensureInitialized();
+
+    // Get count of expenses with wrong userId
+    final result = await _database!.rawQuery(
+      'SELECT COUNT(*) as count FROM $_tableName WHERE userId != ?',
+      [correctUserId],
+    );
+    final wrongCount = Sqflite.firstIntValue(result) ?? 0;
+
+    if (wrongCount > 0) {
+      debugPrint(
+        '🔄 [ExpenseService] Found $wrongCount expense(s) with incorrect userId, migrating...',
+      );
+
+      // Update all expenses to use the correct userId
+      final updatedCount = await _database!.rawUpdate(
+        'UPDATE $_tableName SET userId = ? WHERE userId != ?',
+        [correctUserId, correctUserId],
+      );
+
+      debugPrint(
+        '✅ [ExpenseService] Migrated $updatedCount expense(s) to userId: $correctUserId',
+      );
+    }
+  }
 }
