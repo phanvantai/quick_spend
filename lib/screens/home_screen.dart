@@ -9,6 +9,7 @@ import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
 import '../widgets/edit_expense_dialog.dart';
+import '../widgets/add_expense_dialog.dart';
 import '../widgets/home/home_summary_card.dart';
 import '../widgets/report/top_expenses_list.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -100,6 +101,42 @@ class _HomeScreenState extends State<HomeScreen> {
             content: Text(
               context.tr(
                 'home.error_updating_expense',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _addExpense() async {
+    final newExpense = await showDialog<Expense>(
+      context: context,
+      builder: (context) => const AddExpenseDialog(),
+    );
+
+    if (newExpense == null || !mounted) return;
+
+    try {
+      await context.read<ExpenseProvider>().addExpense(newExpense);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('home.expense_added')),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [HomeScreen] Error adding expense: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.tr(
+                'home.error_adding_expense',
                 namedArgs: {'error': e.toString()},
               ),
             ),
@@ -280,6 +317,14 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(context.tr('home.hello')),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline),
+            onPressed: _addExpense,
+            tooltip: context.tr('home.add_expense_tooltip'),
+            style: IconButton.styleFrom(
+              foregroundColor: AppTheme.primaryMint,
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {

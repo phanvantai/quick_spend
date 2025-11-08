@@ -65,7 +65,11 @@
     "this_month": "This Month",
     "recent_expenses": "Recent Expenses",
     "see_all": "See All",
-    "all_expenses": "All Expenses"
+    "all_expenses": "All Expenses",
+    "add_expense_tooltip": "Add expense manually",
+    "expense_added": "Expense added successfully",
+    "error_adding_expense": "Error adding expense: {error}",
+    "description_hint": "e.g., Coffee, Lunch, Taxi"
   },
   "settings": {
     "title": "Settings",
@@ -137,6 +141,7 @@
     "close": "Close",
     "delete": "Delete",
     "edit": "Edit",
+    "add": "Add",
     "apply": "Apply",
     "error": "Error: {error}"
   },

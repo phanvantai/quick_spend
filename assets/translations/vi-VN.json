@@ -65,7 +65,11 @@
     "this_month": "Tháng Này",
     "recent_expenses": "Chi Tiêu Gần Đây",
     "see_all": "Xem Tất Cả",
-    "all_expenses": "Tất Cả Chi Tiêu"
+    "all_expenses": "Tất Cả Chi Tiêu",
+    "add_expense_tooltip": "Thêm chi tiêu thủ công",
+    "expense_added": "Đã thêm chi tiêu thành công",
+    "error_adding_expense": "Lỗi khi thêm chi tiêu: {error}",
+    "description_hint": "vd: Cà phê, Ăn trưa, Taxi"
   },
   "settings": {
     "title": "Cài Đặt",
@@ -137,6 +141,7 @@
     "close": "Đóng",
     "delete": "Xóa",
     "edit": "Sửa",
+    "add": "Thêm",
     "apply": "Áp Dụng",
     "error": "Lỗi: {error}"
   },
