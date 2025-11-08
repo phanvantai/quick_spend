@@ -10,6 +10,7 @@ import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
 import '../widgets/edit_expense_dialog.dart';
 import '../widgets/home/home_summary_card.dart';
+import '../widgets/report/top_expenses_list.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'settings_screen.dart';
 import 'all_expenses_screen.dart';
@@ -445,6 +446,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+
+              // Top Expenses Section
+              if (expenses.length >= 5)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: AppTheme.spacing8),
+                        TopExpensesList(
+                          expenses: List<Expense>.from(expenses)
+                            ..sort((a, b) => b.amount.compareTo(a.amount)),
+                          currency: currency,
+                          language: configProvider.language,
+                          onExpenseTap: _showExpenseDetailsDialog,
+                          limit: 5,
+                        ),
+                        const SizedBox(height: AppTheme.spacing16),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           );
         },
