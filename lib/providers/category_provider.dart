@@ -5,7 +5,7 @@ import '../services/expense_service.dart';
 /// Provider for managing categories (system and user-defined)
 class CategoryProvider extends ChangeNotifier {
   final ExpenseService _expenseService;
-  List<Category> _categories = [];
+  List<QuickCategory> _categories = [];
   bool _isLoading = true;
   String _currentUserId = 'local_user';
 
@@ -14,17 +14,17 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   /// Current list of categories (system + user-defined)
-  List<Category> get categories => _categories;
+  List<QuickCategory> get categories => _categories;
 
   /// Whether categories are loading
   bool get isLoading => _isLoading;
 
   /// Get only system categories
-  List<Category> get systemCategories =>
+  List<QuickCategory> get systemCategories =>
       _categories.where((cat) => cat.isSystem).toList();
 
   /// Get only user-defined categories
-  List<Category> get userCategories =>
+  List<QuickCategory> get userCategories =>
       _categories.where((cat) => !cat.isSystem).toList();
 
   /// Set the current user ID
@@ -58,7 +58,7 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   /// Get category by ID
-  Category? getCategoryById(String id) {
+  QuickCategory? getCategoryById(String id) {
     try {
       return _categories.firstWhere((cat) => cat.id == id);
     } catch (e) {
@@ -67,7 +67,7 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   /// Create a new user-defined category
-  Future<void> createCategory(Category category) async {
+  Future<void> createCategory(QuickCategory category) async {
     try {
       await _expenseService.createCategory(category);
       _categories.add(category);
@@ -80,7 +80,7 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   /// Update a user-defined category
-  Future<void> updateCategory(Category category) async {
+  Future<void> updateCategory(QuickCategory category) async {
     try {
       await _expenseService.updateCategory(category);
       final index = _categories.indexWhere((cat) => cat.id == category.id);

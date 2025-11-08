@@ -317,7 +317,7 @@ class ExpenseService {
 
     debugPrint('🌱 [ExpenseService] Seeding system categories...');
 
-    final systemCategories = Category.getDefaultSystemCategories();
+    final systemCategories = QuickCategory.getDefaultSystemCategories();
     for (final category in systemCategories) {
       await _database!.insert(_categoriesTableName, category.toJson());
     }
@@ -326,7 +326,7 @@ class ExpenseService {
   }
 
   /// Get all categories for a user (system + user-defined)
-  Future<List<Category>> getAllCategories(String userId) async {
+  Future<List<QuickCategory>> getAllCategories(String userId) async {
     await _ensureInitialized();
 
     final List<Map<String, dynamic>> maps = await _database!.query(
@@ -336,11 +336,11 @@ class ExpenseService {
       orderBy: 'isSystem DESC, createdAt ASC', // System categories first
     );
 
-    return maps.map((map) => Category.fromJson(map)).toList();
+    return maps.map((map) => QuickCategory.fromJson(map)).toList();
   }
 
   /// Get only system categories
-  Future<List<Category>> getSystemCategories() async {
+  Future<List<QuickCategory>> getSystemCategories() async {
     await _ensureInitialized();
 
     final List<Map<String, dynamic>> maps = await _database!.query(
@@ -349,11 +349,11 @@ class ExpenseService {
       orderBy: 'createdAt ASC',
     );
 
-    return maps.map((map) => Category.fromJson(map)).toList();
+    return maps.map((map) => QuickCategory.fromJson(map)).toList();
   }
 
   /// Get only user-defined categories
-  Future<List<Category>> getUserCategories(String userId) async {
+  Future<List<QuickCategory>> getUserCategories(String userId) async {
     await _ensureInitialized();
 
     final List<Map<String, dynamic>> maps = await _database!.query(
@@ -363,11 +363,11 @@ class ExpenseService {
       orderBy: 'createdAt ASC',
     );
 
-    return maps.map((map) => Category.fromJson(map)).toList();
+    return maps.map((map) => QuickCategory.fromJson(map)).toList();
   }
 
   /// Get category by ID
-  Future<Category?> getCategoryById(String id) async {
+  Future<QuickCategory?> getCategoryById(String id) async {
     await _ensureInitialized();
 
     final List<Map<String, dynamic>> maps = await _database!.query(
@@ -378,11 +378,11 @@ class ExpenseService {
     );
 
     if (maps.isEmpty) return null;
-    return Category.fromJson(maps.first);
+    return QuickCategory.fromJson(maps.first);
   }
 
   /// Create a new user-defined category
-  Future<void> createCategory(Category category) async {
+  Future<void> createCategory(QuickCategory category) async {
     await _ensureInitialized();
 
     if (category.isSystem) {
@@ -399,7 +399,7 @@ class ExpenseService {
   }
 
   /// Update a user-defined category
-  Future<void> updateCategory(Category category) async {
+  Future<void> updateCategory(QuickCategory category) async {
     await _ensureInitialized();
 
     if (category.isSystem) {

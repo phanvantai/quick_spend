@@ -25,7 +25,7 @@ class ExpenseCard extends StatelessWidget {
     final categoryProvider = context.watch<CategoryProvider>();
     final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
-        Category.getByType(ExpenseCategory.other); // Fallback
+        QuickCategory.getByType(ExpenseCategory.other); // Fallback
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 

@@ -151,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showExpenseDetailsDialog(Expense expense) {
-    final categoryData = Category.getByType(expense.category);
+    final categoryData = QuickCategory.getByType(expense.category);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

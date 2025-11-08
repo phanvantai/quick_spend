@@ -14,7 +14,7 @@ enum ExpenseCategory {
 }
 
 /// Category model with support for both system and user-defined categories
-class Category {
+class QuickCategory {
   final String id;
   final String nameEn;
   final String nameVi;
@@ -26,7 +26,7 @@ class Category {
   final String? userId; // null for system categories
   final DateTime createdAt;
 
-  const Category({
+  const QuickCategory({
     required this.id,
     required this.nameEn,
     required this.nameVi,
@@ -72,8 +72,8 @@ class Category {
   }
 
   /// Create Category from JSON
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
+  factory QuickCategory.fromJson(Map<String, dynamic> json) {
+    return QuickCategory(
       id: json['id'] as String,
       nameEn: json['nameEn'] as String,
       nameVi: json['nameVi'] as String,
@@ -92,11 +92,11 @@ class Category {
   }
 
   /// Get default system categories (for seeding database)
-  static List<Category> getDefaultSystemCategories() {
+  static List<QuickCategory> getDefaultSystemCategories() {
     final now = DateTime.now();
 
     return [
-      Category(
+      QuickCategory(
         id: 'food',
         nameEn: 'Food',
         nameVi: 'Ăn uống',
@@ -144,7 +144,7 @@ class Category {
         userId: null,
         createdAt: now,
       ),
-      Category(
+      QuickCategory(
         id: 'transport',
         nameEn: 'Transport',
         nameVi: 'Di chuyển',
@@ -189,7 +189,7 @@ class Category {
         userId: null,
         createdAt: now,
       ),
-      Category(
+      QuickCategory(
         id: 'shopping',
         nameEn: 'Shopping',
         nameVi: 'Mua sắm',
@@ -229,7 +229,7 @@ class Category {
         userId: null,
         createdAt: now,
       ),
-      Category(
+      QuickCategory(
         id: 'bills',
         nameEn: 'Bills',
         nameVi: 'Hóa đơn',
@@ -262,7 +262,7 @@ class Category {
         userId: null,
         createdAt: now,
       ),
-      Category(
+      QuickCategory(
         id: 'health',
         nameEn: 'Health',
         nameVi: 'Sức khỏe',
@@ -296,7 +296,7 @@ class Category {
         userId: null,
         createdAt: now,
       ),
-      Category(
+      QuickCategory(
         id: 'entertainment',
         nameEn: 'Entertainment',
         nameVi: 'Giải trí',
@@ -331,7 +331,7 @@ class Category {
         userId: null,
         createdAt: now,
       ),
-      Category(
+      QuickCategory(
         id: 'other',
         nameEn: 'Other',
         nameVi: 'Khác',
@@ -348,7 +348,7 @@ class Category {
 
   /// Legacy: Get category by enum type (for backward compatibility)
   /// @deprecated Use getCategoryById instead
-  static Category getByType(ExpenseCategory type) {
+  static QuickCategory getByType(ExpenseCategory type) {
     // Map enum to system category IDs
     final systemCategories = getDefaultSystemCategories();
     final id = type.toString().split('.').last;
@@ -360,12 +360,12 @@ class Category {
 
   /// Legacy: Get all categories (for backward compatibility)
   /// @deprecated Use CategoryService.getAllCategories() instead
-  static List<Category> getAllCategories() {
+  static List<QuickCategory> getAllCategories() {
     return getDefaultSystemCategories();
   }
 
   /// Copy with method for creating modified copies
-  Category copyWith({
+  QuickCategory copyWith({
     String? id,
     String? nameEn,
     String? nameVi,
@@ -377,7 +377,7 @@ class Category {
     String? userId,
     DateTime? createdAt,
   }) {
-    return Category(
+    return QuickCategory(
       id: id ?? this.id,
       nameEn: nameEn ?? this.nameEn,
       nameVi: nameVi ?? this.nameVi,

@@ -23,7 +23,7 @@ class CategoryStats {
 
   /// Create CategoryStats from category data
   factory CategoryStats.fromCategory({
-    required Category category,
+    required QuickCategory category,
     required double totalAmount,
     required int count,
     required double grandTotal,

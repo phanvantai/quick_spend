@@ -124,7 +124,7 @@ class PeriodStats {
 
   /// Create a copy with calculated category breakdown
   PeriodStats withCategoryBreakdown(
-    List<Category> allCategories,
+    List<QuickCategory> allCategories,
     String language,
   ) {
     final breakdown = <CategoryStats>[];

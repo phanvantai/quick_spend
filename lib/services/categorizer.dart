@@ -7,7 +7,7 @@ class Categorizer {
   static CategoryResult categorize(
     String description,
     String language,
-    List<Category> categories,
+    List<QuickCategory> categories,
   ) {
     if (description.isEmpty || categories.isEmpty) {
       return CategoryResult(
@@ -85,7 +85,7 @@ class Categorizer {
   static List<CategoryResult> getAllMatches(
     String description,
     String language,
-    List<Category> categories,
+    List<QuickCategory> categories,
   ) {
     if (description.isEmpty || categories.isEmpty) {
       return [

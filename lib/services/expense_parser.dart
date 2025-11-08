@@ -19,7 +19,7 @@ class ExpenseParser {
   static Future<List<ParseResult>> parse(
     String rawInput,
     String userId,
-    List<Category> categories,
+    List<QuickCategory> categories,
   ) async {
     debugPrint('💸 [ExpenseParser] Starting parse for: "$rawInput"');
 
@@ -49,7 +49,7 @@ class ExpenseParser {
   static ParseResult _parseRuleBased(
     String rawInput,
     String userId,
-    List<Category> categories,
+    List<QuickCategory> categories,
   ) {
     debugPrint('💸 [ExpenseParser] Parsing input: "$rawInput"');
 
@@ -146,7 +146,7 @@ class ExpenseParser {
   static Future<List<ParseResult>> parseWithCategory(
     String rawInput,
     String userId,
-    List<Category> categories,
+    List<QuickCategory> categories,
     String categoryId,
   ) async {
     final results = await parse(rawInput, userId, categories);

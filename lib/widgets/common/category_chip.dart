@@ -4,7 +4,7 @@ import '../../theme/app_theme.dart';
 
 /// Category chip widget for displaying and selecting expense categories
 class CategoryChip extends StatelessWidget {
-  final ExpenseCategory category;
+  final ExpenseQuickCategory category;
   final bool isSelected;
   final VoidCallback? onTap;
   final String language;
@@ -19,7 +19,7 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoryData = Category.getByType(category);
+    final categoryData = QuickCategory.getByType(category);
     final label = categoryData.getLabel(language);
 
     return Material(

@@ -108,7 +108,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
   }
 
   void _showExpenseDetailsDialog(Expense expense) {
-    final categoryData = Category.getByType(expense.category);
+    final categoryData = QuickCategory.getByType(expense.category);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
