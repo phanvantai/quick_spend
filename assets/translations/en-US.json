@@ -125,7 +125,7 @@
     "tutorial_tap_anywhere": "or tap anywhere to dismiss"
   },
   "navigation": {
-    "input": "Home",
+    "home": "Home",
     "report": "Report",
     "settings": "Settings"
   },

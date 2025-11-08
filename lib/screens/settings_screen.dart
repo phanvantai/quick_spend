@@ -396,11 +396,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await configProvider.setLanguage(languageCode);
 
       if (mounted) {
-        // Wait a frame for the rebuild to complete
-        await Future.delayed(const Duration(milliseconds: 100));
-
         messenger.showSnackBar(
           SnackBar(
+            // ignore: use_build_context_synchronously
             content: Text(context.tr('settings.language_changed')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 2),
@@ -413,6 +411,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
+              // ignore: use_build_context_synchronously
               context.tr(
                 'settings.error_changing_language',
                 namedArgs: {'error': e.toString()},
@@ -440,6 +439,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
+            // ignore: use_build_context_synchronously
             content: Text(context.tr('settings.currency_changed')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 2),
@@ -452,6 +452,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
+              // ignore: use_build_context_synchronously
               context.tr(
                 'settings.error_changing_currency',
                 namedArgs: {'error': e.toString()},
@@ -479,6 +480,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
+            // ignore: use_build_context_synchronously
             content: Text(context.tr('settings.theme_changed')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 2),
@@ -491,6 +493,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
+              // ignore: use_build_context_synchronously
               context.tr(
                 'settings.error_changing_theme',
                 namedArgs: {'error': e.toString()},
