@@ -37,7 +37,7 @@ class SummaryCard extends StatelessWidget {
           children: [
             // Title
             Text(
-              'report.total_spending'.tr(),
+              context.tr('report.total_spending'),
               style: theme.textTheme.titleMedium?.copyWith(
                 color: Colors.white.withValues(alpha: 0.9),
                 fontWeight: FontWeight.w500,
@@ -51,7 +51,7 @@ class SummaryCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    _formatAmount(stats.totalAmount),
+                    _formatAmount(context, stats.totalAmount),
                     style: theme.textTheme.displaySmall?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -73,8 +73,8 @@ class SummaryCard extends StatelessWidget {
                     Icons.receipt_long,
                     stats.transactionCount.toString(),
                     stats.transactionCount == 1
-                        ? 'report.expense'.tr()
-                        : 'report.expenses'.tr(),
+                        ? context.tr('report.expense')
+                        : context.tr('report.expenses'),
                   ),
                 ),
                 Container(
@@ -89,8 +89,8 @@ class SummaryCard extends StatelessWidget {
                   child: _buildStatItem(
                     context,
                     Icons.trending_up,
-                    _formatAmount(stats.averagePerTransaction),
-                    'report.avg_per_transaction'.tr(),
+                    _formatAmount(context, stats.averagePerTransaction),
+                    context.tr('report.avg_per_transaction'),
                   ),
                 ),
               ],
@@ -181,21 +181,25 @@ class SummaryCard extends StatelessWidget {
     );
   }
 
-  String _formatAmount(double amount) {
+  String _formatAmount(BuildContext context, double amount) {
     if (language == 'vi') {
       // Vietnamese format
       final formatted = amount.toStringAsFixed(0).replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return currency == 'VND' ? '$formattedđ' : '\$$formatted';
+      return currency == 'VND'
+          ? '$formatted${context.tr('currency.symbol_vnd')}'
+          : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
       // English format
       final formatted = amount.toStringAsFixed(2).replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return currency == 'USD' ? '\$$formatted' : '$formatted đ';
+      return currency == 'USD'
+          ? '${context.tr('currency.symbol_usd')}$formatted'
+          : '$formatted ${context.tr('currency.symbol_vnd')}';
     }
   }
 }

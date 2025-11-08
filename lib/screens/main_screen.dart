@@ -356,7 +356,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
+          SnackBar(
+            content: Text(
+              context.tr('common.error', namedArgs: {'error': e.toString()}),
+            ),
+            backgroundColor: AppTheme.error,
+          ),
         );
       }
     }

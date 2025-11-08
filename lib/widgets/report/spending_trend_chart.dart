@@ -41,14 +41,14 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'report.spending_trend'.tr(),
+              context.tr('report.spending_trend'),
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppTheme.spacing8),
             Text(
-              'report.daily_spending'.tr(),
+              context.tr('report.daily_spending'),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -97,7 +97,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
                           ),
                           children: [
                             TextSpan(
-                              text: _formatAmount(amount),
+                              text: _formatAmount(context, amount),
                               style: TextStyle(
                                 color: colorScheme.onInverseSurface,
                                 fontSize: 14,
@@ -225,18 +225,18 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
     if (widget.language == 'vi') {
       // Vietnamese: Show in thousands (k)
       if (value >= 1000000) {
-        text = '${(value / 1000000).toStringAsFixed(0)}M';
+        text = '${(value / 1000000).toStringAsFixed(0)}${context.tr('currency.suffix_million')}';
       } else if (value >= 1000) {
-        text = '${(value / 1000).toStringAsFixed(0)}k';
+        text = '${(value / 1000).toStringAsFixed(0)}${context.tr('currency.suffix_thousand')}';
       } else {
         text = value.toStringAsFixed(0);
       }
     } else {
       // English: Show in dollars
       if (value >= 1000) {
-        text = '\$${(value / 1000).toStringAsFixed(0)}k';
+        text = '${context.tr('currency.symbol_usd')}${(value / 1000).toStringAsFixed(0)}${context.tr('currency.suffix_thousand')}';
       } else {
-        text = '\$${value.toStringAsFixed(0)}';
+        text = '${context.tr('currency.symbol_usd')}${value.toStringAsFixed(0)}';
       }
     }
 
@@ -294,7 +294,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
             ),
             const SizedBox(height: AppTheme.spacing16),
             Text(
-              'report.no_trend_data'.tr(),
+              context.tr('report.no_trend_data'),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -306,7 +306,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
     );
   }
 
-  String _formatAmount(double amount) {
+  String _formatAmount(BuildContext context, double amount) {
     if (widget.language == 'vi') {
       final formatted = amount
           .toStringAsFixed(0)
@@ -314,7 +314,9 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return widget.currency == 'VND' ? '$formattedđ' : '\$$formatted';
+      return widget.currency == 'VND'
+          ? '$formatted${context.tr('currency.symbol_vnd')}'
+          : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
       final formatted = amount
           .toStringAsFixed(2)
@@ -322,7 +324,9 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return widget.currency == 'USD' ? '\$$formatted' : '$formatted đ';
+      return widget.currency == 'USD'
+          ? '${context.tr('currency.symbol_usd')}$formatted'
+          : '$formatted ${context.tr('currency.symbol_vnd')}';
     }
   }
 }

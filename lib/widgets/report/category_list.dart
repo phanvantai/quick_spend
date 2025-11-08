@@ -39,7 +39,7 @@ class CategoryList extends StatelessWidget {
                 bottom: AppTheme.spacing12,
               ),
               child: Text(
-                'report.spending_by_category'.tr(),
+                context.tr('report.spending_by_category'),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -94,7 +94,7 @@ class CategoryList extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${stat.count} ${stat.count == 1 ? 'report.transaction'.tr() : 'report.transactions'.tr()}',
+                        '${stat.count} ${stat.count == 1 ? context.tr('report.transaction') : context.tr('report.transactions')}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -106,7 +106,7 @@ class CategoryList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      _formatAmount(stat.totalAmount),
+                      _formatAmount(context, stat.totalAmount),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: stat.color,
@@ -140,21 +140,25 @@ class CategoryList extends StatelessWidget {
     );
   }
 
-  String _formatAmount(double amount) {
+  String _formatAmount(BuildContext context, double amount) {
     if (language == 'vi') {
       // Vietnamese format
       final formatted = amount.toStringAsFixed(0).replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return currency == 'VND' ? '$formattedđ' : '\$$formatted';
+      return currency == 'VND'
+          ? '$formatted${context.tr('currency.symbol_vnd')}'
+          : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
       // English format
       final formatted = amount.toStringAsFixed(2).replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
-      return currency == 'USD' ? '\$$formatted' : '$formatted đ';
+      return currency == 'USD'
+          ? '${context.tr('currency.symbol_usd')}$formatted'
+          : '$formatted ${context.tr('currency.symbol_vnd')}';
     }
   }
 }

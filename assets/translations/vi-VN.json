@@ -77,9 +77,17 @@
     "theme_dark": "Tối",
     "theme_system": "Theo Hệ Thống",
     "about": "Thông Tin",
+    "version": "Phiên bản 1.0.0",
     "language_changed": "Đã thay đổi ngôn ngữ thành công",
     "currency_changed": "Đã thay đổi tiền tệ thành công",
     "theme_changed": "Đã thay đổi giao diện thành công",
+    "error_changing_language": "Lỗi khi thay đổi ngôn ngữ: {error}",
+    "error_changing_currency": "Lỗi khi thay đổi tiền tệ: {error}",
+    "error_changing_theme": "Lỗi khi thay đổi giao diện: {error}",
+    "language_vi": "Tiếng Việt",
+    "language_en": "English",
+    "currency_vnd_display": "Đồng Việt Nam (đ)",
+    "currency_usd_display": "Đô la Mỹ ($)",
     "coming_soon": "Cài đặt sẽ có sớm!"
   },
   "expense": {
@@ -117,7 +125,7 @@
     "tutorial_tap_anywhere": "hoặc chạm bất kỳ đâu để đóng"
   },
   "navigation": {
-    "input": "Trang chính",
+    "home": "Trang chính",
     "report": "Báo Cáo",
     "settings": "Cài Đặt"
   },
@@ -129,7 +137,8 @@
     "close": "Đóng",
     "delete": "Xóa",
     "edit": "Sửa",
-    "apply": "Áp Dụng"
+    "apply": "Áp Dụng",
+    "error": "Lỗi: {error}"
   },
   "categories": {
     "food": "Ăn Uống",
@@ -177,6 +186,16 @@
     "end_date_before_start": "Ngày kết thúc phải sau ngày bắt đầu",
     "no_category_data": "Không có dữ liệu chi tiêu trong khoảng thời gian này",
     "no_trend_data": "Không có dữ liệu xu hướng trong khoảng thời gian này",
-    "apply": "Áp Dụng"
+    "apply": "Áp Dụng",
+    "refresh_tooltip": "Làm mới",
+    "loading": "Đang tải báo cáo...",
+    "empty_title": "Chưa có chi tiêu",
+    "empty_message": "Bắt đầu thêm chi tiêu để xem báo cáo và thông tin chi tiêu của bạn"
+  },
+  "currency": {
+    "symbol_vnd": "đ",
+    "symbol_usd": "$",
+    "suffix_million": "M",
+    "suffix_thousand": "k"
   }
 }

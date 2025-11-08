@@ -9,10 +9,7 @@ import '../theme/app_theme.dart';
 class EditExpenseDialog extends StatefulWidget {
   final Expense expense;
 
-  const EditExpenseDialog({
-    super.key,
-    required this.expense,
-  });
+  const EditExpenseDialog({super.key, required this.expense});
 
   @override
   State<EditExpenseDialog> createState() => _EditExpenseDialogState();
@@ -28,8 +25,12 @@ class _EditExpenseDialogState extends State<EditExpenseDialog> {
   @override
   void initState() {
     super.initState();
-    _descriptionController = TextEditingController(text: widget.expense.description);
-    _amountController = TextEditingController(text: widget.expense.amount.toString());
+    _descriptionController = TextEditingController(
+      text: widget.expense.description,
+    );
+    _amountController = TextEditingController(
+      text: widget.expense.amount.toString(),
+    );
     _selectedCategory = widget.expense.category;
     _selectedDate = widget.expense.date;
   }
@@ -52,6 +53,7 @@ class _EditExpenseDialogState extends State<EditExpenseDialog> {
     if (pickedDate != null) {
       if (!mounted) return;
       final pickedTime = await showTimePicker(
+        // ignore: use_build_context_synchronously
         context: context,
         initialTime: TimeOfDay.fromDateTime(_selectedDate),
       );
@@ -125,7 +127,9 @@ class _EditExpenseDialogState extends State<EditExpenseDialog> {
                   labelText: context.tr('home.amount'),
                   prefixIcon: const Icon(Icons.attach_money),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                 ],
@@ -170,7 +174,9 @@ class _EditExpenseDialogState extends State<EditExpenseDialog> {
                     checkmarkColor: Colors.white,
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : categoryData.color,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                     onSelected: (selected) {
                       setState(() {
@@ -208,10 +214,7 @@ class _EditExpenseDialogState extends State<EditExpenseDialog> {
           onPressed: () => Navigator.pop(context),
           child: Text(context.tr('common.cancel')),
         ),
-        FilledButton(
-          onPressed: _save,
-          child: Text(context.tr('common.save')),
-        ),
+        FilledButton(onPressed: _save, child: Text(context.tr('common.save'))),
       ],
     );
   }
