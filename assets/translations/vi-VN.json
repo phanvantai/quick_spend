@@ -143,7 +143,9 @@
     "edit": "Sửa",
     "add": "Thêm",
     "apply": "Áp Dụng",
-    "error": "Lỗi: {error}"
+    "error": "Lỗi: {error}",
+    "today": "Hôm Nay",
+    "yesterday": "Hôm Qua"
   },
   "categories": {
     "food": "Ăn Uống",

@@ -143,7 +143,9 @@
     "edit": "Edit",
     "add": "Add",
     "apply": "Apply",
-    "error": "Error: {error}"
+    "error": "Error: {error}",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "categories": {
     "food": "Food",
