@@ -122,13 +122,15 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
             ? context.tr('categories.edit_category')
             : context.tr('categories.add_category'),
       ),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.9,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // Name (English)
               TextFormField(
                 controller: _nameEnController,
@@ -223,6 +225,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
               _buildColorPicker(),
             ],
           ),
+        ),
         ),
       ),
       actions: [
