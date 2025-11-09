@@ -369,6 +369,38 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                 },
               ),
             ],
+            const SizedBox(height: AppTheme.spacing24),
+
+            // Keywords Help Section
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                borderRadius: AppTheme.borderRadiusMedium,
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: AppTheme.spacing12),
+                  Expanded(
+                    child: Text(
+                      context.tr('categories.keywords_help'),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: AppTheme.spacing16),
 
             // Toggle for other language
