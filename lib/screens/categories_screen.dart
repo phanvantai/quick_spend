@@ -54,7 +54,10 @@ class CategoriesScreen extends StatelessWidget {
                   language,
                   isSystem: true,
                   onEdit: () => _navigateToEditCategory(context, category),
-                  onDelete: () => _deleteCategory(context, category),
+                  // Prevent deletion of 'other' category as it's the fallback
+                  onDelete: category.id != 'other'
+                      ? () => _deleteCategory(context, category)
+                      : null,
                 );
               }),
 
@@ -130,6 +133,7 @@ class CategoriesScreen extends StatelessWidget {
     VoidCallback? onDelete,
   }) {
     final theme = Theme.of(context);
+    final isOtherCategory = category.id == 'other';
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -155,9 +159,11 @@ class CategoriesScreen extends StatelessWidget {
           style: theme.textTheme.titleMedium,
         ),
         subtitle: Text(
-          isSystem
-              ? context.tr('categories.system_category')
-              : _formatKeywords(category.getKeywords(language)),
+          isOtherCategory
+              ? context.tr('categories.required_category')
+              : isSystem
+                  ? context.tr('categories.system_category')
+                  : _formatKeywords(category.getKeywords(language)),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -179,6 +185,15 @@ class CategoriesScreen extends StatelessWidget {
                 ),
                 onPressed: onDelete,
                 tooltip: context.tr('common.delete'),
+              )
+            else if (isOtherCategory)
+              Tooltip(
+                message: context.tr('categories.cannot_delete_other'),
+                child: Icon(
+                  Icons.lock_outline,
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  size: 20,
+                ),
               ),
           ],
         ),

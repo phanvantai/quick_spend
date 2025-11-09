@@ -183,7 +183,9 @@
     "icon": "Icon",
     "color": "Color",
     "name_required": "Name is required",
-    "keywords_required": "At least one keyword is required"
+    "keywords_required": "At least one keyword is required",
+    "required_category": "Required fallback category (cannot be deleted)",
+    "cannot_delete_other": "The 'Other' category cannot be deleted as it's used as a fallback when deleting other categories"
   },
   "currencies": {
     "usd": {
