@@ -228,7 +228,7 @@ Now extract from the input above. Return ONLY valid JSON, no other text.
           );
 
           debugPrint(
-            '✅ [GeminiParser] Parsed: ${expense.amount} - ${expense.description} (${expense.category})',
+            '✅ [GeminiParser] Parsed: ${expense.amount} - ${expense.description} (${expense.categoryId})',
           );
         } catch (e) {
           debugPrint('❌ [GeminiParser] Error parsing expense item: $e');

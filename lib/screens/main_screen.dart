@@ -423,6 +423,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Widget _buildExpenseDetails(ParseResult result) {
     final expense = result.expense!;
+    final categoryProvider = context.read<CategoryProvider>();
+    final appConfig = context.read<AppConfigProvider>().config;
+    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+        categoryProvider.getCategoryById('other') ??
+        QuickCategory.getDefaultSystemCategories().firstWhere(
+          (c) => c.id == 'other',
+        );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -430,7 +437,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         Text('${context.tr('home.amount')}: ${expense.getFormattedAmount()}'),
         Text('${context.tr('home.description')}: ${expense.description}'),
         Text(
-          '${context.tr('home.category')}: ${expense.category.toString().split('.').last}',
+          '${context.tr('home.category')}: ${categoryData.getLabel(appConfig.language)}',
         ),
         if (result.overallConfidence != null && result.overallConfidence! < 0.7)
           Text(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/expense_provider.dart';
+import '../providers/category_provider.dart';
 import '../providers/app_config_provider.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
@@ -151,7 +152,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showExpenseDetailsDialog(Expense expense) {
-    final categoryData = QuickCategory.getByType(expense.category);
+    final categoryProvider = context.read<CategoryProvider>();
+    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+        categoryProvider.getCategoryById('other') ??
+        QuickCategory.getDefaultSystemCategories().firstWhere(
+          (c) => c.id == 'other',
+        );
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
