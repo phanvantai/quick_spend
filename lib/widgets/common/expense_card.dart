@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../models/expense.dart';
@@ -23,7 +22,8 @@ class ExpenseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final categoryProvider = context.watch<CategoryProvider>();
-    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
         QuickCategory.getByType(ExpenseCategory.other); // Fallback
     final theme = Theme.of(context);

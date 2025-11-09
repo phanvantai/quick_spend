@@ -388,7 +388,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              title: option.displayName,
+              title: context.tr(option.displayNameKey),
               subtitle: option.code,
             );
           }),

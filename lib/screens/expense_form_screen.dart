@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../models/expense.dart';
-import '../models/category.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
 import '../providers/category_provider.dart';
@@ -112,9 +111,11 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditMode
-            ? context.tr('home.edit_expense')
-            : context.tr('home.add_expense')),
+        title: Text(
+          _isEditMode
+              ? context.tr('home.edit_expense')
+              : context.tr('home.add_expense'),
+        ),
         actions: [
           TextButton(
             onPressed: _save,
@@ -232,7 +233,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                       selectedColor: category.color,
                       labelStyle: TextStyle(
                         color: isSelected ? Colors.white : category.color,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                         fontSize: 14,
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -310,10 +313,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.info_outline,
-                      color: AppTheme.warning,
-                    ),
+                    const Icon(Icons.info_outline, color: AppTheme.warning),
                     const SizedBox(width: AppTheme.spacing12),
                     Expanded(
                       child: Text(
