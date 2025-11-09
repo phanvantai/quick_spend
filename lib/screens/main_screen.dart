@@ -4,6 +4,7 @@ import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../models/category.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
 import '../providers/category_provider.dart';
@@ -425,7 +426,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     final expense = result.expense!;
     final categoryProvider = context.read<CategoryProvider>();
     final appConfig = context.read<AppConfigProvider>().config;
-    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
         QuickCategory.getDefaultSystemCategories().firstWhere(
           (c) => c.id == 'other',

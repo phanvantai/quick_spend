@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'category.dart';
 
 /// Expense model representing a single expense entry
 class Expense {
@@ -32,7 +31,10 @@ class Expense {
       id: doc.id,
       amount: (data['amount'] as num).toDouble(),
       description: data['description'] as String,
-      categoryId: data['categoryId'] as String? ?? data['category'] as String? ?? 'other',
+      categoryId:
+          data['categoryId'] as String? ??
+          data['category'] as String? ??
+          'other',
       language: data['language'] as String? ?? 'en',
       date: (data['date'] as Timestamp).toDate(),
       userId: data['userId'] as String,
@@ -73,9 +75,8 @@ class Expense {
   /// Create Expense from JSON (SQLite)
   factory Expense.fromJson(Map<String, dynamic> json) {
     // Handle migration from old 'category' field to new 'categoryId'
-    String catId = json['categoryId'] as String? ??
-                   json['category'] as String? ??
-                   'other';
+    String catId =
+        json['categoryId'] as String? ?? json['category'] as String? ?? 'other';
 
     return Expense(
       id: json['id'] as String,
@@ -119,14 +120,18 @@ class Expense {
   String getFormattedAmount({bool includeCurrency = true}) {
     if (language == 'vi') {
       // Vietnamese format
-      final formatted = amount.toStringAsFixed(0).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(0)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
       return includeCurrency ? '$formatted đ' : formatted;
     } else {
       // English format
-      final formatted = amount.toStringAsFixed(2).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(2)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );

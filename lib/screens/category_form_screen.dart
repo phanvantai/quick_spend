@@ -236,12 +236,8 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       text: isEdit ? widget.category!.keywordsVi.join(', ') : '',
     );
 
-    _selectedIcon = isEdit
-        ? widget.category!.icon
-        : _availableIcons[0];
-    _selectedColor = isEdit
-        ? widget.category!.color
-        : _availableColors[0];
+    _selectedIcon = isEdit ? widget.category!.icon : _availableIcons[0];
+    _selectedColor = isEdit ? widget.category!.color : _availableColors[0];
   }
 
   @override
@@ -375,7 +371,9 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
             Container(
               padding: const EdgeInsets.all(AppTheme.spacing12),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.3,
+                ),
                 borderRadius: AppTheme.borderRadiusMedium,
                 border: Border.all(
                   color: theme.colorScheme.primary.withValues(alpha: 0.3),
@@ -411,22 +409,18 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                 });
               },
               icon: Icon(
-                _showOtherLanguage
-                    ? Icons.expand_less
-                    : Icons.expand_more,
+                _showOtherLanguage ? Icons.expand_less : Icons.expand_more,
               ),
               label: Text(
                 _showOtherLanguage
                     ? (isPrimaryEn
-                        ? 'Hide Vietnamese translation'
-                        : 'Hide English translation')
+                          ? 'Hide Vietnamese translation'
+                          : 'Hide English translation')
                     : (isPrimaryEn
-                        ? 'Add Vietnamese translation (optional)'
-                        : 'Add English translation (optional)'),
+                          ? 'Add Vietnamese translation (optional)'
+                          : 'Add English translation (optional)'),
               ),
-              style: TextButton.styleFrom(
-                alignment: Alignment.centerLeft,
-              ),
+              style: TextButton.styleFrom(alignment: Alignment.centerLeft),
             ),
 
             // Secondary Language Fields (optional)
@@ -450,7 +444,8 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                 TextFormField(
                   controller: _keywordsViController,
                   decoration: InputDecoration(
-                    labelText: '${context.tr('categories.keywords_vi')} (optional)',
+                    labelText:
+                        '${context.tr('categories.keywords_vi')} (optional)',
                     hintText: 'ăn, cơm, phở, bún',
                     helperText: context.tr('categories.keywords_hint'),
                     border: const OutlineInputBorder(),
@@ -476,7 +471,8 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                 TextFormField(
                   controller: _keywordsEnController,
                   decoration: InputDecoration(
-                    labelText: '${context.tr('categories.keywords_en')} (optional)',
+                    labelText:
+                        '${context.tr('categories.keywords_en')} (optional)',
                     hintText: 'food, eat, lunch, dinner',
                     helperText: context.tr('categories.keywords_hint'),
                     border: const OutlineInputBorder(),
@@ -546,11 +542,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                     color: _selectedColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    _selectedIcon,
-                    color: _selectedColor,
-                    size: 28,
-                  ),
+                  child: Icon(_selectedIcon, color: _selectedColor, size: 28),
                 ),
                 const SizedBox(width: AppTheme.spacing16),
                 Expanded(
@@ -558,9 +550,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        primaryName.isEmpty
-                            ? 'Category Name'
-                            : primaryName,
+                        primaryName.isEmpty ? 'Category Name' : primaryName,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -618,9 +608,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                     : Colors.transparent,
                 borderRadius: AppTheme.borderRadiusSmall,
                 border: Border.all(
-                  color: isSelected
-                      ? _selectedColor
-                      : Colors.transparent,
+                  color: isSelected ? _selectedColor : Colors.transparent,
                   width: 2,
                 ),
               ),
@@ -664,11 +652,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
               ),
             ),
             child: isSelected
-                ? const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 28,
-                  )
+                ? const Icon(Icons.check, color: Colors.white, size: 28)
                 : null,
           ),
         );
@@ -715,14 +699,15 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
     // Create category
     final category = QuickCategory(
-      id: widget.category?.id ??
+      id:
+          widget.category?.id ??
           _nameEnController.text.toLowerCase().replaceAll(' ', '_'),
       nameEn: _nameEnController.text.trim(),
       nameVi: _nameViController.text.trim(),
       keywordsEn: keywordsEn,
       keywordsVi: keywordsVi,
       iconCodePoint: _selectedIcon.codePoint,
-      colorValue: _selectedColor.value,
+      colorValue: _selectedColor.toARGB32(),
       isSystem: widget.category?.isSystem ?? false,
       userId: AppConstants.defaultUserId,
       createdAt: widget.category?.createdAt ?? DateTime.now(),
