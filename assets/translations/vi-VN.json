@@ -185,7 +185,9 @@
     "name_required": "Tên là bắt buộc",
     "keywords_required": "Phải có ít nhất một từ khóa",
     "required_category": "Danh mục dự phòng bắt buộc (không thể xóa)",
-    "cannot_delete_other": "Danh mục 'Khác' không thể xóa vì được dùng làm danh mục dự phòng khi xóa các danh mục khác"
+    "required_category_locked": "Danh mục dự phòng bắt buộc (không thể chỉnh sửa hoặc xóa)",
+    "cannot_delete_other": "Danh mục 'Khác' không thể xóa vì được dùng làm danh mục dự phòng khi xóa các danh mục khác",
+    "cannot_edit_other": "Danh mục 'Khác' không thể chỉnh sửa hoặc xóa vì được dùng làm danh mục dự phòng cho chi tiêu chưa phân loại"
   },
   "currencies": {
     "usd": {

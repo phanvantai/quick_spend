@@ -53,8 +53,10 @@ class CategoriesScreen extends StatelessWidget {
                   category,
                   language,
                   isSystem: true,
-                  onEdit: () => _navigateToEditCategory(context, category),
-                  // Prevent deletion of 'other' category as it's the fallback
+                  // Prevent editing and deletion of 'other' category as it's the fallback
+                  onEdit: category.id != 'other'
+                      ? () => _navigateToEditCategory(context, category)
+                      : null,
                   onDelete: category.id != 'other'
                       ? () => _deleteCategory(context, category)
                       : null,
@@ -160,7 +162,7 @@ class CategoriesScreen extends StatelessWidget {
         ),
         subtitle: Text(
           isOtherCategory
-              ? context.tr('categories.required_category')
+              ? context.tr('categories.required_category_locked')
               : isSystem
                   ? context.tr('categories.system_category')
                   : _formatKeywords(category.getKeywords(language)),
@@ -188,7 +190,7 @@ class CategoriesScreen extends StatelessWidget {
               )
             else if (isOtherCategory)
               Tooltip(
-                message: context.tr('categories.cannot_delete_other'),
+                message: context.tr('categories.cannot_edit_other'),
                 child: Icon(
                   Icons.lock_outline,
                   color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
