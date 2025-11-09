@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import '../models/category.dart';
 import '../providers/category_provider.dart';
 import '../providers/app_config_provider.dart';
@@ -137,13 +138,12 @@ class CategoriesScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final isOtherCategory = category.id == 'other';
 
-    return Card(
+    final cardContent = Card(
       margin: const EdgeInsets.symmetric(
         horizontal: AppTheme.spacing16,
         vertical: AppTheme.spacing4,
       ),
       child: ListTile(
-        onTap: onEdit,
         leading: Container(
           padding: const EdgeInsets.all(AppTheme.spacing12),
           decoration: BoxDecoration(
@@ -170,36 +170,49 @@ class CategoriesScreen extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (onEdit != null)
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: onEdit,
-                tooltip: context.tr('common.edit'),
-              ),
-            if (onDelete != null)
-              IconButton(
-                icon: Icon(
-                  Icons.delete_outline,
-                  color: AppTheme.error,
-                ),
-                onPressed: onDelete,
-                tooltip: context.tr('common.delete'),
-              )
-            else if (isOtherCategory)
-              Tooltip(
+        trailing: isOtherCategory
+            ? Tooltip(
                 message: context.tr('categories.cannot_edit_other'),
                 child: Icon(
                   Icons.lock_outline,
                   color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                   size: 20,
                 ),
-              ),
-          ],
-        ),
+              )
+            : null,
       ),
+    );
+
+    // For 'other' category, don't add slidable actions
+    if (isOtherCategory) {
+      return cardContent;
+    }
+
+    // Add slidable actions for other categories
+    return Slidable(
+      key: ValueKey(category.id),
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        children: [
+          if (onEdit != null)
+            SlidableAction(
+              onPressed: (_) => onEdit(),
+              backgroundColor: AppTheme.primaryMint,
+              foregroundColor: Colors.white,
+              icon: Icons.edit,
+              label: context.tr('common.edit'),
+            ),
+          if (onDelete != null)
+            SlidableAction(
+              onPressed: (_) => onDelete(),
+              backgroundColor: AppTheme.error,
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: context.tr('common.delete'),
+            ),
+        ],
+      ),
+      child: cardContent,
     );
   }
 
