@@ -5,7 +5,7 @@ import '../models/category.dart';
 import '../providers/category_provider.dart';
 import '../providers/app_config_provider.dart';
 import '../theme/app_theme.dart';
-import '../widgets/category_form_dialog.dart';
+import 'category_form_screen.dart';
 
 /// Screen for managing expense categories
 class CategoriesScreen extends StatelessWidget {
@@ -22,7 +22,7 @@ class CategoriesScreen extends StatelessWidget {
         title: Text(context.tr('settings.categories')),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddCategoryDialog(context),
+        onPressed: () => _navigateToAddCategory(context),
         icon: const Icon(Icons.add),
         label: Text(context.tr('categories.add_category')),
         backgroundColor: AppTheme.primaryMint,
@@ -215,10 +215,12 @@ class CategoriesScreen extends StatelessWidget {
     return keywords.take(3).join(', ') + (keywords.length > 3 ? '...' : '');
   }
 
-  Future<void> _showAddCategoryDialog(BuildContext context) async {
-    final result = await showDialog<QuickCategory>(
-      context: context,
-      builder: (context) => const CategoryFormDialog(),
+  Future<void> _navigateToAddCategory(BuildContext context) async {
+    final result = await Navigator.push<QuickCategory>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CategoryFormScreen(),
+      ),
     );
 
     if (result != null && context.mounted) {
