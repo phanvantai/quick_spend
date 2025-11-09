@@ -33,6 +33,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildSectionHeader(context.tr('settings.preferences')),
 
                     _buildListTile(
+                      icon: Icons.category_outlined,
+                      iconColor: AppTheme.accentTeal,
+                      title: context.tr('settings.categories'),
+                      subtitle: context.tr('settings.manage_categories'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CategoriesScreen(),
+                          ),
+                        );
+                      },
+                    ),
+
+                    _buildListTile(
                       icon: Icons.language,
                       iconColor: AppTheme.primaryMint,
                       title: context.tr('settings.language'),
@@ -58,21 +73,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: context.tr('settings.theme'),
                       subtitle: _getThemeDisplayName(configProvider.themeMode),
                       onTap: () => _showThemeDialog(context),
-                    ),
-
-                    _buildListTile(
-                      icon: Icons.category_outlined,
-                      iconColor: AppTheme.accentTeal,
-                      title: context.tr('settings.categories'),
-                      subtitle: context.tr('settings.manage_categories'),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CategoriesScreen(),
-                          ),
-                        );
-                      },
                     ),
 
                     const Divider(height: 32),
