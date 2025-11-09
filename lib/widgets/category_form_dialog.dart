@@ -359,7 +359,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
       keywordsEn: keywordsEn,
       keywordsVi: keywordsVi,
       iconCodePoint: _selectedIcon.codePoint,
-      colorValue: _selectedColor.value,
+      colorValue: _selectedColor.toARGB32(),
       isSystem: false, // User-defined categories are never system
       userId: AppConstants.defaultUserId,
       createdAt: widget.category?.createdAt ?? DateTime.now(),
