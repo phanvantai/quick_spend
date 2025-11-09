@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../../models/expense.dart';
 import '../../models/category.dart';
+import '../../providers/category_provider.dart';
 import '../../theme/app_theme.dart';
 
 /// Card widget for displaying expense information
@@ -19,7 +21,13 @@ class ExpenseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoryData = Category.getByType(expense.category);
+    final categoryProvider = context.watch<CategoryProvider>();
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
+        categoryProvider.getCategoryById('other') ??
+        QuickCategory.getDefaultSystemCategories().firstWhere(
+          (c) => c.id == 'other',
+        ); // Fallback to system 'other' category
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -80,7 +88,7 @@ class ExpenseCard extends StatelessWidget {
                         const SizedBox(width: AppTheme.spacing8),
                         Flexible(
                           child: Text(
-                            _formatDate(expense.date),
+                            _formatDate(context, expense.date),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colorScheme.onSurfaceVariant,
                             ),
@@ -134,20 +142,20 @@ class ExpenseCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(BuildContext context, DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
     final dateOnly = DateTime(date.year, date.month, date.day);
 
     if (dateOnly == today) {
-      return 'Today ${DateFormat.Hm().format(date)}';
+      return context.tr('common.today');
     } else if (dateOnly == yesterday) {
-      return 'Yesterday ${DateFormat.Hm().format(date)}';
+      return context.tr('common.yesterday');
     } else if (now.difference(date).inDays < 7) {
-      return DateFormat.E().add_Hm().format(date);
+      return DateFormat.E().format(date); // Day of week (e.g., "Mon")
     } else {
-      return DateFormat.MMMd().add_Hm().format(date);
+      return DateFormat.MMMd().format(date); // Month and day (e.g., "Jan 15")
     }
   }
 }

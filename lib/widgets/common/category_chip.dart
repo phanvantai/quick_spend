@@ -4,7 +4,7 @@ import '../../theme/app_theme.dart';
 
 /// Category chip widget for displaying and selecting expense categories
 class CategoryChip extends StatelessWidget {
-  final ExpenseCategory category;
+  final QuickCategory category;
   final bool isSelected;
   final VoidCallback? onTap;
   final String language;
@@ -19,8 +19,7 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoryData = Category.getByType(category);
-    final label = categoryData.getLabel(language);
+    final label = category.getLabel(language);
 
     return Material(
       color: Colors.transparent,
@@ -34,27 +33,23 @@ class CategoryChip extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? categoryData.color.withValues(alpha: 0.15)
+                ? category.color.withValues(alpha: 0.15)
                 : AppTheme.neutral100,
             borderRadius: AppTheme.borderRadiusSmall,
             border: Border.all(
-              color: isSelected ? categoryData.color : AppTheme.neutral300,
+              color: isSelected ? category.color : AppTheme.neutral300,
               width: isSelected ? 2 : 1,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                categoryData.icon,
-                color: categoryData.color,
-                size: 18,
-              ),
+              Icon(category.icon, color: category.color, size: 18),
               const SizedBox(width: AppTheme.spacing8),
               Text(
                 label,
                 style: AppTheme.lightTextTheme.labelMedium?.copyWith(
-                  color: isSelected ? categoryData.color : AppTheme.neutral700,
+                  color: isSelected ? category.color : AppTheme.neutral700,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),

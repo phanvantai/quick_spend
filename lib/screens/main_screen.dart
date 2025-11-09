@@ -4,8 +4,10 @@ import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../models/category.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
+import '../providers/category_provider.dart';
 import '../services/voice_service.dart';
 import '../services/expense_parser.dart';
 import '../services/preferences_service.dart';
@@ -327,9 +329,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     try {
       final expenseProvider = context.read<ExpenseProvider>();
+      final categoryProvider = context.read<CategoryProvider>();
       final results = await ExpenseParser.parse(
         input,
         expenseProvider.currentUserId,
+        categoryProvider.categories,
       );
       if (mounted) Navigator.pop(context);
 
@@ -420,6 +424,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Widget _buildExpenseDetails(ParseResult result) {
     final expense = result.expense!;
+    final categoryProvider = context.read<CategoryProvider>();
+    final appConfig = context.read<AppConfigProvider>().config;
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
+        categoryProvider.getCategoryById('other') ??
+        QuickCategory.getDefaultSystemCategories().firstWhere(
+          (c) => c.id == 'other',
+        );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -427,7 +439,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         Text('${context.tr('home.amount')}: ${expense.getFormattedAmount()}'),
         Text('${context.tr('home.description')}: ${expense.description}'),
         Text(
-          '${context.tr('home.category')}: ${expense.category.toString().split('.').last}',
+          '${context.tr('home.category')}: ${categoryData.getLabel(appConfig.language)}',
         ),
         if (result.overallConfidence != null && result.overallConfidence! < 0.7)
           Text(

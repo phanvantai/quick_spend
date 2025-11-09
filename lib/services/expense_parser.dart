@@ -16,14 +16,25 @@ class ExpenseParser {
   /// Parse raw input string into a structured Expense object
   /// Uses Gemini AI if available, falls back to rule-based parser
   /// Returns ParseResult with the expense and metadata
-  static Future<List<ParseResult>> parse(String rawInput, String userId) async {
+  static Future<List<ParseResult>> parse(
+    String rawInput,
+    String userId,
+    List<QuickCategory> categories,
+  ) async {
     debugPrint('💸 [ExpenseParser] Starting parse for: "$rawInput"');
 
     // Try Gemini parser first if available
     if (GeminiExpenseParser.isAvailable) {
       debugPrint('🤖 [ExpenseParser] Using Gemini AI parser');
       try {
-        final geminiResults = await GeminiExpenseParser.parse(rawInput, userId);
+        // Detect language for Gemini
+        final language = LanguageDetector.detectLanguage(rawInput);
+        final geminiResults = await GeminiExpenseParser.parse(
+          rawInput,
+          userId,
+          categories,
+          language,
+        );
         if (geminiResults.isNotEmpty) {
           debugPrint('✅ [ExpenseParser] Gemini returned ${geminiResults.length} result(s)');
           return geminiResults;
@@ -37,12 +48,16 @@ class ExpenseParser {
     }
 
     // Fallback to rule-based parser
-    final result = _parseRuleBased(rawInput, userId);
+    final result = _parseRuleBased(rawInput, userId, categories);
     return [result];
   }
 
   /// Original rule-based parsing (kept as fallback)
-  static ParseResult _parseRuleBased(String rawInput, String userId) {
+  static ParseResult _parseRuleBased(
+    String rawInput,
+    String userId,
+    List<QuickCategory> categories,
+  ) {
     debugPrint('💸 [ExpenseParser] Parsing input: "$rawInput"');
 
     // Validate input
@@ -97,8 +112,8 @@ class ExpenseParser {
     }
 
     // Step 4: Auto-categorize based on description
-    final categoryResult = Categorizer.categorize(description, language);
-    debugPrint('🏷️ [ExpenseParser] Category: ${categoryResult.category} (confidence: ${(categoryResult.confidence * 100).toStringAsFixed(1)}%)');
+    final categoryResult = Categorizer.categorize(description, language, categories);
+    debugPrint('🏷️ [ExpenseParser] Category: ${categoryResult.categoryId} (confidence: ${(categoryResult.confidence * 100).toStringAsFixed(1)}%)');
 
     // Calculate overall confidence
     // Weight: 50% categorization, 30% language detection, 20% amount parsing
@@ -113,7 +128,7 @@ class ExpenseParser {
       id: _uuid.v4(),
       amount: amountResult.amount,
       description: description,
-      category: categoryResult.category,
+      categoryId: categoryResult.categoryId,
       language: language,
       date: DateTime.now(),
       userId: userId,
@@ -130,7 +145,7 @@ class ExpenseParser {
       languageConfidence: languageConfidence,
       categoryConfidence: categoryResult.confidence,
       overallConfidence: overallConfidence,
-      suggestedCategories: Categorizer.getAllMatches(description, language),
+      suggestedCategories: Categorizer.getAllMatches(description, language, categories),
     );
   }
 
@@ -138,9 +153,10 @@ class ExpenseParser {
   static Future<List<ParseResult>> parseWithCategory(
     String rawInput,
     String userId,
-    ExpenseCategory category,
+    List<QuickCategory> categories,
+    String categoryId,
   ) async {
-    final results = await parse(rawInput, userId);
+    final results = await parse(rawInput, userId, categories);
 
     if (results.isEmpty) {
       return [
@@ -161,7 +177,7 @@ class ExpenseParser {
 
       // Override category with user's choice
       final updatedExpense = result.expense!.copyWith(
-        category: category,
+        categoryId: categoryId,
         confidence: 1.0, // User confirmed, so confidence is 100%
       );
 

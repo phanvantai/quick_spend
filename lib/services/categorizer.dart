@@ -3,27 +3,30 @@ import '../models/category.dart';
 /// Service for auto-categorizing expenses based on description keywords
 class Categorizer {
   /// Categorize expense based on description and language
-  /// Returns CategoryResult with the matched category and confidence score
-  static CategoryResult categorize(String description, String language) {
-    if (description.isEmpty) {
+  /// Returns CategoryResult with the matched category ID and confidence score
+  static CategoryResult categorize(
+    String description,
+    String language,
+    List<QuickCategory> categories,
+  ) {
+    if (description.isEmpty || categories.isEmpty) {
       return CategoryResult(
-        category: ExpenseCategory.other,
+        categoryId: 'other',
         confidence: 0.0,
       );
     }
 
     final normalizedDesc = description.toLowerCase().trim();
-    final categories = Category.getAllCategories();
 
     // Track best match
-    ExpenseCategory bestCategory = ExpenseCategory.other;
+    String bestCategoryId = 'other';
     double bestScore = 0.0;
     int bestMatchCount = 0;
 
     // Check each category
     for (final category in categories) {
       // Skip 'other' category in matching
-      if (category.type == ExpenseCategory.other) continue;
+      if (category.id == 'other') continue;
 
       final keywords = category.getKeywords(language);
       int matchCount = 0;
@@ -48,7 +51,7 @@ class Categorizer {
       // Update best match if this category has better score
       if (matchCount > 0 && score > bestScore) {
         bestScore = score;
-        bestCategory = category.type;
+        bestCategoryId = category.id;
         bestMatchCount = matchCount;
       }
     }
@@ -58,7 +61,7 @@ class Categorizer {
     if (bestMatchCount == 0) {
       // No matches found
       confidence = 0.0;
-      bestCategory = ExpenseCategory.other;
+      bestCategoryId = 'other';
     } else if (bestMatchCount == 1) {
       // Single match - moderate confidence
       confidence = 0.6;
@@ -71,7 +74,7 @@ class Categorizer {
     }
 
     return CategoryResult(
-      category: bestCategory,
+      categoryId: bestCategoryId,
       confidence: confidence,
       matchCount: bestMatchCount,
     );
@@ -79,23 +82,26 @@ class Categorizer {
 
   /// Get all possible categories for a description
   /// Returns a list of CategoryResult sorted by confidence (highest first)
-  static List<CategoryResult> getAllMatches(String description, String language) {
-    if (description.isEmpty) {
+  static List<CategoryResult> getAllMatches(
+    String description,
+    String language,
+    List<QuickCategory> categories,
+  ) {
+    if (description.isEmpty || categories.isEmpty) {
       return [
         CategoryResult(
-          category: ExpenseCategory.other,
+          categoryId: 'other',
           confidence: 0.0,
         )
       ];
     }
 
     final normalizedDesc = description.toLowerCase().trim();
-    final categories = Category.getAllCategories();
     final results = <CategoryResult>[];
 
     // Check each category
     for (final category in categories) {
-      if (category.type == ExpenseCategory.other) continue;
+      if (category.id == 'other') continue;
 
       final keywords = category.getKeywords(language);
       int matchCount = 0;
@@ -117,7 +123,7 @@ class Categorizer {
         }
 
         results.add(CategoryResult(
-          category: category.type,
+          categoryId: category.id,
           confidence: confidence,
           matchCount: matchCount,
         ));
@@ -130,7 +136,7 @@ class Categorizer {
     // Add 'other' as fallback if no matches
     if (results.isEmpty) {
       results.add(CategoryResult(
-        category: ExpenseCategory.other,
+        categoryId: 'other',
         confidence: 0.0,
       ));
     }
@@ -141,18 +147,18 @@ class Categorizer {
 
 /// Result of categorization
 class CategoryResult {
-  final ExpenseCategory category;
+  final String categoryId;
   final double confidence; // 0-1 scale
   final int matchCount;
 
   CategoryResult({
-    required this.category,
+    required this.categoryId,
     required this.confidence,
     this.matchCount = 0,
   });
 
   @override
   String toString() {
-    return 'CategoryResult(category: $category, confidence: $confidence, matchCount: $matchCount)';
+    return 'CategoryResult(categoryId: $categoryId, confidence: $confidence, matchCount: $matchCount)';
   }
 }

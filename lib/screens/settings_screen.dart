@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
 import '../theme/app_theme.dart';
+import 'categories_screen.dart';
 
 /// Settings screen for changing app preferences
 class SettingsScreen extends StatefulWidget {
@@ -30,6 +31,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     // Preferences Section
                     _buildSectionHeader(context.tr('settings.preferences')),
+
+                    _buildListTile(
+                      icon: Icons.category_outlined,
+                      iconColor: AppTheme.accentTeal,
+                      title: context.tr('settings.categories'),
+                      subtitle: context.tr('settings.manage_categories'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CategoriesScreen(),
+                          ),
+                        );
+                      },
+                    ),
 
                     _buildListTile(
                       icon: Icons.language,
@@ -265,7 +281,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                title: option.displayName,
+                title: ctx.tr(option.displayNameKey),
                 subtitle: option.code,
                 isSelected: isSelected,
                 onTap: () {

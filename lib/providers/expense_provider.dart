@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
 import '../models/expense.dart';
 import '../services/expense_service.dart';
+import '../utils/constants.dart';
 
 /// Provider for managing expense state
 class ExpenseProvider extends ChangeNotifier {
   final ExpenseService _expenseService;
   List<Expense> _expenses = [];
   bool _isLoading = true;
-  String _currentUserId = 'local_user'; // Default user ID for local storage
+  String _currentUserId = AppConstants.defaultUserId;
 
   ExpenseProvider(this._expenseService) {
     _loadExpenses();

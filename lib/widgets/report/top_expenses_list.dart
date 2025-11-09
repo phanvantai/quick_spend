@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../../models/expense.dart';
 import '../../models/category.dart';
+import '../../providers/category_provider.dart';
 import '../../theme/app_theme.dart';
 
 /// List showing top expenses for the selected period
@@ -96,7 +98,12 @@ class TopExpensesList extends StatelessWidget {
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final categoryData = Category.getByType(expense.category);
+    final categoryProvider = context.watch<CategoryProvider>();
+    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+        categoryProvider.getCategoryById('other') ??
+        QuickCategory.getDefaultSystemCategories().firstWhere(
+          (c) => c.id == 'other',
+        ); // Fallback to system 'other' category
 
     return InkWell(
       onTap: onExpenseTap != null ? () => onExpenseTap!(expense) : null,

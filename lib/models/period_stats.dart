@@ -14,6 +14,8 @@ class PeriodStats {
   final Map<DateTime, double> dailySpending;
   final DateTime startDate;
   final DateTime endDate;
+  final Map<String, double> categoryTotals; // Store for later calculation
+  final Map<String, int> categoryCounts; // Store for later calculation
 
   PeriodStats({
     required this.totalAmount,
@@ -26,6 +28,8 @@ class PeriodStats {
     required this.dailySpending,
     required this.startDate,
     required this.endDate,
+    required this.categoryTotals,
+    required this.categoryCounts,
   });
 
   /// Create empty statistics
@@ -42,6 +46,8 @@ class PeriodStats {
       dailySpending: {},
       startDate: startDate,
       endDate: endDate,
+      categoryTotals: {},
+      categoryCounts: {},
     );
   }
 
@@ -75,25 +81,19 @@ class PeriodStats {
     final lowestExpense = expenses.last;
 
     // Calculate category breakdown
-    final categoryTotals = <ExpenseCategory, double>{};
-    final categoryCounts = <ExpenseCategory, int>{};
+    final categoryTotals = <String, double>{};
+    final categoryCounts = <String, int>{};
 
     for (final expense in expenses) {
-      categoryTotals[expense.category] =
-          (categoryTotals[expense.category] ?? 0) + expense.amount;
-      categoryCounts[expense.category] =
-          (categoryCounts[expense.category] ?? 0) + 1;
+      categoryTotals[expense.categoryId] =
+          (categoryTotals[expense.categoryId] ?? 0) + expense.amount;
+      categoryCounts[expense.categoryId] =
+          (categoryCounts[expense.categoryId] ?? 0) + 1;
     }
 
-    final categoryBreakdown = categoryTotals.entries
-        .map((entry) => CategoryStats.fromCategory(
-              category: entry.key,
-              totalAmount: entry.value,
-              count: categoryCounts[entry.key] ?? 0,
-              grandTotal: totalAmount,
-            ))
-        .toList()
-      ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+    // Note: categoryBreakdown calculation needs to be done in ReportProvider
+    // where we have access to CategoryProvider to resolve categoryId -> Category
+    final categoryBreakdown = <CategoryStats>[];
 
     // Calculate daily spending
     final dailySpending = <DateTime, double>{};
@@ -117,6 +117,49 @@ class PeriodStats {
       dailySpending: dailySpending,
       startDate: startDate,
       endDate: endDate,
+      categoryTotals: categoryTotals,
+      categoryCounts: categoryCounts,
+    );
+  }
+
+  /// Create a copy with calculated category breakdown
+  PeriodStats withCategoryBreakdown(
+    List<QuickCategory> allCategories,
+    String language,
+  ) {
+    final breakdown = <CategoryStats>[];
+
+    for (final entry in categoryTotals.entries) {
+      final categoryId = entry.key;
+      final category = allCategories.firstWhere(
+        (cat) => cat.id == categoryId,
+        orElse: () => allCategories.firstWhere((cat) => cat.id == 'other'),
+      );
+
+      breakdown.add(CategoryStats.fromCategory(
+        category: category,
+        totalAmount: entry.value,
+        count: categoryCounts[categoryId] ?? 0,
+        grandTotal: totalAmount,
+        language: language,
+      ));
+    }
+
+    breakdown.sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+
+    return PeriodStats(
+      totalAmount: totalAmount,
+      transactionCount: transactionCount,
+      averagePerDay: averagePerDay,
+      averagePerTransaction: averagePerTransaction,
+      highestExpense: highestExpense,
+      lowestExpense: lowestExpense,
+      categoryBreakdown: breakdown,
+      dailySpending: dailySpending,
+      startDate: startDate,
+      endDate: endDate,
+      categoryTotals: categoryTotals,
+      categoryCounts: categoryCounts,
     );
   }
 

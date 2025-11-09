@@ -3,12 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../providers/expense_provider.dart';
+import '../providers/category_provider.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
-import '../widgets/edit_expense_dialog.dart';
+import 'expense_form_screen.dart';
 
 /// Screen showing all expenses with full list
 class AllExpensesScreen extends StatefulWidget {
@@ -70,9 +71,11 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
   }
 
   Future<void> _editExpense(Expense expense) async {
-    final updatedExpense = await showDialog<Expense>(
-      context: context,
-      builder: (context) => EditExpenseDialog(expense: expense),
+    final updatedExpense = await Navigator.push<Expense>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExpenseFormScreen(expense: expense),
+      ),
     );
 
     if (updatedExpense == null || !mounted) return;
@@ -106,7 +109,12 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
   }
 
   void _showExpenseDetailsDialog(Expense expense) {
-    final categoryData = Category.getByType(expense.category);
+    final categoryProvider = context.read<CategoryProvider>();
+    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+        categoryProvider.getCategoryById('other') ??
+        QuickCategory.getDefaultSystemCategories().firstWhere(
+          (c) => c.id == 'other',
+        );
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -138,7 +146,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.date'),
-              DateFormat.yMMMd().add_jm().format(expense.date),
+              DateFormat.yMMMd().format(expense.date),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(

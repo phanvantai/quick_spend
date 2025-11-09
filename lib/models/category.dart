@@ -1,39 +1,35 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
-/// Enum representing expense categories
-enum ExpenseCategory {
-  food,
-  transport,
-  shopping,
-  bills,
-  health,
-  entertainment,
-  other,
-}
-
-/// Category model with bilingual support and keyword lists
-class Category {
-  final ExpenseCategory type;
-  final String labelEn;
-  final String labelVi;
+/// Category model with support for both system and user-defined categories
+class QuickCategory {
+  final String id;
+  final String nameEn;
+  final String nameVi;
   final List<String> keywordsEn;
   final List<String> keywordsVi;
-  final IconData icon;
-  final Color color;
+  final int iconCodePoint; // Store icon as code point
+  final int colorValue; // Store color as integer
+  final bool isSystem; // true for system categories, false for user-defined
+  final String? userId; // null for system categories
+  final DateTime createdAt;
 
-  const Category({
-    required this.type,
-    required this.labelEn,
-    required this.labelVi,
+  const QuickCategory({
+    required this.id,
+    required this.nameEn,
+    required this.nameVi,
     required this.keywordsEn,
     required this.keywordsVi,
-    required this.icon,
-    required this.color,
+    required this.iconCodePoint,
+    required this.colorValue,
+    required this.isSystem,
+    this.userId,
+    required this.createdAt,
   });
 
   /// Get label based on language
   String getLabel(String language) {
-    return language == 'vi' ? labelVi : labelEn;
+    return language == 'vi' ? nameVi : nameEn;
   }
 
   /// Get keywords based on language
@@ -41,243 +37,333 @@ class Category {
     return language == 'vi' ? keywordsVi : keywordsEn;
   }
 
-  /// Static category definitions
-  static final Map<ExpenseCategory, Category> categories = {
-    ExpenseCategory.food: Category(
-      type: ExpenseCategory.food,
-      labelEn: 'Food',
-      labelVi: 'Ăn uống',
-      keywordsEn: [
-        'food',
-        'eat',
-        'lunch',
-        'dinner',
-        'breakfast',
-        'coffee',
-        'drink',
-        'restaurant',
-        'cafe',
-        'pizza',
-        'burger',
-        'snack',
-        'meal',
-        'groceries',
-      ],
-      keywordsVi: [
-        'ăn',
-        'cơm',
-        'phở',
-        'bún',
-        'cà phê',
-        'cafe',
-        'trà',
-        'nước',
-        'uống',
-        'sáng',
-        'trưa',
-        'tối',
-        'quán',
-        'nhà hàng',
-        'ăn vặt',
-        'đồ ăn',
-        'thức ăn',
-        'rau',
-        'thịt',
-        'cá',
-      ],
-      icon: Icons.restaurant,
-      color: Colors.orange,
-    ),
-    ExpenseCategory.transport: Category(
-      type: ExpenseCategory.transport,
-      labelEn: 'Transport',
-      labelVi: 'Di chuyển',
-      keywordsEn: [
-        'transport',
-        'taxi',
-        'uber',
-        'grab',
-        'bus',
-        'train',
-        'metro',
-        'parking',
-        'gas',
-        'petrol',
-        'fuel',
-        'car',
-        'bike',
-        'motorbike',
-        'toll',
-      ],
-      keywordsVi: [
-        'xe',
-        'taxi',
-        'grab',
-        'xăng',
-        'dầu',
-        'bus',
-        'xe buýt',
-        'tàu',
-        'metro',
-        'đỗ xe',
-        'gửi xe',
-        'ô tô',
-        'xe máy',
-        'phí',
-        'cầu đường',
-        'di chuyển',
-      ],
-      icon: Icons.directions_car,
-      color: Colors.blue,
-    ),
-    ExpenseCategory.shopping: Category(
-      type: ExpenseCategory.shopping,
-      labelEn: 'Shopping',
-      labelVi: 'Mua sắm',
-      keywordsEn: [
-        'shopping',
-        'shop',
-        'buy',
-        'clothes',
-        'shoes',
-        'mall',
-        'store',
-        'gift',
-        'book',
-        'electronics',
-        'purchase',
-      ],
-      keywordsVi: [
-        'mua',
-        'shopping',
-        'quần áo',
-        'giày',
-        'dép',
-        'áo',
-        'váy',
-        'đồ',
-        'siêu thị',
-        'chợ',
-        'quà',
-        'tặng',
-        'sách',
-        'điện thoại',
-        'máy tính',
-      ],
-      icon: Icons.shopping_bag,
-      color: Colors.purple,
-    ),
-    ExpenseCategory.bills: Category(
-      type: ExpenseCategory.bills,
-      labelEn: 'Bills',
-      labelVi: 'Hóa đơn',
-      keywordsEn: [
-        'bill',
-        'rent',
-        'electricity',
-        'water',
-        'internet',
-        'phone',
-        'utility',
-        'insurance',
-        'subscription',
-      ],
-      keywordsVi: [
-        'hóa đơn',
-        'tiền nhà',
-        'điện',
-        'nước',
-        'internet',
-        'wifi',
-        'điện thoại',
-        'bảo hiểm',
-        'thuê',
-        'phí',
-      ],
-      icon: Icons.receipt_long,
-      color: Colors.red,
-    ),
-    ExpenseCategory.health: Category(
-      type: ExpenseCategory.health,
-      labelEn: 'Health',
-      labelVi: 'Sức khỏe',
-      keywordsEn: [
-        'health',
-        'medicine',
-        'doctor',
-        'hospital',
-        'pharmacy',
-        'drug',
-        'clinic',
-        'medical',
-        'gym',
-        'fitness',
-      ],
-      keywordsVi: [
-        'thuốc',
-        'bác sĩ',
-        'bệnh viện',
-        'khám',
-        'y tế',
-        'sức khỏe',
-        'nhà thuốc',
-        'phòng khám',
-        'gym',
-        'thể dục',
-      ],
-      icon: Icons.local_hospital,
-      color: Colors.green,
-    ),
-    ExpenseCategory.entertainment: Category(
-      type: ExpenseCategory.entertainment,
-      labelEn: 'Entertainment',
-      labelVi: 'Giải trí',
-      keywordsEn: [
-        'entertainment',
-        'movie',
-        'cinema',
-        'game',
-        'music',
-        'concert',
-        'party',
-        'fun',
-        'hobby',
-        'sport',
-      ],
-      keywordsVi: [
-        'giải trí',
-        'phim',
-        'rạp',
-        'cinema',
-        'game',
-        'nhạc',
-        'ca nhạc',
-        'tiệc',
-        'vui chơi',
-        'thể thao',
-        'bóng đá',
-      ],
-      icon: Icons.movie,
-      color: Colors.pink,
-    ),
-    ExpenseCategory.other: Category(
-      type: ExpenseCategory.other,
-      labelEn: 'Other',
-      labelVi: 'Khác',
-      keywordsEn: ['other', 'misc', 'miscellaneous'],
-      keywordsVi: ['khác', 'khác'],
-      icon: Icons.more_horiz,
-      color: Colors.grey,
-    ),
-  };
+  /// Get icon from code point
+  IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
 
-  /// Get category by type
-  static Category getByType(ExpenseCategory type) {
-    return categories[type]!;
+  /// Get color from value
+  Color get color => Color(colorValue);
+
+  /// Convert Category to JSON for storage
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nameEn': nameEn,
+      'nameVi': nameVi,
+      'keywordsEn': jsonEncode(keywordsEn),
+      'keywordsVi': jsonEncode(keywordsVi),
+      'iconCodePoint': iconCodePoint,
+      'colorValue': colorValue,
+      'isSystem': isSystem ? 1 : 0,
+      'userId': userId,
+      'createdAt': createdAt.toIso8601String(),
+    };
   }
 
-  /// Get all categories as a list
-  static List<Category> getAllCategories() {
-    return categories.values.toList();
+  /// Create Category from JSON
+  factory QuickCategory.fromJson(Map<String, dynamic> json) {
+    return QuickCategory(
+      id: json['id'] as String,
+      nameEn: json['nameEn'] as String,
+      nameVi: json['nameVi'] as String,
+      keywordsEn: (jsonDecode(json['keywordsEn'] as String) as List)
+          .map((e) => e.toString())
+          .toList(),
+      keywordsVi: (jsonDecode(json['keywordsVi'] as String) as List)
+          .map((e) => e.toString())
+          .toList(),
+      iconCodePoint: json['iconCodePoint'] as int,
+      colorValue: json['colorValue'] as int,
+      isSystem: (json['isSystem'] as int) == 1,
+      userId: json['userId'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
+  /// Get default system categories (for seeding database)
+  static List<QuickCategory> getDefaultSystemCategories() {
+    final now = DateTime.now();
+
+    return [
+      QuickCategory(
+        id: 'food',
+        nameEn: 'Food',
+        nameVi: 'Ăn uống',
+        keywordsEn: [
+          'food',
+          'eat',
+          'lunch',
+          'dinner',
+          'breakfast',
+          'coffee',
+          'drink',
+          'restaurant',
+          'cafe',
+          'pizza',
+          'burger',
+          'snack',
+          'meal',
+          'groceries',
+        ],
+        keywordsVi: [
+          'ăn',
+          'cơm',
+          'phở',
+          'bún',
+          'cà phê',
+          'cafe',
+          'trà',
+          'nước',
+          'uống',
+          'sáng',
+          'trưa',
+          'tối',
+          'quán',
+          'nhà hàng',
+          'ăn vặt',
+          'đồ ăn',
+          'thức ăn',
+          'rau',
+          'thịt',
+          'cá',
+        ],
+        iconCodePoint: Icons.restaurant.codePoint,
+        colorValue: Colors.orange.toARGB32(),
+        isSystem: true,
+        userId: null,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'transport',
+        nameEn: 'Transport',
+        nameVi: 'Di chuyển',
+        keywordsEn: [
+          'transport',
+          'taxi',
+          'uber',
+          'grab',
+          'bus',
+          'train',
+          'metro',
+          'parking',
+          'gas',
+          'petrol',
+          'fuel',
+          'car',
+          'bike',
+          'motorbike',
+          'toll',
+        ],
+        keywordsVi: [
+          'xe',
+          'taxi',
+          'grab',
+          'xăng',
+          'dầu',
+          'bus',
+          'xe buýt',
+          'tàu',
+          'metro',
+          'đỗ xe',
+          'gửi xe',
+          'ô tô',
+          'xe máy',
+          'phí',
+          'cầu đường',
+          'di chuyển',
+        ],
+        iconCodePoint: Icons.directions_car.codePoint,
+        colorValue: Colors.blue.toARGB32(),
+        isSystem: true,
+        userId: null,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'shopping',
+        nameEn: 'Shopping',
+        nameVi: 'Mua sắm',
+        keywordsEn: [
+          'shopping',
+          'shop',
+          'buy',
+          'clothes',
+          'shoes',
+          'mall',
+          'store',
+          'gift',
+          'book',
+          'electronics',
+          'purchase',
+        ],
+        keywordsVi: [
+          'mua',
+          'shopping',
+          'quần áo',
+          'giày',
+          'dép',
+          'áo',
+          'váy',
+          'đồ',
+          'siêu thị',
+          'chợ',
+          'quà',
+          'tặng',
+          'sách',
+          'điện thoại',
+          'máy tính',
+        ],
+        iconCodePoint: Icons.shopping_bag.codePoint,
+        colorValue: Colors.purple.toARGB32(),
+        isSystem: true,
+        userId: null,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'bills',
+        nameEn: 'Bills',
+        nameVi: 'Hóa đơn',
+        keywordsEn: [
+          'bill',
+          'rent',
+          'electricity',
+          'water',
+          'internet',
+          'phone',
+          'utility',
+          'insurance',
+          'subscription',
+        ],
+        keywordsVi: [
+          'hóa đơn',
+          'tiền nhà',
+          'điện',
+          'nước',
+          'internet',
+          'wifi',
+          'điện thoại',
+          'bảo hiểm',
+          'thuê',
+          'phí',
+        ],
+        iconCodePoint: Icons.receipt_long.codePoint,
+        colorValue: Colors.red.toARGB32(),
+        isSystem: true,
+        userId: null,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'health',
+        nameEn: 'Health',
+        nameVi: 'Sức khỏe',
+        keywordsEn: [
+          'health',
+          'medicine',
+          'doctor',
+          'hospital',
+          'pharmacy',
+          'drug',
+          'clinic',
+          'medical',
+          'gym',
+          'fitness',
+        ],
+        keywordsVi: [
+          'thuốc',
+          'bác sĩ',
+          'bệnh viện',
+          'khám',
+          'y tế',
+          'sức khỏe',
+          'nhà thuốc',
+          'phòng khám',
+          'gym',
+          'thể dục',
+        ],
+        iconCodePoint: Icons.local_hospital.codePoint,
+        colorValue: Colors.green.toARGB32(),
+        isSystem: true,
+        userId: null,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'entertainment',
+        nameEn: 'Entertainment',
+        nameVi: 'Giải trí',
+        keywordsEn: [
+          'entertainment',
+          'movie',
+          'cinema',
+          'game',
+          'music',
+          'concert',
+          'party',
+          'fun',
+          'hobby',
+          'sport',
+        ],
+        keywordsVi: [
+          'giải trí',
+          'phim',
+          'rạp',
+          'cinema',
+          'game',
+          'nhạc',
+          'ca nhạc',
+          'tiệc',
+          'vui chơi',
+          'thể thao',
+          'bóng đá',
+        ],
+        iconCodePoint: Icons.movie.codePoint,
+        colorValue: Colors.pink.toARGB32(),
+        isSystem: true,
+        userId: null,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'other',
+        nameEn: 'Other',
+        nameVi: 'Khác',
+        keywordsEn: ['other', 'misc', 'miscellaneous'],
+        keywordsVi: ['khác'],
+        iconCodePoint: Icons.more_horiz.codePoint,
+        colorValue: Colors.grey.toARGB32(),
+        isSystem: true,
+        userId: null,
+        createdAt: now,
+      ),
+    ];
+  }
+
+  /// Legacy: Get all categories (for backward compatibility)
+  /// @deprecated Use CategoryService.getAllCategories() instead
+  static List<QuickCategory> getAllCategories() {
+    return getDefaultSystemCategories();
+  }
+
+  /// Copy with method for creating modified copies
+  QuickCategory copyWith({
+    String? id,
+    String? nameEn,
+    String? nameVi,
+    List<String>? keywordsEn,
+    List<String>? keywordsVi,
+    int? iconCodePoint,
+    int? colorValue,
+    bool? isSystem,
+    String? userId,
+    DateTime? createdAt,
+  }) {
+    return QuickCategory(
+      id: id ?? this.id,
+      nameEn: nameEn ?? this.nameEn,
+      nameVi: nameVi ?? this.nameVi,
+      keywordsEn: keywordsEn ?? this.keywordsEn,
+      keywordsVi: keywordsVi ?? this.keywordsVi,
+      iconCodePoint: iconCodePoint ?? this.iconCodePoint,
+      colorValue: colorValue ?? this.colorValue,
+      isSystem: isSystem ?? this.isSystem,
+      userId: userId ?? this.userId,
+      createdAt: createdAt ?? this.createdAt,
+    );
   }
 }

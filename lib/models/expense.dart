@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'category.dart';
 
 /// Expense model representing a single expense entry
 class Expense {
   final String id;
   final double amount;
   final String description;
-  final ExpenseCategory category;
+  final String categoryId; // Category ID instead of enum
   final String language; // 'en' or 'vi'
   final DateTime date;
   final String userId;
@@ -17,7 +16,7 @@ class Expense {
     required this.id,
     required this.amount,
     required this.description,
-    required this.category,
+    required this.categoryId,
     required this.language,
     required this.date,
     required this.userId,
@@ -32,10 +31,10 @@ class Expense {
       id: doc.id,
       amount: (data['amount'] as num).toDouble(),
       description: data['description'] as String,
-      category: ExpenseCategory.values.firstWhere(
-        (e) => e.toString() == 'ExpenseCategory.${data['category']}',
-        orElse: () => ExpenseCategory.other,
-      ),
+      categoryId:
+          data['categoryId'] as String? ??
+          data['category'] as String? ??
+          'other',
       language: data['language'] as String? ?? 'en',
       date: (data['date'] as Timestamp).toDate(),
       userId: data['userId'] as String,
@@ -49,7 +48,7 @@ class Expense {
     return {
       'amount': amount,
       'description': description,
-      'category': category.toString().split('.').last,
+      'categoryId': categoryId,
       'language': language,
       'date': Timestamp.fromDate(date),
       'userId': userId,
@@ -64,7 +63,7 @@ class Expense {
       'id': id,
       'amount': amount,
       'description': description,
-      'category': category.toString().split('.').last,
+      'categoryId': categoryId,
       'language': language,
       'date': date.toIso8601String(),
       'userId': userId,
@@ -75,14 +74,15 @@ class Expense {
 
   /// Create Expense from JSON (SQLite)
   factory Expense.fromJson(Map<String, dynamic> json) {
+    // Handle migration from old 'category' field to new 'categoryId'
+    String catId =
+        json['categoryId'] as String? ?? json['category'] as String? ?? 'other';
+
     return Expense(
       id: json['id'] as String,
       amount: (json['amount'] as num).toDouble(),
       description: json['description'] as String,
-      category: ExpenseCategory.values.firstWhere(
-        (e) => e.toString() == 'ExpenseCategory.${json['category']}',
-        orElse: () => ExpenseCategory.other,
-      ),
+      categoryId: catId,
       language: json['language'] as String? ?? 'en',
       date: DateTime.parse(json['date'] as String),
       userId: json['userId'] as String,
@@ -96,7 +96,7 @@ class Expense {
     String? id,
     double? amount,
     String? description,
-    ExpenseCategory? category,
+    String? categoryId,
     String? language,
     DateTime? date,
     String? userId,
@@ -107,7 +107,7 @@ class Expense {
       id: id ?? this.id,
       amount: amount ?? this.amount,
       description: description ?? this.description,
-      category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
       language: language ?? this.language,
       date: date ?? this.date,
       userId: userId ?? this.userId,
@@ -120,14 +120,18 @@ class Expense {
   String getFormattedAmount({bool includeCurrency = true}) {
     if (language == 'vi') {
       // Vietnamese format
-      final formatted = amount.toStringAsFixed(0).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(0)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
       return includeCurrency ? '$formatted đ' : formatted;
     } else {
       // English format
-      final formatted = amount.toStringAsFixed(2).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(2)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
@@ -137,7 +141,7 @@ class Expense {
 
   @override
   String toString() {
-    return 'Expense(id: $id, amount: $amount, description: $description, category: $category, date: $date)';
+    return 'Expense(id: $id, amount: $amount, description: $description, categoryId: $categoryId, date: $date)';
   }
 
   @override
@@ -148,7 +152,7 @@ class Expense {
         other.id == id &&
         other.amount == amount &&
         other.description == description &&
-        other.category == category &&
+        other.categoryId == categoryId &&
         other.language == language &&
         other.date == date &&
         other.userId == userId &&
@@ -162,7 +166,7 @@ class Expense {
       id,
       amount,
       description,
-      category,
+      categoryId,
       language,
       date,
       userId,
