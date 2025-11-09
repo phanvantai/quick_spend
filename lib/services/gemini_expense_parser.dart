@@ -51,6 +51,12 @@ class GeminiExpenseParser {
       return [];
     }
 
+    // Pre-validate input to avoid meaningless API calls
+    if (!_isValidInput(input)) {
+      debugPrint('⚠️ [GeminiParser] Input validation failed, skipping API call');
+      return [];
+    }
+
     try {
       final prompt = _buildPrompt(input, categories, language);
       debugPrint('📝 [GeminiParser] Sending prompt to Gemini...');
@@ -90,6 +96,69 @@ class GeminiExpenseParser {
       debugPrint('❌ [GeminiParser] Error parsing: $e');
       return [];
     }
+  }
+
+  /// Validate input to avoid meaningless API calls
+  /// Filters out empty, too short, or nonsensical voice input
+  static bool _isValidInput(String input) {
+    // Remove whitespace and check if empty
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) {
+      debugPrint('❌ [GeminiParser] Validation: Input is empty');
+      return false;
+    }
+
+    // Check minimum length (at least 2 characters)
+    if (trimmed.length < 2) {
+      debugPrint('❌ [GeminiParser] Validation: Input too short (<2 chars)');
+      return false;
+    }
+
+    // Must contain at least one alphanumeric character
+    if (!RegExp(r'[a-zA-Z0-9]').hasMatch(trimmed)) {
+      debugPrint('❌ [GeminiParser] Validation: No alphanumeric characters found');
+      return false;
+    }
+
+    // Filter out common voice recognition artifacts and filler words
+    final meaninglessPatterns = [
+      // Single repeated characters: "a a a", "uh uh uh"
+      RegExp(r'^([a-z])\s+\1(\s+\1)*$', caseSensitive: false),
+
+      // Common English filler words in isolation
+      RegExp(r'^(uh+|um+|ah+|er+|hmm+)$', caseSensitive: false),
+
+      // Common Vietnamese filler words in isolation
+      RegExp(r'^(ờ+|à+|ư+|ừ+|ơ+)$', caseSensitive: false),
+
+      // Just punctuation and spaces
+      RegExp(r'^[\s\.,;:!?\-]+$'),
+    ];
+
+    for (final pattern in meaninglessPatterns) {
+      if (pattern.hasMatch(trimmed)) {
+        debugPrint('❌ [GeminiParser] Validation: Meaningless pattern detected');
+        return false;
+      }
+    }
+
+    // Check if input is suspiciously repetitive (same word repeated 3+ times)
+    final words = trimmed.toLowerCase().split(RegExp(r'\s+'));
+    if (words.length >= 3) {
+      final uniqueWords = words.toSet();
+      if (uniqueWords.length == 1) {
+        debugPrint('❌ [GeminiParser] Validation: Suspicious repetition detected');
+        return false;
+      }
+    }
+
+    // Optional: Warn if no numbers found (might still be valid, e.g., "coffee today")
+    if (!RegExp(r'[0-9]').hasMatch(trimmed)) {
+      debugPrint('⚠️ [GeminiParser] Validation: No numbers found, but allowing (might be description only)');
+    }
+
+    debugPrint('✅ [GeminiParser] Validation: Input appears valid');
+    return true;
   }
 
   /// Build the prompt for Gemini with hybrid language approach

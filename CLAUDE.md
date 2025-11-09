@@ -59,6 +59,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - **NEW: Date parsing support** - Understands "yesterday", "hôm qua", "last week", "3 days ago", specific dates
    - **NEW: Complex sentence handling** - Handles temporal sequences, multiple items, detailed descriptions
    - **NEW: Incomplete word fixing** - Corrects voice recognition errors ("tiền cơ" → "tiền cơm")
+   - **NEW: Input pre-validation** - Filters meaningless voice input to save API costs (empty, too short, filler words like "uh", "um", "ờ", "à")
    - Understands natural language, context, and Vietnamese slang
    - Can extract multiple expenses from one input ("50k coffee and 30k parking")
    - Smart semantic categorization (food, transport, shopping, bills, health, entertainment, other)
@@ -303,6 +304,26 @@ Both AI and fallback parsers understand Vietnamese money slang:
 - "cafe" → "cà phê" (coffee)
 
 This makes voice input more natural and accurate for Vietnamese users.
+
+### Input Pre-Validation
+
+**NEW**: GeminiExpenseParser includes input validation to avoid meaningless API calls:
+
+**Filters out:**
+- Empty or whitespace-only input
+- Too short input (< 2 characters)
+- No alphanumeric characters
+- Common filler words: "uh", "um", "ah", "er", "hmm" (English) and "ờ", "à", "ư", "ừ", "ơ" (Vietnamese)
+- Repeated single characters: "a a a", "uh uh uh"
+- Suspicious repetition: same word repeated 3+ times
+- Just punctuation or symbols
+
+**Benefits:**
+- Saves API costs by avoiding unnecessary Gemini calls
+- Improves performance by failing fast on invalid input
+- Better user experience with immediate feedback on nonsensical input
+
+**Note**: The validator allows input without numbers (e.g., "coffee today") as it might still be valid, letting Gemini determine if it's parseable.
 
 ### Categories
 
