@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/category.dart';
+import '../providers/app_config_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/constants.dart';
 
@@ -23,6 +25,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
   late IconData _selectedIcon;
   late Color _selectedColor;
+  bool _showOtherLanguage = false;
 
   // Extended icon library for user selection (60+ icons)
   static const List<IconData> _availableIcons = [
@@ -254,6 +257,8 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isEdit = widget.category != null;
+    final userLanguage = context.watch<AppConfigProvider>().language;
+    final isPrimaryEn = userLanguage == 'en';
 
     return Scaffold(
       appBar: AppBar(
@@ -264,7 +269,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: _saveCategory,
+            onPressed: () => _saveCategory(userLanguage),
             child: Text(
               context.tr('common.save'),
               style: TextStyle(
@@ -283,85 +288,172 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
           padding: const EdgeInsets.all(AppTheme.spacing16),
           children: [
             // Preview Card
-            _buildPreviewCard(theme),
+            _buildPreviewCard(theme, isPrimaryEn),
             const SizedBox(height: AppTheme.spacing24),
 
-            // Name (English)
-            TextFormField(
-              controller: _nameEnController,
-              decoration: InputDecoration(
-                labelText: context.tr('categories.name_en'),
-                hintText: 'Food, Transport, etc.',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.translate),
+            // Primary Language Fields (based on user's language)
+            if (isPrimaryEn) ...[
+              // Name (English)
+              TextFormField(
+                controller: _nameEnController,
+                decoration: InputDecoration(
+                  labelText: context.tr('categories.name_en'),
+                  hintText: 'Food, Transport, etc.',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.label),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return context.tr('categories.name_required');
+                  }
+                  return null;
+                },
+                onChanged: (_) => setState(() {}), // Update preview
               ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return context.tr('categories.name_required');
-                }
-                return null;
-              },
-              onChanged: (_) => setState(() {}), // Update preview
-            ),
+              const SizedBox(height: AppTheme.spacing16),
+
+              // Keywords (English)
+              TextFormField(
+                controller: _keywordsEnController,
+                decoration: InputDecoration(
+                  labelText: context.tr('categories.keywords_en'),
+                  hintText: 'food, eat, lunch, dinner',
+                  helperText: context.tr('categories.keywords_hint'),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.vpn_key),
+                ),
+                maxLines: 2,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return context.tr('categories.keywords_required');
+                  }
+                  return null;
+                },
+              ),
+            ] else ...[
+              // Name (Vietnamese)
+              TextFormField(
+                controller: _nameViController,
+                decoration: InputDecoration(
+                  labelText: context.tr('categories.name_vi'),
+                  hintText: 'Ăn uống, Di chuyển, etc.',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.label),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return context.tr('categories.name_required');
+                  }
+                  return null;
+                },
+                onChanged: (_) => setState(() {}), // Update preview
+              ),
+              const SizedBox(height: AppTheme.spacing16),
+
+              // Keywords (Vietnamese)
+              TextFormField(
+                controller: _keywordsViController,
+                decoration: InputDecoration(
+                  labelText: context.tr('categories.keywords_vi'),
+                  hintText: 'ăn, cơm, phở, bún',
+                  helperText: context.tr('categories.keywords_hint'),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.vpn_key),
+                ),
+                maxLines: 2,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return context.tr('categories.keywords_required');
+                  }
+                  return null;
+                },
+              ),
+            ],
             const SizedBox(height: AppTheme.spacing16),
 
-            // Name (Vietnamese)
-            TextFormField(
-              controller: _nameViController,
-              decoration: InputDecoration(
-                labelText: context.tr('categories.name_vi'),
-                hintText: 'Ăn uống, Di chuyển, etc.',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.language),
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return context.tr('categories.name_required');
-                }
-                return null;
+            // Toggle for other language
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _showOtherLanguage = !_showOtherLanguage;
+                });
               },
-              onChanged: (_) => setState(() {}), // Update preview
+              icon: Icon(
+                _showOtherLanguage
+                    ? Icons.expand_less
+                    : Icons.expand_more,
+              ),
+              label: Text(
+                _showOtherLanguage
+                    ? (isPrimaryEn
+                        ? 'Hide Vietnamese translation'
+                        : 'Hide English translation')
+                    : (isPrimaryEn
+                        ? 'Add Vietnamese translation (optional)'
+                        : 'Add English translation (optional)'),
+              ),
+              style: TextButton.styleFrom(
+                alignment: Alignment.centerLeft,
+              ),
             ),
-            const SizedBox(height: AppTheme.spacing16),
 
-            // Keywords (English)
-            TextFormField(
-              controller: _keywordsEnController,
-              decoration: InputDecoration(
-                labelText: context.tr('categories.keywords_en'),
-                hintText: 'food, eat, lunch, dinner',
-                helperText: context.tr('categories.keywords_hint'),
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.vpn_key),
-              ),
-              maxLines: 2,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return context.tr('categories.keywords_required');
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: AppTheme.spacing16),
+            // Secondary Language Fields (optional)
+            if (_showOtherLanguage) ...[
+              const SizedBox(height: AppTheme.spacing8),
+              if (isPrimaryEn) ...[
+                // Name (Vietnamese) - Optional
+                TextFormField(
+                  controller: _nameViController,
+                  decoration: InputDecoration(
+                    labelText: '${context.tr('categories.name_vi')} (optional)',
+                    hintText: 'Ăn uống, Di chuyển, etc.',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.translate),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: AppTheme.spacing16),
 
-            // Keywords (Vietnamese)
-            TextFormField(
-              controller: _keywordsViController,
-              decoration: InputDecoration(
-                labelText: context.tr('categories.keywords_vi'),
-                hintText: 'ăn, cơm, phở, bún',
-                helperText: context.tr('categories.keywords_hint'),
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.vpn_key),
-              ),
-              maxLines: 2,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return context.tr('categories.keywords_required');
-                }
-                return null;
-              },
-            ),
+                // Keywords (Vietnamese) - Optional
+                TextFormField(
+                  controller: _keywordsViController,
+                  decoration: InputDecoration(
+                    labelText: '${context.tr('categories.keywords_vi')} (optional)',
+                    hintText: 'ăn, cơm, phở, bún',
+                    helperText: context.tr('categories.keywords_hint'),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.vpn_key),
+                  ),
+                  maxLines: 2,
+                ),
+              ] else ...[
+                // Name (English) - Optional
+                TextFormField(
+                  controller: _nameEnController,
+                  decoration: InputDecoration(
+                    labelText: '${context.tr('categories.name_en')} (optional)',
+                    hintText: 'Food, Transport, etc.',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.translate),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: AppTheme.spacing16),
+
+                // Keywords (English) - Optional
+                TextFormField(
+                  controller: _keywordsEnController,
+                  decoration: InputDecoration(
+                    labelText: '${context.tr('categories.keywords_en')} (optional)',
+                    hintText: 'food, eat, lunch, dinner',
+                    helperText: context.tr('categories.keywords_hint'),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.vpn_key),
+                  ),
+                  maxLines: 2,
+                ),
+              ],
+            ],
             const SizedBox(height: AppTheme.spacing32),
 
             // Icon Picker Section
@@ -391,7 +483,14 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     );
   }
 
-  Widget _buildPreviewCard(ThemeData theme) {
+  Widget _buildPreviewCard(ThemeData theme, bool isPrimaryEn) {
+    final primaryName = isPrimaryEn
+        ? _nameEnController.text
+        : _nameViController.text;
+    final secondaryName = isPrimaryEn
+        ? _nameViController.text
+        : _nameEnController.text;
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -427,16 +526,16 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _nameEnController.text.isEmpty
+                        primaryName.isEmpty
                             ? 'Category Name'
-                            : _nameEnController.text,
+                            : primaryName,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (_nameViController.text.isNotEmpty)
+                      if (secondaryName.isNotEmpty)
                         Text(
-                          _nameViController.text,
+                          secondaryName,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -545,9 +644,28 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     );
   }
 
-  void _saveCategory() {
+  void _saveCategory(String userLanguage) {
     if (!_formKey.currentState!.validate()) {
       return;
+    }
+
+    // Auto-fill secondary language if empty
+    if (userLanguage == 'en') {
+      // Primary is English, check Vietnamese
+      if (_nameViController.text.trim().isEmpty) {
+        _nameViController.text = _nameEnController.text;
+      }
+      if (_keywordsViController.text.trim().isEmpty) {
+        _keywordsViController.text = _keywordsEnController.text;
+      }
+    } else {
+      // Primary is Vietnamese, check English
+      if (_nameEnController.text.trim().isEmpty) {
+        _nameEnController.text = _nameViController.text;
+      }
+      if (_keywordsEnController.text.trim().isEmpty) {
+        _keywordsEnController.text = _keywordsViController.text;
+      }
     }
 
     // Parse keywords (split by comma and trim)
@@ -573,7 +691,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       keywordsVi: keywordsVi,
       iconCodePoint: _selectedIcon.codePoint,
       colorValue: _selectedColor.value,
-      isSystem: false, // User-defined categories are never system
+      isSystem: widget.category?.isSystem ?? false,
       userId: AppConstants.defaultUserId,
       createdAt: widget.category?.createdAt ?? DateTime.now(),
     );
