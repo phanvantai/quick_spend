@@ -128,18 +128,18 @@ class LanguageOption {
 /// Currency option for selection
 class CurrencyOption {
   final String code;
-  final String displayName;
+  final String displayNameKey; // Translation key
   final String symbol;
 
   const CurrencyOption({
     required this.code,
-    required this.displayName,
+    required this.displayNameKey,
     required this.symbol,
   });
 
   static const List<CurrencyOption> options = [
-    CurrencyOption(code: 'USD', displayName: 'US Dollar', symbol: '\$'),
-    CurrencyOption(code: 'VND', displayName: 'Vietnamese Dong', symbol: 'đ'),
+    CurrencyOption(code: 'USD', displayNameKey: 'currencies.usd.name', symbol: '\$'),
+    CurrencyOption(code: 'VND', displayNameKey: 'currencies.vnd.name', symbol: 'đ'),
   ];
 }
 

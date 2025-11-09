@@ -281,7 +281,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                title: option.displayName,
+                title: ctx.tr(option.displayNameKey),
                 subtitle: option.code,
                 isSelected: isSelected,
                 onTap: () {
