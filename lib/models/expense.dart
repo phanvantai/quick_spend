@@ -25,15 +25,6 @@ class Expense {
     this.confidence = 1.0,
   });
 
-  /// Legacy: Get category as enum (for backward compatibility)
-  /// @deprecated Use categoryId directly
-  ExpenseCategory get category {
-    return ExpenseCategory.values.firstWhere(
-      (e) => e.toString().split('.').last == categoryId,
-      orElse: () => ExpenseCategory.other,
-    );
-  }
-
   /// Create Expense from Firestore document
   factory Expense.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;

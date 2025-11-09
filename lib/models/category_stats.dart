@@ -40,15 +40,6 @@ class CategoryStats {
     );
   }
 
-  /// Legacy: Get category enum (for backward compatibility)
-  /// @deprecated Use categoryId directly
-  ExpenseCategory get category {
-    return ExpenseCategory.values.firstWhere(
-      (e) => e.toString().split('.').last == categoryId,
-      orElse: () => ExpenseCategory.other,
-    );
-  }
-
   /// Get category label
   String getLabel(String language) {
     return categoryName; // Already stored with language

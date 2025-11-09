@@ -101,7 +101,9 @@ class TopExpensesList extends StatelessWidget {
     final categoryProvider = context.watch<CategoryProvider>();
     final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
-        QuickCategory.getByType(ExpenseCategory.other);
+        QuickCategory.getDefaultSystemCategories().firstWhere(
+          (c) => c.id == 'other',
+        ); // Fallback to system 'other' category
 
     return InkWell(
       onTap: onExpenseTap != null ? () => onExpenseTap!(expense) : null,

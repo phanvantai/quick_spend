@@ -157,15 +157,6 @@ class CategoryResult {
     this.matchCount = 0,
   });
 
-  /// Legacy: Get category enum (for backward compatibility)
-  /// @deprecated Use categoryId directly
-  ExpenseCategory get category {
-    return ExpenseCategory.values.firstWhere(
-      (e) => e.toString().split('.').last == categoryId,
-      orElse: () => ExpenseCategory.other,
-    );
-  }
-
   @override
   String toString() {
     return 'CategoryResult(categoryId: $categoryId, confidence: $confidence, matchCount: $matchCount)';

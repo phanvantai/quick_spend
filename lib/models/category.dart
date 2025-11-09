@@ -1,18 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
-/// Legacy enum for backward compatibility during migration
-/// Will be deprecated once migration is complete
-enum ExpenseCategory {
-  food,
-  transport,
-  shopping,
-  bills,
-  health,
-  entertainment,
-  other,
-}
-
 /// Category model with support for both system and user-defined categories
 class QuickCategory {
   final String id;
@@ -344,18 +332,6 @@ class QuickCategory {
         createdAt: now,
       ),
     ];
-  }
-
-  /// Legacy: Get category by enum type (for backward compatibility)
-  /// @deprecated Use getCategoryById instead
-  static QuickCategory getByType(ExpenseCategory type) {
-    // Map enum to system category IDs
-    final systemCategories = getDefaultSystemCategories();
-    final id = type.toString().split('.').last;
-    return systemCategories.firstWhere(
-      (cat) => cat.id == id,
-      orElse: () => systemCategories.last, // Return 'other'
-    );
   }
 
   /// Legacy: Get all categories (for backward compatibility)
