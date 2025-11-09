@@ -54,6 +54,7 @@ class CategoriesScreen extends StatelessWidget {
                   language,
                   isSystem: true,
                   onEdit: () => _navigateToEditCategory(context, category),
+                  onDelete: () => _deleteCategory(context, category),
                 );
               }),
 

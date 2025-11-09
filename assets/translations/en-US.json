@@ -158,7 +158,7 @@
     "entertainment": "Entertainment",
     "other": "Other",
     "system_categories": "System Categories",
-    "system_categories_subtitle": "Built-in categories (cannot be deleted)",
+    "system_categories_subtitle": "Built-in categories (can be customized or deleted)",
     "user_categories": "Your Categories",
     "user_categories_subtitle": "Custom categories you've created",
     "system_category": "System category",
