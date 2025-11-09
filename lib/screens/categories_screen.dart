@@ -53,6 +53,7 @@ class CategoriesScreen extends StatelessWidget {
                   category,
                   language,
                   isSystem: true,
+                  onEdit: () => _navigateToEditCategory(context, category),
                 );
               }),
 
@@ -73,6 +74,7 @@ class CategoriesScreen extends StatelessWidget {
                     category,
                     language,
                     isSystem: false,
+                    onEdit: () => _navigateToEditCategory(context, category),
                     onDelete: () => _deleteCategory(context, category),
                   );
                 }),
@@ -123,6 +125,7 @@ class CategoriesScreen extends StatelessWidget {
     QuickCategory category,
     String language, {
     required bool isSystem,
+    VoidCallback? onEdit,
     VoidCallback? onDelete,
   }) {
     final theme = Theme.of(context);
@@ -133,6 +136,7 @@ class CategoriesScreen extends StatelessWidget {
         vertical: AppTheme.spacing4,
       ),
       child: ListTile(
+        onTap: onEdit,
         leading: Container(
           padding: const EdgeInsets.all(AppTheme.spacing12),
           decoration: BoxDecoration(
@@ -157,19 +161,26 @@ class CategoriesScreen extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        trailing: isSystem
-            ? Icon(
-                Icons.lock_outline,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                size: 20,
-              )
-            : IconButton(
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (onEdit != null)
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: onEdit,
+                tooltip: context.tr('common.edit'),
+              ),
+            if (onDelete != null)
+              IconButton(
                 icon: Icon(
                   Icons.delete_outline,
                   color: AppTheme.error,
                 ),
                 onPressed: onDelete,
+                tooltip: context.tr('common.delete'),
               ),
+          ],
+        ),
       ),
     );
   }
@@ -243,6 +254,48 @@ class CategoriesScreen extends StatelessWidget {
               content: Text(
                 context.tr(
                   'categories.error_adding_category',
+                  namedArgs: {'error': e.toString()},
+                ),
+              ),
+              backgroundColor: AppTheme.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _navigateToEditCategory(
+    BuildContext context,
+    QuickCategory category,
+  ) async {
+    final result = await Navigator.push<QuickCategory>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CategoryFormScreen(category: category),
+      ),
+    );
+
+    if (result != null && context.mounted) {
+      final categoryProvider = context.read<CategoryProvider>();
+      try {
+        await categoryProvider.updateCategory(result);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.tr('categories.category_updated')),
+              backgroundColor: AppTheme.success,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                context.tr(
+                  'categories.error_updating_category',
                   namedArgs: {'error': e.toString()},
                 ),
               ),
