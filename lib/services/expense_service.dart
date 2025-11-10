@@ -153,29 +153,36 @@ class ExpenseService {
         // Column might already exist, continue
       }
 
+      // Try to add type column to categories table
+      bool columnAdded = false;
       try {
-        // Add type column to categories table with default value 'expense' for backward compatibility
         await db.execute(
           'ALTER TABLE $_categoriesTableName ADD COLUMN type TEXT NOT NULL DEFAULT "expense"',
         );
+        columnAdded = true;
         debugPrint('✅ [ExpenseService] Type column added to categories table successfully');
+      } catch (e) {
+        debugPrint('⚠️ [ExpenseService] Type column might already exist: $e');
+        // Column might already exist, that's okay
+      }
 
+      // Always update category types (even if column already existed)
+      try {
         // Update known income categories to have income type
-        await db.execute('''
+        final incomeUpdateCount = await db.rawUpdate('''
           UPDATE $_categoriesTableName
           SET type = "income"
           WHERE id IN ('salary', 'freelance', 'investment', 'gift_received', 'refund', 'other_income')
         ''');
-        debugPrint('✅ [ExpenseService] Updated income categories to income type');
+        debugPrint('✅ [ExpenseService] Updated $incomeUpdateCount income categories to income type');
 
-        // Explicitly update any remaining NULL values to 'expense' for extra safety
-        await db.execute(
-          'UPDATE $_categoriesTableName SET type = "expense" WHERE type IS NULL OR type = ""',
+        // Explicitly update any remaining NULL or empty values to 'expense' for extra safety
+        final expenseUpdateCount = await db.rawUpdate(
+          'UPDATE $_categoriesTableName SET type = "expense" WHERE type IS NULL OR type = "" OR (type != "income" AND type != "expense")',
         );
-        debugPrint('✅ [ExpenseService] Updated NULL type values to expense');
+        debugPrint('✅ [ExpenseService] Updated $expenseUpdateCount categories to expense type');
       } catch (e) {
-        debugPrint('⚠️ [ExpenseService] Error adding type column to categories: $e');
-        // Column might already exist, continue
+        debugPrint('⚠️ [ExpenseService] Error updating category types: $e');
       }
 
       debugPrint('✅ [ExpenseService] Database upgraded to v3 successfully');
@@ -568,5 +575,39 @@ class ExpenseService {
       where: 'isSystem = 0 AND userId = ?',
       whereArgs: [userId],
     );
+  }
+
+  /// Fix category types for existing categories (utility method)
+  /// This ensures all categories have correct type values
+  Future<void> fixCategoryTypes() async {
+    await _ensureInitialized();
+
+    debugPrint('🔧 [ExpenseService] Fixing category types...');
+
+    try {
+      // Update known income categories to have income type
+      final incomeUpdateCount = await _database!.rawUpdate('''
+        UPDATE $_categoriesTableName
+        SET type = "income"
+        WHERE id IN ('salary', 'freelance', 'investment', 'gift_received', 'refund', 'other_income')
+      ''');
+      debugPrint('✅ [ExpenseService] Fixed $incomeUpdateCount income categories');
+
+      // Update known expense categories to have expense type
+      final expenseUpdateCount = await _database!.rawUpdate('''
+        UPDATE $_categoriesTableName
+        SET type = "expense"
+        WHERE id IN ('food', 'transport', 'shopping', 'bills', 'health', 'entertainment', 'other')
+      ''');
+      debugPrint('✅ [ExpenseService] Fixed $expenseUpdateCount expense categories');
+
+      // Update any remaining NULL or invalid values to 'expense' for extra safety
+      final nullUpdateCount = await _database!.rawUpdate(
+        'UPDATE $_categoriesTableName SET type = "expense" WHERE type IS NULL OR type = "" OR (type != "income" AND type != "expense")',
+      );
+      debugPrint('✅ [ExpenseService] Fixed $nullUpdateCount categories with NULL/invalid type');
+    } catch (e) {
+      debugPrint('⚠️ [ExpenseService] Error fixing category types: $e');
+    }
   }
 }

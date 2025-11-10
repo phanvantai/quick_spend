@@ -41,6 +41,9 @@ class CategoryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Fix category types on first load (ensures migration worked correctly)
+      await _expenseService.fixCategoryTypes();
+
       _categories = await _expenseService.getAllCategories(_currentUserId);
       debugPrint('📂 [CategoryProvider] Loaded ${_categories.length} categories');
     } catch (e) {
