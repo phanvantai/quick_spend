@@ -114,32 +114,20 @@ class ReportScreen extends StatelessWidget {
                     ),
                   ],
                   flexibleSpace: FlexibleSpaceBar(
-                    background: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            colorScheme.primary,
-                            colorScheme.primary.withValues(alpha: 0.8),
-                          ],
+                    background: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppTheme.spacing16,
+                          56, // Account for app bar height
+                          AppTheme.spacing16,
+                          AppTheme.spacing16,
                         ),
-                      ),
-                      child: SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppTheme.spacing16,
-                            56, // Account for app bar height
-                            AppTheme.spacing16,
-                            AppTheme.spacing16,
-                          ),
-                          child: SummaryCard(
-                            stats: stats,
-                            trendPercentage: reportProvider.trendPercentage,
-                            isTrendPositive: reportProvider.isTrendPositive,
-                            currency: configProvider.currency,
-                            language: context.locale.languageCode,
-                          ),
+                        child: SummaryCard(
+                          stats: stats,
+                          trendPercentage: reportProvider.trendPercentage,
+                          isTrendPositive: reportProvider.isTrendPositive,
+                          currency: configProvider.currency,
+                          language: context.locale.languageCode,
                         ),
                       ),
                     ),
@@ -249,8 +237,9 @@ class ReportScreen extends StatelessWidget {
 /// Delegate for pinned period filter header
 class _PeriodFilterDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
+  final double height;
 
-  _PeriodFilterDelegate({required this.child});
+  _PeriodFilterDelegate({required this.child, this.height = 72.0});
 
   @override
   Widget build(
@@ -258,17 +247,20 @@ class _PeriodFilterDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return child;
+    return SizedBox(
+      height: height,
+      child: child,
+    );
   }
 
   @override
-  double get maxExtent => 72.0;
+  double get maxExtent => height;
 
   @override
-  double get minExtent => 72.0;
+  double get minExtent => height;
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
+  bool shouldRebuild(covariant _PeriodFilterDelegate oldDelegate) {
+    return child != oldDelegate.child || height != oldDelegate.height;
   }
 }
