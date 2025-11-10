@@ -614,10 +614,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ? box.localToGlobal(Offset.zero) & box.size
           : null;
 
-      // Share the file
+      // Share the file with localized strings
       await ExportService.shareFile(
         filePath,
         'quick_spend_export.json',
+        subject: context.tr('settings.share_subject'),
+        text: context.tr('settings.share_text'),
         sharePositionOrigin: sharePositionOrigin,
       );
 

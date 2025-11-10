@@ -121,9 +121,12 @@ class ExportService {
 
   /// Share exported file using the share dialog
   /// [sharePositionOrigin] is required for iOS to position the share popover
+  /// [subject] and [text] should be localized strings
   static Future<void> shareFile(
     String filePath,
     String fileName, {
+    required String subject,
+    required String text,
     Rect? sharePositionOrigin,
   }) async {
     debugPrint('📤 [ExportService] Sharing file: $filePath');
@@ -132,8 +135,8 @@ class ExportService {
       final file = XFile(filePath);
       await Share.shareXFiles(
         [file],
-        subject: 'Quick Spend Export',
-        text: 'My expense data from Quick Spend',
+        subject: subject,
+        text: text,
         sharePositionOrigin: sharePositionOrigin,
       );
 
