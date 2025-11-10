@@ -4,7 +4,7 @@ import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../models/category.dart';
+import 'package:quick_spend/models/expense.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
 import '../providers/category_provider.dart';
@@ -1023,8 +1023,8 @@ class _EditableExpenseDialogState extends State<_EditableExpenseDialog> {
                       namedArgs: {'number': (i + 1).toString()},
                     ),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: AppTheme.spacing12),
                 ],
@@ -1060,10 +1060,7 @@ class _ExpenseFormCard extends StatelessWidget {
   final _ExpenseFormData formData;
   final VoidCallback onChanged;
 
-  const _ExpenseFormCard({
-    required this.formData,
-    required this.onChanged,
-  });
+  const _ExpenseFormCard({required this.formData, required this.onChanged});
 
   Future<void> _selectDate(BuildContext context) async {
     final picked = await showDatePicker(
@@ -1182,7 +1179,9 @@ class _ExpenseFormCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppTheme.warning.withValues(alpha: 0.15),
               borderRadius: AppTheme.borderRadiusSmall,
-              border: Border.all(color: AppTheme.warning.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppTheme.warning.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               children: [
@@ -1194,12 +1193,10 @@ class _ExpenseFormCard extends StatelessWidget {
                 const SizedBox(width: AppTheme.spacing8),
                 Expanded(
                   child: Text(
-                    context.tr(
-                      'home.low_confidence_verify',
-                    ),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.warning,
-                        ),
+                    context.tr('home.low_confidence_verify'),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: AppTheme.warning),
                   ),
                 ),
               ],
