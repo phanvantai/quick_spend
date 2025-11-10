@@ -661,16 +661,25 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           margin: const EdgeInsets.symmetric(
                             horizontal: AppTheme.spacing32,
                           ),
-                          padding: const EdgeInsets.all(AppTheme.spacing16),
+                          padding: const EdgeInsets.all(AppTheme.spacing20),
+                          constraints: const BoxConstraints(
+                            maxHeight: 200,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Colors.white.withValues(alpha: 0.95),
                             borderRadius: AppTheme.borderRadiusMedium,
                             boxShadow: AppTheme.shadowLarge,
                           ),
-                          child: Text(
-                            _recognizedText,
-                            style: Theme.of(context).textTheme.titleMedium,
-                            textAlign: TextAlign.center,
+                          child: SingleChildScrollView(
+                            child: Text(
+                              _recognizedText,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface,
+                                height: 1.4,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ],
