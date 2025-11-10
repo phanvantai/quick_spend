@@ -91,7 +91,7 @@
     "manage_categories": "Manage expense categories",
     "data": "Data",
     "export_data": "Export Data",
-    "export_data_subtitle": "Export your expenses to CSV or JSON",
+    "export_data_subtitle": "Export your expenses and categories to JSON",
     "import_data": "Import Data",
     "import_data_subtitle": "Import expenses from backup file",
     "export_format": "Export Format",

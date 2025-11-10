@@ -91,7 +91,7 @@
     "manage_categories": "Quản lý danh mục chi tiêu",
     "data": "Dữ Liệu",
     "export_data": "Xuất Dữ Liệu",
-    "export_data_subtitle": "Xuất chi tiêu sang CSV hoặc JSON",
+    "export_data_subtitle": "Xuất chi tiêu và danh mục sang JSON",
     "import_data": "Nhập Dữ Liệu",
     "import_data_subtitle": "Nhập chi tiêu từ file sao lưu",
     "export_format": "Định Dạng Xuất",
