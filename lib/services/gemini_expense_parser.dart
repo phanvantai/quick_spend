@@ -195,6 +195,12 @@ class GeminiExpenseParser {
     List<QuickCategory> categories,
     String language,
   ) {
+    // Get current date for Gemini to understand relative dates
+    final now = DateTime.now();
+    final currentDate = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final weekdayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    final currentWeekday = weekdayNames[now.weekday - 1];
+
     // Build category list with keywords dynamically, grouped by type
     final incomeCategories = categories
         .where((c) => c.isIncomeCategory)
@@ -240,6 +246,10 @@ You are a financial transaction extraction assistant. Extract expense OR income 
 Input: "$input"
 Context: $languageHint
 
+**CURRENT DATE CONTEXT:**
+- Today is: $currentDate ($currentWeekday)
+- Use this to calculate all relative dates accurately
+
 Rules:
 1. Extract ALL transactions mentioned (there can be multiple in one input)
 2. Determine if each transaction is an EXPENSE or INCOME:
@@ -257,10 +267,14 @@ Rules:
      * "cọc" = million: "1 cọc" = 1000000, "3 cọc" = 3000000
      * "chai" = hundred: "5 chai" = 500 (less common)
    - Important: "củ" and "cọc" mean MILLION, not thousand!
-5. Parse dates and temporal references:
+5. Parse dates and temporal references (use CURRENT DATE CONTEXT above):
    - Absolute: "on December 5", "12/5", "2024-12-05"
    - Relative: "yesterday", "hôm qua", "last week", "tuần trước", "3 days ago", "3 ngày trước"
+   - **Day-specific**: "on friday last week", "last monday", "this tuesday", "thứ 6 tuần trước"
+     * Calculate the exact date using today's date and day of week
+     * Example: If today is Monday Jan 13, 2025, "friday last week" = 2025-01-10
    - Default: If no date mentioned, use "today"
+   - **IMPORTANT**: Always return dates in YYYY-MM-DD format (e.g., "2025-01-10"), NOT "today" or "yesterday"
 6. Categorize using the categories listed below (see Categories section)
    - Match transaction description to category keywords
    - Use appropriate income or expense category based on transaction type
@@ -326,6 +340,13 @@ Output: {"language":"vi","expenses":[{"amount":200000,"description":"lì xì","c
 Input: "hoàn tiền 100k"
 Output: {"language":"vi","expenses":[{"amount":100000,"description":"hoàn tiền","category":"refund","type":"income","date":"today","confidence":0.95}]}
 
+DATE CALCULATION examples (assume today is 2025-01-13, Monday):
+Input: "50k cafe thứ 6 tuần trước"
+Output: {"language":"vi","expenses":[{"amount":50000,"description":"cà phê","category":"food","type":"expense","date":"2025-01-10","confidence":0.95}]}
+
+Input: "100k xăng hôm thứ 2 tuần này"
+Output: {"language":"vi","expenses":[{"amount":100000,"description":"xăng","category":"transport","type":"expense","date":"2025-01-13","confidence":0.95}]}
+
 MIXED examples:
 Input: "nhận lương 15 triệu và trả 500k tiền điện"
 Output: {"language":"vi","expenses":[{"amount":15000000,"description":"lương","category":"salary","type":"income","date":"today","confidence":0.95},{"amount":500000,"description":"tiền điện","category":"bills","type":"expense","date":"today","confidence":0.95}]}
@@ -356,6 +377,13 @@ Output: {"language":"en","expenses":[{"amount":200000,"description":"gift","cate
 
 Input: "refund 100k"
 Output: {"language":"en","expenses":[{"amount":100000,"description":"refund","category":"refund","type":"income","date":"today","confidence":0.95}]}
+
+DATE CALCULATION examples (assume today is 2025-01-13, Monday):
+Input: "on friday last week, i bought food 50 dollars"
+Output: {"language":"en","expenses":[{"amount":50,"description":"food","category":"food","type":"expense","date":"2025-01-10","confidence":0.95}]}
+
+Input: "100k gas last monday"
+Output: {"language":"en","expenses":[{"amount":100000,"description":"gas","category":"transport","type":"expense","date":"2025-01-06","confidence":0.95}]}
 
 MIXED examples:
 Input: "received salary 1.5m and paid 500k electricity bill"
@@ -511,6 +539,37 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
       final weeks = int.tryParse(weeksAgoMatch.group(1) ?? '0') ?? 0;
       final date = now.subtract(Duration(days: weeks * 7));
       return DateTime(date.year, date.month, date.day);
+    }
+
+    // Handle day-specific dates like "friday last week", "last monday", "this tuesday"
+    // This is a fallback in case Gemini doesn't calculate the exact date
+    final dayNames = {
+      'monday': 1, 'mon': 1,
+      'tuesday': 2, 'tue': 2, 'tues': 2,
+      'wednesday': 3, 'wed': 3,
+      'thursday': 4, 'thu': 4, 'thur': 4, 'thurs': 4,
+      'friday': 5, 'fri': 5,
+      'saturday': 6, 'sat': 6,
+      'sunday': 7, 'sun': 7,
+    };
+
+    // Pattern: "friday last week" or "last friday"
+    for (final entry in dayNames.entries) {
+      final dayName = entry.key;
+      final targetWeekday = entry.value;
+
+      if (normalized.contains(dayName)) {
+        if (normalized.contains('last') || normalized.contains('trước')) {
+          // Find the last occurrence of this weekday
+          var daysBack = now.weekday - targetWeekday;
+          if (daysBack <= 0) daysBack += 7; // Go to previous week
+          final date = now.subtract(Duration(days: daysBack));
+          debugPrint(
+            '📅 [GeminiParser] Parsed "$dateStr" as last $dayName: ${date.toIso8601String().split('T')[0]}',
+          );
+          return DateTime(date.year, date.month, date.day);
+        }
+      }
     }
 
     // Try parsing absolute dates (ISO format: YYYY-MM-DD)
