@@ -159,6 +159,20 @@ class ExpenseService {
           'ALTER TABLE $_categoriesTableName ADD COLUMN type TEXT NOT NULL DEFAULT "expense"',
         );
         debugPrint('✅ [ExpenseService] Type column added to categories table successfully');
+
+        // Update known income categories to have income type
+        await db.execute('''
+          UPDATE $_categoriesTableName
+          SET type = "income"
+          WHERE id IN ('salary', 'freelance', 'investment', 'gift_received', 'refund', 'other_income')
+        ''');
+        debugPrint('✅ [ExpenseService] Updated income categories to income type');
+
+        // Explicitly update any remaining NULL values to 'expense' for extra safety
+        await db.execute(
+          'UPDATE $_categoriesTableName SET type = "expense" WHERE type IS NULL OR type = ""',
+        );
+        debugPrint('✅ [ExpenseService] Updated NULL type values to expense');
       } catch (e) {
         debugPrint('⚠️ [ExpenseService] Error adding type column to categories: $e');
         // Column might already exist, continue
