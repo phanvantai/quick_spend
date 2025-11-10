@@ -108,6 +108,7 @@
     "date_range": "Date Range",
     "about": "About",
     "version": "Version 1.0.0",
+    "language_description": "Used for app display and voice recognition",
     "language_changed": "Language changed successfully",
     "currency_changed": "Currency changed successfully",
     "theme_changed": "Theme changed successfully",

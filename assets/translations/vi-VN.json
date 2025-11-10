@@ -108,6 +108,7 @@
     "date_range": "Khoảng Thời Gian",
     "about": "Thông Tin",
     "version": "Phiên bản 1.0.0",
+    "language_description": "Dùng cho hiển thị ứng dụng và nhận dạng giọng nói",
     "language_changed": "Đã thay đổi ngôn ngữ thành công",
     "currency_changed": "Đã thay đổi tiền tệ thành công",
     "theme_changed": "Đã thay đổi giao diện thành công",

@@ -59,6 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle: _getLanguageDisplayName(
                         configProvider.language,
                       ),
+                      description: context.tr('settings.language_description'),
                       onTap: () => _showLanguageDialog(context),
                     ),
 
@@ -192,6 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required Color iconColor,
     required String title,
     required String subtitle,
+    String? description,
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
@@ -211,11 +213,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Icon(icon, color: iconColor, size: 24),
         ),
         title: Text(title, style: theme.textTheme.titleMedium),
-        subtitle: Text(
-          subtitle,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (description != null) ...[
+              const SizedBox(height: AppTheme.spacing4),
+              Text(
+                description,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ],
         ),
         trailing: Icon(
           Icons.chevron_right,
