@@ -7,7 +7,7 @@ import '../models/category.dart';
 /// Service for managing expenses using SQLite local database
 class ExpenseService {
   static const String _databaseName = 'quick_spend.db';
-  static const int _databaseVersion = 3; // Updated for type (income/expense) support
+  static const int _databaseVersion = 1;
   static const String _tableName = 'expenses';
   static const String _categoriesTableName = 'categories';
 
@@ -24,7 +24,6 @@ class ExpenseService {
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
     );
 
     // Seed system categories if needed
@@ -67,126 +66,6 @@ class ExpenseService {
     ''');
 
     debugPrint('✅ [ExpenseService] Database schema created (v$version)');
-  }
-
-  /// Handle database upgrades
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    debugPrint('🔄 [ExpenseService] Upgrading database from v$oldVersion to v$newVersion');
-
-    // Migration from v1 to v2: Add categories table and categoryId column
-    if (oldVersion < 2) {
-      // Create categories table
-      await db.execute('''
-        CREATE TABLE $_categoriesTableName (
-          id TEXT PRIMARY KEY,
-          nameEn TEXT NOT NULL,
-          nameVi TEXT NOT NULL,
-          keywordsEn TEXT NOT NULL,
-          keywordsVi TEXT NOT NULL,
-          iconCodePoint INTEGER NOT NULL,
-          colorValue INTEGER NOT NULL,
-          isSystem INTEGER NOT NULL,
-          userId TEXT,
-          type TEXT NOT NULL DEFAULT 'expense',
-          createdAt TEXT NOT NULL
-        )
-      ''');
-
-      // Check if category column exists (old schema)
-      final tableInfo = await db.rawQuery("PRAGMA table_info($_tableName)");
-      final hasOldCategory = tableInfo.any((col) => col['name'] == 'category');
-
-      if (hasOldCategory) {
-        // Rename old category column to categoryId
-        // SQLite doesn't support column rename directly, so we need to recreate table
-        await db.execute('ALTER TABLE $_tableName RENAME TO ${_tableName}_old');
-
-        // Create new table with categoryId
-        await db.execute('''
-          CREATE TABLE $_tableName (
-            id TEXT PRIMARY KEY,
-            amount REAL NOT NULL,
-            description TEXT NOT NULL,
-            categoryId TEXT NOT NULL,
-            language TEXT NOT NULL,
-            date TEXT NOT NULL,
-            userId TEXT NOT NULL,
-            rawInput TEXT NOT NULL,
-            confidence REAL NOT NULL
-          )
-        ''');
-
-        // Copy data from old table, renaming category to categoryId
-        await db.execute('''
-          INSERT INTO $_tableName (id, amount, description, categoryId, language, date, userId, rawInput, confidence)
-          SELECT id, amount, description, category, language, date, userId, rawInput, confidence
-          FROM ${_tableName}_old
-        ''');
-
-        // Drop old table
-        await db.execute('DROP TABLE ${_tableName}_old');
-      } else {
-        // Table already has categoryId, just add it if missing
-        try {
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN categoryId TEXT DEFAULT "other"');
-        } catch (e) {
-          // Column might already exist
-          debugPrint('⚠️ [ExpenseService] categoryId column may already exist: $e');
-        }
-      }
-
-      debugPrint('✅ [ExpenseService] Database upgraded to v2 successfully');
-    }
-
-    // Migration from v2 to v3: Add type column for income/expense support
-    if (oldVersion < 3) {
-      debugPrint('🔄 [ExpenseService] Adding type column for income/expense support...');
-
-      try {
-        // Add type column to expenses table with default value 'expense' for backward compatibility
-        await db.execute(
-          'ALTER TABLE $_tableName ADD COLUMN type TEXT NOT NULL DEFAULT "expense"',
-        );
-        debugPrint('✅ [ExpenseService] Type column added to expenses table successfully');
-      } catch (e) {
-        debugPrint('⚠️ [ExpenseService] Error adding type column to expenses: $e');
-        // Column might already exist, continue
-      }
-
-      // Try to add type column to categories table
-      bool columnAdded = false;
-      try {
-        await db.execute(
-          'ALTER TABLE $_categoriesTableName ADD COLUMN type TEXT NOT NULL DEFAULT "expense"',
-        );
-        columnAdded = true;
-        debugPrint('✅ [ExpenseService] Type column added to categories table successfully');
-      } catch (e) {
-        debugPrint('⚠️ [ExpenseService] Type column might already exist: $e');
-        // Column might already exist, that's okay
-      }
-
-      // Always update category types (even if column already existed)
-      try {
-        // Update known income categories to have income type
-        final incomeUpdateCount = await db.rawUpdate('''
-          UPDATE $_categoriesTableName
-          SET type = "income"
-          WHERE id IN ('salary', 'freelance', 'investment', 'gift_received', 'refund', 'other_income')
-        ''');
-        debugPrint('✅ [ExpenseService] Updated $incomeUpdateCount income categories to income type');
-
-        // Explicitly update any remaining NULL or empty values to 'expense' for extra safety
-        final expenseUpdateCount = await db.rawUpdate(
-          'UPDATE $_categoriesTableName SET type = "expense" WHERE type IS NULL OR type = "" OR (type != "income" AND type != "expense")',
-        );
-        debugPrint('✅ [ExpenseService] Updated $expenseUpdateCount categories to expense type');
-      } catch (e) {
-        debugPrint('⚠️ [ExpenseService] Error updating category types: $e');
-      }
-
-      debugPrint('✅ [ExpenseService] Database upgraded to v3 successfully');
-    }
   }
 
   /// Ensure database is initialized
@@ -401,37 +280,6 @@ class ExpenseService {
     await _database!.delete(_tableName);
   }
 
-  /// Migrate expenses with incorrect userIds to the correct one
-  ///
-  /// This fixes legacy data where expenses may have been created with
-  /// different userId values (e.g., 'default_user' instead of 'local_user').
-  Future<void> migrateUserIds(String correctUserId) async {
-    await _ensureInitialized();
-
-    // Get count of expenses with wrong userId
-    final result = await _database!.rawQuery(
-      'SELECT COUNT(*) as count FROM $_tableName WHERE userId != ?',
-      [correctUserId],
-    );
-    final wrongCount = Sqflite.firstIntValue(result) ?? 0;
-
-    if (wrongCount > 0) {
-      debugPrint(
-        '🔄 [ExpenseService] Found $wrongCount expense(s) with incorrect userId, migrating...',
-      );
-
-      // Update all expenses to use the correct userId
-      final updatedCount = await _database!.rawUpdate(
-        'UPDATE $_tableName SET userId = ? WHERE userId != ?',
-        [correctUserId, correctUserId],
-      );
-
-      debugPrint(
-        '✅ [ExpenseService] Migrated $updatedCount expense(s) to userId: $correctUserId',
-      );
-    }
-  }
-
   // ============================================================================
   // Category Management Methods
   // ============================================================================
@@ -575,39 +423,5 @@ class ExpenseService {
       where: 'isSystem = 0 AND userId = ?',
       whereArgs: [userId],
     );
-  }
-
-  /// Fix category types for existing categories (utility method)
-  /// This ensures all categories have correct type values
-  Future<void> fixCategoryTypes() async {
-    await _ensureInitialized();
-
-    debugPrint('🔧 [ExpenseService] Fixing category types...');
-
-    try {
-      // Update known income categories to have income type
-      final incomeUpdateCount = await _database!.rawUpdate('''
-        UPDATE $_categoriesTableName
-        SET type = "income"
-        WHERE id IN ('salary', 'freelance', 'investment', 'gift_received', 'refund', 'other_income')
-      ''');
-      debugPrint('✅ [ExpenseService] Fixed $incomeUpdateCount income categories');
-
-      // Update known expense categories to have expense type
-      final expenseUpdateCount = await _database!.rawUpdate('''
-        UPDATE $_categoriesTableName
-        SET type = "expense"
-        WHERE id IN ('food', 'transport', 'shopping', 'bills', 'health', 'entertainment', 'other')
-      ''');
-      debugPrint('✅ [ExpenseService] Fixed $expenseUpdateCount expense categories');
-
-      // Update any remaining NULL or invalid values to 'expense' for extra safety
-      final nullUpdateCount = await _database!.rawUpdate(
-        'UPDATE $_categoriesTableName SET type = "expense" WHERE type IS NULL OR type = "" OR (type != "income" AND type != "expense")',
-      );
-      debugPrint('✅ [ExpenseService] Fixed $nullUpdateCount categories with NULL/invalid type');
-    } catch (e) {
-      debugPrint('⚠️ [ExpenseService] Error fixing category types: $e');
-    }
   }
 }
