@@ -25,6 +25,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Filter state
+  TransactionType? _selectedFilter; // null means "All"
+
   Future<void> _deleteExpense(String expenseId) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -284,27 +287,26 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Calculate period totals
-  double _getTodayTotal(List<Expense> expenses) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    return expenses
-        .where((e) => e.date.isAfter(today))
-        .fold(0.0, (sum, e) => sum + e.amount);
+  // Get net balance color based on positive/negative
+  Color _getNetBalanceColor(double netBalance) {
+    if (netBalance > 0) {
+      return AppTheme.success;
+    } else if (netBalance < 0) {
+      return AppTheme.error;
+    } else {
+      return AppTheme.neutral50;
+    }
   }
 
-  double _getWeekTotal(List<Expense> expenses) {
-    final weekAgo = DateTime.now().subtract(const Duration(days: 7));
-    return expenses
-        .where((e) => e.date.isAfter(weekAgo))
-        .fold(0.0, (sum, e) => sum + e.amount);
-  }
-
-  double _getMonthTotal(List<Expense> expenses) {
-    final monthAgo = DateTime.now().subtract(const Duration(days: 30));
-    return expenses
-        .where((e) => e.date.isAfter(monthAgo))
-        .fold(0.0, (sum, e) => sum + e.amount);
+  // Get net balance icon based on positive/negative
+  IconData _getNetBalanceIcon(double netBalance) {
+    if (netBalance > 0) {
+      return Icons.trending_up;
+    } else if (netBalance < 0) {
+      return Icons.trending_down;
+    } else {
+      return Icons.horizontal_rule;
+    }
   }
 
   String _formatAmount(BuildContext context, double amount, String currency) {
@@ -318,6 +320,61 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       return '${context.tr('currency.symbol_usd')}${amount.toStringAsFixed(0)}';
     }
+  }
+
+  List<Expense> _filterExpenses(List<Expense> expenses) {
+    if (_selectedFilter == null) {
+      return expenses; // Show all
+    }
+    return expenses.where((e) => e.type == _selectedFilter).toList();
+  }
+
+  Widget _buildFilterChips(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+      child: Row(
+        children: [
+          FilterChip(
+            label: Text(context.tr('home.filter_all')),
+            selected: _selectedFilter == null,
+            onSelected: (selected) {
+              setState(() {
+                _selectedFilter = null;
+              });
+            },
+            selectedColor: AppTheme.primaryMint.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.primaryMint,
+          ),
+          const SizedBox(width: AppTheme.spacing8),
+          FilterChip(
+            label: Text(context.tr('home.filter_income')),
+            selected: _selectedFilter == TransactionType.income,
+            onSelected: (selected) {
+              setState(() {
+                _selectedFilter =
+                    selected ? TransactionType.income : null;
+              });
+            },
+            selectedColor: AppTheme.success.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.success,
+          ),
+          const SizedBox(width: AppTheme.spacing8),
+          FilterChip(
+            label: Text(context.tr('home.filter_expense')),
+            selected: _selectedFilter == TransactionType.expense,
+            onSelected: (selected) {
+              setState(() {
+                _selectedFilter =
+                    selected ? TransactionType.expense : null;
+              });
+            },
+            selectedColor: AppTheme.error.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.error,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -366,13 +423,86 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
 
-          // Calculate totals
-          final todayTotal = _getTodayTotal(expenses);
-          final weekTotal = _getWeekTotal(expenses);
-          final monthTotal = _getMonthTotal(expenses);
+          // Get income statistics from provider
+          final totalIncome = expenseProvider.totalIncome;
+          final totalExpenses = expenseProvider.totalExpenses;
+          final netBalance = expenseProvider.netBalance;
+
+          // Apply filter
+          final filteredExpenses = _filterExpenses(expenses);
 
           // Get recent expenses (last 10)
-          final recentExpenses = expenses.take(10).toList();
+          final recentExpenses = filteredExpenses.take(10).toList();
+
+          // Check if filtered expenses are empty
+          if (filteredExpenses.isEmpty && _selectedFilter != null) {
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacing16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.tr('home.quick_summary'),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: AppTheme.spacing12),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            HomeSummaryCard(
+                              title: context.tr('home.total_income'),
+                              value: _formatAmount(context, totalIncome, currency),
+                              icon: Icons.account_balance_wallet_outlined,
+                              color: AppTheme.success,
+                            ),
+                            const SizedBox(width: AppTheme.spacing12),
+                            HomeSummaryCard(
+                              title: context.tr('home.total_expenses'),
+                              value: _formatAmount(context, totalExpenses, currency),
+                              icon: Icons.shopping_bag_outlined,
+                              color: AppTheme.error,
+                            ),
+                            const SizedBox(width: AppTheme.spacing12),
+                            HomeSummaryCard(
+                              title: context.tr('home.net_balance'),
+                              value: _formatAmount(context, netBalance.abs(), currency),
+                              icon: _getNetBalanceIcon(netBalance),
+                              color: _getNetBalanceColor(netBalance),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppTheme.spacing8,
+                    bottom: AppTheme.spacing16,
+                  ),
+                  child: _buildFilterChips(context),
+                ),
+                Expanded(
+                  child: EmptyState(
+                    icon: _selectedFilter == TransactionType.income
+                        ? Icons.account_balance_wallet_outlined
+                        : Icons.receipt_long_outlined,
+                    title: _selectedFilter == TransactionType.income
+                        ? context.tr('home.no_income_title')
+                        : context.tr('home.no_expenses_filtered_title'),
+                    message: _selectedFilter == TransactionType.income
+                        ? context.tr('home.no_income_message')
+                        : context.tr('home.no_expenses_filtered_message'),
+                  ),
+                ),
+              ],
+            );
+          }
 
           return CustomScrollView(
             slivers: [
@@ -395,30 +525,41 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Row(
                           children: [
                             HomeSummaryCard(
-                              title: context.tr('home.today'),
-                              value: _formatAmount(context, todayTotal, currency),
-                              icon: Icons.today_outlined,
-                              color: AppTheme.accentOrange,
+                              title: context.tr('home.total_income'),
+                              value: _formatAmount(context, totalIncome, currency),
+                              icon: Icons.account_balance_wallet_outlined,
+                              color: AppTheme.success,
                             ),
                             const SizedBox(width: AppTheme.spacing12),
                             HomeSummaryCard(
-                              title: context.tr('home.this_week'),
-                              value: _formatAmount(context, weekTotal, currency),
-                              icon: Icons.calendar_view_week_outlined,
-                              color: AppTheme.accentTeal,
+                              title: context.tr('home.total_expenses'),
+                              value: _formatAmount(context, totalExpenses, currency),
+                              icon: Icons.shopping_bag_outlined,
+                              color: AppTheme.error,
                             ),
                             const SizedBox(width: AppTheme.spacing12),
                             HomeSummaryCard(
-                              title: context.tr('home.this_month'),
-                              value: _formatAmount(context, monthTotal, currency),
-                              icon: Icons.calendar_month_outlined,
-                              color: AppTheme.primaryMint,
+                              title: context.tr('home.net_balance'),
+                              value: _formatAmount(context, netBalance.abs(), currency),
+                              icon: _getNetBalanceIcon(netBalance),
+                              color: _getNetBalanceColor(netBalance),
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
+                ),
+              ),
+
+              // Filter Chips
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppTheme.spacing8,
+                    bottom: AppTheme.spacing16,
+                  ),
+                  child: _buildFilterChips(context),
                 ),
               ),
 
@@ -440,7 +581,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontWeight: FontWeight.w600,
                             ),
                       ),
-                      if (expenses.length > 10)
+                      if (filteredExpenses.length > 10)
                         TextButton.icon(
                           onPressed: () {
                             Navigator.push(
