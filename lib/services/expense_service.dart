@@ -79,6 +79,7 @@ class ExpenseService {
   Future<void> saveExpense(Expense expense) async {
     await _ensureInitialized();
     debugPrint('💾 [ExpenseService] Saving expense: ${expense.description} - ${expense.amount}');
+    debugPrint('   Type: ${expense.type.name}, Category: ${expense.categoryId}');
     await _database!.insert(
       _tableName,
       expense.toJson(),
@@ -99,7 +100,12 @@ class ExpenseService {
     );
 
     debugPrint('📋 [ExpenseService] Loaded ${maps.length} expense(s) from SQLite');
-    return maps.map((map) => Expense.fromJson(map)).toList();
+    final expenses = maps.map((map) {
+      final expense = Expense.fromJson(map);
+      debugPrint('   ${expense.description}: type=${expense.type.name}, category=${expense.categoryId}');
+      return expense;
+    }).toList();
+    return expenses;
   }
 
   /// Get expenses for a specific date range
