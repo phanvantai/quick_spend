@@ -262,14 +262,14 @@ class PeriodStats {
   /// Get income category breakdown only
   List<CategoryStats> get incomeCategoryBreakdown {
     return categoryBreakdown
-        .where((stat) => stat.category.isIncomeCategory)
+        .where((stat) => stat.isIncomeCategory)
         .toList();
   }
 
   /// Get expense category breakdown only
   List<CategoryStats> get expenseCategoryBreakdown {
     return categoryBreakdown
-        .where((stat) => stat.category.isExpenseCategory)
+        .where((stat) => stat.isExpenseCategory)
         .toList();
   }
 

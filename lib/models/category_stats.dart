@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'category.dart';
+import 'expense.dart';
 
 /// Statistics for a single expense category
 class CategoryStats {
@@ -10,6 +11,7 @@ class CategoryStats {
   final double percentage;
   final Color color;
   final IconData icon;
+  final TransactionType type; // Income or expense
 
   CategoryStats({
     required this.categoryId,
@@ -19,6 +21,7 @@ class CategoryStats {
     required this.percentage,
     required this.color,
     required this.icon,
+    required this.type,
   });
 
   /// Create CategoryStats from category data
@@ -37,6 +40,7 @@ class CategoryStats {
       percentage: grandTotal > 0 ? (totalAmount / grandTotal * 100) : 0,
       color: category.color,
       icon: category.icon,
+      type: category.type,
     );
   }
 
@@ -44,6 +48,12 @@ class CategoryStats {
   String getLabel(String language) {
     return categoryName; // Already stored with language
   }
+
+  /// Check if this is an income category
+  bool get isIncomeCategory => type == TransactionType.income;
+
+  /// Check if this is an expense category
+  bool get isExpenseCategory => type == TransactionType.expense;
 
   @override
   String toString() {
