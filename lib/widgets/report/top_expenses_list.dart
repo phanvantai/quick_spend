@@ -186,7 +186,7 @@ class TopExpensesList extends StatelessWidget {
                       const SizedBox(width: AppTheme.spacing8),
                       Flexible(
                         child: Text(
-                          DateFormat('MMM d, y').format(expense.date),
+                          DateFormat('MMM d, y', context.locale.languageCode).format(expense.date),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),

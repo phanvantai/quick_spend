@@ -1167,7 +1167,7 @@ class _ExpenseFormCard extends StatelessWidget {
               suffixIcon: const Icon(Icons.arrow_drop_down),
             ),
             child: Text(
-              DateFormat.yMMMd().format(formData.date),
+              DateFormat.yMMMd(context.locale.languageCode).format(formData.date),
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),

@@ -192,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.date'),
-              DateFormat.yMMMd().format(expense.date),
+              DateFormat.yMMMd(context.locale.languageCode).format(expense.date),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(

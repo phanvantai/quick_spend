@@ -196,7 +196,7 @@ class _CustomDateRangePickerState extends State<CustomDateRangePicker> {
                   ),
                   const SizedBox(height: AppTheme.spacing4),
                   Text(
-                    DateFormat.yMMMd().format(date),
+                    DateFormat.yMMMd(context.locale.languageCode).format(date),
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),

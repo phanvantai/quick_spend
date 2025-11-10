@@ -164,14 +164,17 @@ class ExpenseCard extends StatelessWidget {
     final yesterday = today.subtract(const Duration(days: 1));
     final dateOnly = DateTime(date.year, date.month, date.day);
 
+    // Get current locale from context
+    final locale = context.locale.languageCode;
+
     if (dateOnly == today) {
       return context.tr('common.today');
     } else if (dateOnly == yesterday) {
       return context.tr('common.yesterday');
     } else if (now.difference(date).inDays < 7) {
-      return DateFormat.E().format(date); // Day of week (e.g., "Mon")
+      return DateFormat.E(locale).format(date); // Day of week
     } else {
-      return DateFormat.MMMd().format(date); // Month and day (e.g., "Jan 15")
+      return DateFormat.MMMd(locale).format(date); // Month and day
     }
   }
 }
