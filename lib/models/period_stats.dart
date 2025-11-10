@@ -116,7 +116,7 @@ class PeriodStats {
     final daysDifference = endDate.difference(startDate).inDays + 1;
     final averagePerDay = totalExpenses / daysDifference; // Average spending per day
 
-    final averagePerTransaction = transactionCount > 0 ? totalAmount / transactionCount : 0;
+    final averagePerTransaction = transactionCount > 0 ? totalAmount / transactionCount : 0.0;
 
     // Find highest and lowest expenses
     Expense? highestExpense;
