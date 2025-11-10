@@ -666,9 +666,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             maxHeight: 200,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.95),
+                            color: colorScheme.surface.withValues(alpha: 0.95),
                             borderRadius: AppTheme.borderRadiusMedium,
-                            boxShadow: AppTheme.shadowLarge,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 10,
+                                spreadRadius: 2,
+                              ),
+                            ],
                           ),
                           child: SingleChildScrollView(
                             child: Text(
