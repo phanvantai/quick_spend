@@ -8,11 +8,15 @@ class Categorizer {
   static CategoryResult categorize(
     String description,
     String language,
-    List<QuickCategory> categories,
-  ) {
+    List<QuickCategory> categories, {
+    TransactionType type = TransactionType.expense,
+  }) {
+    // Determine fallback category based on type
+    final fallbackCategory = type == TransactionType.income ? 'other_income' : 'other';
+
     if (description.isEmpty || categories.isEmpty) {
       return CategoryResult(
-        categoryId: 'other',
+        categoryId: fallbackCategory,
         confidence: 0.0,
       );
     }
@@ -20,14 +24,17 @@ class Categorizer {
     final normalizedDesc = description.toLowerCase().trim();
 
     // Track best match
-    String bestCategoryId = 'other';
+    String bestCategoryId = fallbackCategory;
     double bestScore = 0.0;
     int bestMatchCount = 0;
 
+    // Filter categories by type
+    final relevantCategories = categories.where((cat) => cat.type == type).toList();
+
     // Check each category
-    for (final category in categories) {
-      // Skip 'other' category in matching
-      if (category.id == 'other') continue;
+    for (final category in relevantCategories) {
+      // Skip 'other' and 'other_income' categories in matching
+      if (category.id == 'other' || category.id == 'other_income') continue;
 
       final keywords = category.getKeywords(language);
       int matchCount = 0;
@@ -62,7 +69,7 @@ class Categorizer {
     if (bestMatchCount == 0) {
       // No matches found
       confidence = 0.0;
-      bestCategoryId = 'other';
+      bestCategoryId = fallbackCategory;
     } else if (bestMatchCount == 1) {
       // Single match - moderate confidence
       confidence = 0.6;
@@ -86,12 +93,16 @@ class Categorizer {
   static List<CategoryResult> getAllMatches(
     String description,
     String language,
-    List<QuickCategory> categories,
-  ) {
+    List<QuickCategory> categories, {
+    TransactionType type = TransactionType.expense,
+  }) {
+    // Determine fallback category based on type
+    final fallbackCategory = type == TransactionType.income ? 'other_income' : 'other';
+
     if (description.isEmpty || categories.isEmpty) {
       return [
         CategoryResult(
-          categoryId: 'other',
+          categoryId: fallbackCategory,
           confidence: 0.0,
         )
       ];
@@ -100,9 +111,12 @@ class Categorizer {
     final normalizedDesc = description.toLowerCase().trim();
     final results = <CategoryResult>[];
 
+    // Filter categories by type
+    final relevantCategories = categories.where((cat) => cat.type == type).toList();
+
     // Check each category
-    for (final category in categories) {
-      if (category.id == 'other') continue;
+    for (final category in relevantCategories) {
+      if (category.id == 'other' || category.id == 'other_income') continue;
 
       final keywords = category.getKeywords(language);
       int matchCount = 0;
@@ -134,10 +148,10 @@ class Categorizer {
     // Sort by confidence (highest first)
     results.sort((a, b) => b.confidence.compareTo(a.confidence));
 
-    // Add 'other' as fallback if no matches
+    // Add fallback category if no matches
     if (results.isEmpty) {
       results.add(CategoryResult(
-        categoryId: 'other',
+        categoryId: fallbackCategory,
         confidence: 0.0,
       ));
     }

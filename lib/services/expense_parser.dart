@@ -121,7 +121,12 @@ class ExpenseParser {
     }
 
     // Step 4: Auto-categorize based on description
-    final categoryResult = Categorizer.categorize(description, language, categories);
+    final categoryResult = Categorizer.categorize(
+      description,
+      language,
+      categories,
+      type: transactionType,
+    );
     debugPrint('🏷️ [ExpenseParser] Category: ${categoryResult.categoryId} (confidence: ${(categoryResult.confidence * 100).toStringAsFixed(1)}%)');
 
     // Calculate overall confidence
@@ -155,7 +160,12 @@ class ExpenseParser {
       languageConfidence: languageConfidence,
       categoryConfidence: categoryResult.confidence,
       overallConfidence: overallConfidence,
-      suggestedCategories: Categorizer.getAllMatches(description, language, categories),
+      suggestedCategories: Categorizer.getAllMatches(
+        description,
+        language,
+        categories,
+        type: transactionType,
+      ),
     );
   }
 
