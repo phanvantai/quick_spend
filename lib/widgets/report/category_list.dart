@@ -26,29 +26,23 @@ class CategoryList extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Card(
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(AppTheme.spacing16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Padding(
-            //   padding: const EdgeInsets.only(
-            //     left: AppTheme.spacing4,
-            //     bottom: AppTheme.spacing12,
-            //   ),
-            //   child: Text(
-            //     context.tr('report.spending_by_category'),
-            //     style: theme.textTheme.titleMedium?.copyWith(
-            //       fontWeight: FontWeight.w600,
-            //     ),
-            //   ),
-            // ),
-            ...categoryStats.map((stat) => _buildCategoryItem(context, stat)),
-          ],
-        ),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Padding(
+        //   padding: const EdgeInsets.only(
+        //     left: AppTheme.spacing4,
+        //     bottom: AppTheme.spacing12,
+        //   ),
+        //   child: Text(
+        //     context.tr('report.spending_by_category'),
+        //     style: theme.textTheme.titleMedium?.copyWith(
+        //       fontWeight: FontWeight.w600,
+        //     ),
+        //   ),
+        // ),
+        ...categoryStats.map((stat) => _buildCategoryItem(context, stat)),
+      ],
     );
   }
 

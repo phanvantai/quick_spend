@@ -710,6 +710,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       for (final category in importResult.importedCategories) {
         final exists = existingCategories.any((c) => c.id == category.id);
         if (exists) {
+          // skip 'other' & 'other_income' built-in categories
+          if (category.id == 'other' || category.id == 'other_income') {
+            debugPrint(
+              'ℹ️ [SettingsScreen] Skipping built-in category: ${category.nameEn}',
+            );
+            continue;
+          }
           // Override existing category with imported data
           await categoryProvider.updateCategory(category);
           debugPrint(
