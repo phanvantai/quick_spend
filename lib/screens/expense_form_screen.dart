@@ -24,6 +24,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   late TextEditingController _amountController;
   late String _selectedCategoryId;
   late DateTime _selectedDate;
+  late TransactionType _selectedType;
   final _formKey = GlobalKey<FormState>();
   bool _isEditMode = false;
 
@@ -38,6 +39,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     _amountController = TextEditingController(
       text: widget.expense?.amount.toString() ?? '',
     );
+    _selectedType = widget.expense?.type ?? TransactionType.expense;
     _selectedCategoryId = widget.expense?.categoryId ?? 'other';
 
     // Initialize date: use existing date for edit mode, or today at noon for new expenses
@@ -97,6 +99,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
         rawInput: _isEditMode
             ? widget.expense!.rawInput
             : _descriptionController.text.trim(),
+        type: _selectedType,
       );
 
       Navigator.pop(context, expense);
@@ -135,6 +138,59 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(AppTheme.spacing16),
           children: [
+            // Transaction type switcher
+            SegmentedButton<TransactionType>(
+              segments: [
+                ButtonSegment<TransactionType>(
+                  value: TransactionType.expense,
+                  label: Text(context.tr('categories.expense')),
+                  icon: const Icon(Icons.remove_circle_outline),
+                ),
+                ButtonSegment<TransactionType>(
+                  value: TransactionType.income,
+                  label: Text(context.tr('categories.income')),
+                  icon: const Icon(Icons.add_circle_outline),
+                ),
+              ],
+              selected: {_selectedType},
+              onSelectionChanged: (Set<TransactionType> newSelection) {
+                setState(() {
+                  _selectedType = newSelection.first;
+                  // Reset category to first available for the new type
+                  final categoryProvider = context.read<CategoryProvider>();
+                  final categoriesOfType = categoryProvider.categories
+                      .where((cat) => cat.type == _selectedType)
+                      .toList();
+                  if (categoriesOfType.isNotEmpty) {
+                    _selectedCategoryId = categoriesOfType.first.id;
+                  }
+                });
+              },
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                  (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return _selectedType == TransactionType.expense
+                          ? AppTheme.error.withValues(alpha: 0.15)
+                          : AppTheme.success.withValues(alpha: 0.15);
+                    }
+                    return colorScheme.surface;
+                  },
+                ),
+                foregroundColor: WidgetStateProperty.resolveWith<Color>(
+                  (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return _selectedType == TransactionType.expense
+                          ? AppTheme.error
+                          : AppTheme.success;
+                    }
+                    return colorScheme.onSurface;
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing20),
+
             // Description field
             TextFormField(
               controller: _descriptionController,
@@ -201,7 +257,11 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                final categories = categoryProvider.categories;
+                // Filter categories by selected transaction type
+                final categories = categoryProvider.categories
+                    .where((cat) => cat.type == _selectedType)
+                    .toList();
+
                 if (categories.isEmpty) {
                   return Text(
                     'No categories available',
