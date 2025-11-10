@@ -329,6 +329,43 @@ class _HomeScreenState extends State<HomeScreen> {
     return expenses.where((e) => e.type == _selectedFilter).toList();
   }
 
+  Widget _buildSummaryCards(
+    BuildContext context,
+    double totalIncome,
+    double totalExpenses,
+    double netBalance,
+    String currency,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+      child: Row(
+        children: [
+          HomeSummaryCard(
+            title: context.tr('home.total_income'),
+            value: _formatAmount(context, totalIncome, currency),
+            icon: Icons.account_balance_wallet_outlined,
+            color: AppTheme.success,
+          ),
+          const SizedBox(width: AppTheme.spacing12),
+          HomeSummaryCard(
+            title: context.tr('home.total_expenses'),
+            value: _formatAmount(context, totalExpenses, currency),
+            icon: Icons.shopping_bag_outlined,
+            color: AppTheme.error,
+          ),
+          const SizedBox(width: AppTheme.spacing12),
+          HomeSummaryCard(
+            title: context.tr('home.net_balance'),
+            value: _formatAmount(context, netBalance.abs(), currency),
+            icon: _getNetBalanceIcon(netBalance),
+            color: _getNetBalanceColor(netBalance),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFilterChips(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -441,38 +478,6 @@ class _HomeScreenState extends State<HomeScreen> {
           // Get recent expenses (last 10)
           final recentExpenses = filteredExpenses.take(10).toList();
 
-          // Build summary cards widget
-          Widget _buildSummaryCards() {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
-              child: Row(
-                children: [
-                  HomeSummaryCard(
-                    title: context.tr('home.total_income'),
-                    value: _formatAmount(context, totalIncome, currency),
-                    icon: Icons.account_balance_wallet_outlined,
-                    color: AppTheme.success,
-                  ),
-                  const SizedBox(width: AppTheme.spacing12),
-                  HomeSummaryCard(
-                    title: context.tr('home.total_expenses'),
-                    value: _formatAmount(context, totalExpenses, currency),
-                    icon: Icons.shopping_bag_outlined,
-                    color: AppTheme.error,
-                  ),
-                  const SizedBox(width: AppTheme.spacing12),
-                  HomeSummaryCard(
-                    title: context.tr('home.net_balance'),
-                    value: _formatAmount(context, netBalance.abs(), currency),
-                    icon: _getNetBalanceIcon(netBalance),
-                    color: _getNetBalanceColor(netBalance),
-                  ),
-                ],
-              ),
-            );
-          }
-
           return CustomScrollView(
             slivers: [
               // SliverAppBar with summary cards in flexible space
@@ -509,7 +514,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         0,
                         AppTheme.spacing8,
                       ),
-                      child: _buildSummaryCards(),
+                      child: _buildSummaryCards(
+                        context,
+                        totalIncome,
+                        totalExpenses,
+                        netBalance,
+                        currency,
+                      ),
                     ),
                   ),
                 ),
