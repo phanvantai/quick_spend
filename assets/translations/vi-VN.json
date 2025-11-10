@@ -230,6 +230,8 @@
     "expenses": "chi tiêu",
     "transactions": "Giao Dịch",
     "category_breakdown": "Phân Loại Danh Mục",
+    "expense_breakdown": "Phân Loại Chi Tiêu",
+    "income_breakdown": "Phân Loại Thu Nhập",
     "spending_by_category": "Chi Tiêu Theo Danh Mục",
     "transaction": "giao dịch",
     "spending_trend": "Xu Hướng Chi Tiêu",

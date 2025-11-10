@@ -8,11 +8,13 @@ import '../../theme/app_theme.dart';
 class CategoryDonutChart extends StatefulWidget {
   final List<CategoryStats> categoryStats;
   final String language;
+  final String? title;
 
   const CategoryDonutChart({
     super.key,
     required this.categoryStats,
     required this.language,
+    this.title,
   });
 
   @override
@@ -38,7 +40,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'report.category_breakdown'.tr(),
+              widget.title ?? 'report.category_breakdown'.tr(),
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w600,
               ),

@@ -136,18 +136,37 @@ class ReportScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: AppTheme.spacing16),
 
-                      // Category donut chart
-                      if (stats.categoryBreakdown.isNotEmpty)
+                      // Expense category donut chart
+                      if (stats.expenseCategoryBreakdown.isNotEmpty)
                         CategoryDonutChart(
-                          categoryStats: stats.categoryBreakdown,
+                          categoryStats: stats.expenseCategoryBreakdown,
+                          language: context.locale.languageCode,
+                          title: context.tr('report.expense_breakdown'),
+                        ),
+                      const SizedBox(height: AppTheme.spacing16),
+
+                      // Expense category list with progress bars
+                      if (stats.expenseCategoryBreakdown.isNotEmpty)
+                        CategoryList(
+                          categoryStats: stats.expenseCategoryBreakdown,
+                          currency: configProvider.currency,
                           language: context.locale.languageCode,
                         ),
                       const SizedBox(height: AppTheme.spacing16),
 
-                      // Category list with progress bars
-                      if (stats.categoryBreakdown.isNotEmpty)
+                      // Income category donut chart
+                      if (stats.incomeCategoryBreakdown.isNotEmpty)
+                        CategoryDonutChart(
+                          categoryStats: stats.incomeCategoryBreakdown,
+                          language: context.locale.languageCode,
+                          title: context.tr('report.income_breakdown'),
+                        ),
+                      const SizedBox(height: AppTheme.spacing16),
+
+                      // Income category list with progress bars
+                      if (stats.incomeCategoryBreakdown.isNotEmpty)
                         CategoryList(
-                          categoryStats: stats.categoryBreakdown,
+                          categoryStats: stats.incomeCategoryBreakdown,
                           currency: configProvider.currency,
                           language: context.locale.languageCode,
                         ),

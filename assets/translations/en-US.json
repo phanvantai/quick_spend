@@ -230,6 +230,8 @@
     "expenses": "expenses",
     "transactions": "Transactions",
     "category_breakdown": "Category Breakdown",
+    "expense_breakdown": "Expense Breakdown",
+    "income_breakdown": "Income Breakdown",
     "spending_by_category": "Spending by Category",
     "transaction": "transaction",
     "spending_trend": "Spending Trend",
