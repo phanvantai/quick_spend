@@ -9,8 +9,71 @@ import '../theme/app_theme.dart';
 import 'category_form_screen.dart';
 
 /// Screen for managing expense categories
-class CategoriesScreen extends StatelessWidget {
+class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
+
+  @override
+  State<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends State<CategoriesScreen> {
+  // Filter state: null = All, true = Income, false = Expense
+  bool? _showIncome;
+
+  List<QuickCategory> _filterCategories(List<QuickCategory> categories) {
+    if (_showIncome == null) return categories; // Show all
+    return categories.where((cat) {
+      return _showIncome! ? cat.isIncomeCategory : cat.isExpenseCategory;
+    }).toList();
+  }
+
+  Widget _buildFilterChips(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing16,
+        vertical: AppTheme.spacing12,
+      ),
+      child: Row(
+        children: [
+          FilterChip(
+            label: Text(context.tr('categories.all')),
+            selected: _showIncome == null,
+            onSelected: (selected) {
+              setState(() {
+                _showIncome = null;
+              });
+            },
+            selectedColor: AppTheme.primaryMint.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.primaryMint,
+          ),
+          const SizedBox(width: AppTheme.spacing8),
+          FilterChip(
+            label: Text(context.tr('categories.income')),
+            selected: _showIncome == true,
+            onSelected: (selected) {
+              setState(() {
+                _showIncome = selected ? true : null;
+              });
+            },
+            selectedColor: AppTheme.success.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.success,
+          ),
+          const SizedBox(width: AppTheme.spacing8),
+          FilterChip(
+            label: Text(context.tr('categories.expense')),
+            selected: _showIncome == false,
+            onSelected: (selected) {
+              setState(() {
+                _showIncome = selected ? false : null;
+              });
+            },
+            selectedColor: AppTheme.error.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.error,
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,12 +99,19 @@ class CategoriesScreen extends StatelessWidget {
           }
 
           final language = appConfigProvider.language;
-          final systemCategories = categoryProvider.systemCategories;
-          final userCategories = categoryProvider.userCategories;
+          final allSystemCategories = categoryProvider.systemCategories;
+          final allUserCategories = categoryProvider.userCategories;
+
+          // Apply filter
+          final systemCategories = _filterCategories(allSystemCategories);
+          final userCategories = _filterCategories(allUserCategories);
 
           return ListView(
             padding: const EdgeInsets.only(bottom: 88), // Space for FAB
             children: [
+              // Filter Chips
+              _buildFilterChips(context),
+
               // System Categories Section
               _buildSectionHeader(
                 context,

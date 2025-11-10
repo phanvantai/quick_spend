@@ -43,6 +43,22 @@ class QuickCategory {
   /// Get color from value
   Color get color => Color(colorValue);
 
+  /// Check if this is an income category
+  bool get isIncomeCategory {
+    const incomeCategories = {
+      'salary',
+      'freelance',
+      'investment',
+      'gift_received',
+      'refund',
+      'other_income',
+    };
+    return incomeCategories.contains(id);
+  }
+
+  /// Check if this is an expense category
+  bool get isExpenseCategory => !isIncomeCategory;
+
   /// Convert Category to JSON for storage
   Map<String, dynamic> toJson() {
     return {
