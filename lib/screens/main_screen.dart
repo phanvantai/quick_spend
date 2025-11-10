@@ -1127,7 +1127,7 @@ class _ExpenseFormCard extends StatelessWidget {
 
         // Category selector
         DropdownButtonFormField<String>(
-          value: formData.categoryId,
+          initialValue: formData.categoryId,
           decoration: InputDecoration(
             labelText: context.tr('home.category'),
             border: const OutlineInputBorder(),

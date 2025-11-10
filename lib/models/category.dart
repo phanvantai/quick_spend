@@ -87,7 +87,8 @@ class QuickCategory {
       userId: json['userId'] as String?,
       type: json['type'] != null
           ? TransactionType.fromJson(json['type'] as String)
-          : TransactionType.expense, // Default to expense for backward compatibility
+          : TransactionType
+                .expense, // Default to expense for backward compatibility
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
@@ -377,7 +378,7 @@ class QuickCategory {
           'nhận lương',
         ],
         iconCodePoint: Icons.account_balance_wallet.codePoint,
-        colorValue: const Color(0xFF4CAF50).value, // Green
+        colorValue: const Color(0xFF4CAF50).toARGB32(), // Green
         isSystem: true,
         userId: null,
         type: TransactionType.income,
@@ -408,7 +409,7 @@ class QuickCategory {
           'thu nhập phụ',
         ],
         iconCodePoint: Icons.laptop_mac.codePoint,
-        colorValue: const Color(0xFF2196F3).value, // Blue
+        colorValue: const Color(0xFF2196F3).toARGB32(), // Blue
         isSystem: true,
         userId: null,
         type: TransactionType.income,
@@ -440,7 +441,7 @@ class QuickCategory {
           'tiền lãi',
         ],
         iconCodePoint: Icons.trending_up.codePoint,
-        colorValue: const Color(0xFF009688).value, // Teal
+        colorValue: const Color(0xFF009688).toARGB32(), // Teal
         isSystem: true,
         userId: null,
         type: TransactionType.income,
@@ -471,7 +472,7 @@ class QuickCategory {
           'tiền lì xì',
         ],
         iconCodePoint: Icons.card_giftcard.codePoint,
-        colorValue: const Color(0xFFE91E63).value, // Pink
+        colorValue: const Color(0xFFE91E63).toARGB32(), // Pink
         isSystem: true,
         userId: null,
         type: TransactionType.income,
@@ -489,15 +490,9 @@ class QuickCategory {
           'payback',
           'repayment',
         ],
-        keywordsVi: [
-          'hoàn tiền',
-          'hoàn lại',
-          'trả lại',
-          'cashback',
-          'hoàn',
-        ],
+        keywordsVi: ['hoàn tiền', 'hoàn lại', 'trả lại', 'cashback', 'hoàn'],
         iconCodePoint: Icons.undo.codePoint,
-        colorValue: const Color(0xFFFF9800).value, // Orange
+        colorValue: const Color(0xFFFF9800).toARGB32(), // Orange
         isSystem: true,
         userId: null,
         type: TransactionType.income,
@@ -507,17 +502,10 @@ class QuickCategory {
         id: 'other_income',
         nameEn: 'Other Income',
         nameVi: 'Thu nhập khác',
-        keywordsEn: [
-          'other income',
-          'miscellaneous income',
-          'extra',
-        ],
-        keywordsVi: [
-          'thu nhập khác',
-          'thu khác',
-        ],
+        keywordsEn: ['other income', 'miscellaneous income', 'extra'],
+        keywordsVi: ['thu nhập khác', 'thu khác'],
         iconCodePoint: Icons.add_circle_outline.codePoint,
-        colorValue: const Color(0xFF9C27B0).value, // Purple
+        colorValue: const Color(0xFF9C27B0).toARGB32(), // Purple
         isSystem: true,
         userId: null,
         type: TransactionType.income,

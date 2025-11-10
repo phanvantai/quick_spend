@@ -26,7 +26,9 @@ class GeminiExpenseParser {
           responseMimeType: 'application/json',
         ),
       );
-      debugPrint('✅ [GeminiParser] Initialized with Gemini 2.5 Flash via Firebase AI');
+      debugPrint(
+        '✅ [GeminiParser] Initialized with Gemini 2.5 Flash via Firebase AI',
+      );
     } catch (e) {
       debugPrint('❌ [GeminiParser] Failed to initialize: $e');
       _model = null;
@@ -53,7 +55,9 @@ class GeminiExpenseParser {
 
     // Pre-validate input to avoid meaningless API calls
     if (!_isValidInput(input)) {
-      debugPrint('⚠️ [GeminiParser] Input validation failed, skipping API call');
+      debugPrint(
+        '⚠️ [GeminiParser] Input validation failed, skipping API call',
+      );
       return [];
     }
 
@@ -67,10 +71,14 @@ class GeminiExpenseParser {
           .timeout(
             Duration(seconds: _apiTimeout),
             onTimeout: () {
-              debugPrint('❌ [GeminiParser] Request timed out after $_apiTimeout seconds');
+              debugPrint(
+                '❌ [GeminiParser] Request timed out after $_apiTimeout seconds',
+              );
               debugPrint('💡 [GeminiParser] This might mean:');
               debugPrint('   1. Network connectivity issue');
-              debugPrint('   2. Firebase AI API not enabled in your Firebase project');
+              debugPrint(
+                '   2. Firebase AI API not enabled in your Firebase project',
+              );
               debugPrint('   3. API quota exceeded');
               throw TimeoutException('Gemini API request timed out');
             },
@@ -116,7 +124,9 @@ class GeminiExpenseParser {
 
     // Must contain at least one alphanumeric character
     if (!RegExp(r'[a-zA-Z0-9]').hasMatch(trimmed)) {
-      debugPrint('❌ [GeminiParser] Validation: No alphanumeric characters found');
+      debugPrint(
+        '❌ [GeminiParser] Validation: No alphanumeric characters found',
+      );
       return false;
     }
 
@@ -147,14 +157,18 @@ class GeminiExpenseParser {
     if (words.length >= 3) {
       final uniqueWords = words.toSet();
       if (uniqueWords.length == 1) {
-        debugPrint('❌ [GeminiParser] Validation: Suspicious repetition detected');
+        debugPrint(
+          '❌ [GeminiParser] Validation: Suspicious repetition detected',
+        );
         return false;
       }
     }
 
     // Optional: Warn if no numbers found (might still be valid, e.g., "coffee today")
     if (!RegExp(r'[0-9]').hasMatch(trimmed)) {
-      debugPrint('⚠️ [GeminiParser] Validation: No numbers found, but allowing (might be description only)');
+      debugPrint(
+        '⚠️ [GeminiParser] Validation: No numbers found, but allowing (might be description only)',
+      );
     }
 
     debugPrint('✅ [GeminiParser] Validation: Input appears valid');
@@ -168,30 +182,36 @@ class GeminiExpenseParser {
     String language,
   ) {
     // Build category list with keywords dynamically, grouped by type
-    final incomeCategories = categories.where((c) => c.isIncomeCategory).toList();
-    final expenseCategories = categories.where((c) => c.isExpenseCategory).toList();
+    final incomeCategories = categories
+        .where((c) => c.isIncomeCategory)
+        .toList();
+    final expenseCategories = categories
+        .where((c) => c.isExpenseCategory)
+        .toList();
 
-    final incomeCategoryDesc = incomeCategories.map((cat) {
-      final keywords = cat.getKeywords(language);
-      final label = cat.getLabel(language);
-      return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
-    }).join('\n');
+    final incomeCategoryDesc = incomeCategories
+        .map((cat) {
+          final keywords = cat.getKeywords(language);
+          final label = cat.getLabel(language);
+          return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
+        })
+        .join('\n');
 
-    final expenseCategoryDesc = expenseCategories.map((cat) {
-      final keywords = cat.getKeywords(language);
-      final label = cat.getLabel(language);
-      return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
-    }).join('\n');
+    final expenseCategoryDesc = expenseCategories
+        .map((cat) {
+          final keywords = cat.getKeywords(language);
+          final label = cat.getLabel(language);
+          return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
+        })
+        .join('\n');
 
-    final categoryDescriptions = '''
+    final categoryDescriptions =
+        '''
 INCOME Categories:
 $incomeCategoryDesc
 
 EXPENSE Categories:
 $expenseCategoryDesc''';
-
-    // Get all category IDs for the rule
-    final categoryIds = categories.map((c) => c.id).join(', ');
 
     // Build language-specific examples
     final languageHint = language == 'vi'
@@ -373,7 +393,9 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
           // Ensure type matches category (fix inconsistencies from Gemini)
           final correctedType = _getTypeFromCategory(categoryId);
           if (correctedType != transactionType) {
-            debugPrint('⚠️ [GeminiParser] Type mismatch: Gemini said "$typeStr" but category "$categoryId" is ${correctedType.name}. Using category type.');
+            debugPrint(
+              '⚠️ [GeminiParser] Type mismatch: Gemini said "$typeStr" but category "$categoryId" is ${correctedType.name}. Using category type.',
+            );
           }
 
           // Parse date from relative or absolute format
@@ -387,7 +409,9 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
             id: const Uuid().v4(),
             amount: amount,
             description: description.isEmpty
-                ? (correctedType == TransactionType.income ? 'Income' : 'Expense')
+                ? (correctedType == TransactionType.income
+                      ? 'Income'
+                      : 'Expense')
                 : description,
             categoryId: categoryId,
             language: language,
@@ -447,8 +471,9 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
     }
 
     // Handle "X days ago" / "X ngày trước"
-    final daysAgoMatch = RegExp(r'(\d+)\s*(days?|ngày)\s*(ago|trước)')
-        .firstMatch(normalized);
+    final daysAgoMatch = RegExp(
+      r'(\d+)\s*(days?|ngày)\s*(ago|trước)',
+    ).firstMatch(normalized);
     if (daysAgoMatch != null) {
       final days = int.tryParse(daysAgoMatch.group(1) ?? '0') ?? 0;
       final date = now.subtract(Duration(days: days));
@@ -456,8 +481,9 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
     }
 
     // Handle "X weeks ago" / "X tuần trước"
-    final weeksAgoMatch = RegExp(r'(\d+)\s*(weeks?|tuần)\s*(ago|trước)')
-        .firstMatch(normalized);
+    final weeksAgoMatch = RegExp(
+      r'(\d+)\s*(weeks?|tuần)\s*(ago|trước)',
+    ).firstMatch(normalized);
     if (weeksAgoMatch != null) {
       final weeks = int.tryParse(weeksAgoMatch.group(1) ?? '0') ?? 0;
       final date = now.subtract(Duration(days: weeks * 7));
@@ -499,15 +525,14 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
     }
 
     // Default to today if parsing fails
-    debugPrint('⚠️ [GeminiParser] Could not parse date "$dateStr", using today');
+    debugPrint(
+      '⚠️ [GeminiParser] Could not parse date "$dateStr", using today',
+    );
     return DateTime(now.year, now.month, now.day);
   }
 
   /// Normalize category string to category ID
-  static String _normalizeCategoryId(
-    String categoryStr,
-    TransactionType type,
-  ) {
+  static String _normalizeCategoryId(String categoryStr, TransactionType type) {
     final normalized = categoryStr.toLowerCase().trim();
 
     // Map to known system category IDs
