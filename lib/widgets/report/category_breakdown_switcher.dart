@@ -64,50 +64,39 @@ class _CategoryBreakdownSwitcherState extends State<CategoryBreakdownSwitcher> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with title and toggle
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    context.tr('report.category_breakdown'),
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
+            // Toggle between expense and income (only show if both exist)
+            if (hasExpenses && hasIncome) ...[
+              Center(
+                child: SegmentedButton<TransactionType>(
+                  segments: [
+                    ButtonSegment<TransactionType>(
+                      value: TransactionType.expense,
+                      label: Text(context.tr('home.filter_expense')),
+                      icon: const Icon(Icons.shopping_bag_outlined, size: 16),
                     ),
+                    ButtonSegment<TransactionType>(
+                      value: TransactionType.income,
+                      label: Text(context.tr('home.filter_income')),
+                      icon: const Icon(
+                        Icons.account_balance_wallet_outlined,
+                        size: 16,
+                      ),
+                    ),
+                  ],
+                  selected: {_selectedType},
+                  onSelectionChanged: (Set<TransactionType> newSelection) {
+                    setState(() {
+                      _selectedType = newSelection.first;
+                    });
+                  },
+                  style: ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
-                // Toggle between expense and income
-                if (hasExpenses && hasIncome)
-                  SegmentedButton<TransactionType>(
-                    segments: [
-                      ButtonSegment<TransactionType>(
-                        value: TransactionType.expense,
-                        label: Text(context.tr('home.filter_expense')),
-                        icon: const Icon(Icons.shopping_bag_outlined, size: 16),
-                      ),
-                      ButtonSegment<TransactionType>(
-                        value: TransactionType.income,
-                        label: Text(context.tr('home.filter_income')),
-                        icon: const Icon(
-                          Icons.account_balance_wallet_outlined,
-                          size: 16,
-                        ),
-                      ),
-                    ],
-                    selected: {_selectedType},
-                    onSelectionChanged: (Set<TransactionType> newSelection) {
-                      setState(() {
-                        _selectedType = newSelection.first;
-                      });
-                    },
-                    style: ButtonStyle(
-                      visualDensity: VisualDensity.compact,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppTheme.spacing24),
+              ),
+              const SizedBox(height: AppTheme.spacing20),
+            ],
 
             // Donut chart (without card wrapper since we're already in a card)
             if (currentStats.isNotEmpty)
