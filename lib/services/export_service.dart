@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
@@ -119,7 +120,12 @@ class ExportService {
   }
 
   /// Share exported file using the share dialog
-  static Future<void> shareFile(String filePath, String fileName) async {
+  /// [sharePositionOrigin] is required for iOS to position the share popover
+  static Future<void> shareFile(
+    String filePath,
+    String fileName, {
+    Rect? sharePositionOrigin,
+  }) async {
     debugPrint('📤 [ExportService] Sharing file: $filePath');
 
     try {
@@ -128,6 +134,7 @@ class ExportService {
         [file],
         subject: 'Quick Spend Export',
         text: 'My expense data from Quick Spend',
+        sharePositionOrigin: sharePositionOrigin,
       );
 
       debugPrint('✅ [ExportService] File shared successfully');

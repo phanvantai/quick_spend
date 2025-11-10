@@ -608,8 +608,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // JSON exports both expenses and all categories (complete backup)
       final filePath = await ExportService.exportToJSON(expenses, categories);
 
+      // Calculate share position origin for iOS (required for iPad popover)
+      final box = context.findRenderObject() as RenderBox?;
+      final sharePositionOrigin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
+
       // Share the file
-      await ExportService.shareFile(filePath, 'quick_spend_export.json');
+      await ExportService.shareFile(
+        filePath,
+        'quick_spend_export.json',
+        sharePositionOrigin: sharePositionOrigin,
+      );
 
       if (mounted) {
         messenger.clearSnackBars();
