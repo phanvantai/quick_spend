@@ -26,7 +26,9 @@ class GeminiExpenseParser {
           responseMimeType: 'application/json',
         ),
       );
-      debugPrint('✅ [GeminiParser] Initialized with Gemini 2.5 Flash via Firebase AI');
+      debugPrint(
+        '✅ [GeminiParser] Initialized with Gemini 2.5 Flash via Firebase AI',
+      );
     } catch (e) {
       debugPrint('❌ [GeminiParser] Failed to initialize: $e');
       _model = null;
@@ -53,13 +55,25 @@ class GeminiExpenseParser {
 
     // Pre-validate input to avoid meaningless API calls
     if (!_isValidInput(input)) {
-      debugPrint('⚠️ [GeminiParser] Input validation failed, skipping API call');
+      debugPrint(
+        '⚠️ [GeminiParser] Input validation failed, skipping API call',
+      );
       return [];
     }
 
     try {
+      debugPrint('🔧 [GeminiParser] Building prompt...');
+      debugPrint('   Categories: ${categories.length} total');
+      debugPrint('   Income: ${categories.where((c) => c.isIncomeCategory).length}');
+      debugPrint('   Expense: ${categories.where((c) => c.isExpenseCategory).length}');
+
       final prompt = _buildPrompt(input, categories, language);
-      debugPrint('📝 [GeminiParser] Sending prompt to Gemini...');
+
+      debugPrint('📏 [GeminiParser] Prompt length: ${prompt.length} characters');
+      debugPrint('📝 [GeminiParser] Prompt preview (first 500 chars):');
+      debugPrint(prompt.substring(0, prompt.length > 500 ? 500 : prompt.length));
+      debugPrint('...');
+      debugPrint('📤 [GeminiParser] Sending prompt to Gemini...');
       debugPrint('⏱️ [GeminiParser] Timeout set to $_apiTimeout seconds');
 
       final response = await _model!
@@ -67,10 +81,14 @@ class GeminiExpenseParser {
           .timeout(
             Duration(seconds: _apiTimeout),
             onTimeout: () {
-              debugPrint('❌ [GeminiParser] Request timed out after $_apiTimeout seconds');
+              debugPrint(
+                '❌ [GeminiParser] Request timed out after $_apiTimeout seconds',
+              );
               debugPrint('💡 [GeminiParser] This might mean:');
               debugPrint('   1. Network connectivity issue');
-              debugPrint('   2. Firebase AI API not enabled in your Firebase project');
+              debugPrint(
+                '   2. Firebase AI API not enabled in your Firebase project',
+              );
               debugPrint('   3. API quota exceeded');
               throw TimeoutException('Gemini API request timed out');
             },
@@ -84,13 +102,17 @@ class GeminiExpenseParser {
         return [];
       }
 
-      debugPrint('📨 [GeminiParser] Response text: $responseText');
+      debugPrint('📨 [GeminiParser] Response length: ${responseText.length} characters');
+      debugPrint('📨 [GeminiParser] Full response: $responseText');
 
       // Parse JSON response
+      debugPrint('🔍 [GeminiParser] Parsing JSON response...');
       final jsonData = json.decode(responseText) as Map<String, dynamic>;
+
+      debugPrint('🔍 [GeminiParser] JSON decoded successfully');
       final results = _parseResponse(jsonData, userId, input);
 
-      debugPrint('✅ [GeminiParser] Parsed ${results.length} expense(s)');
+      debugPrint('✅ [GeminiParser] Successfully parsed ${results.length} expense(s)');
       return results;
     } catch (e) {
       debugPrint('❌ [GeminiParser] Error parsing: $e');
@@ -116,7 +138,9 @@ class GeminiExpenseParser {
 
     // Must contain at least one alphanumeric character
     if (!RegExp(r'[a-zA-Z0-9]').hasMatch(trimmed)) {
-      debugPrint('❌ [GeminiParser] Validation: No alphanumeric characters found');
+      debugPrint(
+        '❌ [GeminiParser] Validation: No alphanumeric characters found',
+      );
       return false;
     }
 
@@ -147,14 +171,18 @@ class GeminiExpenseParser {
     if (words.length >= 3) {
       final uniqueWords = words.toSet();
       if (uniqueWords.length == 1) {
-        debugPrint('❌ [GeminiParser] Validation: Suspicious repetition detected');
+        debugPrint(
+          '❌ [GeminiParser] Validation: Suspicious repetition detected',
+        );
         return false;
       }
     }
 
     // Optional: Warn if no numbers found (might still be valid, e.g., "coffee today")
     if (!RegExp(r'[0-9]').hasMatch(trimmed)) {
-      debugPrint('⚠️ [GeminiParser] Validation: No numbers found, but allowing (might be description only)');
+      debugPrint(
+        '⚠️ [GeminiParser] Validation: No numbers found, but allowing (might be description only)',
+      );
     }
 
     debugPrint('✅ [GeminiParser] Validation: Input appears valid');
@@ -167,15 +195,43 @@ class GeminiExpenseParser {
     List<QuickCategory> categories,
     String language,
   ) {
-    // Build category list with keywords dynamically
-    final categoryDescriptions = categories.map((cat) {
-      final keywords = cat.getKeywords(language);
-      final label = cat.getLabel(language);
-      return '- ${cat.id}: $label (${keywords.take(5).join(", ")}, etc.)';
-    }).join('\n');
+    // Get current date for Gemini to understand relative dates
+    final now = DateTime.now();
+    final currentDate = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final weekdayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    final currentWeekday = weekdayNames[now.weekday - 1];
 
-    // Get all category IDs for the rule
-    final categoryIds = categories.map((c) => c.id).join(', ');
+    // Build category list with keywords dynamically, grouped by type
+    final incomeCategories = categories
+        .where((c) => c.isIncomeCategory)
+        .toList();
+    final expenseCategories = categories
+        .where((c) => c.isExpenseCategory)
+        .toList();
+
+    final incomeCategoryDesc = incomeCategories
+        .map((cat) {
+          final keywords = cat.getKeywords(language);
+          final label = cat.getLabel(language);
+          return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
+        })
+        .join('\n');
+
+    final expenseCategoryDesc = expenseCategories
+        .map((cat) {
+          final keywords = cat.getKeywords(language);
+          final label = cat.getLabel(language);
+          return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
+        })
+        .join('\n');
+
+    final categoryDescriptions =
+        '''
+INCOME Categories:
+$incomeCategoryDesc
+
+EXPENSE Categories:
+$expenseCategoryDesc''';
 
     // Build language-specific examples
     final languageHint = language == 'vi'
@@ -185,15 +241,23 @@ class GeminiExpenseParser {
     final examples = _getLanguageSpecificExamples(language);
 
     return '''
-You are an expense extraction assistant. Extract expense information from user input.
+You are a financial transaction extraction assistant. Extract expense OR income information from user input.
 
 Input: "$input"
 Context: $languageHint
 
+**CURRENT DATE CONTEXT:**
+- Today is: $currentDate ($currentWeekday)
+- Use this to calculate all relative dates accurately
+
 Rules:
-1. Extract ALL expenses mentioned (there can be multiple in one input)
-2. Detect language (en or vi) - use context hint above
-3. Parse amounts in various formats:
+1. Extract ALL transactions mentioned (there can be multiple in one input)
+2. Determine if each transaction is an EXPENSE or INCOME:
+   - INCOME keywords: "received", "earned", "got paid", "salary", "wage", "income", "nhận", "lương", "thu nhập", "được", "refund", "hoàn tiền", "gift", "quà", "bonus", "thưởng"
+   - EXPENSE keywords: "spent", "paid", "bought", "chi", "trả", "mua", or any spending description
+   - Default to EXPENSE if unclear
+3. Detect language (en or vi) - use context hint above
+4. Parse amounts in various formats:
    - Standard: "50k" = 50000, "1.5m" or "1m5" = 1500000
    - Vietnamese: "50 nghìn" = 50000, "1 triệu" = 1000000
    - Plain numbers: 50000, 1500000
@@ -203,15 +267,22 @@ Rules:
      * "cọc" = million: "1 cọc" = 1000000, "3 cọc" = 3000000
      * "chai" = hundred: "5 chai" = 500 (less common)
    - Important: "củ" and "cọc" mean MILLION, not thousand!
-4. Parse dates and temporal references:
+5. Parse dates and temporal references (use CURRENT DATE CONTEXT above):
    - Absolute: "on December 5", "12/5", "2024-12-05"
    - Relative: "yesterday", "hôm qua", "last week", "tuần trước", "3 days ago", "3 ngày trước"
+   - **Day-specific**: "on friday last week", "last monday", "this tuesday", "thứ 6 tuần trước"
+     * Calculate the exact date using today's date and day of week
+     * Example: If today is Monday Jan 13, 2025, "friday last week" = 2025-01-10
    - Default: If no date mentioned, use "today"
-5. Categorize into: $categoryIds
-6. Fix incomplete words from voice recognition:
+   - **IMPORTANT**: Always return dates in YYYY-MM-DD format (e.g., "2025-01-10"), NOT "today" or "yesterday"
+6. Categorize using the categories listed below (see Categories section)
+   - Match transaction description to category keywords
+   - Use appropriate income or expense category based on transaction type
+   - Fallback to "other_income" for unmatched income, "other" for unmatched expenses
+7. Fix incomplete words from voice recognition:
    - Vietnamese: "tiền cơ" → "tiền cơm", "xă" → "xăng", "cafe" can be "cà phê" or "cafe"
    - Keep original if unclear
-7. Handle complex sentences:
+8. Handle complex sentences:
    - Multiple items: "vegetables, meat, and rice for 200k" → one expense, 200k total
    - Multiple expenses: "50k coffee and 30k parking" → two separate expenses
    - Temporal sequences: "yesterday 50k coffee, today 30k parking" → two expenses with different dates
@@ -227,6 +298,7 @@ Return JSON in this EXACT format:
       "amount": number (in base units, e.g., 50000 not 50k),
       "description": "clear description",
       "category": "category name from the list above",
+      "type": "expense" or "income",
       "date": "YYYY-MM-DD" or "today" or "yesterday" or relative date,
       "confidence": number between 0 and 1
     }
@@ -245,48 +317,77 @@ Now extract from the input above. Return ONLY valid JSON, no other text.
       return '''
 Examples (Vietnamese):
 
+EXPENSE examples:
 Input: "45 ca tiền cơm"
-Output: {"language":"vi","expenses":[{"amount":45000,"description":"tiền cơm","category":"food","date":"today","confidence":0.95}]}
+Output: {"language":"vi","expenses":[{"amount":45000,"description":"tiền cơm","category":"food","type":"expense","date":"today","confidence":0.95}]}
 
 Input: "1 củ xăng hôm qua"
-Output: {"language":"vi","expenses":[{"amount":1000000,"description":"xăng","category":"transport","date":"yesterday","confidence":0.95}]}
+Output: {"language":"vi","expenses":[{"amount":1000000,"description":"xăng","category":"transport","type":"expense","date":"yesterday","confidence":0.95}]}
 
 Input: "100k xăng và 30k cafe"
-Output: {"language":"vi","expenses":[{"amount":100000,"description":"xăng","category":"transport","date":"today","confidence":0.95},{"amount":30000,"description":"cà phê","category":"food","date":"today","confidence":0.95}]}
+Output: {"language":"vi","expenses":[{"amount":100000,"description":"xăng","category":"transport","type":"expense","date":"today","confidence":0.95},{"amount":30000,"description":"cà phê","category":"food","type":"expense","date":"today","confidence":0.95}]}
 
-Input: "2 củ mua rau củ thịt cá ở chợ"
-Output: {"language":"vi","expenses":[{"amount":2000000,"description":"rau củ thịt cá","category":"shopping","date":"today","confidence":0.90}]}
+INCOME examples:
+Input: "nhận lương 15 triệu"
+Output: {"language":"vi","expenses":[{"amount":15000000,"description":"lương","category":"salary","type":"income","date":"today","confidence":0.95}]}
 
-Input: "tiền điện 500k tuần trước"
-Output: {"language":"vi","expenses":[{"amount":500000,"description":"tiền điện","category":"bills","date":"last week","confidence":0.95}]}
+Input: "được 500k làm thêm"
+Output: {"language":"vi","expenses":[{"amount":500000,"description":"làm thêm","category":"freelance","type":"income","date":"today","confidence":0.95}]}
 
-Input: "hôm qua 50ca cafe, hôm nay 30ca đỗ xe"
-Output: {"language":"vi","expenses":[{"amount":50000,"description":"cà phê","category":"food","date":"yesterday","confidence":0.90},{"amount":30000,"description":"đỗ xe","category":"transport","date":"today","confidence":0.90}]}
+Input: "lì xì 200k hôm qua"
+Output: {"language":"vi","expenses":[{"amount":200000,"description":"lì xì","category":"gift_received","type":"income","date":"yesterday","confidence":0.95}]}
 
-Input: "1.5 củ shopping"
-Output: {"language":"vi","expenses":[{"amount":1500000,"description":"shopping","category":"shopping","date":"today","confidence":0.95}]}
+Input: "hoàn tiền 100k"
+Output: {"language":"vi","expenses":[{"amount":100000,"description":"hoàn tiền","category":"refund","type":"income","date":"today","confidence":0.95}]}
+
+DATE CALCULATION examples (assume today is 2025-01-13, Monday):
+Input: "50k cafe thứ 6 tuần trước"
+Output: {"language":"vi","expenses":[{"amount":50000,"description":"cà phê","category":"food","type":"expense","date":"2025-01-10","confidence":0.95}]}
+
+Input: "100k xăng hôm thứ 2 tuần này"
+Output: {"language":"vi","expenses":[{"amount":100000,"description":"xăng","category":"transport","type":"expense","date":"2025-01-13","confidence":0.95}]}
+
+MIXED examples:
+Input: "nhận lương 15 triệu và trả 500k tiền điện"
+Output: {"language":"vi","expenses":[{"amount":15000000,"description":"lương","category":"salary","type":"income","date":"today","confidence":0.95},{"amount":500000,"description":"tiền điện","category":"bills","type":"expense","date":"today","confidence":0.95}]}
 ''';
     } else {
       return '''
 Examples (English):
 
+EXPENSE examples:
 Input: "50k coffee"
-Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food","date":"today","confidence":0.95}]}
+Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food","type":"expense","date":"today","confidence":0.95}]}
 
 Input: "100k gas yesterday"
-Output: {"language":"en","expenses":[{"amount":100000,"description":"gas","category":"transport","date":"yesterday","confidence":0.95}]}
+Output: {"language":"en","expenses":[{"amount":100000,"description":"gas","category":"transport","type":"expense","date":"yesterday","confidence":0.95}]}
 
 Input: "50k coffee and 30k parking"
-Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food","date":"today","confidence":0.95},{"amount":30000,"description":"parking","category":"transport","date":"today","confidence":0.95}]}
+Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food","type":"expense","date":"today","confidence":0.95},{"amount":30000,"description":"parking","category":"transport","type":"expense","date":"today","confidence":0.95}]}
 
-Input: "bought groceries for 200k including vegetables and meat"
-Output: {"language":"en","expenses":[{"amount":200000,"description":"groceries (vegetables and meat)","category":"shopping","date":"today","confidence":0.90}]}
+INCOME examples:
+Input: "received salary 1.5 million"
+Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","category":"salary","type":"income","date":"today","confidence":0.95}]}
 
-Input: "electricity bill 500k last week"
-Output: {"language":"en","expenses":[{"amount":500000,"description":"electricity bill","category":"bills","date":"last week","confidence":0.95}]}
+Input: "got paid 500k for freelance work"
+Output: {"language":"en","expenses":[{"amount":500000,"description":"freelance work","category":"freelance","type":"income","date":"today","confidence":0.95}]}
 
-Input: "yesterday 50k coffee, today 30k parking"
-Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food","date":"yesterday","confidence":0.90},{"amount":30000,"description":"parking","category":"transport","date":"today","confidence":0.90}]}
+Input: "gift 200k yesterday"
+Output: {"language":"en","expenses":[{"amount":200000,"description":"gift","category":"gift_received","type":"income","date":"yesterday","confidence":0.95}]}
+
+Input: "refund 100k"
+Output: {"language":"en","expenses":[{"amount":100000,"description":"refund","category":"refund","type":"income","date":"today","confidence":0.95}]}
+
+DATE CALCULATION examples (assume today is 2025-01-13, Monday):
+Input: "on friday last week, i bought food 50 dollars"
+Output: {"language":"en","expenses":[{"amount":50,"description":"food","category":"food","type":"expense","date":"2025-01-10","confidence":0.95}]}
+
+Input: "100k gas last monday"
+Output: {"language":"en","expenses":[{"amount":100000,"description":"gas","category":"transport","type":"expense","date":"2025-01-06","confidence":0.95}]}
+
+MIXED examples:
+Input: "received salary 1.5m and paid 500k electricity bill"
+Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","category":"salary","type":"income","date":"today","confidence":0.95},{"amount":500000,"description":"electricity bill","category":"bills","type":"expense","date":"today","confidence":0.95}]}
 ''';
     }
   }
@@ -307,16 +408,22 @@ Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","cat
         '📊 [GeminiParser] Language: $language, Expenses: ${expenses.length}',
       );
 
+      int itemIndex = 0;
       for (final expenseData in expenses) {
+        itemIndex++;
+        debugPrint('🔄 [GeminiParser] Processing item $itemIndex/${expenses.length}...');
         try {
           final expenseMap = expenseData as Map<String, dynamic>;
 
           final amount = (expenseMap['amount'] as num?)?.toDouble() ?? 0.0;
           final description = expenseMap['description'] as String? ?? '';
           final categoryStr = expenseMap['category'] as String? ?? 'other';
+          final typeStr = expenseMap['type'] as String? ?? 'expense';
           final dateStr = expenseMap['date'] as String? ?? 'today';
           final confidence =
               (expenseMap['confidence'] as num?)?.toDouble() ?? 0.5;
+
+          debugPrint('   Raw data: amount=$amount, desc="$description", category="$categoryStr", type="$typeStr"');
 
           // Validate amount
           if (amount <= 0) {
@@ -324,26 +431,46 @@ Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","cat
             continue;
           }
 
+          // Parse transaction type
+          debugPrint('   Parsing type: "$typeStr"');
+          final transactionType = TransactionType.fromJson(typeStr);
+
           // Normalize category string to lowercase ID
-          final categoryId = _normalizeCategoryId(categoryStr);
+          debugPrint('   Normalizing category: "$categoryStr" → processing...');
+          final categoryId = _normalizeCategoryId(categoryStr, transactionType);
+          debugPrint('   Normalized category: "$categoryId"');
+
+          // Ensure type matches category (fix inconsistencies from Gemini)
+          final correctedType = _getTypeFromCategory(categoryId);
+          debugPrint('   Type check: Gemini="$typeStr" (${transactionType.name}), Category expects=${correctedType.name}');
+          if (correctedType != transactionType) {
+            debugPrint(
+              '⚠️ [GeminiParser] Type mismatch: Gemini said "$typeStr" but category "$categoryId" is ${correctedType.name}. Using category type.',
+            );
+          }
 
           // Parse date from relative or absolute format
           final parsedDate = _parseDate(dateStr);
           debugPrint(
-            '📅 [GeminiParser] Date string: "$dateStr" → ${parsedDate.toIso8601String()}',
+            '📅 [GeminiParser] Date: "$dateStr" → ${parsedDate.toIso8601String()}',
           );
 
           // Create expense object
           final expense = Expense(
             id: const Uuid().v4(),
             amount: amount,
-            description: description.isEmpty ? 'Expense' : description,
+            description: description.isEmpty
+                ? (correctedType == TransactionType.income
+                      ? 'Income'
+                      : 'Expense')
+                : description,
             categoryId: categoryId,
             language: language,
             date: parsedDate,
             userId: userId,
             rawInput: rawInput,
             confidence: confidence,
+            type: correctedType, // Use corrected type based on category
           );
 
           results.add(
@@ -359,7 +486,7 @@ Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","cat
           );
 
           debugPrint(
-            '✅ [GeminiParser] Parsed: ${expense.amount} - ${expense.description} (${expense.categoryId}) on ${parsedDate.toIso8601String().split('T')[0]}',
+            '✅ [GeminiParser] Parsed: ${expense.type.name.toUpperCase()} ${expense.amount} - ${expense.description} (${expense.categoryId}) on ${parsedDate.toIso8601String().split('T')[0]}',
           );
         } catch (e) {
           debugPrint('❌ [GeminiParser] Error parsing expense item: $e');
@@ -395,8 +522,9 @@ Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","cat
     }
 
     // Handle "X days ago" / "X ngày trước"
-    final daysAgoMatch = RegExp(r'(\d+)\s*(days?|ngày)\s*(ago|trước)')
-        .firstMatch(normalized);
+    final daysAgoMatch = RegExp(
+      r'(\d+)\s*(days?|ngày)\s*(ago|trước)',
+    ).firstMatch(normalized);
     if (daysAgoMatch != null) {
       final days = int.tryParse(daysAgoMatch.group(1) ?? '0') ?? 0;
       final date = now.subtract(Duration(days: days));
@@ -404,12 +532,44 @@ Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","cat
     }
 
     // Handle "X weeks ago" / "X tuần trước"
-    final weeksAgoMatch = RegExp(r'(\d+)\s*(weeks?|tuần)\s*(ago|trước)')
-        .firstMatch(normalized);
+    final weeksAgoMatch = RegExp(
+      r'(\d+)\s*(weeks?|tuần)\s*(ago|trước)',
+    ).firstMatch(normalized);
     if (weeksAgoMatch != null) {
       final weeks = int.tryParse(weeksAgoMatch.group(1) ?? '0') ?? 0;
       final date = now.subtract(Duration(days: weeks * 7));
       return DateTime(date.year, date.month, date.day);
+    }
+
+    // Handle day-specific dates like "friday last week", "last monday", "this tuesday"
+    // This is a fallback in case Gemini doesn't calculate the exact date
+    final dayNames = {
+      'monday': 1, 'mon': 1,
+      'tuesday': 2, 'tue': 2, 'tues': 2,
+      'wednesday': 3, 'wed': 3,
+      'thursday': 4, 'thu': 4, 'thur': 4, 'thurs': 4,
+      'friday': 5, 'fri': 5,
+      'saturday': 6, 'sat': 6,
+      'sunday': 7, 'sun': 7,
+    };
+
+    // Pattern: "friday last week" or "last friday"
+    for (final entry in dayNames.entries) {
+      final dayName = entry.key;
+      final targetWeekday = entry.value;
+
+      if (normalized.contains(dayName)) {
+        if (normalized.contains('last') || normalized.contains('trước')) {
+          // Find the last occurrence of this weekday
+          var daysBack = now.weekday - targetWeekday;
+          if (daysBack <= 0) daysBack += 7; // Go to previous week
+          final date = now.subtract(Duration(days: daysBack));
+          debugPrint(
+            '📅 [GeminiParser] Parsed "$dateStr" as last $dayName: ${date.toIso8601String().split('T')[0]}',
+          );
+          return DateTime(date.year, date.month, date.day);
+        }
+      }
     }
 
     // Try parsing absolute dates (ISO format: YYYY-MM-DD)
@@ -447,15 +607,18 @@ Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","cat
     }
 
     // Default to today if parsing fails
-    debugPrint('⚠️ [GeminiParser] Could not parse date "$dateStr", using today');
+    debugPrint(
+      '⚠️ [GeminiParser] Could not parse date "$dateStr", using today',
+    );
     return DateTime(now.year, now.month, now.day);
   }
 
   /// Normalize category string to category ID
-  static String _normalizeCategoryId(String categoryStr) {
+  static String _normalizeCategoryId(String categoryStr, TransactionType type) {
     final normalized = categoryStr.toLowerCase().trim();
+
     // Map to known system category IDs
-    const validCategories = {
+    const expenseCategories = {
       'food',
       'transport',
       'shopping',
@@ -465,6 +628,38 @@ Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","cat
       'other',
     };
 
-    return validCategories.contains(normalized) ? normalized : 'other';
+    const incomeCategories = {
+      'salary',
+      'freelance',
+      'investment',
+      'gift_received',
+      'refund',
+      'other_income',
+    };
+
+    if (type == TransactionType.income) {
+      return incomeCategories.contains(normalized)
+          ? normalized
+          : 'other_income';
+    } else {
+      return expenseCategories.contains(normalized) ? normalized : 'other';
+    }
+  }
+
+  /// Get the correct transaction type based on category ID
+  /// This ensures type consistency regardless of what Gemini returns
+  static TransactionType _getTypeFromCategory(String categoryId) {
+    const incomeCategories = {
+      'salary',
+      'freelance',
+      'investment',
+      'gift_received',
+      'refund',
+      'other_income',
+    };
+
+    return incomeCategories.contains(categoryId)
+        ? TransactionType.income
+        : TransactionType.expense;
   }
 }

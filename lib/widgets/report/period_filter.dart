@@ -20,12 +20,10 @@ class PeriodFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     final locale = context.locale.languageCode;
 
-    return Container(
-      height: 48,
-      margin: const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
+    return SizedBox(
+      height: 44,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
         children: [
           _buildFilterChip(
             context,
@@ -84,10 +82,7 @@ class PeriodFilter extends StatelessWidget {
         onTap: onTap ?? () => onPeriodChanged(period),
         borderRadius: AppTheme.borderRadiusMedium,
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing16,
-            vertical: AppTheme.spacing8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing12),
           decoration: BoxDecoration(
             gradient: isSelected ? AppTheme.primaryGradient : null,
             color: isSelected ? null : colorScheme.surfaceContainerHighest,
@@ -105,9 +100,7 @@ class PeriodFilter extends StatelessWidget {
               Icon(
                 icon,
                 size: 18,
-                color: isSelected
-                    ? Colors.white
-                    : colorScheme.onSurfaceVariant,
+                color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: AppTheme.spacing8),
               Text(

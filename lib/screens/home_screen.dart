@@ -25,6 +25,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Filter state
+  TransactionType? _selectedFilter; // null means "All"
+
   Future<void> _deleteExpense(String expenseId) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -116,9 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _addExpense() async {
     final newExpense = await Navigator.push<Expense>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const ExpenseFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const ExpenseFormScreen()),
     );
 
     if (newExpense == null || !mounted) return;
@@ -153,7 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showExpenseDetailsDialog(Expense expense) {
     final categoryProvider = context.read<CategoryProvider>();
-    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
         QuickCategory.getDefaultSystemCategories().firstWhere(
           (c) => c.id == 'other',
@@ -189,7 +191,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.date'),
-              DateFormat.yMMMd().format(expense.date),
+              DateFormat.yMMMd(
+                context.locale.languageCode,
+              ).format(expense.date),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
@@ -284,27 +288,26 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Calculate period totals
-  double _getTodayTotal(List<Expense> expenses) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    return expenses
-        .where((e) => e.date.isAfter(today))
-        .fold(0.0, (sum, e) => sum + e.amount);
+  // Get net balance color based on positive/negative
+  Color _getNetBalanceColor(double netBalance) {
+    if (netBalance > 0) {
+      return AppTheme.success;
+    } else if (netBalance < 0) {
+      return AppTheme.error;
+    } else {
+      return AppTheme.neutral50;
+    }
   }
 
-  double _getWeekTotal(List<Expense> expenses) {
-    final weekAgo = DateTime.now().subtract(const Duration(days: 7));
-    return expenses
-        .where((e) => e.date.isAfter(weekAgo))
-        .fold(0.0, (sum, e) => sum + e.amount);
-  }
-
-  double _getMonthTotal(List<Expense> expenses) {
-    final monthAgo = DateTime.now().subtract(const Duration(days: 30));
-    return expenses
-        .where((e) => e.date.isAfter(monthAgo))
-        .fold(0.0, (sum, e) => sum + e.amount);
+  // Get net balance icon based on positive/negative
+  IconData _getNetBalanceIcon(double netBalance) {
+    if (netBalance > 0) {
+      return Icons.trending_up;
+    } else if (netBalance < 0) {
+      return Icons.trending_down;
+    } else {
+      return Icons.horizontal_rule;
+    }
   }
 
   String _formatAmount(BuildContext context, double amount, String currency) {
@@ -320,32 +323,99 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(context.tr('home.hello')),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            onPressed: _addExpense,
-            tooltip: context.tr('home.add_expense_tooltip'),
-            style: IconButton.styleFrom(
-              foregroundColor: AppTheme.primaryMint,
-            ),
+  List<Expense> _filterExpenses(List<Expense> expenses) {
+    if (_selectedFilter == null) {
+      return expenses; // Show all
+    }
+    return expenses.where((e) => e.type == _selectedFilter).toList();
+  }
+
+  Widget _buildSummaryCards(
+    BuildContext context,
+    double totalIncome,
+    double totalExpenses,
+    double netBalance,
+    String currency,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+      child: Row(
+        children: [
+          HomeSummaryCard(
+            title: context.tr('home.total_income'),
+            value: _formatAmount(context, totalIncome, currency),
+            icon: Icons.account_balance_wallet_outlined,
+            color: AppTheme.success,
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-            tooltip: context.tr('navigation.settings'),
+          const SizedBox(width: AppTheme.spacing12),
+          HomeSummaryCard(
+            title: context.tr('home.total_expenses'),
+            value: _formatAmount(context, totalExpenses, currency),
+            icon: Icons.shopping_bag_outlined,
+            color: AppTheme.error,
+          ),
+          const SizedBox(width: AppTheme.spacing12),
+          HomeSummaryCard(
+            title: context.tr('home.net_balance'),
+            value: _formatAmount(context, netBalance.abs(), currency),
+            icon: _getNetBalanceIcon(netBalance),
+            color: _getNetBalanceColor(netBalance),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFilterChips(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+      child: Row(
+        children: [
+          FilterChip(
+            label: Text(context.tr('home.filter_all')),
+            selected: _selectedFilter == null,
+            onSelected: (selected) {
+              setState(() {
+                _selectedFilter = null;
+              });
+            },
+            selectedColor: AppTheme.primaryMint.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.primaryMint,
+          ),
+          const SizedBox(width: AppTheme.spacing8),
+          FilterChip(
+            label: Text(context.tr('home.filter_income')),
+            selected: _selectedFilter == TransactionType.income,
+            onSelected: (selected) {
+              setState(() {
+                _selectedFilter = selected ? TransactionType.income : null;
+              });
+            },
+            selectedColor: AppTheme.success.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.success,
+          ),
+          const SizedBox(width: AppTheme.spacing8),
+          FilterChip(
+            label: Text(context.tr('home.filter_expense')),
+            selected: _selectedFilter == TransactionType.expense,
+            onSelected: (selected) {
+              setState(() {
+                _selectedFilter = selected ? TransactionType.expense : null;
+              });
+            },
+            selectedColor: AppTheme.error.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.error,
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
       body: Consumer2<ExpenseProvider, AppConfigProvider>(
         builder: (context, expenseProvider, configProvider, _) {
           if (expenseProvider.isLoading) {
@@ -356,68 +426,116 @@ class _HomeScreenState extends State<HomeScreen> {
           final currency = configProvider.currency;
 
           if (expenses.isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.all(AppTheme.spacing16),
-              child: EmptyState(
-                icon: Icons.receipt_long_outlined,
-                title: context.tr('home.no_expenses_title'),
-                message: context.tr('home.no_expenses_message'),
-              ),
+            return CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  title: Text(context.tr('home.hello')),
+                  pinned: true,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: _addExpense,
+                      tooltip: context.tr('home.add_expense_tooltip'),
+                      style: IconButton.styleFrom(
+                        foregroundColor: AppTheme.primaryMint,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.settings_outlined),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsScreen(),
+                          ),
+                        );
+                      },
+                      tooltip: context.tr('navigation.settings'),
+                    ),
+                  ],
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppTheme.spacing16),
+                    child: EmptyState(
+                      icon: Icons.receipt_long_outlined,
+                      title: context.tr('home.no_expenses_title'),
+                      message: context.tr('home.no_expenses_message'),
+                    ),
+                  ),
+                ),
+              ],
             );
           }
 
-          // Calculate totals
-          final todayTotal = _getTodayTotal(expenses);
-          final weekTotal = _getWeekTotal(expenses);
-          final monthTotal = _getMonthTotal(expenses);
+          // Get income statistics from provider
+          final totalIncome = expenseProvider.totalIncome;
+          final totalExpenses = expenseProvider.totalExpenses;
+          final netBalance = expenseProvider.netBalance;
+
+          // Apply filter
+          final filteredExpenses = _filterExpenses(expenses);
 
           // Get recent expenses (last 10)
-          final recentExpenses = expenses.take(10).toList();
+          final recentExpenses = filteredExpenses.take(10).toList();
 
           return CustomScrollView(
             slivers: [
-              // Summary Cards Section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppTheme.spacing16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.tr('home.quick_summary'),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                      const SizedBox(height: AppTheme.spacing12),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            HomeSummaryCard(
-                              title: context.tr('home.today'),
-                              value: _formatAmount(context, todayTotal, currency),
-                              icon: Icons.today_outlined,
-                              color: AppTheme.accentOrange,
-                            ),
-                            const SizedBox(width: AppTheme.spacing12),
-                            HomeSummaryCard(
-                              title: context.tr('home.this_week'),
-                              value: _formatAmount(context, weekTotal, currency),
-                              icon: Icons.calendar_view_week_outlined,
-                              color: AppTheme.accentTeal,
-                            ),
-                            const SizedBox(width: AppTheme.spacing12),
-                            HomeSummaryCard(
-                              title: context.tr('home.this_month'),
-                              value: _formatAmount(context, monthTotal, currency),
-                              icon: Icons.calendar_month_outlined,
-                              color: AppTheme.primaryMint,
-                            ),
-                          ],
+              // SliverAppBar with summary cards in flexible space
+              SliverAppBar(
+                expandedHeight: 200,
+                pinned: true,
+                title: Text(context.tr('home.hello')),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    onPressed: _addExpense,
+                    tooltip: context.tr('home.add_expense_tooltip'),
+                    style: IconButton.styleFrom(
+                      foregroundColor: AppTheme.primaryMint,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
                         ),
+                      );
+                    },
+                    tooltip: context.tr('navigation.settings'),
+                  ),
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  background: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        0,
+                        64, // Account for app bar height
+                        0,
+                        AppTheme.spacing8,
                       ),
-                    ],
+                      child: _buildSummaryCards(
+                        context,
+                        totalIncome,
+                        totalExpenses,
+                        netBalance,
+                        currency,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Filter chips
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _FilterHeaderDelegate(
+                  child: Container(
+                    color: Theme.of(context).colorScheme.surface,
+                    child: _buildFilterChips(context),
                   ),
                 ),
               ),
@@ -436,11 +554,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(
                         context.tr('home.recent_expenses'),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                      if (expenses.length > 10)
+                      if (filteredExpenses.length > 10)
                         TextButton.icon(
                           onPressed: () {
                             Navigator.push(
@@ -470,34 +587,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   AppTheme.spacing16,
                 ),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final expense = recentExpenses[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
-                        child: Slidable(
-                          key: ValueKey(expense.id),
-                          endActionPane: ActionPane(
-                            motion: const ScrollMotion(),
-                            children: [
-                              SlidableAction(
-                                onPressed: (_) => _deleteExpense(expense.id),
-                                backgroundColor: AppTheme.error,
-                                foregroundColor: Colors.white,
-                                icon: Icons.delete,
-                                label: context.tr('common.delete'),
-                              ),
-                            ],
-                          ),
-                          child: ExpenseCard(
-                            expense: expense,
-                            onTap: () => _showExpenseDetailsDialog(expense),
-                          ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final expense = recentExpenses[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: AppTheme.spacing12,
+                      ),
+                      child: Slidable(
+                        key: ValueKey(expense.id),
+                        endActionPane: ActionPane(
+                          motion: const ScrollMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (_) => _deleteExpense(expense.id),
+                              backgroundColor: AppTheme.error,
+                              foregroundColor: Colors.white,
+                              icon: Icons.delete,
+                              label: context.tr('common.delete'),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    childCount: recentExpenses.length,
-                  ),
+                        child: ExpenseCard(
+                          expense: expense,
+                          onTap: () => _showExpenseDetailsDialog(expense),
+                        ),
+                      ),
+                    );
+                  }, childCount: recentExpenses.length),
                 ),
               ),
 
@@ -530,5 +646,34 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     );
+  }
+}
+
+/// Delegate for pinned filter header
+class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  // ignore: unused_element_parameter
+  _FilterHeaderDelegate({required this.child, this.height = 72.0});
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return SizedBox(height: height, child: child);
+  }
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  bool shouldRebuild(covariant _FilterHeaderDelegate oldDelegate) {
+    return child != oldDelegate.child || height != oldDelegate.height;
   }
 }

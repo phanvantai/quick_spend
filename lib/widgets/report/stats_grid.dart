@@ -18,28 +18,60 @@ class StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _buildStatCard(
-            context,
-            icon: Icons.calendar_today,
-            iconColor: Colors.blue,
-            value: _formatAmount(context, stats.averagePerDay),
-            label: context.tr('report.avg_per_day'),
-          ),
+        // First row
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                context,
+                icon: Icons.calendar_today,
+                iconColor: AppTheme.accentTeal,
+                value: _formatAmount(context, stats.averagePerDay),
+                label: context.tr('report.avg_per_day'),
+              ),
+            ),
+            const SizedBox(width: AppTheme.spacing12),
+            Expanded(
+              child: _buildStatCard(
+                context,
+                icon: Icons.trending_up,
+                iconColor: AppTheme.error,
+                value: stats.highestExpense != null
+                    ? _formatAmount(context, stats.highestExpense!.amount)
+                    : _formatAmount(context, 0),
+                label: context.tr('report.highest_expense'),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: AppTheme.spacing12),
-        Expanded(
-          child: _buildStatCard(
-            context,
-            icon: Icons.trending_up,
-            iconColor: Colors.red,
-            value: stats.highestExpense != null
-                ? _formatAmount(context, stats.highestExpense!.amount)
-                : _formatAmount(context, 0),
-            label: context.tr('report.highest_expense'),
-          ),
+        const SizedBox(height: AppTheme.spacing12),
+        // Second row - Income statistics
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                context,
+                icon: Icons.account_balance_wallet,
+                iconColor: AppTheme.success,
+                value: stats.highestIncome != null
+                    ? _formatAmount(context, stats.highestIncome!.amount)
+                    : _formatAmount(context, 0),
+                label: context.tr('report.highest_income'),
+              ),
+            ),
+            const SizedBox(width: AppTheme.spacing12),
+            Expanded(
+              child: _buildStatCard(
+                context,
+                icon: Icons.show_chart,
+                iconColor: AppTheme.accentOrange,
+                value: '${stats.incomeCount} / ${stats.expenseCount}',
+                label: context.tr('report.income_expense_count'),
+              ),
+            ),
+          ],
         ),
       ],
     );

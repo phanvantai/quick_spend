@@ -70,6 +70,13 @@ class AppTheme {
     colors: [neutral50, neutral100],
   );
 
+  // Professional gradient for financial summary cards
+  static const LinearGradient summaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF1e3a8a), Color(0xFF3b82f6)], // Deep blue to bright blue
+  );
+
   // ============================================
   // TYPOGRAPHY
   // ============================================

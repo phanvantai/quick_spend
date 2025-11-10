@@ -99,7 +99,8 @@ class TopExpensesList extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final categoryProvider = context.watch<CategoryProvider>();
-    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
         QuickCategory.getDefaultSystemCategories().firstWhere(
           (c) => c.id == 'other',
@@ -183,12 +184,14 @@ class TopExpensesList extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: AppTheme.spacing8),
-                      Text(
-                        DateFormat('MMM d, y').format(expense.date),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                      Flexible(
+                        child: Text(
+                          DateFormat('MMM d, y', context.locale.languageCode).format(expense.date),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

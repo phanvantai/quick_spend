@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'expense.dart';
 
 /// Category model with support for both system and user-defined categories
 class QuickCategory {
@@ -12,6 +13,7 @@ class QuickCategory {
   final int colorValue; // Store color as integer
   final bool isSystem; // true for system categories, false for user-defined
   final String? userId; // null for system categories
+  final TransactionType type; // income or expense
   final DateTime createdAt;
 
   const QuickCategory({
@@ -24,6 +26,7 @@ class QuickCategory {
     required this.colorValue,
     required this.isSystem,
     this.userId,
+    required this.type,
     required this.createdAt,
   });
 
@@ -43,6 +46,12 @@ class QuickCategory {
   /// Get color from value
   Color get color => Color(colorValue);
 
+  /// Check if this is an income category
+  bool get isIncomeCategory => type == TransactionType.income;
+
+  /// Check if this is an expense category
+  bool get isExpenseCategory => type == TransactionType.expense;
+
   /// Convert Category to JSON for storage
   Map<String, dynamic> toJson() {
     return {
@@ -55,6 +64,7 @@ class QuickCategory {
       'colorValue': colorValue,
       'isSystem': isSystem ? 1 : 0,
       'userId': userId,
+      'type': type.toJson(),
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -75,6 +85,10 @@ class QuickCategory {
       colorValue: json['colorValue'] as int,
       isSystem: (json['isSystem'] as int) == 1,
       userId: json['userId'] as String?,
+      type: json['type'] != null
+          ? TransactionType.fromJson(json['type'] as String)
+          : TransactionType
+                .expense, // Default to expense for backward compatibility
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
@@ -130,6 +144,7 @@ class QuickCategory {
         colorValue: Colors.orange.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -175,6 +190,7 @@ class QuickCategory {
         colorValue: Colors.blue.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -215,6 +231,7 @@ class QuickCategory {
         colorValue: Colors.purple.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -248,6 +265,7 @@ class QuickCategory {
         colorValue: Colors.red.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -282,6 +300,7 @@ class QuickCategory {
         colorValue: Colors.green.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -317,6 +336,7 @@ class QuickCategory {
         colorValue: Colors.pink.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -329,6 +349,166 @@ class QuickCategory {
         colorValue: Colors.grey.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
+        createdAt: now,
+      ),
+      // ====== Income Categories ======
+      QuickCategory(
+        id: 'salary',
+        nameEn: 'Salary',
+        nameVi: 'Lương',
+        keywordsEn: [
+          'salary',
+          'wage',
+          'paycheck',
+          'income',
+          'payment',
+          'pay',
+          'work',
+          'job',
+          'earnings',
+        ],
+        keywordsVi: [
+          'lương',
+          'tiền lương',
+          'công',
+          'lương tháng',
+          'thu nhập',
+          'trả lương',
+          'nhận lương',
+        ],
+        iconCodePoint: Icons.account_balance_wallet.codePoint,
+        colorValue: const Color(0xFF4CAF50).toARGB32(), // Green
+        isSystem: true,
+        userId: null,
+        type: TransactionType.income,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'freelance',
+        nameEn: 'Freelance',
+        nameVi: 'Làm thêm',
+        keywordsEn: [
+          'freelance',
+          'side job',
+          'side hustle',
+          'gig',
+          'project',
+          'contract',
+          'part time',
+          'extra income',
+        ],
+        keywordsVi: [
+          'làm thêm',
+          'freelance',
+          'tự do',
+          'dự án',
+          'hợp đồng',
+          'part time',
+          'làm ngoài',
+          'thu nhập phụ',
+        ],
+        iconCodePoint: Icons.laptop_mac.codePoint,
+        colorValue: const Color(0xFF2196F3).toARGB32(), // Blue
+        isSystem: true,
+        userId: null,
+        type: TransactionType.income,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'investment',
+        nameEn: 'Investment',
+        nameVi: 'Đầu tư',
+        keywordsEn: [
+          'investment',
+          'dividend',
+          'interest',
+          'stock',
+          'profit',
+          'return',
+          'capital gain',
+          'bond',
+          'crypto',
+        ],
+        keywordsVi: [
+          'đầu tư',
+          'cổ tức',
+          'lãi',
+          'cổ phiếu',
+          'lợi nhuận',
+          'sinh lời',
+          'chứng khoán',
+          'tiền lãi',
+        ],
+        iconCodePoint: Icons.trending_up.codePoint,
+        colorValue: const Color(0xFF009688).toARGB32(), // Teal
+        isSystem: true,
+        userId: null,
+        type: TransactionType.income,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'gift_received',
+        nameEn: 'Gift',
+        nameVi: 'Quà tặng',
+        keywordsEn: [
+          'gift',
+          'present',
+          'lucky money',
+          'bonus',
+          'reward',
+          'prize',
+          'red envelope',
+          'allowance',
+        ],
+        keywordsVi: [
+          'quà',
+          'quà tặng',
+          'lì xì',
+          'tiền mừng',
+          'thưởng',
+          'giải thưởng',
+          'phần thưởng',
+          'tiền lì xì',
+        ],
+        iconCodePoint: Icons.card_giftcard.codePoint,
+        colorValue: const Color(0xFFE91E63).toARGB32(), // Pink
+        isSystem: true,
+        userId: null,
+        type: TransactionType.income,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'refund',
+        nameEn: 'Refund',
+        nameVi: 'Hoàn tiền',
+        keywordsEn: [
+          'refund',
+          'return',
+          'reimbursement',
+          'cashback',
+          'payback',
+          'repayment',
+        ],
+        keywordsVi: ['hoàn tiền', 'hoàn lại', 'trả lại', 'cashback', 'hoàn'],
+        iconCodePoint: Icons.undo.codePoint,
+        colorValue: const Color(0xFFFF9800).toARGB32(), // Orange
+        isSystem: true,
+        userId: null,
+        type: TransactionType.income,
+        createdAt: now,
+      ),
+      QuickCategory(
+        id: 'other_income',
+        nameEn: 'Other Income',
+        nameVi: 'Thu nhập khác',
+        keywordsEn: ['other income', 'miscellaneous income', 'extra'],
+        keywordsVi: ['thu nhập khác', 'thu khác'],
+        iconCodePoint: Icons.add_circle_outline.codePoint,
+        colorValue: const Color(0xFF9C27B0).toARGB32(), // Purple
+        isSystem: true,
+        userId: null,
+        type: TransactionType.income,
         createdAt: now,
       ),
     ];
@@ -351,6 +531,7 @@ class QuickCategory {
     int? colorValue,
     bool? isSystem,
     String? userId,
+    TransactionType? type,
     DateTime? createdAt,
   }) {
     return QuickCategory(
@@ -363,6 +544,7 @@ class QuickCategory {
       colorValue: colorValue ?? this.colorValue,
       isSystem: isSystem ?? this.isSystem,
       userId: userId ?? this.userId,
+      type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
     );
   }

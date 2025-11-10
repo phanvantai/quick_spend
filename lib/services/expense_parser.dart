@@ -103,17 +103,37 @@ class ExpenseParser {
 
     // Step 3: Get description (cleaned)
     String description = amountResult.description.trim();
+
+    // Step 3.5: Detect transaction type (income or expense)
+    final transactionType = Categorizer.detectTransactionType(description, language);
+    debugPrint('💡 [ExpenseParser] Transaction type: ${transactionType.name}');
+
     if (description.isEmpty) {
-      // Use a default description based on language
-      description = language == 'vi' ? 'Chi tiêu' : 'Expense';
+      // Use a default description based on language and type
+      if (transactionType == TransactionType.income) {
+        description = language == 'vi' ? 'Thu nhập' : 'Income';
+      } else {
+        description = language == 'vi' ? 'Chi tiêu' : 'Expense';
+      }
       debugPrint('📝 [ExpenseParser] Using default description: "$description"');
     } else {
       debugPrint('📝 [ExpenseParser] Description: "$description"');
     }
 
     // Step 4: Auto-categorize based on description
-    final categoryResult = Categorizer.categorize(description, language, categories);
+    final categoryResult = Categorizer.categorize(
+      description,
+      language,
+      categories,
+      type: transactionType,
+    );
     debugPrint('🏷️ [ExpenseParser] Category: ${categoryResult.categoryId} (confidence: ${(categoryResult.confidence * 100).toStringAsFixed(1)}%)');
+
+    // Ensure type matches category (fix inconsistencies)
+    final correctedType = _getTypeFromCategory(categoryResult.categoryId);
+    if (correctedType != transactionType) {
+      debugPrint('⚠️ [ExpenseParser] Type mismatch: detected "$transactionType" but category "${categoryResult.categoryId}" is ${correctedType.name}. Using category type.');
+    }
 
     // Calculate overall confidence
     // Weight: 50% categorization, 30% language detection, 20% amount parsing
@@ -134,6 +154,7 @@ class ExpenseParser {
       userId: userId,
       rawInput: rawInput,
       confidence: overallConfidence,
+      type: correctedType, // Use corrected type based on category
     );
 
     debugPrint('✅ [ExpenseParser] Success! Parsed expense with ID: ${expense.id}');
@@ -145,7 +166,12 @@ class ExpenseParser {
       languageConfidence: languageConfidence,
       categoryConfidence: categoryResult.confidence,
       overallConfidence: overallConfidence,
-      suggestedCategories: Categorizer.getAllMatches(description, language, categories),
+      suggestedCategories: Categorizer.getAllMatches(
+        description,
+        language,
+        categories,
+        type: transactionType,
+      ),
     );
   }
 
@@ -193,6 +219,23 @@ class ExpenseParser {
     }
 
     return updatedResults;
+  }
+
+  /// Get the correct transaction type based on category ID
+  /// This ensures type consistency
+  static TransactionType _getTypeFromCategory(String categoryId) {
+    const incomeCategories = {
+      'salary',
+      'freelance',
+      'investment',
+      'gift_received',
+      'refund',
+      'other_income',
+    };
+
+    return incomeCategories.contains(categoryId)
+        ? TransactionType.income
+        : TransactionType.expense;
   }
 }
 

@@ -89,7 +89,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
                         final amount = entries[groupIndex].value;
 
                         return BarTooltipItem(
-                          '${DateFormat('MMM d').format(date)}\n',
+                          '${DateFormat('MMM d', context.locale.languageCode).format(date)}\n',
                           TextStyle(
                             color: colorScheme.onInverseSurface,
                             fontWeight: FontWeight.w600,
@@ -202,7 +202,7 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
     }
 
     final date = entries[value.toInt()].key;
-    final text = DateFormat('d').format(date);
+    final text = DateFormat('d', context.locale.languageCode).format(date);
 
     return SideTitleWidget(
       meta: meta,

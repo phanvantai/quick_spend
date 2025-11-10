@@ -7,8 +7,7 @@ import '../theme/app_theme.dart';
 import '../widgets/report/period_filter.dart';
 import '../widgets/report/summary_card.dart';
 import '../widgets/report/stats_grid.dart';
-import '../widgets/report/category_donut_chart.dart';
-import '../widgets/report/category_list.dart';
+import '../widgets/report/category_breakdown_switcher.dart';
 import '../widgets/report/spending_trend_chart.dart';
 import '../widgets/report/top_expenses_list.dart';
 import '../widgets/report/custom_date_range_picker.dart';
@@ -25,19 +24,6 @@ class ReportScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(context.tr('navigation.report')),
-        actions: [
-          // Refresh button
-          IconButton(
-            icon: const Icon(Icons.refresh_outlined),
-            onPressed: () {
-              context.read<ReportProvider>().refresh();
-            },
-            tooltip: context.tr('report.refresh_tooltip'),
-          ),
-        ],
-      ),
       body: Consumer2<ReportProvider, AppConfigProvider>(
         builder: (context, reportProvider, configProvider, _) {
           if (reportProvider.isLoading) {
@@ -62,11 +48,10 @@ class ReportScreen extends StatelessWidget {
 
           // Empty state - no expenses at all
           if (stats == null || stats.transactionCount == 0) {
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Period filter (still show even when empty)
-                  PeriodFilter(
+            return CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  title: PeriodFilter(
                     selectedPeriod: reportProvider.selectedPeriod,
                     onPeriodChanged: (period) {
                       reportProvider.selectPeriod(period);
@@ -76,8 +61,10 @@ class ReportScreen extends StatelessWidget {
                       reportProvider,
                     ),
                   ),
-                  // Empty state
-                  Padding(
+                  pinned: true,
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
                     padding: const EdgeInsets.all(AppTheme.spacing16),
                     child: EmptyState(
                       icon: Icons.bar_chart_outlined,
@@ -85,46 +72,61 @@ class ReportScreen extends StatelessWidget {
                       message: context.tr('report.empty_message'),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           }
 
           // Main report view with data
           return RefreshIndicator(
             onRefresh: () => reportProvider.refresh(),
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: AppTheme.spacing24),
-              children: [
-                // Period filter
-                PeriodFilter(
-                  selectedPeriod: reportProvider.selectedPeriod,
-                  onPeriodChanged: (period) {
-                    reportProvider.selectPeriod(period);
-                  },
-                  onCustomTap: () => _showCustomDatePicker(
-                    context,
-                    reportProvider,
+            child: CustomScrollView(
+              slivers: [
+                // SliverAppBar with summary in flexible space
+                SliverAppBar(
+                  expandedHeight: 340,
+                  pinned: true,
+                  title: PeriodFilter(
+                    selectedPeriod: reportProvider.selectedPeriod,
+                    onPeriodChanged: (period) {
+                      reportProvider.selectPeriod(period);
+                    },
+                    onCustomTap: () => _showCustomDatePicker(
+                      context,
+                      reportProvider,
+                    ),
+                  ),
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppTheme.spacing16,
+                          64, // Account for app bar height
+                          AppTheme.spacing16,
+                          AppTheme.spacing8,
+                        ),
+                        child: SummaryCard(
+                          stats: stats,
+                          trendPercentage: reportProvider.trendPercentage,
+                          isTrendPositive: reportProvider.isTrendPositive,
+                          currency: configProvider.currency,
+                          language: context.locale.languageCode,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing16,
+                // Content
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppTheme.spacing16,
+                    AppTheme.spacing16,
+                    AppTheme.spacing16,
+                    AppTheme.spacing24,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Summary card with trend
-                      SummaryCard(
-                        stats: stats,
-                        trendPercentage: reportProvider.trendPercentage,
-                        isTrendPositive: reportProvider.isTrendPositive,
-                        currency: configProvider.currency,
-                        language: context.locale.languageCode,
-                      ),
-                      const SizedBox(height: AppTheme.spacing16),
-
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
                       // Stats grid (avg/day, highest expense)
                       StatsGrid(
                         stats: stats,
@@ -133,18 +135,12 @@ class ReportScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: AppTheme.spacing16),
 
-                      // Category donut chart
-                      if (stats.categoryBreakdown.isNotEmpty)
-                        CategoryDonutChart(
-                          categoryStats: stats.categoryBreakdown,
-                          language: context.locale.languageCode,
-                        ),
-                      const SizedBox(height: AppTheme.spacing16),
-
-                      // Category list with progress bars
-                      if (stats.categoryBreakdown.isNotEmpty)
-                        CategoryList(
-                          categoryStats: stats.categoryBreakdown,
+                      // Category breakdown with expense/income switcher
+                      if (stats.expenseCategoryBreakdown.isNotEmpty ||
+                          stats.incomeCategoryBreakdown.isNotEmpty)
+                        CategoryBreakdownSwitcher(
+                          expenseCategoryStats: stats.expenseCategoryBreakdown,
+                          incomeCategoryStats: stats.incomeCategoryBreakdown,
                           currency: configProvider.currency,
                           language: context.locale.languageCode,
                         ),
@@ -167,7 +163,7 @@ class ReportScreen extends StatelessWidget {
                           language: context.locale.languageCode,
                           limit: 5,
                         ),
-                    ],
+                    ]),
                   ),
                 ),
               ],

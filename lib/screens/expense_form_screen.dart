@@ -289,7 +289,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                     ),
                     const SizedBox(width: AppTheme.spacing16),
                     Text(
-                      DateFormat.yMMMd().format(_selectedDate),
+                      DateFormat.yMMMd(context.locale.languageCode).format(_selectedDate),
                       style: theme.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),

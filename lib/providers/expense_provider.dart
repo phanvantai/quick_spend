@@ -23,11 +23,44 @@ class ExpenseProvider extends ChangeNotifier {
   /// Current user ID
   String get currentUserId => _currentUserId;
 
-  /// Total number of expenses
-  int get expenseCount => _expenses.length;
+  /// Total number of transactions (both expenses and income)
+  int get transactionCount => _expenses.length;
 
-  /// Total amount spent
-  double get totalAmount => _expenses.fold(0.0, (sum, expense) => sum + expense.amount);
+  /// Total number of expenses only
+  int get expenseCount => _expenses.where((e) => e.isExpense).length;
+
+  /// Total number of income only
+  int get incomeCount => _expenses.where((e) => e.isIncome).length;
+
+  /// List of expenses only (filtered)
+  List<Expense> get expensesOnly => _expenses.where((e) => e.isExpense).toList();
+
+  /// List of income only (filtered)
+  List<Expense> get incomeOnly => _expenses.where((e) => e.isIncome).toList();
+
+  /// Total amount spent (expenses only)
+  double get totalExpenses => _expenses
+      .where((e) => e.isExpense)
+      .fold(0.0, (sum, expense) => sum + expense.amount);
+
+  /// Total income received
+  double get totalIncome => _expenses
+      .where((e) => e.isIncome)
+      .fold(0.0, (sum, expense) => sum + expense.amount);
+
+  /// Net balance (income - expenses)
+  double get netBalance => totalIncome - totalExpenses;
+
+  /// Savings rate as percentage (0-100)
+  /// Returns 0 if no income
+  double get savingsRate {
+    if (totalIncome == 0) return 0.0;
+    return ((totalIncome - totalExpenses) / totalIncome) * 100;
+  }
+
+  /// Total amount (for backward compatibility - expenses only)
+  @Deprecated('Use totalExpenses instead')
+  double get totalAmount => totalExpenses;
 
   /// Set the current user ID (for future multi-user support)
   void setUserId(String userId) {
@@ -157,6 +190,47 @@ class ExpenseProvider extends ChangeNotifier {
     final startOfMonth = DateTime(now.year, now.month, 1);
     final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
     return getExpensesByDateRange(startOfMonth, endOfMonth);
+  }
+
+  /// Get expenses only for a specific date range
+  Future<List<Expense>> getExpensesOnlyByDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    try {
+      return await _expenseService.getTransactionsByDateRangeAndType(
+        _currentUserId,
+        startDate,
+        endDate,
+        'expense',
+      );
+    } catch (e) {
+      debugPrint('Error getting expenses by date range: $e');
+      return [];
+    }
+  }
+
+  /// Get income only for a specific date range
+  Future<List<Expense>> getIncomeOnlyByDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    try {
+      return await _expenseService.getTransactionsByDateRangeAndType(
+        _currentUserId,
+        startDate,
+        endDate,
+        'income',
+      );
+    } catch (e) {
+      debugPrint('Error getting income by date range: $e');
+      return [];
+    }
+  }
+
+  /// Get transactions by type from current loaded data
+  List<Expense> filterByType(TransactionType type) {
+    return _expenses.where((e) => e.type == type).toList();
   }
 
   /// Reset all data (for testing)

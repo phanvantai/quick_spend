@@ -7,7 +7,7 @@ import '../models/category.dart';
 /// Service for managing expenses using SQLite local database
 class ExpenseService {
   static const String _databaseName = 'quick_spend.db';
-  static const int _databaseVersion = 2; // Updated for categoryId migration
+  static const int _databaseVersion = 1;
   static const String _tableName = 'expenses';
   static const String _categoriesTableName = 'categories';
 
@@ -24,7 +24,6 @@ class ExpenseService {
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
     );
 
     // Seed system categories if needed
@@ -33,7 +32,7 @@ class ExpenseService {
 
   /// Create the database schema
   Future<void> _onCreate(Database db, int version) async {
-    // Create expenses table with categoryId
+    // Create expenses table with categoryId and type
     await db.execute('''
       CREATE TABLE $_tableName (
         id TEXT PRIMARY KEY,
@@ -44,7 +43,8 @@ class ExpenseService {
         date TEXT NOT NULL,
         userId TEXT NOT NULL,
         rawInput TEXT NOT NULL,
-        confidence REAL NOT NULL
+        confidence REAL NOT NULL,
+        type TEXT NOT NULL DEFAULT 'expense'
       )
     ''');
 
@@ -60,79 +60,12 @@ class ExpenseService {
         colorValue INTEGER NOT NULL,
         isSystem INTEGER NOT NULL,
         userId TEXT,
+        type TEXT NOT NULL DEFAULT 'expense',
         createdAt TEXT NOT NULL
       )
     ''');
 
     debugPrint('✅ [ExpenseService] Database schema created (v$version)');
-  }
-
-  /// Handle database upgrades
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    debugPrint('🔄 [ExpenseService] Upgrading database from v$oldVersion to v$newVersion');
-
-    if (oldVersion < 2) {
-      // Create categories table
-      await db.execute('''
-        CREATE TABLE $_categoriesTableName (
-          id TEXT PRIMARY KEY,
-          nameEn TEXT NOT NULL,
-          nameVi TEXT NOT NULL,
-          keywordsEn TEXT NOT NULL,
-          keywordsVi TEXT NOT NULL,
-          iconCodePoint INTEGER NOT NULL,
-          colorValue INTEGER NOT NULL,
-          isSystem INTEGER NOT NULL,
-          userId TEXT,
-          createdAt TEXT NOT NULL
-        )
-      ''');
-
-      // Check if category column exists (old schema)
-      final tableInfo = await db.rawQuery("PRAGMA table_info($_tableName)");
-      final hasOldCategory = tableInfo.any((col) => col['name'] == 'category');
-
-      if (hasOldCategory) {
-        // Rename old category column to categoryId
-        // SQLite doesn't support column rename directly, so we need to recreate table
-        await db.execute('ALTER TABLE $_tableName RENAME TO ${_tableName}_old');
-
-        // Create new table with categoryId
-        await db.execute('''
-          CREATE TABLE $_tableName (
-            id TEXT PRIMARY KEY,
-            amount REAL NOT NULL,
-            description TEXT NOT NULL,
-            categoryId TEXT NOT NULL,
-            language TEXT NOT NULL,
-            date TEXT NOT NULL,
-            userId TEXT NOT NULL,
-            rawInput TEXT NOT NULL,
-            confidence REAL NOT NULL
-          )
-        ''');
-
-        // Copy data from old table, renaming category to categoryId
-        await db.execute('''
-          INSERT INTO $_tableName (id, amount, description, categoryId, language, date, userId, rawInput, confidence)
-          SELECT id, amount, description, category, language, date, userId, rawInput, confidence
-          FROM ${_tableName}_old
-        ''');
-
-        // Drop old table
-        await db.execute('DROP TABLE ${_tableName}_old');
-      } else {
-        // Table already has categoryId, just add it if missing
-        try {
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN categoryId TEXT DEFAULT "other"');
-        } catch (e) {
-          // Column might already exist
-          debugPrint('⚠️ [ExpenseService] categoryId column may already exist: $e');
-        }
-      }
-
-      debugPrint('✅ [ExpenseService] Database upgraded successfully');
-    }
   }
 
   /// Ensure database is initialized
@@ -146,6 +79,7 @@ class ExpenseService {
   Future<void> saveExpense(Expense expense) async {
     await _ensureInitialized();
     debugPrint('💾 [ExpenseService] Saving expense: ${expense.description} - ${expense.amount}');
+    debugPrint('   Type: ${expense.type.name}, Category: ${expense.categoryId}');
     await _database!.insert(
       _tableName,
       expense.toJson(),
@@ -166,7 +100,12 @@ class ExpenseService {
     );
 
     debugPrint('📋 [ExpenseService] Loaded ${maps.length} expense(s) from SQLite');
-    return maps.map((map) => Expense.fromJson(map)).toList();
+    final expenses = maps.map((map) {
+      final expense = Expense.fromJson(map);
+      debugPrint('   ${expense.description}: type=${expense.type.name}, category=${expense.categoryId}');
+      return expense;
+    }).toList();
+    return expenses;
   }
 
   /// Get expenses for a specific date range
@@ -184,6 +123,60 @@ class ExpenseService {
         userId,
         startDate.toIso8601String(),
         endDate.toIso8601String(),
+      ],
+      orderBy: 'date DESC',
+    );
+
+    return maps.map((map) => Expense.fromJson(map)).toList();
+  }
+
+  /// Get only expenses (not income) for a user
+  Future<List<Expense>> getExpensesOnly(String userId) async {
+    await _ensureInitialized();
+
+    final List<Map<String, dynamic>> maps = await _database!.query(
+      _tableName,
+      where: 'userId = ? AND type = ?',
+      whereArgs: [userId, 'expense'],
+      orderBy: 'date DESC',
+    );
+
+    debugPrint('📋 [ExpenseService] Loaded ${maps.length} expense(s) from SQLite');
+    return maps.map((map) => Expense.fromJson(map)).toList();
+  }
+
+  /// Get only income for a user
+  Future<List<Expense>> getIncomeOnly(String userId) async {
+    await _ensureInitialized();
+
+    final List<Map<String, dynamic>> maps = await _database!.query(
+      _tableName,
+      where: 'userId = ? AND type = ?',
+      whereArgs: [userId, 'income'],
+      orderBy: 'date DESC',
+    );
+
+    debugPrint('📋 [ExpenseService] Loaded ${maps.length} income(s) from SQLite');
+    return maps.map((map) => Expense.fromJson(map)).toList();
+  }
+
+  /// Get expenses or income for a specific date range and type
+  Future<List<Expense>> getTransactionsByDateRangeAndType(
+    String userId,
+    DateTime startDate,
+    DateTime endDate,
+    String type, // 'expense' or 'income'
+  ) async {
+    await _ensureInitialized();
+
+    final List<Map<String, dynamic>> maps = await _database!.query(
+      _tableName,
+      where: 'userId = ? AND date >= ? AND date <= ? AND type = ?',
+      whereArgs: [
+        userId,
+        startDate.toIso8601String(),
+        endDate.toIso8601String(),
+        type,
       ],
       orderBy: 'date DESC',
     );
@@ -243,14 +236,42 @@ class ExpenseService {
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
-  /// Get total amount spent for a user
+  /// Get total amount spent for a user (expenses only, not income)
   Future<double> getTotalAmount(String userId) async {
     await _ensureInitialized();
     final result = await _database!.rawQuery(
-      'SELECT SUM(amount) as total FROM $_tableName WHERE userId = ?',
-      [userId],
+      'SELECT SUM(amount) as total FROM $_tableName WHERE userId = ? AND type = ?',
+      [userId, 'expense'],
     );
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  /// Get total income for a user
+  Future<double> getTotalIncome(String userId) async {
+    await _ensureInitialized();
+    final result = await _database!.rawQuery(
+      'SELECT SUM(amount) as total FROM $_tableName WHERE userId = ? AND type = ?',
+      [userId, 'income'],
+    );
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  /// Get net balance (income - expenses) for a user
+  Future<double> getNetBalance(String userId) async {
+    await _ensureInitialized();
+    final income = await getTotalIncome(userId);
+    final expenses = await getTotalAmount(userId);
+    return income - expenses;
+  }
+
+  /// Get expense count by type
+  Future<int> getTransactionCount(String userId, String type) async {
+    await _ensureInitialized();
+    final result = await _database!.rawQuery(
+      'SELECT COUNT(*) as count FROM $_tableName WHERE userId = ? AND type = ?',
+      [userId, type],
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
   /// Close the database connection
@@ -263,37 +284,6 @@ class ExpenseService {
   Future<void> clearAll() async {
     await _ensureInitialized();
     await _database!.delete(_tableName);
-  }
-
-  /// Migrate expenses with incorrect userIds to the correct one
-  ///
-  /// This fixes legacy data where expenses may have been created with
-  /// different userId values (e.g., 'default_user' instead of 'local_user').
-  Future<void> migrateUserIds(String correctUserId) async {
-    await _ensureInitialized();
-
-    // Get count of expenses with wrong userId
-    final result = await _database!.rawQuery(
-      'SELECT COUNT(*) as count FROM $_tableName WHERE userId != ?',
-      [correctUserId],
-    );
-    final wrongCount = Sqflite.firstIntValue(result) ?? 0;
-
-    if (wrongCount > 0) {
-      debugPrint(
-        '🔄 [ExpenseService] Found $wrongCount expense(s) with incorrect userId, migrating...',
-      );
-
-      // Update all expenses to use the correct userId
-      final updatedCount = await _database!.rawUpdate(
-        'UPDATE $_tableName SET userId = ? WHERE userId != ?',
-        [correctUserId, correctUserId],
-      );
-
-      debugPrint(
-        '✅ [ExpenseService] Migrated $updatedCount expense(s) to userId: $correctUserId',
-      );
-    }
   }
 
   // ============================================================================
@@ -398,12 +388,13 @@ class ExpenseService {
     debugPrint('✅ [ExpenseService] Category created');
   }
 
-  /// Update a user-defined category
+  /// Update a category (user-defined or system, except fallback categories)
   Future<void> updateCategory(QuickCategory category) async {
     await _ensureInitialized();
 
-    if (category.isSystem) {
-      throw Exception('Cannot update system categories');
+    // Prevent updating fallback categories (other and other_income)
+    if (category.id == 'other' || category.id == 'other_income') {
+      throw Exception('Cannot update fallback categories (other, other_income)');
     }
 
     await _database!.update(
@@ -414,21 +405,42 @@ class ExpenseService {
     );
   }
 
-  /// Delete a user-defined category
+  /// Delete a category (user-defined or system, except fallback categories)
   Future<void> deleteCategory(String id) async {
     await _ensureInitialized();
 
-    // Ensure it's not a system category
-    final category = await getCategoryById(id);
-    if (category?.isSystem == true) {
-      throw Exception('Cannot delete system categories');
+    // Prevent deletion of fallback categories (other and other_income)
+    if (id == 'other' || id == 'other_income') {
+      throw Exception('Cannot delete fallback categories (other, other_income)');
     }
 
+    // Get the category to determine its type
+    final category = await getCategoryById(id);
+    if (category == null) {
+      throw Exception('Category not found: $id');
+    }
+
+    // Determine the appropriate fallback category based on type
+    final fallbackCategoryId = category.isIncomeCategory ? 'other_income' : 'other';
+
+    debugPrint('🗑️ [ExpenseService] Deleting category: $id (${category.type.name})');
+    debugPrint('   Reassigning expenses to: $fallbackCategoryId');
+
+    // Reassign all expenses with this category to the appropriate fallback
+    final reassignCount = await _database!.rawUpdate(
+      'UPDATE $_tableName SET categoryId = ? WHERE categoryId = ?',
+      [fallbackCategoryId, id],
+    );
+    debugPrint('   Reassigned $reassignCount expense(s) to $fallbackCategoryId');
+
+    // Delete the category
     await _database!.delete(
       _categoriesTableName,
-      where: 'id = ? AND isSystem = 0',
+      where: 'id = ?',
       whereArgs: [id],
     );
+
+    debugPrint('✅ [ExpenseService] Category deleted: $id');
   }
 
   /// Clear all user-defined categories (for testing)

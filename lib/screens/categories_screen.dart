@@ -9,8 +9,58 @@ import '../theme/app_theme.dart';
 import 'category_form_screen.dart';
 
 /// Screen for managing expense categories
-class CategoriesScreen extends StatelessWidget {
+class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
+
+  @override
+  State<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends State<CategoriesScreen> {
+  // Filter state: true = Income, false = Expense
+  bool _showIncome = false; // Default to Expense
+
+  List<QuickCategory> _filterCategories(List<QuickCategory> categories) {
+    return categories.where((cat) {
+      return _showIncome ? cat.isIncomeCategory : cat.isExpenseCategory;
+    }).toList();
+  }
+
+  Widget _buildFilterChips(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing16,
+        vertical: AppTheme.spacing12,
+      ),
+      child: Row(
+        children: [
+          FilterChip(
+            label: Text(context.tr('categories.expense')),
+            selected: !_showIncome,
+            onSelected: (selected) {
+              setState(() {
+                _showIncome = false;
+              });
+            },
+            selectedColor: AppTheme.error.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.error,
+          ),
+          const SizedBox(width: AppTheme.spacing8),
+          FilterChip(
+            label: Text(context.tr('categories.income')),
+            selected: _showIncome,
+            onSelected: (selected) {
+              setState(() {
+                _showIncome = true;
+              });
+            },
+            selectedColor: AppTheme.success.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.success,
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,12 +86,19 @@ class CategoriesScreen extends StatelessWidget {
           }
 
           final language = appConfigProvider.language;
-          final systemCategories = categoryProvider.systemCategories;
-          final userCategories = categoryProvider.userCategories;
+          final allSystemCategories = categoryProvider.systemCategories;
+          final allUserCategories = categoryProvider.userCategories;
+
+          // Apply filter
+          final systemCategories = _filterCategories(allSystemCategories);
+          final userCategories = _filterCategories(allUserCategories);
 
           return ListView(
             padding: const EdgeInsets.only(bottom: 88), // Space for FAB
             children: [
+              // Filter Chips
+              _buildFilterChips(context),
+
               // System Categories Section
               _buildSectionHeader(
                 context,
@@ -49,16 +106,20 @@ class CategoriesScreen extends StatelessWidget {
                 context.tr('categories.system_categories_subtitle'),
               ),
               ...systemCategories.map((category) {
+                // Lock fallback categories (other and other_income)
+                final isFallbackCategory =
+                    category.id == 'other' || category.id == 'other_income';
+
                 return _buildCategoryTile(
                   context,
                   category,
                   language,
                   isSystem: true,
-                  // Prevent editing and deletion of 'other' category as it's the fallback
-                  onEdit: category.id != 'other'
+                  // Prevent editing and deletion of fallback categories only
+                  onEdit: !isFallbackCategory
                       ? () => _navigateToEditCategory(context, category)
                       : null,
-                  onDelete: category.id != 'other'
+                  onDelete: !isFallbackCategory
                       ? () => _deleteCategory(context, category)
                       : null,
                 );
@@ -136,13 +197,21 @@ class CategoriesScreen extends StatelessWidget {
     VoidCallback? onDelete,
   }) {
     final theme = Theme.of(context);
-    final isOtherCategory = category.id == 'other';
+    final isFallbackCategory =
+        category.id == 'other' || category.id == 'other_income';
+
+    // Check if category has any actions (not a system category)
+    final hasActions = onEdit != null || onDelete != null;
 
     final cardContent = Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacing16,
-        vertical: AppTheme.spacing4,
-      ),
+      margin: !hasActions
+          ? const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing16,
+              vertical: AppTheme.spacing4,
+            )
+          : const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing16,
+            ),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(AppTheme.spacing12),
@@ -161,7 +230,7 @@ class CategoriesScreen extends StatelessWidget {
           style: theme.textTheme.titleMedium,
         ),
         subtitle: Text(
-          isOtherCategory
+          isFallbackCategory
               ? context.tr('categories.required_category_locked')
               : isSystem
                   ? context.tr('categories.system_category')
@@ -170,7 +239,7 @@ class CategoriesScreen extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        trailing: isOtherCategory
+        trailing: isFallbackCategory
             ? Tooltip(
                 message: context.tr('categories.cannot_edit_other'),
                 child: Icon(
@@ -183,36 +252,43 @@ class CategoriesScreen extends StatelessWidget {
       ),
     );
 
-    // For 'other' category, don't add slidable actions
-    if (isOtherCategory) {
+    // For system categories (no actions available), don't add slidable
+    if (!hasActions) {
       return cardContent;
     }
 
-    // Add slidable actions for other categories
-    return Slidable(
-      key: ValueKey(category.id),
-      endActionPane: ActionPane(
-        motion: const DrawerMotion(),
-        children: [
-          if (onEdit != null)
-            SlidableAction(
-              onPressed: (_) => onEdit(),
-              backgroundColor: AppTheme.primaryMint,
-              foregroundColor: Colors.white,
-              icon: Icons.edit,
-              label: context.tr('common.edit'),
-            ),
-          if (onDelete != null)
-            SlidableAction(
-              onPressed: (_) => onDelete(),
-              backgroundColor: AppTheme.error,
-              foregroundColor: Colors.white,
-              icon: Icons.delete,
-              label: context.tr('common.delete'),
-            ),
-        ],
+    // Add slidable actions for user categories
+    // Wrap with padding to add vertical spacing
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing4),
+      child: Slidable(
+        key: ValueKey(category.id),
+        endActionPane: ActionPane(
+          motion: const DrawerMotion(),
+          extentRatio: 0.4, // Limit action pane width
+          children: [
+            if (onEdit != null)
+              SlidableAction(
+                onPressed: (_) => onEdit(),
+                backgroundColor: AppTheme.primaryMint,
+                foregroundColor: Colors.white,
+                icon: Icons.edit,
+                label: context.tr('common.edit'),
+                autoClose: true,
+              ),
+            if (onDelete != null)
+              SlidableAction(
+                onPressed: (_) => onDelete(),
+                backgroundColor: AppTheme.error,
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                label: context.tr('common.delete'),
+                autoClose: true,
+              ),
+          ],
+        ),
+        child: cardContent,
       ),
-      child: cardContent,
     );
   }
 
@@ -342,6 +418,8 @@ class CategoriesScreen extends StatelessWidget {
     BuildContext context,
     QuickCategory category,
   ) async {
+    final appConfig = context.read<AppConfigProvider>().config;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -349,7 +427,7 @@ class CategoriesScreen extends StatelessWidget {
         content: Text(
           context.tr(
             'categories.delete_category_confirm',
-            namedArgs: {'name': category.getLabel('en')},
+            namedArgs: {'name': category.getLabel(appConfig.language)},
           ),
         ),
         actions: [

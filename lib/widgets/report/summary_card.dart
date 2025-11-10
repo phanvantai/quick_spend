@@ -28,43 +28,82 @@ class SummaryCard extends StatelessWidget {
       elevation: 0,
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppTheme.primaryGradient,
+          gradient: AppTheme.summaryGradient,
           borderRadius: AppTheme.borderRadiusMedium,
         ),
-        padding: const EdgeInsets.all(AppTheme.spacing24),
+        padding: const EdgeInsets.all(AppTheme.spacing12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Title
             Text(
-              context.tr('report.total_spending'),
+              context.tr('report.financial_overview'),
               style: theme.textTheme.titleMedium?.copyWith(
                 color: Colors.white.withValues(alpha: 0.9),
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: AppTheme.spacing12),
+            const SizedBox(height: AppTheme.spacing8),
 
-            // Total amount with trend
+            // Income/Expenses Row
+            Row(
+              children: [
+                Expanded(
+                  child: _buildFinancialItem(
+                    context,
+                    Icons.account_balance_wallet_outlined,
+                    context.tr('report.income'),
+                    _formatAmount(context, stats.totalIncome),
+                    AppTheme.success,
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacing12),
+                Expanded(
+                  child: _buildFinancialItem(
+                    context,
+                    Icons.shopping_bag_outlined,
+                    context.tr('report.expenses_label'),
+                    _formatAmount(context, stats.totalExpenses),
+                    AppTheme.error,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppTheme.spacing8),
+
+            // Net Balance with trend
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Text(
-                    _formatAmount(context, stats.totalAmount),
-                    style: theme.textTheme.displaySmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 36,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.tr('report.net_balance'),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _formatAmount(context, stats.netBalance),
+                        style: theme.textTheme.displaySmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 30,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 if (trendPercentage != null) _buildTrendIndicator(theme),
               ],
             ),
-            const SizedBox(height: AppTheme.spacing16),
+            const SizedBox(height: AppTheme.spacing8),
 
-            // Statistics row
+            // Statistics row (Transaction counts and savings rate)
             Row(
               children: [
                 Expanded(
@@ -72,9 +111,7 @@ class SummaryCard extends StatelessWidget {
                     context,
                     Icons.receipt_long,
                     stats.transactionCount.toString(),
-                    stats.transactionCount == 1
-                        ? context.tr('report.expense')
-                        : context.tr('report.expenses'),
+                    context.tr('report.transactions'),
                   ),
                 ),
                 Container(
@@ -88,9 +125,9 @@ class SummaryCard extends StatelessWidget {
                 Expanded(
                   child: _buildStatItem(
                     context,
-                    Icons.trending_up,
-                    _formatAmount(context, stats.averagePerTransaction),
-                    context.tr('report.avg_per_transaction'),
+                    Icons.savings_outlined,
+                    '${stats.savingsRate.toStringAsFixed(1)}%',
+                    context.tr('report.savings_rate'),
                   ),
                 ),
               ],
@@ -135,6 +172,56 @@ class SummaryCard extends StatelessWidget {
     );
   }
 
+  Widget _buildFinancialItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+    Color accentColor,
+  ) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spacing8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: AppTheme.borderRadiusSmall,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: accentColor,
+              ),
+              const SizedBox(width: AppTheme.spacing4),
+              Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatItem(
     BuildContext context,
     IconData icon,
@@ -167,7 +254,7 @@ class SummaryCard extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppTheme.spacing4),
+        const SizedBox(height: 2),
         Text(
           label,
           style: theme.textTheme.bodySmall?.copyWith(
