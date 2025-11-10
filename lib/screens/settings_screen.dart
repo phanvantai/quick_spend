@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -459,7 +461,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            // ignore: use_build_context_synchronously
             content: Text(context.tr('settings.language_changed')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 2),
@@ -472,7 +473,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
-              // ignore: use_build_context_synchronously
               context.tr(
                 'settings.error_changing_language',
                 namedArgs: {'error': e.toString()},
@@ -500,7 +500,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            // ignore: use_build_context_synchronously
             content: Text(context.tr('settings.currency_changed')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 2),
@@ -513,7 +512,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
-              // ignore: use_build_context_synchronously
               context.tr(
                 'settings.error_changing_currency',
                 namedArgs: {'error': e.toString()},
@@ -541,7 +539,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            // ignore: use_build_context_synchronously
             content: Text(context.tr('settings.theme_changed')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 2),
@@ -554,7 +551,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
-              // ignore: use_build_context_synchronously
               context.tr(
                 'settings.error_changing_theme',
                 namedArgs: {'error': e.toString()},
@@ -627,7 +623,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.clearSnackBars();
         messenger.showSnackBar(
           SnackBar(
-            // ignore: use_build_context_synchronously
             content: Text(context.tr('settings.export_success')),
             backgroundColor: AppTheme.success,
             duration: const Duration(seconds: 3),
@@ -641,7 +636,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
-              // ignore: use_build_context_synchronously
               context.tr(
                 'settings.export_error',
                 namedArgs: {'error': e.toString()},
@@ -684,7 +678,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       // Show loading
       if (mounted) {
-        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -761,7 +754,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             message += ', ${importResult.duplicateCount} duplicates';
           }
         } else {
-          // ignore: use_build_context_synchronously
           message = context.tr(
             'settings.import_success',
             namedArgs: {
@@ -789,7 +781,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
-              // ignore: use_build_context_synchronously
               context.tr(
                 'settings.import_error',
                 namedArgs: {'error': e.toString()},
