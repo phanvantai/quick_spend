@@ -35,6 +35,28 @@ class ImportResult {
 
 /// Service for importing expense data from various formats
 class ImportService {
+  /// Validate and fix category ID
+  /// Returns a valid category ID, falling back to "other" or "other_income" if invalid
+  static String _validateCategoryId(
+    String categoryId,
+    TransactionType type,
+    List<QuickCategory> availableCategories,
+  ) {
+    // Check if category exists
+    final categoryExists = availableCategories.any((c) => c.id == categoryId);
+
+    if (categoryExists) {
+      return categoryId;
+    }
+
+    // Category doesn't exist - use fallback
+    final fallback = type == TransactionType.income ? 'other_income' : 'other';
+    debugPrint(
+      '⚠️ [ImportService] Category "$categoryId" not found, using fallback "$fallback"',
+    );
+    return fallback;
+  }
+
   /// Import expenses from CSV file
   /// NOTE: CSV import only handles expenses, not categories.
   /// Categories must exist in the app before importing.
@@ -42,6 +64,7 @@ class ImportService {
     String filePath,
     String userId,
     List<Expense> existingExpenses,
+    List<QuickCategory> availableCategories,
   ) async {
     debugPrint('📥 [ImportService] Importing from CSV: $filePath');
 
@@ -167,12 +190,19 @@ class ImportService {
           // Parse transaction type
           final type = TransactionType.fromJson(typeStr);
 
+          // Validate and fix category ID if it doesn't exist
+          final validCategoryId = _validateCategoryId(
+            categoryId,
+            type,
+            availableCategories,
+          );
+
           // Create expense
           final expense = Expense(
             id: id,
             amount: amount,
             description: description,
-            categoryId: categoryId,
+            categoryId: validCategoryId,
             language: language,
             date: date,
             userId: userId,
@@ -323,17 +353,34 @@ class ImportService {
           }
 
           // Create expense from JSON (with fallback to new ID)
-          final expense = Expense.fromJson({
+          var expense = Expense.fromJson({
             ...expenseData,
             'id': id ?? const Uuid().v4(),
             'userId': userId, // Override userId to current user
           });
 
-          // Validate
+          // Validate amount
           if (expense.amount <= 0) {
             errors.add('Item ${i + 1}: Invalid amount (${expense.amount})');
             failureCount++;
             continue;
+          }
+
+          // Validate and fix category ID if it doesn't exist
+          // This includes all categories: existing + newly imported from this file
+          final allAvailableCategories = [
+            ...existingCategories,
+            ...importedCategories,
+          ];
+          final validCategoryId = _validateCategoryId(
+            expense.categoryId,
+            expense.type,
+            allAvailableCategories,
+          );
+
+          // Update expense with valid category ID if it was changed
+          if (validCategoryId != expense.categoryId) {
+            expense = expense.copyWith(categoryId: validCategoryId);
           }
 
           importedExpenses.add(expense);

@@ -740,6 +740,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           filePath,
           userId,
           existingExpenses,
+          existingCategories,
         );
       } else if (extension == 'json') {
         importResult = await ImportService.importFromJSON(
