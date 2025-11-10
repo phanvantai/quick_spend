@@ -85,7 +85,9 @@ class QuickCategory {
       colorValue: json['colorValue'] as int,
       isSystem: (json['isSystem'] as int) == 1,
       userId: json['userId'] as String?,
-      type: TransactionType.fromJson(json['type'] as String),
+      type: json['type'] != null
+          ? TransactionType.fromJson(json['type'] as String)
+          : TransactionType.expense, // Default to expense for backward compatibility
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
