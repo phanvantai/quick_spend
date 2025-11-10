@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:file_picker/file_picker.dart';
 import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
+import '../providers/expense_provider.dart';
+import '../providers/category_provider.dart';
+import '../services/export_service.dart';
+import '../services/import_service.dart';
 import '../theme/app_theme.dart';
 import 'categories_screen.dart';
 
@@ -54,6 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle: _getLanguageDisplayName(
                         configProvider.language,
                       ),
+                      description: context.tr('settings.language_description'),
                       onTap: () => _showLanguageDialog(context),
                     ),
 
@@ -73,6 +79,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: context.tr('settings.theme'),
                       subtitle: _getThemeDisplayName(configProvider.themeMode),
                       onTap: () => _showThemeDialog(context),
+                    ),
+
+                    const Divider(height: 32),
+
+                    // Data Section
+                    _buildSectionHeader(context.tr('settings.data')),
+
+                    _buildListTile(
+                      icon: Icons.upload_file,
+                      iconColor: AppTheme.success,
+                      title: context.tr('settings.export_data'),
+                      subtitle: context.tr('settings.export_data_subtitle'),
+                      onTap: () => _showExportDialog(context),
+                    ),
+
+                    _buildListTile(
+                      icon: Icons.download,
+                      iconColor: AppTheme.info,
+                      title: context.tr('settings.import_data'),
+                      subtitle: context.tr('settings.import_data_subtitle'),
+                      onTap: () => _handleImport(context),
                     ),
 
                     const Divider(height: 32),
@@ -166,6 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required Color iconColor,
     required String title,
     required String subtitle,
+    String? description,
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
@@ -185,11 +213,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Icon(icon, color: iconColor, size: 24),
         ),
         title: Text(title, style: theme.textTheme.titleMedium),
-        subtitle: Text(
-          subtitle,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (description != null) ...[
+              const SizedBox(height: AppTheme.spacing4),
+              Text(
+                description,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.7,
+                  ),
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ],
         ),
         trailing: Icon(
           Icons.chevron_right,
@@ -516,6 +561,223 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  // Export to JSON (removed CSV option since it doesn't include categories)
+  void _showExportDialog(BuildContext context) {
+    _handleExport(context, 'json');
+  }
+
+  // Handle Export (JSON only - includes all categories and expenses)
+  Future<void> _handleExport(BuildContext context, String format) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final expenseProvider = context.read<ExpenseProvider>();
+    final categoryProvider = context.read<CategoryProvider>();
+
+    try {
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacing12),
+                Text('Exporting...'),
+              ],
+            ),
+            duration: const Duration(seconds: 30),
+          ),
+        );
+      }
+
+      final expenses = expenseProvider.expenses;
+      final categories = categoryProvider.categories;
+
+      // JSON exports both expenses and all categories (complete backup)
+      final filePath = await ExportService.exportToJSON(expenses, categories);
+
+      // Share the file
+      await ExportService.shareFile(filePath, 'quick_spend_export.json');
+
+      if (mounted) {
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
+          SnackBar(
+            // ignore: use_build_context_synchronously
+            content: Text(context.tr('settings.export_success')),
+            backgroundColor: AppTheme.success,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [SettingsScreen] Error exporting: $e');
+      if (mounted) {
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              // ignore: use_build_context_synchronously
+              context.tr(
+                'settings.export_error',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
+            backgroundColor: AppTheme.error,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  // Handle Import
+  Future<void> _handleImport(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final expenseProvider = context.read<ExpenseProvider>();
+    final categoryProvider = context.read<CategoryProvider>();
+    //final configProvider = context.read<AppConfigProvider>();
+
+    try {
+      // Pick JSON file only (CSV doesn't include categories)
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result == null || result.files.isEmpty) {
+        debugPrint('⚠️ [SettingsScreen] No file selected');
+        return;
+      }
+
+      final filePath = result.files.first.path;
+      if (filePath == null) {
+        debugPrint('⚠️ [SettingsScreen] File path is null');
+        return;
+      }
+
+      debugPrint('📁 [SettingsScreen] Importing from: $filePath');
+
+      // Show loading
+      if (mounted) {
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacing12),
+                Text('Importing...'),
+              ],
+            ),
+            duration: const Duration(seconds: 30),
+          ),
+        );
+      }
+
+      // Import from JSON (includes all categories and expenses)
+      final userId = expenseProvider.currentUserId;
+      final existingExpenses = expenseProvider.expenses;
+      final existingCategories = categoryProvider.categories;
+
+      final importResult = await ImportService.importFromJSON(
+        filePath,
+        userId,
+        existingExpenses,
+        existingCategories,
+      );
+
+      // Save imported categories first (import file has higher priority)
+      for (final category in importResult.importedCategories) {
+        final exists = existingCategories.any((c) => c.id == category.id);
+        if (exists) {
+          // Override existing category with imported data
+          await categoryProvider.updateCategory(category);
+          debugPrint(
+            '🔄 [SettingsScreen] Updated category: ${category.nameEn}',
+          );
+        } else {
+          // Create new category
+          await categoryProvider.createCategory(category);
+          debugPrint('➕ [SettingsScreen] Created category: ${category.nameEn}');
+        }
+      }
+
+      // Then save imported expenses
+      for (final expense in importResult.importedExpenses) {
+        await expenseProvider.addExpense(expense);
+      }
+
+      if (mounted) {
+        messenger.clearSnackBars();
+
+        // Build success message with category info if applicable
+        String message;
+        if (importResult.categoriesImported > 0) {
+          message =
+              'Imported ${importResult.categoriesImported} categories, ${importResult.successCount} expenses';
+          if (importResult.failureCount > 0) {
+            message += ', ${importResult.failureCount} failed';
+          }
+          if (importResult.duplicateCount > 0) {
+            message += ', ${importResult.duplicateCount} duplicates';
+          }
+        } else {
+          // ignore: use_build_context_synchronously
+          message = context.tr(
+            'settings.import_success',
+            namedArgs: {
+              'success': importResult.successCount.toString(),
+              'failed': importResult.failureCount.toString(),
+              'duplicates': importResult.duplicateCount.toString(),
+            },
+          );
+        }
+
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: importResult.hasErrors
+                ? AppTheme.warning
+                : AppTheme.success,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [SettingsScreen] Error importing: $e');
+      if (mounted) {
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              // ignore: use_build_context_synchronously
+              context.tr(
+                'settings.import_error',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
+            backgroundColor: AppTheme.error,
+            duration: const Duration(seconds: 5),
           ),
         );
       }

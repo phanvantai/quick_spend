@@ -20,7 +20,7 @@ class CategoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    //final theme = Theme.of(context);
 
     if (categoryStats.isEmpty) {
       return const SizedBox.shrink();
@@ -33,18 +33,18 @@ class CategoryList extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(
-                left: AppTheme.spacing4,
-                bottom: AppTheme.spacing12,
-              ),
-              child: Text(
-                context.tr('report.spending_by_category'),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.only(
+            //     left: AppTheme.spacing4,
+            //     bottom: AppTheme.spacing12,
+            //   ),
+            //   child: Text(
+            //     context.tr('report.spending_by_category'),
+            //     style: theme.textTheme.titleMedium?.copyWith(
+            //       fontWeight: FontWeight.w600,
+            //     ),
+            //   ),
+            // ),
             ...categoryStats.map((stat) => _buildCategoryItem(context, stat)),
           ],
         ),
@@ -76,11 +76,7 @@ class CategoryList extends StatelessWidget {
                     color: stat.color.withValues(alpha: 0.15),
                     borderRadius: AppTheme.borderRadiusSmall,
                   ),
-                  child: Icon(
-                    stat.icon,
-                    size: 20,
-                    color: stat.color,
-                  ),
+                  child: Icon(stat.icon, size: 20, color: stat.color),
                 ),
                 const SizedBox(width: AppTheme.spacing12),
                 Expanded(
@@ -143,7 +139,9 @@ class CategoryList extends StatelessWidget {
   String _formatAmount(BuildContext context, double amount) {
     if (language == 'vi') {
       // Vietnamese format
-      final formatted = amount.toStringAsFixed(0).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(0)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );
@@ -152,7 +150,9 @@ class CategoryList extends StatelessWidget {
           : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
       // English format
-      final formatted = amount.toStringAsFixed(2).replaceAllMapped(
+      final formatted = amount
+          .toStringAsFixed(2)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (Match m) => '${m[1]},',
           );

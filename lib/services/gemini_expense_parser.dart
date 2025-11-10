@@ -213,7 +213,7 @@ class GeminiExpenseParser {
         .map((cat) {
           final keywords = cat.getKeywords(language);
           final label = cat.getLabel(language);
-          return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
+          return '  - ${cat.id}: $label (${keywords.take(2).join(", ")})';
         })
         .join('\n');
 
@@ -221,7 +221,7 @@ class GeminiExpenseParser {
         .map((cat) {
           final keywords = cat.getKeywords(language);
           final label = cat.getLabel(language);
-          return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
+          return '  - ${cat.id}: $label (${keywords.take(2).join(", ")})';
         })
         .join('\n');
 
@@ -251,41 +251,13 @@ Context: $languageHint
 - Use this to calculate all relative dates accurately
 
 Rules:
-1. Extract ALL transactions mentioned (there can be multiple in one input)
-2. Determine if each transaction is an EXPENSE or INCOME:
-   - INCOME keywords: "received", "earned", "got paid", "salary", "wage", "income", "nhận", "lương", "thu nhập", "được", "refund", "hoàn tiền", "gift", "quà", "bonus", "thưởng"
-   - EXPENSE keywords: "spent", "paid", "bought", "chi", "trả", "mua", or any spending description
-   - Default to EXPENSE if unclear
-3. Detect language (en or vi) - use context hint above
-4. Parse amounts in various formats:
-   - Standard: "50k" = 50000, "1.5m" or "1m5" = 1500000
-   - Vietnamese: "50 nghìn" = 50000, "1 triệu" = 1000000
-   - Plain numbers: 50000, 1500000
-   - **Vietnamese slang** (CRITICAL - very common in speech):
-     * "ca" = thousand (k): "45 ca" = 45000, "100ca" = 100000
-     * "củ" = million: "1 củ" = 1000000, "1.5 củ" = 1500000, "2cu" = 2000000
-     * "cọc" = million: "1 cọc" = 1000000, "3 cọc" = 3000000
-     * "chai" = hundred: "5 chai" = 500 (less common)
-   - Important: "củ" and "cọc" mean MILLION, not thousand!
-5. Parse dates and temporal references (use CURRENT DATE CONTEXT above):
-   - Absolute: "on December 5", "12/5", "2024-12-05"
-   - Relative: "yesterday", "hôm qua", "last week", "tuần trước", "3 days ago", "3 ngày trước"
-   - **Day-specific**: "on friday last week", "last monday", "this tuesday", "thứ 6 tuần trước"
-     * Calculate the exact date using today's date and day of week
-     * Example: If today is Monday Jan 13, 2025, "friday last week" = 2025-01-10
-   - Default: If no date mentioned, use "today"
-   - **IMPORTANT**: Always return dates in YYYY-MM-DD format (e.g., "2025-01-10"), NOT "today" or "yesterday"
-6. Categorize using the categories listed below (see Categories section)
-   - Match transaction description to category keywords
-   - Use appropriate income or expense category based on transaction type
-   - Fallback to "other_income" for unmatched income, "other" for unmatched expenses
-7. Fix incomplete words from voice recognition:
-   - Vietnamese: "tiền cơ" → "tiền cơm", "xă" → "xăng", "cafe" can be "cà phê" or "cafe"
-   - Keep original if unclear
-8. Handle complex sentences:
-   - Multiple items: "vegetables, meat, and rice for 200k" → one expense, 200k total
-   - Multiple expenses: "50k coffee and 30k parking" → two separate expenses
-   - Temporal sequences: "yesterday 50k coffee, today 30k parking" → two expenses with different dates
+1. Extract ALL transactions (can be multiple per input)
+2. Classify as EXPENSE or INCOME (keywords: "received/nhận/lương" = income, "spent/chi/mua" = expense, default = expense)
+3. Parse amounts: "50k"=50000, "1m5"=1500000, Vietnamese slang "ca"=thousand, "củ/cọc"=million
+4. Parse dates: Use CURRENT DATE CONTEXT to calculate "yesterday", "last monday", "3 days ago", etc. Return YYYY-MM-DD format only
+5. Categorize using categories below (match keywords, fallback to "other" or "other_income")
+6. Fix voice errors: "tiền cơ"→"tiền cơm", "xă"→"xăng"
+7. Multiple transactions: "50k coffee and 30k parking" = 2 separate expenses
 
 Categories:
 $categoryDescriptions
@@ -315,79 +287,19 @@ Now extract from the input above. Return ONLY valid JSON, no other text.
   static String _getLanguageSpecificExamples(String language) {
     if (language == 'vi') {
       return '''
-Examples (Vietnamese):
-
-EXPENSE examples:
-Input: "45 ca tiền cơm"
-Output: {"language":"vi","expenses":[{"amount":45000,"description":"tiền cơm","category":"food","type":"expense","date":"today","confidence":0.95}]}
-
-Input: "1 củ xăng hôm qua"
-Output: {"language":"vi","expenses":[{"amount":1000000,"description":"xăng","category":"transport","type":"expense","date":"yesterday","confidence":0.95}]}
-
-Input: "100k xăng và 30k cafe"
-Output: {"language":"vi","expenses":[{"amount":100000,"description":"xăng","category":"transport","type":"expense","date":"today","confidence":0.95},{"amount":30000,"description":"cà phê","category":"food","type":"expense","date":"today","confidence":0.95}]}
-
-INCOME examples:
-Input: "nhận lương 15 triệu"
-Output: {"language":"vi","expenses":[{"amount":15000000,"description":"lương","category":"salary","type":"income","date":"today","confidence":0.95}]}
-
-Input: "được 500k làm thêm"
-Output: {"language":"vi","expenses":[{"amount":500000,"description":"làm thêm","category":"freelance","type":"income","date":"today","confidence":0.95}]}
-
-Input: "lì xì 200k hôm qua"
-Output: {"language":"vi","expenses":[{"amount":200000,"description":"lì xì","category":"gift_received","type":"income","date":"yesterday","confidence":0.95}]}
-
-Input: "hoàn tiền 100k"
-Output: {"language":"vi","expenses":[{"amount":100000,"description":"hoàn tiền","category":"refund","type":"income","date":"today","confidence":0.95}]}
-
-DATE CALCULATION examples (assume today is 2025-01-13, Monday):
-Input: "50k cafe thứ 6 tuần trước"
-Output: {"language":"vi","expenses":[{"amount":50000,"description":"cà phê","category":"food","type":"expense","date":"2025-01-10","confidence":0.95}]}
-
-Input: "100k xăng hôm thứ 2 tuần này"
-Output: {"language":"vi","expenses":[{"amount":100000,"description":"xăng","category":"transport","type":"expense","date":"2025-01-13","confidence":0.95}]}
-
-MIXED examples:
-Input: "nhận lương 15 triệu và trả 500k tiền điện"
-Output: {"language":"vi","expenses":[{"amount":15000000,"description":"lương","category":"salary","type":"income","date":"today","confidence":0.95},{"amount":500000,"description":"tiền điện","category":"bills","type":"expense","date":"today","confidence":0.95}]}
+Examples:
+"45 ca tiền cơm" → {"language":"vi","expenses":[{"amount":45000,"description":"tiền cơm","category":"food","type":"expense","date":"today","confidence":0.95}]}
+"nhận lương 15 triệu" → {"language":"vi","expenses":[{"amount":15000000,"description":"lương","category":"salary","type":"income","date":"today","confidence":0.95}]}
+"100k xăng và 30k cafe" → {"language":"vi","expenses":[{"amount":100000,"description":"xăng","category":"transport","type":"expense","date":"today","confidence":0.95},{"amount":30000,"description":"cà phê","category":"food","type":"expense","date":"today","confidence":0.95}]}
+"50k cafe thứ 6 tuần trước" (today is 2025-01-13) → {"language":"vi","expenses":[{"amount":50000,"description":"cà phê","category":"food","type":"expense","date":"2025-01-10","confidence":0.95}]}
 ''';
     } else {
       return '''
-Examples (English):
-
-EXPENSE examples:
-Input: "50k coffee"
-Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food","type":"expense","date":"today","confidence":0.95}]}
-
-Input: "100k gas yesterday"
-Output: {"language":"en","expenses":[{"amount":100000,"description":"gas","category":"transport","type":"expense","date":"yesterday","confidence":0.95}]}
-
-Input: "50k coffee and 30k parking"
-Output: {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food","type":"expense","date":"today","confidence":0.95},{"amount":30000,"description":"parking","category":"transport","type":"expense","date":"today","confidence":0.95}]}
-
-INCOME examples:
-Input: "received salary 1.5 million"
-Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","category":"salary","type":"income","date":"today","confidence":0.95}]}
-
-Input: "got paid 500k for freelance work"
-Output: {"language":"en","expenses":[{"amount":500000,"description":"freelance work","category":"freelance","type":"income","date":"today","confidence":0.95}]}
-
-Input: "gift 200k yesterday"
-Output: {"language":"en","expenses":[{"amount":200000,"description":"gift","category":"gift_received","type":"income","date":"yesterday","confidence":0.95}]}
-
-Input: "refund 100k"
-Output: {"language":"en","expenses":[{"amount":100000,"description":"refund","category":"refund","type":"income","date":"today","confidence":0.95}]}
-
-DATE CALCULATION examples (assume today is 2025-01-13, Monday):
-Input: "on friday last week, i bought food 50 dollars"
-Output: {"language":"en","expenses":[{"amount":50,"description":"food","category":"food","type":"expense","date":"2025-01-10","confidence":0.95}]}
-
-Input: "100k gas last monday"
-Output: {"language":"en","expenses":[{"amount":100000,"description":"gas","category":"transport","type":"expense","date":"2025-01-06","confidence":0.95}]}
-
-MIXED examples:
-Input: "received salary 1.5m and paid 500k electricity bill"
-Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","category":"salary","type":"income","date":"today","confidence":0.95},{"amount":500000,"description":"electricity bill","category":"bills","type":"expense","date":"today","confidence":0.95}]}
+Examples:
+"50k coffee" → {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food","type":"expense","date":"today","confidence":0.95}]}
+"received salary 1.5 million" → {"language":"en","expenses":[{"amount":1500000,"description":"salary","category":"salary","type":"income","date":"today","confidence":0.95}]}
+"50k coffee and 30k parking" → {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food","type":"expense","date":"today","confidence":0.95},{"amount":30000,"description":"parking","category":"transport","type":"expense","date":"today","confidence":0.95}]}
+"100k gas last monday" (today is 2025-01-13) → {"language":"en","expenses":[{"amount":100000,"description":"gas","category":"transport","type":"expense","date":"2025-01-06","confidence":0.95}]}
 ''';
     }
   }

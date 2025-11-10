@@ -134,7 +134,8 @@ class ReportProvider extends ChangeNotifier {
       _currentStats = currentStatsRaw.withCategoryBreakdown(categories, language);
 
       // Calculate top expenses (sorted by amount, descending)
-      _topExpenses = List<Expense>.from(currentExpenses)
+      // Only include expense type transactions, not income
+      _topExpenses = currentExpenses.where((e) => e.isExpense).toList()
         ..sort((a, b) => b.amount.compareTo(a.amount));
 
       // Get previous period for comparison

@@ -209,6 +209,9 @@ class PeriodStats {
   }
 
   /// Create a copy with calculated category breakdown
+  /// Percentages are calculated separately for expenses and income:
+  /// - Expense categories: percentage of totalExpenses
+  /// - Income categories: percentage of totalIncome
   PeriodStats withCategoryBreakdown(
     List<QuickCategory> allCategories,
     String language,
@@ -222,11 +225,18 @@ class PeriodStats {
         orElse: () => allCategories.firstWhere((cat) => cat.id == 'other'),
       );
 
+      // Use the appropriate grand total based on transaction type
+      // Expense categories should be % of totalExpenses
+      // Income categories should be % of totalIncome
+      final grandTotal = category.type == TransactionType.expense
+          ? totalExpenses
+          : totalIncome;
+
       breakdown.add(CategoryStats.fromCategory(
         category: category,
         totalAmount: entry.value,
         count: categoryCounts[categoryId] ?? 0,
-        grandTotal: totalAmount,
+        grandTotal: grandTotal,
         language: language,
       ));
     }

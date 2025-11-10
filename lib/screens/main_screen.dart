@@ -661,16 +661,31 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           margin: const EdgeInsets.symmetric(
                             horizontal: AppTheme.spacing32,
                           ),
-                          padding: const EdgeInsets.all(AppTheme.spacing16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: AppTheme.borderRadiusMedium,
-                            boxShadow: AppTheme.shadowLarge,
+                          padding: const EdgeInsets.all(AppTheme.spacing20),
+                          constraints: const BoxConstraints(
+                            maxHeight: 200,
                           ),
-                          child: Text(
-                            _recognizedText,
-                            style: Theme.of(context).textTheme.titleMedium,
-                            textAlign: TextAlign.center,
+                          decoration: BoxDecoration(
+                            color: colorScheme.surface.withValues(alpha: 0.95),
+                            borderRadius: AppTheme.borderRadiusMedium,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 10,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: SingleChildScrollView(
+                            child: Text(
+                              _recognizedText,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface,
+                                height: 1.4,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ],
