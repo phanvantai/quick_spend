@@ -629,7 +629,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const SizedBox(height: AppTheme.spacing8),
                         TopExpensesList(
-                          expenses: List<Expense>.from(expenses)
+                          expenses: expenses.where((e) => e.isExpense).toList()
                             ..sort((a, b) => b.amount.compareTo(a.amount)),
                           currency: currency,
                           language: configProvider.language,
