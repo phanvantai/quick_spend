@@ -62,8 +62,18 @@ class GeminiExpenseParser {
     }
 
     try {
+      debugPrint('🔧 [GeminiParser] Building prompt...');
+      debugPrint('   Categories: ${categories.length} total');
+      debugPrint('   Income: ${categories.where((c) => c.isIncomeCategory).length}');
+      debugPrint('   Expense: ${categories.where((c) => c.isExpenseCategory).length}');
+
       final prompt = _buildPrompt(input, categories, language);
-      debugPrint('📝 [GeminiParser] Sending prompt to Gemini...');
+
+      debugPrint('📏 [GeminiParser] Prompt length: ${prompt.length} characters');
+      debugPrint('📝 [GeminiParser] Prompt preview (first 500 chars):');
+      debugPrint(prompt.substring(0, prompt.length > 500 ? 500 : prompt.length));
+      debugPrint('...');
+      debugPrint('📤 [GeminiParser] Sending prompt to Gemini...');
       debugPrint('⏱️ [GeminiParser] Timeout set to $_apiTimeout seconds');
 
       final response = await _model!
@@ -92,13 +102,17 @@ class GeminiExpenseParser {
         return [];
       }
 
-      debugPrint('📨 [GeminiParser] Response text: $responseText');
+      debugPrint('📨 [GeminiParser] Response length: ${responseText.length} characters');
+      debugPrint('📨 [GeminiParser] Full response: $responseText');
 
       // Parse JSON response
+      debugPrint('🔍 [GeminiParser] Parsing JSON response...');
       final jsonData = json.decode(responseText) as Map<String, dynamic>;
+
+      debugPrint('🔍 [GeminiParser] JSON decoded successfully');
       final results = _parseResponse(jsonData, userId, input);
 
-      debugPrint('✅ [GeminiParser] Parsed ${results.length} expense(s)');
+      debugPrint('✅ [GeminiParser] Successfully parsed ${results.length} expense(s)');
       return results;
     } catch (e) {
       debugPrint('❌ [GeminiParser] Error parsing: $e');
@@ -366,7 +380,10 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
         '📊 [GeminiParser] Language: $language, Expenses: ${expenses.length}',
       );
 
+      int itemIndex = 0;
       for (final expenseData in expenses) {
+        itemIndex++;
+        debugPrint('🔄 [GeminiParser] Processing item $itemIndex/${expenses.length}...');
         try {
           final expenseMap = expenseData as Map<String, dynamic>;
 
@@ -378,6 +395,8 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
           final confidence =
               (expenseMap['confidence'] as num?)?.toDouble() ?? 0.5;
 
+          debugPrint('   Raw data: amount=$amount, desc="$description", category="$categoryStr", type="$typeStr"');
+
           // Validate amount
           if (amount <= 0) {
             debugPrint('⚠️ [GeminiParser] Invalid amount: $amount, skipping');
@@ -385,13 +404,17 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
           }
 
           // Parse transaction type
+          debugPrint('   Parsing type: "$typeStr"');
           final transactionType = TransactionType.fromJson(typeStr);
 
           // Normalize category string to lowercase ID
+          debugPrint('   Normalizing category: "$categoryStr" → processing...');
           final categoryId = _normalizeCategoryId(categoryStr, transactionType);
+          debugPrint('   Normalized category: "$categoryId"');
 
           // Ensure type matches category (fix inconsistencies from Gemini)
           final correctedType = _getTypeFromCategory(categoryId);
+          debugPrint('   Type check: Gemini="$typeStr" (${transactionType.name}), Category expects=${correctedType.name}');
           if (correctedType != transactionType) {
             debugPrint(
               '⚠️ [GeminiParser] Type mismatch: Gemini said "$typeStr" but category "$categoryId" is ${correctedType.name}. Using category type.',
@@ -401,7 +424,7 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
           // Parse date from relative or absolute format
           final parsedDate = _parseDate(dateStr);
           debugPrint(
-            '📅 [GeminiParser] Date string: "$dateStr" → ${parsedDate.toIso8601String()}',
+            '📅 [GeminiParser] Date: "$dateStr" → ${parsedDate.toIso8601String()}',
           );
 
           // Create expense object
