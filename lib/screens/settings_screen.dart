@@ -696,7 +696,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
 
       // Import from JSON (includes all categories and expenses)
-      final userId = 'user'; // TODO: Get actual user ID
+      final userId = expenseProvider.currentUserId;
       final existingExpenses = expenseProvider.expenses;
       final existingCategories = categoryProvider.categories;
 
