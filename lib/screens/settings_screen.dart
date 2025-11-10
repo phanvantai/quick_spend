@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:file_picker/file_picker.dart';
 import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
+import '../providers/expense_provider.dart';
+import '../services/export_service.dart';
+import '../services/import_service.dart';
 import '../theme/app_theme.dart';
 import 'categories_screen.dart';
 
@@ -73,6 +77,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: context.tr('settings.theme'),
                       subtitle: _getThemeDisplayName(configProvider.themeMode),
                       onTap: () => _showThemeDialog(context),
+                    ),
+
+                    const Divider(height: 32),
+
+                    // Data Section
+                    _buildSectionHeader(context.tr('settings.data')),
+
+                    _buildListTile(
+                      icon: Icons.upload_file,
+                      iconColor: AppTheme.success,
+                      title: context.tr('settings.export_data'),
+                      subtitle: context.tr('settings.export_data_subtitle'),
+                      onTap: () => _showExportDialog(context),
+                    ),
+
+                    _buildListTile(
+                      icon: Icons.download,
+                      iconColor: AppTheme.info,
+                      title: context.tr('settings.import_data'),
+                      subtitle: context.tr('settings.import_data_subtitle'),
+                      onTap: () => _handleImport(context),
                     ),
 
                     const Divider(height: 32),
@@ -516,6 +541,251 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  // Export Dialog
+  void _showExportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(dialogContext.tr('settings.export_data')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(dialogContext.tr('settings.export_format')),
+              const SizedBox(height: AppTheme.spacing16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        _handleExport(context, 'csv');
+                      },
+                      icon: const Icon(Icons.table_chart),
+                      label: Text(dialogContext.tr('settings.export_csv')),
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.spacing8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        _handleExport(context, 'json');
+                      },
+                      icon: const Icon(Icons.code),
+                      label: Text(dialogContext.tr('settings.export_json')),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(dialogContext.tr('common.cancel')),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Handle Export
+  Future<void> _handleExport(BuildContext context, String format) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final expenseProvider = context.read<ExpenseProvider>();
+
+    try {
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacing12),
+                Text('Exporting...'),
+              ],
+            ),
+            duration: const Duration(seconds: 30),
+          ),
+        );
+      }
+
+      final expenses = expenseProvider.expenses;
+
+      String filePath;
+      if (format == 'csv') {
+        filePath = await ExportService.exportToCSV(expenses);
+      } else {
+        filePath = await ExportService.exportToJSON(expenses);
+      }
+
+      // Share the file
+      await ExportService.shareFile(
+        filePath,
+        'quick_spend_export.$format',
+      );
+
+      if (mounted) {
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
+          SnackBar(
+            // ignore: use_build_context_synchronously
+            content: Text(context.tr('settings.export_success')),
+            backgroundColor: AppTheme.success,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [SettingsScreen] Error exporting: $e');
+      if (mounted) {
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              // ignore: use_build_context_synchronously
+              context.tr(
+                'settings.export_error',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
+            backgroundColor: AppTheme.error,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  // Handle Import
+  Future<void> _handleImport(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final expenseProvider = context.read<ExpenseProvider>();
+    final configProvider = context.read<AppConfigProvider>();
+
+    try {
+      // Pick file
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv', 'json'],
+      );
+
+      if (result == null || result.files.isEmpty) {
+        debugPrint('⚠️ [SettingsScreen] No file selected');
+        return;
+      }
+
+      final filePath = result.files.first.path;
+      if (filePath == null) {
+        debugPrint('⚠️ [SettingsScreen] File path is null');
+        return;
+      }
+
+      final extension = filePath.split('.').last.toLowerCase();
+      debugPrint('📁 [SettingsScreen] Importing from: $filePath ($extension)');
+
+      // Show loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacing12),
+                Text('Importing...'),
+              ],
+            ),
+            duration: const Duration(seconds: 30),
+          ),
+        );
+      }
+
+      // Import based on format
+      final userId = 'user'; // TODO: Get actual user ID
+      final existingExpenses = expenseProvider.expenses;
+
+      ImportResult importResult;
+      if (extension == 'csv') {
+        importResult = await ImportService.importFromCSV(
+          filePath,
+          userId,
+          existingExpenses,
+        );
+      } else if (extension == 'json') {
+        importResult = await ImportService.importFromJSON(
+          filePath,
+          userId,
+          existingExpenses,
+        );
+      } else {
+        throw Exception('Unsupported file format: $extension');
+      }
+
+      // Save imported expenses
+      for (final expense in importResult.importedExpenses) {
+        await expenseProvider.addExpense(expense);
+      }
+
+      if (mounted) {
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
+          SnackBar(
+            // ignore: use_build_context_synchronously
+            content: Text(
+              context.tr(
+                'settings.import_success',
+                namedArgs: {
+                  'success': importResult.successCount.toString(),
+                  'failed': importResult.failureCount.toString(),
+                  'duplicates': importResult.duplicateCount.toString(),
+                },
+              ),
+            ),
+            backgroundColor: importResult.hasErrors
+                ? AppTheme.warning
+                : AppTheme.success,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [SettingsScreen] Error importing: $e');
+      if (mounted) {
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              // ignore: use_build_context_synchronously
+              context.tr(
+                'settings.import_error',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
+            backgroundColor: AppTheme.error,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
