@@ -17,13 +17,12 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  // Filter state: null = All, true = Income, false = Expense
-  bool? _showIncome;
+  // Filter state: true = Income, false = Expense
+  bool _showIncome = false; // Default to Expense
 
   List<QuickCategory> _filterCategories(List<QuickCategory> categories) {
-    if (_showIncome == null) return categories; // Show all
     return categories.where((cat) {
-      return _showIncome! ? cat.isIncomeCategory : cat.isExpenseCategory;
+      return _showIncome ? cat.isIncomeCategory : cat.isExpenseCategory;
     }).toList();
   }
 
@@ -36,39 +35,27 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       child: Row(
         children: [
           FilterChip(
-            label: Text(context.tr('categories.all')),
-            selected: _showIncome == null,
-            onSelected: (selected) {
-              setState(() {
-                _showIncome = null;
-              });
-            },
-            selectedColor: AppTheme.primaryMint.withValues(alpha: 0.2),
-            checkmarkColor: AppTheme.primaryMint,
-          ),
-          const SizedBox(width: AppTheme.spacing8),
-          FilterChip(
-            label: Text(context.tr('categories.income')),
-            selected: _showIncome == true,
-            onSelected: (selected) {
-              setState(() {
-                _showIncome = selected ? true : null;
-              });
-            },
-            selectedColor: AppTheme.success.withValues(alpha: 0.2),
-            checkmarkColor: AppTheme.success,
-          ),
-          const SizedBox(width: AppTheme.spacing8),
-          FilterChip(
             label: Text(context.tr('categories.expense')),
-            selected: _showIncome == false,
+            selected: !_showIncome,
             onSelected: (selected) {
               setState(() {
-                _showIncome = selected ? false : null;
+                _showIncome = false;
               });
             },
             selectedColor: AppTheme.error.withValues(alpha: 0.2),
             checkmarkColor: AppTheme.error,
+          ),
+          const SizedBox(width: AppTheme.spacing8),
+          FilterChip(
+            label: Text(context.tr('categories.income')),
+            selected: _showIncome,
+            onSelected: (selected) {
+              setState(() {
+                _showIncome = true;
+              });
+            },
+            selectedColor: AppTheme.success.withValues(alpha: 0.2),
+            checkmarkColor: AppTheme.success,
           ),
         ],
       ),
