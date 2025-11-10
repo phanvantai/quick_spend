@@ -119,9 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _addExpense() async {
     final newExpense = await Navigator.push<Expense>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const ExpenseFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const ExpenseFormScreen()),
     );
 
     if (newExpense == null || !mounted) return;
@@ -156,7 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showExpenseDetailsDialog(Expense expense) {
     final categoryProvider = context.read<CategoryProvider>();
-    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
         QuickCategory.getDefaultSystemCategories().firstWhere(
           (c) => c.id == 'other',
@@ -192,7 +191,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.date'),
-              DateFormat.yMMMd(context.locale.languageCode).format(expense.date),
+              DateFormat.yMMMd(
+                context.locale.languageCode,
+              ).format(expense.date),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
@@ -389,8 +390,7 @@ class _HomeScreenState extends State<HomeScreen> {
             selected: _selectedFilter == TransactionType.income,
             onSelected: (selected) {
               setState(() {
-                _selectedFilter =
-                    selected ? TransactionType.income : null;
+                _selectedFilter = selected ? TransactionType.income : null;
               });
             },
             selectedColor: AppTheme.success.withValues(alpha: 0.2),
@@ -402,8 +402,7 @@ class _HomeScreenState extends State<HomeScreen> {
             selected: _selectedFilter == TransactionType.expense,
             onSelected: (selected) {
               setState(() {
-                _selectedFilter =
-                    selected ? TransactionType.expense : null;
+                _selectedFilter = selected ? TransactionType.expense : null;
               });
             },
             selectedColor: AppTheme.error.withValues(alpha: 0.2),
@@ -446,7 +445,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsScreen(),
+                          ),
                         );
                       },
                       tooltip: context.tr('navigation.settings'),
@@ -499,7 +500,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
                       );
                     },
                     tooltip: context.tr('navigation.settings'),
@@ -551,9 +554,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(
                         context.tr('home.recent_expenses'),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       if (filteredExpenses.length > 10)
                         TextButton.icon(
@@ -585,34 +587,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   AppTheme.spacing16,
                 ),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final expense = recentExpenses[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
-                        child: Slidable(
-                          key: ValueKey(expense.id),
-                          endActionPane: ActionPane(
-                            motion: const ScrollMotion(),
-                            children: [
-                              SlidableAction(
-                                onPressed: (_) => _deleteExpense(expense.id),
-                                backgroundColor: AppTheme.error,
-                                foregroundColor: Colors.white,
-                                icon: Icons.delete,
-                                label: context.tr('common.delete'),
-                              ),
-                            ],
-                          ),
-                          child: ExpenseCard(
-                            expense: expense,
-                            onTap: () => _showExpenseDetailsDialog(expense),
-                          ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final expense = recentExpenses[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: AppTheme.spacing12,
+                      ),
+                      child: Slidable(
+                        key: ValueKey(expense.id),
+                        endActionPane: ActionPane(
+                          motion: const ScrollMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (_) => _deleteExpense(expense.id),
+                              backgroundColor: AppTheme.error,
+                              foregroundColor: Colors.white,
+                              icon: Icons.delete,
+                              label: context.tr('common.delete'),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    childCount: recentExpenses.length,
-                  ),
+                        child: ExpenseCard(
+                          expense: expense,
+                          onTap: () => _showExpenseDetailsDialog(expense),
+                        ),
+                      ),
+                    );
+                  }, childCount: recentExpenses.length),
                 ),
               ),
 
@@ -653,6 +654,7 @@ class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
   final double height;
 
+  // ignore: unused_element_parameter
   _FilterHeaderDelegate({required this.child, this.height = 72.0});
 
   @override
@@ -661,10 +663,7 @@ class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return SizedBox(
-      height: height,
-      child: child,
-    );
+    return SizedBox(height: height, child: child);
   }
 
   @override

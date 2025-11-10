@@ -4,7 +4,6 @@ import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:quick_spend/models/expense.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
 import '../providers/category_provider.dart';

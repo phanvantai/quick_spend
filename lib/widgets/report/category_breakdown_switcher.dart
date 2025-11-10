@@ -31,8 +31,7 @@ class _CategoryBreakdownSwitcherState extends State<CategoryBreakdownSwitcher> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    Theme.of(context);
 
     final hasExpenses = widget.expenseCategoryStats.isNotEmpty;
     final hasIncome = widget.incomeCategoryStats.isNotEmpty;
@@ -53,9 +52,9 @@ class _CategoryBreakdownSwitcherState extends State<CategoryBreakdownSwitcher> {
         ? widget.expenseCategoryStats
         : widget.incomeCategoryStats;
 
-    final title = _selectedType == TransactionType.expense
-        ? context.tr('report.expense_breakdown')
-        : context.tr('report.income_breakdown');
+    // final title = _selectedType == TransactionType.expense
+    //     ? context.tr('report.expense_breakdown')
+    //     : context.tr('report.income_breakdown');
 
     return Card(
       elevation: 0,
