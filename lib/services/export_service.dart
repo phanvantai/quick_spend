@@ -6,10 +6,13 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/expense.dart';
+import '../models/category.dart';
 
 /// Service for exporting expense data to various formats
 class ExportService {
   /// Export expenses to CSV format
+  /// NOTE: CSV export only includes expenses, not categories.
+  /// For complete backup with categories, use JSON export.
   /// Returns the file path of the exported CSV file
   static Future<String> exportToCSV(List<Expense> expenses) async {
     debugPrint('📤 [ExportService] Exporting ${expenses.length} expenses to CSV');
@@ -61,17 +64,33 @@ class ExportService {
     }
   }
 
-  /// Export expenses to JSON format
+  /// Export expenses and categories to JSON format
+  /// Includes both expenses and custom categories for complete backup
   /// Returns the file path of the exported JSON file
-  static Future<String> exportToJSON(List<Expense> expenses) async {
-    debugPrint('📤 [ExportService] Exporting ${expenses.length} expenses to JSON');
+  static Future<String> exportToJSON(
+    List<Expense> expenses,
+    List<QuickCategory> categories,
+  ) async {
+    debugPrint(
+      '📤 [ExportService] Exporting ${expenses.length} expenses and ${categories.length} categories to JSON',
+    );
 
     try {
+      // Separate user categories from system categories
+      final userCategories = categories.where((c) => !c.isSystem).toList();
+      final systemCategoryIds = categories
+          .where((c) => c.isSystem)
+          .map((c) => c.id)
+          .toList();
+
       // Create JSON structure
       final jsonData = {
-        'version': '1.0',
+        'version': '2.0', // Updated version to include categories
         'exportDate': DateTime.now().toIso8601String(),
         'totalExpenses': expenses.length,
+        'totalCategories': userCategories.length,
+        'systemCategoryIds': systemCategoryIds, // Reference to system categories
+        'userCategories': userCategories.map((c) => c.toJson()).toList(),
         'expenses': expenses.map((e) => e.toJson()).toList(),
       };
 

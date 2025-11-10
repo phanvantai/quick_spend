@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
+import '../providers/category_provider.dart';
 import '../services/export_service.dart';
 import '../services/import_service.dart';
 import '../theme/app_theme.dart';
@@ -601,6 +602,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _handleExport(BuildContext context, String format) async {
     final messenger = ScaffoldMessenger.of(context);
     final expenseProvider = context.read<ExpenseProvider>();
+    final categoryProvider = context.read<CategoryProvider>();
 
     try {
       // Show loading indicator
@@ -627,12 +629,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
 
       final expenses = expenseProvider.expenses;
+      final categories = categoryProvider.categories;
 
       String filePath;
       if (format == 'csv') {
+        // CSV only exports expenses (no categories)
         filePath = await ExportService.exportToCSV(expenses);
       } else {
-        filePath = await ExportService.exportToJSON(expenses);
+        // JSON exports both expenses and categories (complete backup)
+        filePath = await ExportService.exportToJSON(expenses, categories);
       }
 
       // Share the file
@@ -677,6 +682,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _handleImport(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     final expenseProvider = context.read<ExpenseProvider>();
+    final categoryProvider = context.read<CategoryProvider>();
     final configProvider = context.read<AppConfigProvider>();
 
     try {
@@ -726,6 +732,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Import based on format
       final userId = 'user'; // TODO: Get actual user ID
       final existingExpenses = expenseProvider.expenses;
+      final existingCategories = categoryProvider.categories;
 
       ImportResult importResult;
       if (extension == 'csv') {
@@ -739,31 +746,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
           filePath,
           userId,
           existingExpenses,
+          existingCategories,
         );
       } else {
         throw Exception('Unsupported file format: $extension');
       }
 
-      // Save imported expenses
+      // Save imported categories first
+      for (final category in importResult.importedCategories) {
+        await categoryProvider.createCategory(category);
+      }
+
+      // Then save imported expenses
       for (final expense in importResult.importedExpenses) {
         await expenseProvider.addExpense(expense);
       }
 
       if (mounted) {
         messenger.clearSnackBars();
+
+        // Build success message with category info if applicable
+        String message;
+        if (importResult.categoriesImported > 0) {
+          message =
+              'Imported ${importResult.categoriesImported} categories, ${importResult.successCount} expenses';
+          if (importResult.categoriesSkipped > 0) {
+            message += ' (${importResult.categoriesSkipped} categories skipped)';
+          }
+          if (importResult.failureCount > 0) {
+            message += ', ${importResult.failureCount} failed';
+          }
+          if (importResult.duplicateCount > 0) {
+            message += ', ${importResult.duplicateCount} duplicates';
+          }
+        } else {
+          // ignore: use_build_context_synchronously
+          message = context.tr(
+            'settings.import_success',
+            namedArgs: {
+              'success': importResult.successCount.toString(),
+              'failed': importResult.failureCount.toString(),
+              'duplicates': importResult.duplicateCount.toString(),
+            },
+          );
+        }
+
         messenger.showSnackBar(
           SnackBar(
-            // ignore: use_build_context_synchronously
-            content: Text(
-              context.tr(
-                'settings.import_success',
-                namedArgs: {
-                  'success': importResult.successCount.toString(),
-                  'failed': importResult.failureCount.toString(),
-                  'duplicates': importResult.duplicateCount.toString(),
-                },
-              ),
-            ),
+            content: Text(message),
             backgroundColor: importResult.hasErrors
                 ? AppTheme.warning
                 : AppTheme.success,

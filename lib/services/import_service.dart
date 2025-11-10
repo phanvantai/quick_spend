@@ -4,6 +4,7 @@ import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/expense.dart';
+import '../models/category.dart';
 
 /// Result of an import operation
 class ImportResult {
@@ -11,6 +12,9 @@ class ImportResult {
   final int failureCount;
   final int duplicateCount;
   final List<Expense> importedExpenses;
+  final List<QuickCategory> importedCategories;
+  final int categoriesImported;
+  final int categoriesSkipped;
   final List<String> errors;
 
   ImportResult({
@@ -18,17 +22,22 @@ class ImportResult {
     required this.failureCount,
     required this.duplicateCount,
     required this.importedExpenses,
+    required this.importedCategories,
+    required this.categoriesImported,
+    required this.categoriesSkipped,
     required this.errors,
   });
 
   bool get hasErrors => errors.isNotEmpty;
-  bool get isSuccessful => successCount > 0;
+  bool get isSuccessful => successCount > 0 || categoriesImported > 0;
   int get totalProcessed => successCount + failureCount + duplicateCount;
 }
 
 /// Service for importing expense data from various formats
 class ImportService {
   /// Import expenses from CSV file
+  /// NOTE: CSV import only handles expenses, not categories.
+  /// Categories must exist in the app before importing.
   static Future<ImportResult> importFromCSV(
     String filePath,
     String userId,
@@ -57,6 +66,9 @@ class ImportService {
           failureCount: 0,
           duplicateCount: 0,
           importedExpenses: [],
+          importedCategories: [],
+          categoriesImported: 0,
+          categoriesSkipped: 0,
           errors: errors,
         );
       }
@@ -75,6 +87,9 @@ class ImportService {
             failureCount: 0,
             duplicateCount: 0,
             importedExpenses: [],
+            importedCategories: [],
+            categoriesImported: 0,
+            categoriesSkipped: 0,
             errors: errors,
           );
         }
@@ -185,6 +200,9 @@ class ImportService {
         failureCount: failureCount,
         duplicateCount: duplicateCount,
         importedExpenses: importedExpenses,
+        importedCategories: [],
+        categoriesImported: 0,
+        categoriesSkipped: 0,
         errors: errors,
       );
     } catch (e) {
@@ -195,24 +213,32 @@ class ImportService {
         failureCount: failureCount,
         duplicateCount: duplicateCount,
         importedExpenses: importedExpenses,
+        importedCategories: [],
+        categoriesImported: 0,
+        categoriesSkipped: 0,
         errors: errors,
       );
     }
   }
 
-  /// Import expenses from JSON file
+  /// Import expenses and categories from JSON file
+  /// Handles both version 1.0 (expenses only) and 2.0 (with categories)
   static Future<ImportResult> importFromJSON(
     String filePath,
     String userId,
     List<Expense> existingExpenses,
+    List<QuickCategory> existingCategories,
   ) async {
     debugPrint('📥 [ImportService] Importing from JSON: $filePath');
 
     final errors = <String>[];
     final importedExpenses = <Expense>[];
+    final importedCategories = <QuickCategory>[];
     int successCount = 0;
     int failureCount = 0;
     int duplicateCount = 0;
+    int categoriesImported = 0;
+    int categoriesSkipped = 0;
 
     try {
       // Read file
@@ -222,7 +248,50 @@ class ImportService {
       // Parse JSON
       final jsonData = json.decode(jsonString) as Map<String, dynamic>;
 
-      // Validate structure
+      // Check version
+      final version = jsonData['version'] as String? ?? '1.0';
+      debugPrint('📋 [ImportService] Import file version: $version');
+
+      // Import categories first (if version 2.0)
+      if (version == '2.0' && jsonData.containsKey('userCategories')) {
+        final userCategoriesData = jsonData['userCategories'] as List<dynamic>;
+        debugPrint(
+          '📂 [ImportService] Found ${userCategoriesData.length} user categories to import',
+        );
+
+        for (int i = 0; i < userCategoriesData.length; i++) {
+          try {
+            final categoryData = userCategoriesData[i] as Map<String, dynamic>;
+            final categoryId = categoryData['id'] as String;
+
+            // Check if category already exists
+            if (existingCategories.any((c) => c.id == categoryId)) {
+              debugPrint(
+                '⚠️ [ImportService] Category "$categoryId" already exists, skipping',
+              );
+              categoriesSkipped++;
+              continue;
+            }
+
+            // Create category
+            final category = QuickCategory.fromJson({
+              ...categoryData,
+              'userId': userId, // Override userId to current user
+            });
+
+            importedCategories.add(category);
+            categoriesImported++;
+            debugPrint(
+              '✅ [ImportService] Imported category: ${category.nameEn}',
+            );
+          } catch (e) {
+            errors.add('Category ${i + 1}: $e');
+            debugPrint('❌ [ImportService] Error importing category: $e');
+          }
+        }
+      }
+
+      // Validate structure for expenses
       if (!jsonData.containsKey('expenses')) {
         errors.add('Invalid JSON structure: missing "expenses" key');
         return ImportResult(
@@ -230,6 +299,9 @@ class ImportService {
           failureCount: 0,
           duplicateCount: 0,
           importedExpenses: [],
+          importedCategories: importedCategories,
+          categoriesImported: categoriesImported,
+          categoriesSkipped: categoriesSkipped,
           errors: errors,
         );
       }
@@ -277,7 +349,7 @@ class ImportService {
       }
 
       debugPrint(
-        '✅ [ImportService] Import complete: $successCount success, $failureCount failed, $duplicateCount duplicates',
+        '✅ [ImportService] Import complete: $categoriesImported categories, $successCount expenses imported, $failureCount failed, $duplicateCount duplicates',
       );
 
       return ImportResult(
@@ -285,6 +357,9 @@ class ImportService {
         failureCount: failureCount,
         duplicateCount: duplicateCount,
         importedExpenses: importedExpenses,
+        importedCategories: importedCategories,
+        categoriesImported: categoriesImported,
+        categoriesSkipped: categoriesSkipped,
         errors: errors,
       );
     } catch (e) {
@@ -295,6 +370,9 @@ class ImportService {
         failureCount: failureCount,
         duplicateCount: duplicateCount,
         importedExpenses: importedExpenses,
+        importedCategories: importedCategories,
+        categoriesImported: categoriesImported,
+        categoriesSkipped: categoriesSkipped,
         errors: errors,
       );
     }
