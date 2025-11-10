@@ -28,7 +28,7 @@ class SummaryCard extends StatelessWidget {
       elevation: 0,
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppTheme.primaryGradient,
+          gradient: AppTheme.summaryGradient,
           borderRadius: AppTheme.borderRadiusMedium,
         ),
         padding: const EdgeInsets.all(AppTheme.spacing12),
