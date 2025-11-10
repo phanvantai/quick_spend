@@ -52,33 +52,26 @@ class ReportScreen extends StatelessWidget {
             return CustomScrollView(
               slivers: [
                 SliverAppBar(
-                  title: Text(context.tr('navigation.report')),
+                  title: PeriodFilter(
+                    selectedPeriod: reportProvider.selectedPeriod,
+                    onPeriodChanged: (period) {
+                      reportProvider.selectPeriod(period);
+                    },
+                    onCustomTap: () => _showCustomDatePicker(
+                      context,
+                      reportProvider,
+                    ),
+                  ),
                   pinned: true,
                 ),
                 SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      // Period filter
-                      PeriodFilter(
-                        selectedPeriod: reportProvider.selectedPeriod,
-                        onPeriodChanged: (period) {
-                          reportProvider.selectPeriod(period);
-                        },
-                        onCustomTap: () => _showCustomDatePicker(
-                          context,
-                          reportProvider,
-                        ),
-                      ),
-                      // Empty state
-                      Padding(
-                        padding: const EdgeInsets.all(AppTheme.spacing16),
-                        child: EmptyState(
-                          icon: Icons.bar_chart_outlined,
-                          title: context.tr('report.empty_title'),
-                          message: context.tr('report.empty_message'),
-                        ),
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppTheme.spacing16),
+                    child: EmptyState(
+                      icon: Icons.bar_chart_outlined,
+                      title: context.tr('report.empty_title'),
+                      message: context.tr('report.empty_message'),
+                    ),
                   ),
                 ),
               ],
@@ -94,7 +87,16 @@ class ReportScreen extends StatelessWidget {
                 SliverAppBar(
                   expandedHeight: 340,
                   pinned: true,
-                  title: Text(context.tr('navigation.report')),
+                  title: PeriodFilter(
+                    selectedPeriod: reportProvider.selectedPeriod,
+                    onPeriodChanged: (period) {
+                      reportProvider.selectPeriod(period);
+                    },
+                    onCustomTap: () => _showCustomDatePicker(
+                      context,
+                      reportProvider,
+                    ),
+                  ),
                   flexibleSpace: FlexibleSpaceBar(
                     background: SafeArea(
                       child: Padding(
@@ -110,26 +112,6 @@ class ReportScreen extends StatelessWidget {
                           isTrendPositive: reportProvider.isTrendPositive,
                           currency: configProvider.currency,
                           language: context.locale.languageCode,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Period filter
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _PeriodFilterDelegate(
-                    child: Container(
-                      color: colorScheme.surface,
-                      child: PeriodFilter(
-                        selectedPeriod: reportProvider.selectedPeriod,
-                        onPeriodChanged: (period) {
-                          reportProvider.selectPeriod(period);
-                        },
-                        onCustomTap: () => _showCustomDatePicker(
-                          context,
-                          reportProvider,
                         ),
                       ),
                     ),
@@ -213,36 +195,5 @@ class ReportScreen extends StatelessWidget {
     if (dateRange != null) {
       reportProvider.setCustomDateRange(dateRange.start, dateRange.end);
     }
-  }
-}
-
-/// Delegate for pinned period filter header
-class _PeriodFilterDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  final double height;
-
-  _PeriodFilterDelegate({required this.child, this.height = 72.0});
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return SizedBox(
-      height: height,
-      child: child,
-    );
-  }
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  double get minExtent => height;
-
-  @override
-  bool shouldRebuild(covariant _PeriodFilterDelegate oldDelegate) {
-    return child != oldDelegate.child || height != oldDelegate.height;
   }
 }
