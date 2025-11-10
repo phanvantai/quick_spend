@@ -84,7 +84,7 @@ class PeriodFilter extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing12),
           decoration: BoxDecoration(
-            gradient: isSelected ? AppTheme.primaryGradient : null,
+            gradient: isSelected ? AppTheme.summaryGradient : null,
             color: isSelected ? null : colorScheme.surfaceContainerHighest,
             borderRadius: AppTheme.borderRadiusMedium,
             border: isSelected

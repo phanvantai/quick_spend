@@ -99,6 +99,8 @@
     "export_json": "Export as JSON",
     "export_success": "Data exported successfully!",
     "export_error": "Error exporting data: {error}",
+    "share_subject": "Quick Spend Export",
+    "share_text": "My expense data from Quick Spend",
     "import_success": "Import completed: {success} imported, {failed} failed, {duplicates} duplicates",
     "import_error": "Error importing data: {error}",
     "import_select_file": "Select File to Import",
