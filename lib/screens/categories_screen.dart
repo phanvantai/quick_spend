@@ -106,16 +106,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 context.tr('categories.system_categories_subtitle'),
               ),
               ...systemCategories.map((category) {
+                // Lock fallback categories (other and other_income)
+                final isFallbackCategory =
+                    category.id == 'other' || category.id == 'other_income';
+
                 return _buildCategoryTile(
                   context,
                   category,
                   language,
                   isSystem: true,
-                  // Prevent editing and deletion of 'other' category as it's the fallback
-                  onEdit: category.id != 'other'
+                  // Prevent editing and deletion of fallback categories
+                  onEdit: !isFallbackCategory
                       ? () => _navigateToEditCategory(context, category)
                       : null,
-                  onDelete: category.id != 'other'
+                  onDelete: !isFallbackCategory
                       ? () => _deleteCategory(context, category)
                       : null,
                 );
@@ -193,7 +197,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     VoidCallback? onDelete,
   }) {
     final theme = Theme.of(context);
-    final isOtherCategory = category.id == 'other';
+    final isFallbackCategory =
+        category.id == 'other' || category.id == 'other_income';
 
     final cardContent = Card(
       margin: const EdgeInsets.symmetric(
@@ -218,7 +223,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           style: theme.textTheme.titleMedium,
         ),
         subtitle: Text(
-          isOtherCategory
+          isFallbackCategory
               ? context.tr('categories.required_category_locked')
               : isSystem
                   ? context.tr('categories.system_category')
@@ -227,7 +232,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        trailing: isOtherCategory
+        trailing: isFallbackCategory
             ? Tooltip(
                 message: context.tr('categories.cannot_edit_other'),
                 child: Icon(
@@ -240,8 +245,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       ),
     );
 
-    // For 'other' category, don't add slidable actions
-    if (isOtherCategory) {
+    // For fallback categories, don't add slidable actions
+    if (isFallbackCategory) {
       return cardContent;
     }
 
