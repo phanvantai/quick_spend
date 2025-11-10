@@ -1125,7 +1125,7 @@ class _ExpenseFormCard extends StatelessWidget {
         ),
         const SizedBox(height: AppTheme.spacing12),
 
-        // Category selector
+        // Category selector (filtered by transaction type)
         DropdownButtonFormField<String>(
           initialValue: formData.categoryId,
           decoration: InputDecoration(
@@ -1133,7 +1133,9 @@ class _ExpenseFormCard extends StatelessWidget {
             border: const OutlineInputBorder(),
             prefixIcon: const Icon(Icons.category_outlined),
           ),
-          items: categoryProvider.categories.map((cat) {
+          items: categoryProvider.categories
+              .where((cat) => cat.type == formData.type) // Filter by transaction type
+              .map((cat) {
             return DropdownMenuItem(
               value: cat.id,
               child: Row(
