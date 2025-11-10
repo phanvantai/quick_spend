@@ -7,8 +7,7 @@ import '../theme/app_theme.dart';
 import '../widgets/report/period_filter.dart';
 import '../widgets/report/summary_card.dart';
 import '../widgets/report/stats_grid.dart';
-import '../widgets/report/category_donut_chart.dart';
-import '../widgets/report/category_list.dart';
+import '../widgets/report/category_breakdown_switcher.dart';
 import '../widgets/report/spending_trend_chart.dart';
 import '../widgets/report/top_expenses_list.dart';
 import '../widgets/report/custom_date_range_picker.dart';
@@ -136,37 +135,12 @@ class ReportScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: AppTheme.spacing16),
 
-                      // Expense category donut chart
-                      if (stats.expenseCategoryBreakdown.isNotEmpty)
-                        CategoryDonutChart(
-                          categoryStats: stats.expenseCategoryBreakdown,
-                          language: context.locale.languageCode,
-                          title: context.tr('report.expense_breakdown'),
-                        ),
-                      const SizedBox(height: AppTheme.spacing16),
-
-                      // Expense category list with progress bars
-                      if (stats.expenseCategoryBreakdown.isNotEmpty)
-                        CategoryList(
-                          categoryStats: stats.expenseCategoryBreakdown,
-                          currency: configProvider.currency,
-                          language: context.locale.languageCode,
-                        ),
-                      const SizedBox(height: AppTheme.spacing16),
-
-                      // Income category donut chart
-                      if (stats.incomeCategoryBreakdown.isNotEmpty)
-                        CategoryDonutChart(
-                          categoryStats: stats.incomeCategoryBreakdown,
-                          language: context.locale.languageCode,
-                          title: context.tr('report.income_breakdown'),
-                        ),
-                      const SizedBox(height: AppTheme.spacing16),
-
-                      // Income category list with progress bars
-                      if (stats.incomeCategoryBreakdown.isNotEmpty)
-                        CategoryList(
-                          categoryStats: stats.incomeCategoryBreakdown,
+                      // Category breakdown with expense/income switcher
+                      if (stats.expenseCategoryBreakdown.isNotEmpty ||
+                          stats.incomeCategoryBreakdown.isNotEmpty)
+                        CategoryBreakdownSwitcher(
+                          expenseCategoryStats: stats.expenseCategoryBreakdown,
+                          incomeCategoryStats: stats.incomeCategoryBreakdown,
                           currency: configProvider.currency,
                           language: context.locale.languageCode,
                         ),

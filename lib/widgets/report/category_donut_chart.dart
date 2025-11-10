@@ -9,12 +9,14 @@ class CategoryDonutChart extends StatefulWidget {
   final List<CategoryStats> categoryStats;
   final String language;
   final String? title;
+  final bool showCard;
 
   const CategoryDonutChart({
     super.key,
     required this.categoryStats,
     required this.language,
     this.title,
+    this.showCard = true,
   });
 
   @override
@@ -32,76 +34,83 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       return _buildEmptyState(context);
     }
 
-    return Card(
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(AppTheme.spacing20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.title ?? 'report.category_breakdown'.tr(),
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.title != null)
+          Text(
+            widget.title!,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: AppTheme.spacing24),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                // Use the available width to determine chart size
-                final chartSize = constraints.maxWidth * 0.65; // 65% for chart
-                final legendWidth =
-                    constraints.maxWidth * 0.30; // 30% for legend
+          ),
+        if (widget.title != null) const SizedBox(height: AppTheme.spacing24),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            // Use the available width to determine chart size
+            final chartSize = constraints.maxWidth * 0.65; // 65% for chart
+            final legendWidth =
+                constraints.maxWidth * 0.30; // 30% for legend
 
-                return SizedBox(
-                  height: 200,
-                  child: Row(
-                    children: [
-                      // Donut Chart
-                      SizedBox(
-                        width: chartSize,
-                        height: chartSize,
-                        child: PieChart(
-                          PieChartData(
-                            pieTouchData: PieTouchData(
-                              touchCallback:
-                                  (FlTouchEvent event, pieTouchResponse) {
-                                    setState(() {
-                                      if (!event.isInterestedForInteractions ||
-                                          pieTouchResponse == null ||
-                                          pieTouchResponse.touchedSection ==
-                                              null) {
-                                        touchedIndex = -1;
-                                        return;
-                                      }
-                                      touchedIndex = pieTouchResponse
-                                          .touchedSection!
-                                          .touchedSectionIndex;
-                                    });
-                                  },
-                            ),
-                            borderData: FlBorderData(show: false),
-                            sectionsSpace: 2,
-                            centerSpaceRadius: chartSize / 4.5,
-                            sections: _buildPieChartSections(chartSize),
-                          ),
+            return SizedBox(
+              height: 200,
+              child: Row(
+                children: [
+                  // Donut Chart
+                  SizedBox(
+                    width: chartSize,
+                    height: chartSize,
+                    child: PieChart(
+                      PieChartData(
+                        pieTouchData: PieTouchData(
+                          touchCallback:
+                              (FlTouchEvent event, pieTouchResponse) {
+                                setState(() {
+                                  if (!event.isInterestedForInteractions ||
+                                      pieTouchResponse == null ||
+                                      pieTouchResponse.touchedSection ==
+                                          null) {
+                                    touchedIndex = -1;
+                                    return;
+                                  }
+                                  touchedIndex = pieTouchResponse
+                                      .touchedSection!
+                                      .touchedSectionIndex;
+                                });
+                              },
                         ),
+                        borderData: FlBorderData(show: false),
+                        sectionsSpace: 2,
+                        centerSpaceRadius: chartSize / 4.5,
+                        sections: _buildPieChartSections(chartSize),
                       ),
-                      const SizedBox(width: AppTheme.spacing16),
-                      // Legend
-                      SizedBox(
-                        width: legendWidth,
-                        child: _buildLegend(context),
-                      ),
-                    ],
+                    ),
                   ),
-                );
-              },
-            ),
-          ],
+                  const SizedBox(width: AppTheme.spacing16),
+                  // Legend
+                  SizedBox(
+                    width: legendWidth,
+                    child: _buildLegend(context),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
-      ),
+      ],
     );
+
+    if (widget.showCard) {
+      return Card(
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(AppTheme.spacing20),
+          child: content,
+        ),
+      );
+    }
+
+    return content;
   }
 
   List<PieChartSectionData> _buildPieChartSections(double chartSize) {
