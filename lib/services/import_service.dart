@@ -252,7 +252,7 @@ class ImportService {
   }
 
   /// Import expenses and categories from JSON file
-  /// Handles both version 1.0 (expenses only) and 2.0 (with categories)
+  /// Handles v1.0 (expenses only), v2.0 (with userCategories), and v3.0 (with full categories)
   static Future<ImportResult> importFromJSON(
     String filePath,
     String userId,
@@ -282,11 +282,51 @@ class ImportService {
       final version = jsonData['version'] as String? ?? '1.0';
       debugPrint('📋 [ImportService] Import file version: $version');
 
-      // Import categories first (if version 2.0)
-      if (version == '2.0' && jsonData.containsKey('userCategories')) {
+      // Import categories based on version
+      if (version == '3.0' && jsonData.containsKey('categories')) {
+        // Version 3.0: Full category map with all used categories
+        final categoriesMap = jsonData['categories'] as Map<String, dynamic>;
+        debugPrint(
+          '📂 [ImportService] Found ${categoriesMap.length} categories to import (v3.0 format)',
+        );
+
+        for (final entry in categoriesMap.entries) {
+          try {
+            final categoryId = entry.key;
+            final categoryData = entry.value as Map<String, dynamic>;
+
+            // Check if category already exists
+            if (existingCategories.any((c) => c.id == categoryId)) {
+              debugPrint(
+                '⚠️ [ImportService] Category "$categoryId" already exists, skipping',
+              );
+              categoriesSkipped++;
+              continue;
+            }
+
+            // Create category from full definition
+            // For system categories, preserve isSystem=true but assign to current user
+            // For user categories, assign to current user
+            final category = QuickCategory.fromJson({
+              ...categoryData,
+              'userId': categoryData['isSystem'] == 1 ? null : userId,
+            });
+
+            importedCategories.add(category);
+            categoriesImported++;
+            debugPrint(
+              '✅ [ImportService] Imported category: ${category.nameEn} (${category.isSystem ? "system" : "user"})',
+            );
+          } catch (e) {
+            errors.add('Category "${entry.key}": $e');
+            debugPrint('❌ [ImportService] Error importing category: $e');
+          }
+        }
+      } else if (version == '2.0' && jsonData.containsKey('userCategories')) {
+        // Version 2.0: User categories list (backward compatibility)
         final userCategoriesData = jsonData['userCategories'] as List<dynamic>;
         debugPrint(
-          '📂 [ImportService] Found ${userCategoriesData.length} user categories to import',
+          '📂 [ImportService] Found ${userCategoriesData.length} user categories to import (v2.0 format)',
         );
 
         for (int i = 0; i < userCategoriesData.length; i++) {

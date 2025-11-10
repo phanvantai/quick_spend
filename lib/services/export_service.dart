@@ -65,7 +65,8 @@ class ExportService {
   }
 
   /// Export expenses and categories to JSON format
-  /// Includes both expenses and custom categories for complete backup
+  /// Includes FULL category info for all categories referenced by expenses
+  /// This ensures complete portability - categories can be recreated on import
   /// Returns the file path of the exported JSON file
   static Future<String> exportToJSON(
     List<Expense> expenses,
@@ -76,21 +77,33 @@ class ExportService {
     );
 
     try {
-      // Separate user categories from system categories
-      final userCategories = categories.where((c) => !c.isSystem).toList();
-      final systemCategoryIds = categories
-          .where((c) => c.isSystem)
-          .map((c) => c.id)
-          .toList();
+      // Get all unique category IDs used by expenses
+      final usedCategoryIds = expenses.map((e) => e.categoryId).toSet();
+
+      // Create category map with FULL info for all used categories
+      final categoryMap = <String, Map<String, dynamic>>{};
+      for (final categoryId in usedCategoryIds) {
+        final category = categories.firstWhere(
+          (c) => c.id == categoryId,
+          orElse: () => throw Exception(
+            'Category "$categoryId" not found! This should not happen.',
+          ),
+        );
+        categoryMap[categoryId] = category.toJson();
+      }
+
+      debugPrint(
+        '📤 [ExportService] Exporting ${categoryMap.length} unique categories (${categoryMap.keys.where((id) => categories.firstWhere((c) => c.id == id).isSystem).length} system, ${categoryMap.keys.where((id) => !categories.firstWhere((c) => c.id == id).isSystem).length} user)',
+      );
 
       // Create JSON structure
       final jsonData = {
-        'version': '2.0', // Updated version to include categories
+        'version': '3.0', // Updated version to include full category info
         'exportDate': DateTime.now().toIso8601String(),
         'totalExpenses': expenses.length,
-        'totalCategories': userCategories.length,
-        'systemCategoryIds': systemCategoryIds, // Reference to system categories
-        'userCategories': userCategories.map((c) => c.toJson()).toList(),
+        'totalCategories': categoryMap.length,
+        // Full category definitions (includes system + user categories)
+        'categories': categoryMap,
         'expenses': expenses.map((e) => e.toJson()).toList(),
       };
 
