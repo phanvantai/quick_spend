@@ -167,6 +167,7 @@
     "all": "All",
     "income": "Income",
     "expense": "Expense",
+    "type": "Type",
     "system_categories": "System Categories",
     "system_categories_subtitle": "Built-in categories (can be customized or deleted)",
     "user_categories": "Your Categories",

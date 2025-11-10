@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/category.dart';
+import '../models/expense.dart';
 import '../providers/app_config_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/constants.dart';
@@ -25,6 +26,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
   late IconData _selectedIcon;
   late Color _selectedColor;
+  late TransactionType _selectedType;
   bool _showOtherLanguage = false;
 
   // Extended icon library for user selection (60+ icons)
@@ -238,6 +240,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
     _selectedIcon = isEdit ? widget.category!.icon : _availableIcons[0];
     _selectedColor = isEdit ? widget.category!.color : _availableColors[0];
+    _selectedType = isEdit ? widget.category!.type : TransactionType.expense;
   }
 
   @override
@@ -285,6 +288,36 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
           children: [
             // Preview Card
             _buildPreviewCard(theme, isPrimaryEn),
+            const SizedBox(height: AppTheme.spacing24),
+
+            // Type Selector (Income/Expense)
+            Text(
+              context.tr('categories.type'),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing12),
+            SegmentedButton<TransactionType>(
+              segments: [
+                ButtonSegment<TransactionType>(
+                  value: TransactionType.expense,
+                  label: Text(context.tr('categories.expense')),
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                ),
+                ButtonSegment<TransactionType>(
+                  value: TransactionType.income,
+                  label: Text(context.tr('categories.income')),
+                  icon: const Icon(Icons.account_balance_wallet_outlined),
+                ),
+              ],
+              selected: {_selectedType},
+              onSelectionChanged: (Set<TransactionType> newSelection) {
+                setState(() {
+                  _selectedType = newSelection.first;
+                });
+              },
+            ),
             const SizedBox(height: AppTheme.spacing24),
 
             // Primary Language Fields (based on user's language)
@@ -710,6 +743,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       colorValue: _selectedColor.toARGB32(),
       isSystem: widget.category?.isSystem ?? false,
       userId: AppConstants.defaultUserId,
+      type: _selectedType,
       createdAt: widget.category?.createdAt ?? DateTime.now(),
     );
 
