@@ -284,7 +284,7 @@ class ImportService {
 
       // Import categories based on version
       if (version == '3.0' && jsonData.containsKey('categories')) {
-        // Version 3.0: Full category map with all used categories
+        // Version 3.0: Full category map with ALL categories
         final categoriesMap = jsonData['categories'] as Map<String, dynamic>;
         debugPrint(
           '📂 [ImportService] Found ${categoriesMap.length} categories to import (v3.0 format)',
@@ -295,15 +295,6 @@ class ImportService {
             final categoryId = entry.key;
             final categoryData = entry.value as Map<String, dynamic>;
 
-            // Check if category already exists
-            if (existingCategories.any((c) => c.id == categoryId)) {
-              debugPrint(
-                '⚠️ [ImportService] Category "$categoryId" already exists, skipping',
-              );
-              categoriesSkipped++;
-              continue;
-            }
-
             // Create category from full definition
             // For system categories, preserve isSystem=true but assign to current user
             // For user categories, assign to current user
@@ -312,6 +303,8 @@ class ImportService {
               'userId': categoryData['isSystem'] == 1 ? null : userId,
             });
 
+            // Always add to importedCategories - import file has higher priority
+            // Settings screen will handle create vs update
             importedCategories.add(category);
             categoriesImported++;
             debugPrint(

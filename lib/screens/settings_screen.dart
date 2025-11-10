@@ -753,9 +753,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         throw Exception('Unsupported file format: $extension');
       }
 
-      // Save imported categories first
+      // Save imported categories first (import file has higher priority)
       for (final category in importResult.importedCategories) {
-        await categoryProvider.createCategory(category);
+        final exists = existingCategories.any((c) => c.id == category.id);
+        if (exists) {
+          // Override existing category with imported data
+          await categoryProvider.updateCategory(category);
+          debugPrint(
+            '🔄 [SettingsScreen] Updated category: ${category.nameEn}',
+          );
+        } else {
+          // Create new category
+          await categoryProvider.createCategory(category);
+          debugPrint(
+            '➕ [SettingsScreen] Created category: ${category.nameEn}',
+          );
+        }
       }
 
       // Then save imported expenses
@@ -771,9 +784,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (importResult.categoriesImported > 0) {
           message =
               'Imported ${importResult.categoriesImported} categories, ${importResult.successCount} expenses';
-          if (importResult.categoriesSkipped > 0) {
-            message += ' (${importResult.categoriesSkipped} categories skipped)';
-          }
           if (importResult.failureCount > 0) {
             message += ', ${importResult.failureCount} failed';
           }

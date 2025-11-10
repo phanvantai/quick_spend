@@ -65,8 +65,8 @@ class ExportService {
   }
 
   /// Export expenses and categories to JSON format
-  /// Includes FULL category info for all categories referenced by expenses
-  /// This ensures complete portability - categories can be recreated on import
+  /// Includes FULL category info for ALL categories (system + user)
+  /// This ensures complete portability and preserves customizations
   /// Returns the file path of the exported JSON file
   static Future<String> exportToJSON(
     List<Expense> expenses,
@@ -77,23 +77,16 @@ class ExportService {
     );
 
     try {
-      // Get all unique category IDs used by expenses
-      final usedCategoryIds = expenses.map((e) => e.categoryId).toSet();
-
-      // Create category map with FULL info for all used categories
+      // Create category map with FULL info for ALL categories (not just used ones)
       final categoryMap = <String, Map<String, dynamic>>{};
-      for (final categoryId in usedCategoryIds) {
-        final category = categories.firstWhere(
-          (c) => c.id == categoryId,
-          orElse: () => throw Exception(
-            'Category "$categoryId" not found! This should not happen.',
-          ),
-        );
-        categoryMap[categoryId] = category.toJson();
+      for (final category in categories) {
+        categoryMap[category.id] = category.toJson();
       }
 
+      final systemCount = categories.where((c) => c.isSystem).length;
+      final userCount = categories.where((c) => !c.isSystem).length;
       debugPrint(
-        '📤 [ExportService] Exporting ${categoryMap.length} unique categories (${categoryMap.keys.where((id) => categories.firstWhere((c) => c.id == id).isSystem).length} system, ${categoryMap.keys.where((id) => !categories.firstWhere((c) => c.id == id).isSystem).length} user)',
+        '📤 [ExportService] Exporting ${categoryMap.length} categories ($systemCount system, $userCount user)',
       );
 
       // Create JSON structure
