@@ -103,9 +103,18 @@ class ExpenseParser {
 
     // Step 3: Get description (cleaned)
     String description = amountResult.description.trim();
+
+    // Step 3.5: Detect transaction type (income or expense)
+    final transactionType = Categorizer.detectTransactionType(description, language);
+    debugPrint('💡 [ExpenseParser] Transaction type: ${transactionType.name}');
+
     if (description.isEmpty) {
-      // Use a default description based on language
-      description = language == 'vi' ? 'Chi tiêu' : 'Expense';
+      // Use a default description based on language and type
+      if (transactionType == TransactionType.income) {
+        description = language == 'vi' ? 'Thu nhập' : 'Income';
+      } else {
+        description = language == 'vi' ? 'Chi tiêu' : 'Expense';
+      }
       debugPrint('📝 [ExpenseParser] Using default description: "$description"');
     } else {
       debugPrint('📝 [ExpenseParser] Description: "$description"');
@@ -134,6 +143,7 @@ class ExpenseParser {
       userId: userId,
       rawInput: rawInput,
       confidence: overallConfidence,
+      type: transactionType,
     );
 
     debugPrint('✅ [ExpenseParser] Success! Parsed expense with ID: ${expense.id}');

@@ -1,4 +1,5 @@
 import '../models/category.dart';
+import '../models/expense.dart';
 
 /// Service for auto-categorizing expenses based on description keywords
 class Categorizer {
@@ -142,6 +143,63 @@ class Categorizer {
     }
 
     return results;
+  }
+
+  /// Detect if description suggests income based on keywords
+  /// Returns TransactionType.income if income keywords detected, otherwise TransactionType.expense
+  static TransactionType detectTransactionType(String description, String language) {
+    final normalizedDesc = description.toLowerCase().trim();
+
+    // Income keywords for English and Vietnamese
+    final incomeKeywordsEn = {
+      'received',
+      'earned',
+      'got paid',
+      'salary',
+      'wage',
+      'income',
+      'paycheck',
+      'refund',
+      'gift',
+      'bonus',
+      'reward',
+      'prize',
+      'allowance',
+      'dividend',
+      'interest',
+      'profit',
+      'freelance income',
+      'side income',
+    };
+
+    final incomeKeywordsVi = {
+      'nhận',
+      'được',
+      'lương',
+      'thu nhập',
+      'tiền lương',
+      'hoàn tiền',
+      'hoàn lại',
+      'lì xì',
+      'quà',
+      'thưởng',
+      'giải thưởng',
+      'tiền mừng',
+      'cổ tức',
+      'lãi',
+      'lợi nhuận',
+    };
+
+    final keywords = language == 'vi' ? incomeKeywordsVi : incomeKeywordsEn;
+
+    for (final keyword in keywords) {
+      if (normalizedDesc.contains(keyword.toLowerCase())) {
+        return TransactionType.income;
+      }
+    }
+
+    // Default to expense
+    return TransactionType.expense;
   }
 }
 
