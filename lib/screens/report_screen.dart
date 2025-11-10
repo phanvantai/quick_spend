@@ -25,19 +25,6 @@ class ReportScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(context.tr('navigation.report')),
-        actions: [
-          // Refresh button
-          IconButton(
-            icon: const Icon(Icons.refresh_outlined),
-            onPressed: () {
-              context.read<ReportProvider>().refresh();
-            },
-            tooltip: context.tr('report.refresh_tooltip'),
-          ),
-        ],
-      ),
       body: Consumer2<ReportProvider, AppConfigProvider>(
         builder: (context, reportProvider, configProvider, _) {
           if (reportProvider.isLoading) {
@@ -62,69 +49,133 @@ class ReportScreen extends StatelessWidget {
 
           // Empty state - no expenses at all
           if (stats == null || stats.transactionCount == 0) {
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Period filter (still show even when empty)
-                  PeriodFilter(
-                    selectedPeriod: reportProvider.selectedPeriod,
-                    onPeriodChanged: (period) {
-                      reportProvider.selectPeriod(period);
-                    },
-                    onCustomTap: () => _showCustomDatePicker(
-                      context,
-                      reportProvider,
+            return CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  title: Text(context.tr('navigation.report')),
+                  pinned: true,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.refresh_outlined),
+                      onPressed: () {
+                        context.read<ReportProvider>().refresh();
+                      },
+                      tooltip: context.tr('report.refresh_tooltip'),
                     ),
+                  ],
+                ),
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      // Period filter
+                      PeriodFilter(
+                        selectedPeriod: reportProvider.selectedPeriod,
+                        onPeriodChanged: (period) {
+                          reportProvider.selectPeriod(period);
+                        },
+                        onCustomTap: () => _showCustomDatePicker(
+                          context,
+                          reportProvider,
+                        ),
+                      ),
+                      // Empty state
+                      Padding(
+                        padding: const EdgeInsets.all(AppTheme.spacing16),
+                        child: EmptyState(
+                          icon: Icons.bar_chart_outlined,
+                          title: context.tr('report.empty_title'),
+                          message: context.tr('report.empty_message'),
+                        ),
+                      ),
+                    ],
                   ),
-                  // Empty state
-                  Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacing16),
-                    child: EmptyState(
-                      icon: Icons.bar_chart_outlined,
-                      title: context.tr('report.empty_title'),
-                      message: context.tr('report.empty_message'),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             );
           }
 
           // Main report view with data
           return RefreshIndicator(
             onRefresh: () => reportProvider.refresh(),
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: AppTheme.spacing24),
-              children: [
-                // Period filter
-                PeriodFilter(
-                  selectedPeriod: reportProvider.selectedPeriod,
-                  onPeriodChanged: (period) {
-                    reportProvider.selectPeriod(period);
-                  },
-                  onCustomTap: () => _showCustomDatePicker(
-                    context,
-                    reportProvider,
+            child: CustomScrollView(
+              slivers: [
+                // SliverAppBar with summary in flexible space
+                SliverAppBar(
+                  expandedHeight: 220,
+                  pinned: true,
+                  title: Text(context.tr('navigation.report')),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.refresh_outlined),
+                      onPressed: () {
+                        context.read<ReportProvider>().refresh();
+                      },
+                      tooltip: context.tr('report.refresh_tooltip'),
+                    ),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            colorScheme.primary,
+                            colorScheme.primary.withValues(alpha: 0.8),
+                          ],
+                        ),
+                      ),
+                      child: SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppTheme.spacing16,
+                            56, // Account for app bar height
+                            AppTheme.spacing16,
+                            AppTheme.spacing16,
+                          ),
+                          child: SummaryCard(
+                            stats: stats,
+                            trendPercentage: reportProvider.trendPercentage,
+                            isTrendPositive: reportProvider.isTrendPositive,
+                            currency: configProvider.currency,
+                            language: context.locale.languageCode,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing16,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Summary card with trend
-                      SummaryCard(
-                        stats: stats,
-                        trendPercentage: reportProvider.trendPercentage,
-                        isTrendPositive: reportProvider.isTrendPositive,
-                        currency: configProvider.currency,
-                        language: context.locale.languageCode,
+                // Period filter
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _PeriodFilterDelegate(
+                    child: Container(
+                      color: colorScheme.surface,
+                      child: PeriodFilter(
+                        selectedPeriod: reportProvider.selectedPeriod,
+                        onPeriodChanged: (period) {
+                          reportProvider.selectPeriod(period);
+                        },
+                        onCustomTap: () => _showCustomDatePicker(
+                          context,
+                          reportProvider,
+                        ),
                       ),
-                      const SizedBox(height: AppTheme.spacing16),
+                    ),
+                  ),
+                ),
 
+                // Content
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppTheme.spacing16,
+                    AppTheme.spacing16,
+                    AppTheme.spacing16,
+                    AppTheme.spacing24,
+                  ),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
                       // Stats grid (avg/day, highest expense)
                       StatsGrid(
                         stats: stats,
@@ -167,7 +218,7 @@ class ReportScreen extends StatelessWidget {
                           language: context.locale.languageCode,
                           limit: 5,
                         ),
-                    ],
+                    ]),
                   ),
                 ),
               ],
@@ -192,5 +243,32 @@ class ReportScreen extends StatelessWidget {
     if (dateRange != null) {
       reportProvider.setCustomDateRange(dateRange.start, dateRange.end);
     }
+  }
+}
+
+/// Delegate for pinned period filter header
+class _PeriodFilterDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _PeriodFilterDelegate({required this.child});
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return child;
+  }
+
+  @override
+  double get maxExtent => 72.0;
+
+  @override
+  double get minExtent => 72.0;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return false;
   }
 }
