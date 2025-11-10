@@ -227,7 +227,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 description,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.7,
+                  ),
                   fontSize: 11,
                 ),
               ),
@@ -604,14 +606,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final categories = categoryProvider.categories;
 
       // JSON exports both expenses and all categories (complete backup)
-      final filePath =
-          await ExportService.exportToJSON(expenses, categories);
+      final filePath = await ExportService.exportToJSON(expenses, categories);
 
       // Share the file
-      await ExportService.shareFile(
-        filePath,
-        'quick_spend_export.json',
-      );
+      await ExportService.shareFile(filePath, 'quick_spend_export.json');
 
       if (mounted) {
         messenger.clearSnackBars();
@@ -650,7 +648,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final expenseProvider = context.read<ExpenseProvider>();
     final categoryProvider = context.read<CategoryProvider>();
-    final configProvider = context.read<AppConfigProvider>();
+    //final configProvider = context.read<AppConfigProvider>();
 
     try {
       // Pick JSON file only (CSV doesn't include categories)
@@ -674,6 +672,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       // Show loading
       if (mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -719,9 +718,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         } else {
           // Create new category
           await categoryProvider.createCategory(category);
-          debugPrint(
-            '➕ [SettingsScreen] Created category: ${category.nameEn}',
-          );
+          debugPrint('➕ [SettingsScreen] Created category: ${category.nameEn}');
         }
       }
 

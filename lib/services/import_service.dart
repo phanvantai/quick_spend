@@ -141,7 +141,9 @@ class ImportService {
 
           // Check for duplicates
           if (existingExpenses.any((e) => e.id == id)) {
-            debugPrint('⚠️ [ImportService] Duplicate ID found: $id (row ${i + 1})');
+            debugPrint(
+              '⚠️ [ImportService] Duplicate ID found: $id (row ${i + 1})',
+            );
             duplicateCount++;
             continue;
           }
@@ -161,8 +163,8 @@ class ImportService {
               : '';
           final confidence =
               confidenceIndex >= 0 && row.length > confidenceIndex
-                  ? (row[confidenceIndex] as num).toDouble()
-                  : 1.0;
+              ? (row[confidenceIndex] as num).toDouble()
+              : 1.0;
 
           // Validate required fields
           if (amount <= 0) {
@@ -292,7 +294,7 @@ class ImportService {
 
         for (final entry in categoriesMap.entries) {
           try {
-            final categoryId = entry.key;
+            //final categoryId = entry.key;
             final categoryData = entry.value as Map<String, dynamic>;
 
             // Create category from full definition
@@ -370,7 +372,9 @@ class ImportService {
       }
 
       final expenses = jsonData['expenses'] as List<dynamic>;
-      debugPrint('📋 [ImportService] Found ${expenses.length} expenses in JSON');
+      debugPrint(
+        '📋 [ImportService] Found ${expenses.length} expenses in JSON',
+      );
 
       // Process expenses
       for (int i = 0; i < expenses.length; i++) {
@@ -380,7 +384,9 @@ class ImportService {
           // Check for duplicates
           final id = expenseData['id'] as String?;
           if (id != null && existingExpenses.any((e) => e.id == id)) {
-            debugPrint('⚠️ [ImportService] Duplicate ID found: $id (item ${i + 1})');
+            debugPrint(
+              '⚠️ [ImportService] Duplicate ID found: $id (item ${i + 1})',
+            );
             duplicateCount++;
             continue;
           }
