@@ -1219,6 +1219,7 @@ class _ExpenseFormData {
   String userId;
   String rawInput;
   double confidence;
+  TransactionType type;
 
   _ExpenseFormData({
     required this.id,
@@ -1230,6 +1231,7 @@ class _ExpenseFormData {
     required this.userId,
     required this.rawInput,
     required this.confidence,
+    required this.type,
   });
 
   factory _ExpenseFormData.fromExpense(Expense expense) {
@@ -1243,6 +1245,7 @@ class _ExpenseFormData {
       userId: expense.userId,
       rawInput: expense.rawInput,
       confidence: expense.confidence,
+      type: expense.type,
     );
   }
 
@@ -1257,6 +1260,7 @@ class _ExpenseFormData {
       userId: userId,
       rawInput: rawInput,
       confidence: confidence,
+      type: type,
     );
   }
 }
