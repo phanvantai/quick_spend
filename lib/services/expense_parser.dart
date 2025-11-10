@@ -129,6 +129,12 @@ class ExpenseParser {
     );
     debugPrint('🏷️ [ExpenseParser] Category: ${categoryResult.categoryId} (confidence: ${(categoryResult.confidence * 100).toStringAsFixed(1)}%)');
 
+    // Ensure type matches category (fix inconsistencies)
+    final correctedType = _getTypeFromCategory(categoryResult.categoryId);
+    if (correctedType != transactionType) {
+      debugPrint('⚠️ [ExpenseParser] Type mismatch: detected "$transactionType" but category "${categoryResult.categoryId}" is ${correctedType.name}. Using category type.');
+    }
+
     // Calculate overall confidence
     // Weight: 50% categorization, 30% language detection, 20% amount parsing
     final overallConfidence = (categoryResult.confidence * 0.5) +
@@ -148,7 +154,7 @@ class ExpenseParser {
       userId: userId,
       rawInput: rawInput,
       confidence: overallConfidence,
-      type: transactionType,
+      type: correctedType, // Use corrected type based on category
     );
 
     debugPrint('✅ [ExpenseParser] Success! Parsed expense with ID: ${expense.id}');
@@ -213,6 +219,23 @@ class ExpenseParser {
     }
 
     return updatedResults;
+  }
+
+  /// Get the correct transaction type based on category ID
+  /// This ensures type consistency
+  static TransactionType _getTypeFromCategory(String categoryId) {
+    const incomeCategories = {
+      'salary',
+      'freelance',
+      'investment',
+      'gift_received',
+      'refund',
+      'other_income',
+    };
+
+    return incomeCategories.contains(categoryId)
+        ? TransactionType.income
+        : TransactionType.expense;
   }
 }
 

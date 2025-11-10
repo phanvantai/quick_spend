@@ -353,6 +353,12 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
           // Normalize category string to lowercase ID
           final categoryId = _normalizeCategoryId(categoryStr, transactionType);
 
+          // Ensure type matches category (fix inconsistencies from Gemini)
+          final correctedType = _getTypeFromCategory(categoryId);
+          if (correctedType != transactionType) {
+            debugPrint('⚠️ [GeminiParser] Type mismatch: Gemini said "$typeStr" but category "$categoryId" is ${correctedType.name}. Using category type.');
+          }
+
           // Parse date from relative or absolute format
           final parsedDate = _parseDate(dateStr);
           debugPrint(
@@ -364,7 +370,7 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
             id: const Uuid().v4(),
             amount: amount,
             description: description.isEmpty
-                ? (transactionType == TransactionType.income ? 'Income' : 'Expense')
+                ? (correctedType == TransactionType.income ? 'Income' : 'Expense')
                 : description,
             categoryId: categoryId,
             language: language,
@@ -372,7 +378,7 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
             userId: userId,
             rawInput: rawInput,
             confidence: confidence,
-            type: transactionType,
+            type: correctedType, // Use corrected type based on category
           );
 
           results.add(
@@ -514,5 +520,22 @@ Output: {"language":"en","expenses":[{"amount":1500000,"description":"salary","c
     } else {
       return expenseCategories.contains(normalized) ? normalized : 'other';
     }
+  }
+
+  /// Get the correct transaction type based on category ID
+  /// This ensures type consistency regardless of what Gemini returns
+  static TransactionType _getTypeFromCategory(String categoryId) {
+    const incomeCategories = {
+      'salary',
+      'freelance',
+      'investment',
+      'gift_received',
+      'refund',
+      'other_income',
+    };
+
+    return incomeCategories.contains(categoryId)
+        ? TransactionType.income
+        : TransactionType.expense;
   }
 }
