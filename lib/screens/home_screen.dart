@@ -330,50 +330,47 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFilterChips(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
-      child: Row(
-        children: [
-          FilterChip(
-            label: Text(context.tr('home.filter_all')),
-            selected: _selectedFilter == null,
-            onSelected: (selected) {
-              setState(() {
-                _selectedFilter = null;
-              });
-            },
-            selectedColor: AppTheme.primaryMint.withValues(alpha: 0.2),
-            checkmarkColor: AppTheme.primaryMint,
-          ),
-          const SizedBox(width: AppTheme.spacing8),
-          FilterChip(
-            label: Text(context.tr('home.filter_income')),
-            selected: _selectedFilter == TransactionType.income,
-            onSelected: (selected) {
-              setState(() {
-                _selectedFilter =
-                    selected ? TransactionType.income : null;
-              });
-            },
-            selectedColor: AppTheme.success.withValues(alpha: 0.2),
-            checkmarkColor: AppTheme.success,
-          ),
-          const SizedBox(width: AppTheme.spacing8),
-          FilterChip(
-            label: Text(context.tr('home.filter_expense')),
-            selected: _selectedFilter == TransactionType.expense,
-            onSelected: (selected) {
-              setState(() {
-                _selectedFilter =
-                    selected ? TransactionType.expense : null;
-              });
-            },
-            selectedColor: AppTheme.error.withValues(alpha: 0.2),
-            checkmarkColor: AppTheme.error,
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FilterChip(
+          label: Text(context.tr('home.filter_all')),
+          selected: _selectedFilter == null,
+          onSelected: (selected) {
+            setState(() {
+              _selectedFilter = null;
+            });
+          },
+          selectedColor: AppTheme.primaryMint.withValues(alpha: 0.2),
+          checkmarkColor: AppTheme.primaryMint,
+        ),
+        const SizedBox(width: AppTheme.spacing8),
+        FilterChip(
+          label: Text(context.tr('home.filter_income')),
+          selected: _selectedFilter == TransactionType.income,
+          onSelected: (selected) {
+            setState(() {
+              _selectedFilter =
+                  selected ? TransactionType.income : null;
+            });
+          },
+          selectedColor: AppTheme.success.withValues(alpha: 0.2),
+          checkmarkColor: AppTheme.success,
+        ),
+        const SizedBox(width: AppTheme.spacing8),
+        FilterChip(
+          label: Text(context.tr('home.filter_expense')),
+          selected: _selectedFilter == TransactionType.expense,
+          onSelected: (selected) {
+            setState(() {
+              _selectedFilter =
+                  selected ? TransactionType.expense : null;
+            });
+          },
+          selectedColor: AppTheme.error.withValues(alpha: 0.2),
+          checkmarkColor: AppTheme.error,
+        ),
+      ],
     );
   }
 
@@ -381,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.tr('home.hello')),
+        title: _buildFilterChips(context),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
@@ -480,13 +477,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: AppTheme.spacing8,
-                    bottom: AppTheme.spacing16,
-                  ),
-                  child: _buildFilterChips(context),
-                ),
                 Expanded(
                   child: EmptyState(
                     icon: _selectedFilter == TransactionType.income
@@ -549,17 +539,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                ),
-              ),
-
-              // Filter Chips
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: AppTheme.spacing8,
-                    bottom: AppTheme.spacing16,
-                  ),
-                  child: _buildFilterChips(context),
                 ),
               ),
 
