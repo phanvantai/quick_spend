@@ -543,6 +543,7 @@ class QuickCategory {
     int? colorValue,
     bool? isSystem,
     String? userId,
+    TransactionType? type,
     DateTime? createdAt,
   }) {
     return QuickCategory(
@@ -555,6 +556,7 @@ class QuickCategory {
       colorValue: colorValue ?? this.colorValue,
       isSystem: isSystem ?? this.isSystem,
       userId: userId ?? this.userId,
+      type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
     );
   }
