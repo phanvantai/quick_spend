@@ -548,57 +548,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // Export Dialog
+  // Export to JSON (removed CSV option since it doesn't include categories)
   void _showExportDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(dialogContext.tr('settings.export_data')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(dialogContext.tr('settings.export_format')),
-              const SizedBox(height: AppTheme.spacing16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(dialogContext);
-                        _handleExport(context, 'csv');
-                      },
-                      icon: const Icon(Icons.table_chart),
-                      label: Text(dialogContext.tr('settings.export_csv')),
-                    ),
-                  ),
-                  const SizedBox(width: AppTheme.spacing8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(dialogContext);
-                        _handleExport(context, 'json');
-                      },
-                      icon: const Icon(Icons.code),
-                      label: Text(dialogContext.tr('settings.export_json')),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(dialogContext.tr('common.cancel')),
-            ),
-          ],
-        );
-      },
-    );
+    _handleExport(context, 'json');
   }
 
-  // Handle Export
+  // Handle Export (JSON only - includes all categories and expenses)
   Future<void> _handleExport(BuildContext context, String format) async {
     final messenger = ScaffoldMessenger.of(context);
     final expenseProvider = context.read<ExpenseProvider>();
@@ -631,19 +586,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final expenses = expenseProvider.expenses;
       final categories = categoryProvider.categories;
 
-      String filePath;
-      if (format == 'csv') {
-        // CSV only exports expenses (no categories)
-        filePath = await ExportService.exportToCSV(expenses);
-      } else {
-        // JSON exports both expenses and categories (complete backup)
-        filePath = await ExportService.exportToJSON(expenses, categories);
-      }
+      // JSON exports both expenses and all categories (complete backup)
+      final filePath =
+          await ExportService.exportToJSON(expenses, categories);
 
       // Share the file
       await ExportService.shareFile(
         filePath,
-        'quick_spend_export.$format',
+        'quick_spend_export.json',
       );
 
       if (mounted) {
@@ -686,10 +636,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final configProvider = context.read<AppConfigProvider>();
 
     try {
-      // Pick file
+      // Pick JSON file only (CSV doesn't include categories)
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['csv', 'json'],
+        allowedExtensions: ['json'],
       );
 
       if (result == null || result.files.isEmpty) {
@@ -703,8 +653,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return;
       }
 
-      final extension = filePath.split('.').last.toLowerCase();
-      debugPrint('📁 [SettingsScreen] Importing from: $filePath ($extension)');
+      debugPrint('📁 [SettingsScreen] Importing from: $filePath');
 
       // Show loading
       if (mounted) {
@@ -729,29 +678,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
 
-      // Import based on format
+      // Import from JSON (includes all categories and expenses)
       final userId = 'user'; // TODO: Get actual user ID
       final existingExpenses = expenseProvider.expenses;
       final existingCategories = categoryProvider.categories;
 
-      ImportResult importResult;
-      if (extension == 'csv') {
-        importResult = await ImportService.importFromCSV(
-          filePath,
-          userId,
-          existingExpenses,
-          existingCategories,
-        );
-      } else if (extension == 'json') {
-        importResult = await ImportService.importFromJSON(
-          filePath,
-          userId,
-          existingExpenses,
-          existingCategories,
-        );
-      } else {
-        throw Exception('Unsupported file format: $extension');
-      }
+      final importResult = await ImportService.importFromJSON(
+        filePath,
+        userId,
+        existingExpenses,
+        existingCategories,
+      );
 
       // Save imported categories first (import file has higher priority)
       for (final category in importResult.importedCategories) {
