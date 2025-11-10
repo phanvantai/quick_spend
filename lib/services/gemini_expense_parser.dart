@@ -167,12 +167,28 @@ class GeminiExpenseParser {
     List<QuickCategory> categories,
     String language,
   ) {
-    // Build category list with keywords dynamically
-    final categoryDescriptions = categories.map((cat) {
+    // Build category list with keywords dynamically, grouped by type
+    final incomeCategories = categories.where((c) => c.isIncomeCategory).toList();
+    final expenseCategories = categories.where((c) => c.isExpenseCategory).toList();
+
+    final incomeCategoryDesc = incomeCategories.map((cat) {
       final keywords = cat.getKeywords(language);
       final label = cat.getLabel(language);
-      return '- ${cat.id}: $label (${keywords.take(5).join(", ")}, etc.)';
+      return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
     }).join('\n');
+
+    final expenseCategoryDesc = expenseCategories.map((cat) {
+      final keywords = cat.getKeywords(language);
+      final label = cat.getLabel(language);
+      return '  - ${cat.id}: $label (${keywords.take(5).join(", ")})';
+    }).join('\n');
+
+    final categoryDescriptions = '''
+INCOME Categories:
+$incomeCategoryDesc
+
+EXPENSE Categories:
+$expenseCategoryDesc''';
 
     // Get all category IDs for the rule
     final categoryIds = categories.map((c) => c.id).join(', ');
@@ -211,9 +227,10 @@ Rules:
    - Absolute: "on December 5", "12/5", "2024-12-05"
    - Relative: "yesterday", "hôm qua", "last week", "tuần trước", "3 days ago", "3 ngày trước"
    - Default: If no date mentioned, use "today"
-6. Categorize into: $categoryIds
-   - For INCOME: use salary, freelance, investment, gift_received, refund, other_income
-   - For EXPENSE: use food, transport, shopping, bills, health, entertainment, other
+6. Categorize using the categories listed below (see Categories section)
+   - Match transaction description to category keywords
+   - Use appropriate income or expense category based on transaction type
+   - Fallback to "other_income" for unmatched income, "other" for unmatched expenses
 7. Fix incomplete words from voice recognition:
    - Vietnamese: "tiền cơ" → "tiền cơm", "xă" → "xăng", "cafe" can be "cà phê" or "cafe"
    - Keep original if unclear
