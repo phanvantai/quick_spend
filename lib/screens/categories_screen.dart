@@ -418,6 +418,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     BuildContext context,
     QuickCategory category,
   ) async {
+    final appConfig = context.read<AppConfigProvider>().config;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -425,7 +427,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         content: Text(
           context.tr(
             'categories.delete_category_confirm',
-            namedArgs: {'name': category.getLabel('en')},
+            namedArgs: {'name': category.getLabel(appConfig.language)},
           ),
         ),
         actions: [

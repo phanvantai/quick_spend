@@ -414,11 +414,33 @@ class ExpenseService {
       throw Exception('Cannot delete fallback categories (other, other_income)');
     }
 
+    // Get the category to determine its type
+    final category = await getCategoryById(id);
+    if (category == null) {
+      throw Exception('Category not found: $id');
+    }
+
+    // Determine the appropriate fallback category based on type
+    final fallbackCategoryId = category.isIncomeCategory ? 'other_income' : 'other';
+
+    debugPrint('🗑️ [ExpenseService] Deleting category: $id (${category.type.name})');
+    debugPrint('   Reassigning expenses to: $fallbackCategoryId');
+
+    // Reassign all expenses with this category to the appropriate fallback
+    final reassignCount = await _database!.rawUpdate(
+      'UPDATE $_tableName SET categoryId = ? WHERE categoryId = ?',
+      [fallbackCategoryId, id],
+    );
+    debugPrint('   Reassigned $reassignCount expense(s) to $fallbackCategoryId');
+
+    // Delete the category
     await _database!.delete(
       _categoriesTableName,
       where: 'id = ?',
       whereArgs: [id],
     );
+
+    debugPrint('✅ [ExpenseService] Category deleted: $id');
   }
 
   /// Clear all user-defined categories (for testing)
