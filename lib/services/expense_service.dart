@@ -7,7 +7,7 @@ import '../models/category.dart';
 /// Service for managing expenses using SQLite local database
 class ExpenseService {
   static const String _databaseName = 'quick_spend.db';
-  static const int _databaseVersion = 2; // Updated for categoryId migration
+  static const int _databaseVersion = 3; // Updated for type (income/expense) support
   static const String _tableName = 'expenses';
   static const String _categoriesTableName = 'categories';
 
@@ -33,7 +33,7 @@ class ExpenseService {
 
   /// Create the database schema
   Future<void> _onCreate(Database db, int version) async {
-    // Create expenses table with categoryId
+    // Create expenses table with categoryId and type
     await db.execute('''
       CREATE TABLE $_tableName (
         id TEXT PRIMARY KEY,
@@ -44,7 +44,8 @@ class ExpenseService {
         date TEXT NOT NULL,
         userId TEXT NOT NULL,
         rawInput TEXT NOT NULL,
-        confidence REAL NOT NULL
+        confidence REAL NOT NULL,
+        type TEXT NOT NULL DEFAULT 'expense'
       )
     ''');
 
@@ -71,6 +72,7 @@ class ExpenseService {
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     debugPrint('🔄 [ExpenseService] Upgrading database from v$oldVersion to v$newVersion');
 
+    // Migration from v1 to v2: Add categories table and categoryId column
     if (oldVersion < 2) {
       // Create categories table
       await db.execute('''
@@ -131,7 +133,25 @@ class ExpenseService {
         }
       }
 
-      debugPrint('✅ [ExpenseService] Database upgraded successfully');
+      debugPrint('✅ [ExpenseService] Database upgraded to v2 successfully');
+    }
+
+    // Migration from v2 to v3: Add type column for income/expense support
+    if (oldVersion < 3) {
+      debugPrint('🔄 [ExpenseService] Adding type column for income/expense support...');
+
+      try {
+        // Add type column with default value 'expense' for backward compatibility
+        await db.execute(
+          'ALTER TABLE $_tableName ADD COLUMN type TEXT NOT NULL DEFAULT "expense"',
+        );
+        debugPrint('✅ [ExpenseService] Type column added successfully');
+      } catch (e) {
+        debugPrint('⚠️ [ExpenseService] Error adding type column: $e');
+        // Column might already exist, continue
+      }
+
+      debugPrint('✅ [ExpenseService] Database upgraded to v3 successfully');
     }
   }
 
@@ -191,6 +211,60 @@ class ExpenseService {
     return maps.map((map) => Expense.fromJson(map)).toList();
   }
 
+  /// Get only expenses (not income) for a user
+  Future<List<Expense>> getExpensesOnly(String userId) async {
+    await _ensureInitialized();
+
+    final List<Map<String, dynamic>> maps = await _database!.query(
+      _tableName,
+      where: 'userId = ? AND type = ?',
+      whereArgs: [userId, 'expense'],
+      orderBy: 'date DESC',
+    );
+
+    debugPrint('📋 [ExpenseService] Loaded ${maps.length} expense(s) from SQLite');
+    return maps.map((map) => Expense.fromJson(map)).toList();
+  }
+
+  /// Get only income for a user
+  Future<List<Expense>> getIncomeOnly(String userId) async {
+    await _ensureInitialized();
+
+    final List<Map<String, dynamic>> maps = await _database!.query(
+      _tableName,
+      where: 'userId = ? AND type = ?',
+      whereArgs: [userId, 'income'],
+      orderBy: 'date DESC',
+    );
+
+    debugPrint('📋 [ExpenseService] Loaded ${maps.length} income(s) from SQLite');
+    return maps.map((map) => Expense.fromJson(map)).toList();
+  }
+
+  /// Get expenses or income for a specific date range and type
+  Future<List<Expense>> getTransactionsByDateRangeAndType(
+    String userId,
+    DateTime startDate,
+    DateTime endDate,
+    String type, // 'expense' or 'income'
+  ) async {
+    await _ensureInitialized();
+
+    final List<Map<String, dynamic>> maps = await _database!.query(
+      _tableName,
+      where: 'userId = ? AND date >= ? AND date <= ? AND type = ?',
+      whereArgs: [
+        userId,
+        startDate.toIso8601String(),
+        endDate.toIso8601String(),
+        type,
+      ],
+      orderBy: 'date DESC',
+    );
+
+    return maps.map((map) => Expense.fromJson(map)).toList();
+  }
+
   /// Get a single expense by ID
   Future<Expense?> getExpenseById(String id) async {
     await _ensureInitialized();
@@ -243,14 +317,42 @@ class ExpenseService {
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
-  /// Get total amount spent for a user
+  /// Get total amount spent for a user (expenses only, not income)
   Future<double> getTotalAmount(String userId) async {
     await _ensureInitialized();
     final result = await _database!.rawQuery(
-      'SELECT SUM(amount) as total FROM $_tableName WHERE userId = ?',
-      [userId],
+      'SELECT SUM(amount) as total FROM $_tableName WHERE userId = ? AND type = ?',
+      [userId, 'expense'],
     );
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  /// Get total income for a user
+  Future<double> getTotalIncome(String userId) async {
+    await _ensureInitialized();
+    final result = await _database!.rawQuery(
+      'SELECT SUM(amount) as total FROM $_tableName WHERE userId = ? AND type = ?',
+      [userId, 'income'],
+    );
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  /// Get net balance (income - expenses) for a user
+  Future<double> getNetBalance(String userId) async {
+    await _ensureInitialized();
+    final income = await getTotalIncome(userId);
+    final expenses = await getTotalAmount(userId);
+    return income - expenses;
+  }
+
+  /// Get expense count by type
+  Future<int> getTransactionCount(String userId, String type) async {
+    await _ensureInitialized();
+    final result = await _database!.rawQuery(
+      'SELECT COUNT(*) as count FROM $_tableName WHERE userId = ? AND type = ?',
+      [userId, type],
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
   /// Close the database connection

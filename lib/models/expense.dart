@@ -1,6 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Expense model representing a single expense entry
+/// Transaction type enum
+enum TransactionType {
+  expense,
+  income;
+
+  /// Convert to string for storage
+  String toJson() => name;
+
+  /// Create from string
+  static TransactionType fromJson(String value) {
+    return TransactionType.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => TransactionType.expense,
+    );
+  }
+}
+
+/// Expense model representing a single expense or income entry
+/// Note: Named "Expense" for backward compatibility, but supports both types
 class Expense {
   final String id;
   final double amount;
@@ -11,6 +29,7 @@ class Expense {
   final String userId;
   final String rawInput; // Original input from user
   final double confidence; // Confidence score of auto-categorization (0-1)
+  final TransactionType type; // Transaction type (expense or income)
 
   Expense({
     required this.id,
@@ -22,6 +41,7 @@ class Expense {
     required this.userId,
     required this.rawInput,
     this.confidence = 1.0,
+    this.type = TransactionType.expense, // Default to expense for backward compatibility
   });
 
   /// Create Expense from Firestore document
@@ -40,6 +60,7 @@ class Expense {
       userId: data['userId'] as String,
       rawInput: data['rawInput'] as String? ?? '',
       confidence: (data['confidence'] as num?)?.toDouble() ?? 1.0,
+      type: TransactionType.fromJson(data['type'] as String? ?? 'expense'),
     );
   }
 
@@ -54,6 +75,7 @@ class Expense {
       'userId': userId,
       'rawInput': rawInput,
       'confidence': confidence,
+      'type': type.toJson(),
     };
   }
 
@@ -69,6 +91,7 @@ class Expense {
       'userId': userId,
       'rawInput': rawInput,
       'confidence': confidence,
+      'type': type.toJson(),
     };
   }
 
@@ -88,6 +111,7 @@ class Expense {
       userId: json['userId'] as String,
       rawInput: json['rawInput'] as String? ?? '',
       confidence: (json['confidence'] as num?)?.toDouble() ?? 1.0,
+      type: TransactionType.fromJson(json['type'] as String? ?? 'expense'),
     );
   }
 
@@ -102,6 +126,7 @@ class Expense {
     String? userId,
     String? rawInput,
     double? confidence,
+    TransactionType? type,
   }) {
     return Expense(
       id: id ?? this.id,
@@ -113,6 +138,7 @@ class Expense {
       userId: userId ?? this.userId,
       rawInput: rawInput ?? this.rawInput,
       confidence: confidence ?? this.confidence,
+      type: type ?? this.type,
     );
   }
 
@@ -139,9 +165,15 @@ class Expense {
     }
   }
 
+  /// Check if this is an income transaction
+  bool get isIncome => type == TransactionType.income;
+
+  /// Check if this is an expense transaction
+  bool get isExpense => type == TransactionType.expense;
+
   @override
   String toString() {
-    return 'Expense(id: $id, amount: $amount, description: $description, categoryId: $categoryId, date: $date)';
+    return 'Expense(id: $id, amount: $amount, description: $description, categoryId: $categoryId, type: ${type.name}, date: $date)';
   }
 
   @override
@@ -157,7 +189,8 @@ class Expense {
         other.date == date &&
         other.userId == userId &&
         other.rawInput == rawInput &&
-        other.confidence == confidence;
+        other.confidence == confidence &&
+        other.type == type;
   }
 
   @override
@@ -172,6 +205,7 @@ class Expense {
       userId,
       rawInput,
       confidence,
+      type,
     );
   }
 }
