@@ -55,12 +55,17 @@ The app uses a hybrid AI + rule-based parsing architecture:
 
 2. **GeminiExpenseParser** ([lib/services/gemini_expense_parser.dart](lib/services/gemini_expense_parser.dart))
    - **AI-powered expense parser using Gemini 2.5 Flash via Firebase AI**
+   - **NEW: Enhanced hybrid prompting** - English instructions with language-specific examples
+   - **NEW: Date parsing support** - Understands "yesterday", "hôm qua", "last week", "3 days ago", specific dates
+   - **NEW: Complex sentence handling** - Handles temporal sequences, multiple items, detailed descriptions
+   - **NEW: Incomplete word fixing** - Corrects voice recognition errors ("tiền cơ" → "tiền cơm")
+   - **NEW: Input pre-validation** - Filters meaningless voice input to save API costs (empty, too short, filler words like "uh", "um", "ờ", "à")
    - Understands natural language, context, and Vietnamese slang
    - Can extract multiple expenses from one input ("50k coffee and 30k parking")
    - Smart semantic categorization (food, transport, shopping, bills, health, entertainment, other)
    - Returns structured JSON parsed into ParseResult objects
    - **No API key needed** - uses Firebase project authentication automatically
-   - Vietnamese slang support: "ca" (thousand), "củ/cọc" (million)
+   - **Enhanced Vietnamese slang support**: "ca" (thousand), "củ/cọc" (million), "chai" (hundred)
    - Model: `gemini-2.5-flash` (latest stable with JSON support)
    - Timeout: 30 seconds for first request
    - Check availability: `GeminiExpenseParser.isAvailable`
@@ -136,11 +141,12 @@ The app uses a hybrid AI + rule-based parsing architecture:
 ### Expense Parsing Flow
 
 ```dart
-// Input: "50k coffee" or "50k coffee and 30k parking"
+// Input: "50k coffee" or "50k coffee yesterday and 30k parking today"
 final results = await ExpenseParser.parse(input, userId);
 
 // Note: Now async and returns List<ParseResult>
 // Can return multiple expenses if Gemini detects them
+// NEW: Can parse dates from temporal references
 
 for (final result in results) {
   if (result.success && result.expense != null) {
@@ -148,6 +154,7 @@ for (final result in results) {
     // - amount: 50000.0
     // - description: "coffee"
     // - category: ExpenseCategory.food
+    // - date: DateTime (parsed from "yesterday", "hôm qua", etc.)
     // - language: "en"
     // - confidence: 0.95 (higher with Gemini)
     // - rawInput: original text
@@ -155,8 +162,8 @@ for (final result in results) {
 }
 
 // Parsing Strategy:
-// 1. Try Gemini AI (if configured)
-// 2. Fallback to rule-based parser on failure
+// 1. Try Gemini AI (if configured) - supports dates, complex sentences, slang
+// 2. Fallback to rule-based parser on failure - uses DateTime.now() for date
 // 3. Always returns at least one result (success or error)
 ```
 
@@ -289,8 +296,34 @@ Both AI and fallback parsers understand Vietnamese money slang:
 - **"ca"** = thousand (k) — "45 ca tiền cơm" = 45,000 VND
 - **"củ"** = million — "1 củ xăng" = 1,000,000 VND
 - **"cọc"** = million — "2 cọc" = 2,000,000 VND
+- **"chai"** = hundred — "5 chai" = 500 VND (less common)
 
-This makes voice input more natural for Vietnamese users.
+**NEW: Enhanced Gemini support** for incomplete words from voice recognition:
+- "tiền cơ" → "tiền cơm" (meal money)
+- "xă" → "xăng" (gasoline)
+- "cafe" → "cà phê" (coffee)
+
+This makes voice input more natural and accurate for Vietnamese users.
+
+### Input Pre-Validation
+
+**NEW**: GeminiExpenseParser includes input validation to avoid meaningless API calls:
+
+**Filters out:**
+- Empty or whitespace-only input
+- Too short input (< 2 characters)
+- No alphanumeric characters
+- Common filler words: "uh", "um", "ah", "er", "hmm" (English) and "ờ", "à", "ư", "ừ", "ơ" (Vietnamese)
+- Repeated single characters: "a a a", "uh uh uh"
+- Suspicious repetition: same word repeated 3+ times
+- Just punctuation or symbols
+
+**Benefits:**
+- Saves API costs by avoiding unnecessary Gemini calls
+- Improves performance by failing fast on invalid input
+- Better user experience with immediate feedback on nonsensical input
+
+**Note**: The validator allows input without numbers (e.g., "coffee today") as it might still be valid, letting Gemini determine if it's parseable.
 
 ### Categories
 
