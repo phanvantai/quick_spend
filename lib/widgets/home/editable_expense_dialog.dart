@@ -166,11 +166,63 @@ class _ExpenseFormCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final categoryProvider = context.watch<CategoryProvider>();
     final appConfig = context.watch<AppConfigProvider>().config;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Transaction type switcher
+        SegmentedButton<TransactionType>(
+          segments: [
+            ButtonSegment<TransactionType>(
+              value: TransactionType.expense,
+              label: Text(context.tr('categories.expense')),
+              icon: const Icon(Icons.remove_circle_outline, size: 18),
+            ),
+            ButtonSegment<TransactionType>(
+              value: TransactionType.income,
+              label: Text(context.tr('categories.income')),
+              icon: const Icon(Icons.add_circle_outline, size: 18),
+            ),
+          ],
+          selected: {formData.type},
+          onSelectionChanged: (Set<TransactionType> newSelection) {
+            formData.type = newSelection.first;
+            // Reset category to first available for the new type
+            final categoriesOfType = categoryProvider.categories
+                .where((cat) => cat.type == formData.type)
+                .toList();
+            if (categoriesOfType.isNotEmpty) {
+              formData.categoryId = categoriesOfType.first.id;
+            }
+            onChanged();
+          },
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.resolveWith<Color>(
+              (Set<WidgetState> states) {
+                if (states.contains(WidgetState.selected)) {
+                  return formData.type == TransactionType.expense
+                      ? AppTheme.error.withValues(alpha: 0.15)
+                      : AppTheme.success.withValues(alpha: 0.15);
+                }
+                return colorScheme.surface;
+              },
+            ),
+            foregroundColor: WidgetStateProperty.resolveWith<Color>(
+              (Set<WidgetState> states) {
+                if (states.contains(WidgetState.selected)) {
+                  return formData.type == TransactionType.expense
+                      ? AppTheme.error
+                      : AppTheme.success;
+                }
+                return colorScheme.onSurface;
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: AppTheme.spacing12),
+
         // Description field
         TextFormField(
           initialValue: formData.description,
