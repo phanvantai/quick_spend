@@ -388,12 +388,13 @@ class ExpenseService {
     debugPrint('✅ [ExpenseService] Category created');
   }
 
-  /// Update a user-defined category
+  /// Update a category (user-defined or system, except fallback categories)
   Future<void> updateCategory(QuickCategory category) async {
     await _ensureInitialized();
 
-    if (category.isSystem) {
-      throw Exception('Cannot update system categories');
+    // Prevent updating fallback categories (other and other_income)
+    if (category.id == 'other' || category.id == 'other_income') {
+      throw Exception('Cannot update fallback categories (other, other_income)');
     }
 
     await _database!.update(
@@ -404,19 +405,18 @@ class ExpenseService {
     );
   }
 
-  /// Delete a user-defined category
+  /// Delete a category (user-defined or system, except fallback categories)
   Future<void> deleteCategory(String id) async {
     await _ensureInitialized();
 
-    // Ensure it's not a system category
-    final category = await getCategoryById(id);
-    if (category?.isSystem == true) {
-      throw Exception('Cannot delete system categories');
+    // Prevent deletion of fallback categories (other and other_income)
+    if (id == 'other' || id == 'other_income') {
+      throw Exception('Cannot delete fallback categories (other, other_income)');
     }
 
     await _database!.delete(
       _categoriesTableName,
-      where: 'id = ? AND isSystem = 0',
+      where: 'id = ?',
       whereArgs: [id],
     );
   }

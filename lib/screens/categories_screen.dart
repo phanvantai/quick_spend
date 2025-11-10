@@ -106,14 +106,22 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 context.tr('categories.system_categories_subtitle'),
               ),
               ...systemCategories.map((category) {
+                // Lock fallback categories (other and other_income)
+                final isFallbackCategory =
+                    category.id == 'other' || category.id == 'other_income';
+
                 return _buildCategoryTile(
                   context,
                   category,
                   language,
                   isSystem: true,
-                  // System categories cannot be edited or deleted
-                  onEdit: null,
-                  onDelete: null,
+                  // Prevent editing and deletion of fallback categories only
+                  onEdit: !isFallbackCategory
+                      ? () => _navigateToEditCategory(context, category)
+                      : null,
+                  onDelete: !isFallbackCategory
+                      ? () => _deleteCategory(context, category)
+                      : null,
                 );
               }),
 
