@@ -201,10 +201,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         category.id == 'other' || category.id == 'other_income';
 
     final cardContent = Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacing16,
-        vertical: AppTheme.spacing4,
-      ),
+      margin: isFallbackCategory
+          ? const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing16,
+              vertical: AppTheme.spacing4,
+            )
+          : const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing16,
+            ),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(AppTheme.spacing12),
@@ -251,30 +255,37 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
 
     // Add slidable actions for other categories
-    return Slidable(
-      key: ValueKey(category.id),
-      endActionPane: ActionPane(
-        motion: const DrawerMotion(),
-        children: [
-          if (onEdit != null)
-            SlidableAction(
-              onPressed: (_) => onEdit(),
-              backgroundColor: AppTheme.primaryMint,
-              foregroundColor: Colors.white,
-              icon: Icons.edit,
-              label: context.tr('common.edit'),
-            ),
-          if (onDelete != null)
-            SlidableAction(
-              onPressed: (_) => onDelete(),
-              backgroundColor: AppTheme.error,
-              foregroundColor: Colors.white,
-              icon: Icons.delete,
-              label: context.tr('common.delete'),
-            ),
-        ],
+    // Wrap with padding to add vertical spacing
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing4),
+      child: Slidable(
+        key: ValueKey(category.id),
+        endActionPane: ActionPane(
+          motion: const DrawerMotion(),
+          extentRatio: 0.4, // Limit action pane width
+          children: [
+            if (onEdit != null)
+              SlidableAction(
+                onPressed: (_) => onEdit(),
+                backgroundColor: AppTheme.primaryMint,
+                foregroundColor: Colors.white,
+                icon: Icons.edit,
+                label: context.tr('common.edit'),
+                autoClose: true,
+              ),
+            if (onDelete != null)
+              SlidableAction(
+                onPressed: (_) => onDelete(),
+                backgroundColor: AppTheme.error,
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                label: context.tr('common.delete'),
+                autoClose: true,
+              ),
+          ],
+        ),
+        child: cardContent,
       ),
-      child: cardContent,
     );
   }
 
