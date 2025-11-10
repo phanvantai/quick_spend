@@ -101,7 +101,7 @@ class ReportScreen extends StatelessWidget {
               slivers: [
                 // SliverAppBar with summary in flexible space
                 SliverAppBar(
-                  expandedHeight: 220,
+                  expandedHeight: 340,
                   pinned: true,
                   title: Text(context.tr('navigation.report')),
                   actions: [
@@ -118,9 +118,9 @@ class ReportScreen extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(
                           AppTheme.spacing16,
-                          56, // Account for app bar height
+                          64, // Account for app bar height
                           AppTheme.spacing16,
-                          AppTheme.spacing16,
+                          AppTheme.spacing8,
                         ),
                         child: SummaryCard(
                           stats: stats,

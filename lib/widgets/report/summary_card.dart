@@ -31,7 +31,7 @@ class SummaryCard extends StatelessWidget {
           gradient: AppTheme.primaryGradient,
           borderRadius: AppTheme.borderRadiusMedium,
         ),
-        padding: const EdgeInsets.all(AppTheme.spacing24),
+        padding: const EdgeInsets.all(AppTheme.spacing12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -43,7 +43,7 @@ class SummaryCard extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: AppTheme.spacing16),
+            const SizedBox(height: AppTheme.spacing8),
 
             // Income/Expenses Row
             Row(
@@ -69,7 +69,7 @@ class SummaryCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.spacing16),
+            const SizedBox(height: AppTheme.spacing8),
 
             // Net Balance with trend
             Row(
@@ -86,13 +86,13 @@ class SummaryCard extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: AppTheme.spacing4),
+                      const SizedBox(height: 2),
                       Text(
                         _formatAmount(context, stats.netBalance),
                         style: theme.textTheme.displaySmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
-                          fontSize: 36,
+                          fontSize: 30,
                         ),
                       ),
                     ],
@@ -101,7 +101,7 @@ class SummaryCard extends StatelessWidget {
                 if (trendPercentage != null) _buildTrendIndicator(theme),
               ],
             ),
-            const SizedBox(height: AppTheme.spacing16),
+            const SizedBox(height: AppTheme.spacing8),
 
             // Statistics row (Transaction counts and savings rate)
             Row(
@@ -182,7 +182,7 @@ class SummaryCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(AppTheme.spacing12),
+      padding: const EdgeInsets.all(AppTheme.spacing8),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
         borderRadius: AppTheme.borderRadiusSmall,
@@ -207,7 +207,7 @@ class SummaryCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppTheme.spacing8),
+          const SizedBox(height: 6),
           Text(
             value,
             style: theme.textTheme.titleLarge?.copyWith(
@@ -254,7 +254,7 @@ class SummaryCard extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppTheme.spacing4),
+        const SizedBox(height: 2),
         Text(
           label,
           style: theme.textTheme.bodySmall?.copyWith(
