@@ -54,15 +54,6 @@ class ReportScreen extends StatelessWidget {
                 SliverAppBar(
                   title: Text(context.tr('navigation.report')),
                   pinned: true,
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.refresh_outlined),
-                      onPressed: () {
-                        context.read<ReportProvider>().refresh();
-                      },
-                      tooltip: context.tr('report.refresh_tooltip'),
-                    ),
-                  ],
                 ),
                 SliverToBoxAdapter(
                   child: Column(
@@ -104,15 +95,6 @@ class ReportScreen extends StatelessWidget {
                   expandedHeight: 340,
                   pinned: true,
                   title: Text(context.tr('navigation.report')),
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.refresh_outlined),
-                      onPressed: () {
-                        context.read<ReportProvider>().refresh();
-                      },
-                      tooltip: context.tr('report.refresh_tooltip'),
-                    ),
-                  ],
                   flexibleSpace: FlexibleSpaceBar(
                     background: SafeArea(
                       child: Padding(
