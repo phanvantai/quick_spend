@@ -106,22 +106,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 context.tr('categories.system_categories_subtitle'),
               ),
               ...systemCategories.map((category) {
-                // Lock fallback categories (other and other_income)
-                final isFallbackCategory =
-                    category.id == 'other' || category.id == 'other_income';
-
                 return _buildCategoryTile(
                   context,
                   category,
                   language,
                   isSystem: true,
-                  // Prevent editing and deletion of fallback categories
-                  onEdit: !isFallbackCategory
-                      ? () => _navigateToEditCategory(context, category)
-                      : null,
-                  onDelete: !isFallbackCategory
-                      ? () => _deleteCategory(context, category)
-                      : null,
+                  // System categories cannot be edited or deleted
+                  onEdit: null,
+                  onDelete: null,
                 );
               }),
 
@@ -200,8 +192,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     final isFallbackCategory =
         category.id == 'other' || category.id == 'other_income';
 
+    // Check if category has any actions (not a system category)
+    final hasActions = onEdit != null || onDelete != null;
+
     final cardContent = Card(
-      margin: isFallbackCategory
+      margin: !hasActions
           ? const EdgeInsets.symmetric(
               horizontal: AppTheme.spacing16,
               vertical: AppTheme.spacing4,
@@ -249,12 +244,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       ),
     );
 
-    // For fallback categories, don't add slidable actions
-    if (isFallbackCategory) {
+    // For system categories (no actions available), don't add slidable
+    if (!hasActions) {
       return cardContent;
     }
 
-    // Add slidable actions for other categories
+    // Add slidable actions for user categories
     // Wrap with padding to add vertical spacing
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing4),
