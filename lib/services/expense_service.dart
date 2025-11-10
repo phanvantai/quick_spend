@@ -61,6 +61,7 @@ class ExpenseService {
         colorValue INTEGER NOT NULL,
         isSystem INTEGER NOT NULL,
         userId TEXT,
+        type TEXT NOT NULL DEFAULT 'expense',
         createdAt TEXT NOT NULL
       )
     ''');
@@ -86,6 +87,7 @@ class ExpenseService {
           colorValue INTEGER NOT NULL,
           isSystem INTEGER NOT NULL,
           userId TEXT,
+          type TEXT NOT NULL DEFAULT 'expense',
           createdAt TEXT NOT NULL
         )
       ''');
@@ -141,13 +143,24 @@ class ExpenseService {
       debugPrint('🔄 [ExpenseService] Adding type column for income/expense support...');
 
       try {
-        // Add type column with default value 'expense' for backward compatibility
+        // Add type column to expenses table with default value 'expense' for backward compatibility
         await db.execute(
           'ALTER TABLE $_tableName ADD COLUMN type TEXT NOT NULL DEFAULT "expense"',
         );
-        debugPrint('✅ [ExpenseService] Type column added successfully');
+        debugPrint('✅ [ExpenseService] Type column added to expenses table successfully');
       } catch (e) {
-        debugPrint('⚠️ [ExpenseService] Error adding type column: $e');
+        debugPrint('⚠️ [ExpenseService] Error adding type column to expenses: $e');
+        // Column might already exist, continue
+      }
+
+      try {
+        // Add type column to categories table with default value 'expense' for backward compatibility
+        await db.execute(
+          'ALTER TABLE $_categoriesTableName ADD COLUMN type TEXT NOT NULL DEFAULT "expense"',
+        );
+        debugPrint('✅ [ExpenseService] Type column added to categories table successfully');
+      } catch (e) {
+        debugPrint('⚠️ [ExpenseService] Error adding type column to categories: $e');
         // Column might already exist, continue
       }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'expense.dart';
 
 /// Category model with support for both system and user-defined categories
 class QuickCategory {
@@ -12,6 +13,7 @@ class QuickCategory {
   final int colorValue; // Store color as integer
   final bool isSystem; // true for system categories, false for user-defined
   final String? userId; // null for system categories
+  final TransactionType type; // income or expense
   final DateTime createdAt;
 
   const QuickCategory({
@@ -24,6 +26,7 @@ class QuickCategory {
     required this.colorValue,
     required this.isSystem,
     this.userId,
+    required this.type,
     required this.createdAt,
   });
 
@@ -44,20 +47,10 @@ class QuickCategory {
   Color get color => Color(colorValue);
 
   /// Check if this is an income category
-  bool get isIncomeCategory {
-    const incomeCategories = {
-      'salary',
-      'freelance',
-      'investment',
-      'gift_received',
-      'refund',
-      'other_income',
-    };
-    return incomeCategories.contains(id);
-  }
+  bool get isIncomeCategory => type == TransactionType.income;
 
   /// Check if this is an expense category
-  bool get isExpenseCategory => !isIncomeCategory;
+  bool get isExpenseCategory => type == TransactionType.expense;
 
   /// Convert Category to JSON for storage
   Map<String, dynamic> toJson() {
@@ -71,6 +64,7 @@ class QuickCategory {
       'colorValue': colorValue,
       'isSystem': isSystem ? 1 : 0,
       'userId': userId,
+      'type': type.toJson(),
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -91,6 +85,7 @@ class QuickCategory {
       colorValue: json['colorValue'] as int,
       isSystem: (json['isSystem'] as int) == 1,
       userId: json['userId'] as String?,
+      type: TransactionType.fromJson(json['type'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
@@ -146,6 +141,7 @@ class QuickCategory {
         colorValue: Colors.orange.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -191,6 +187,7 @@ class QuickCategory {
         colorValue: Colors.blue.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -231,6 +228,7 @@ class QuickCategory {
         colorValue: Colors.purple.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -264,6 +262,7 @@ class QuickCategory {
         colorValue: Colors.red.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -298,6 +297,7 @@ class QuickCategory {
         colorValue: Colors.green.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -333,6 +333,7 @@ class QuickCategory {
         colorValue: Colors.pink.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       QuickCategory(
@@ -345,6 +346,7 @@ class QuickCategory {
         colorValue: Colors.grey.toARGB32(),
         isSystem: true,
         userId: null,
+        type: TransactionType.expense,
         createdAt: now,
       ),
       // ====== Income Categories ======
@@ -376,6 +378,7 @@ class QuickCategory {
         colorValue: const Color(0xFF4CAF50).value, // Green
         isSystem: true,
         userId: null,
+        type: TransactionType.income,
         createdAt: now,
       ),
       QuickCategory(
@@ -406,6 +409,7 @@ class QuickCategory {
         colorValue: const Color(0xFF2196F3).value, // Blue
         isSystem: true,
         userId: null,
+        type: TransactionType.income,
         createdAt: now,
       ),
       QuickCategory(
@@ -437,6 +441,7 @@ class QuickCategory {
         colorValue: const Color(0xFF009688).value, // Teal
         isSystem: true,
         userId: null,
+        type: TransactionType.income,
         createdAt: now,
       ),
       QuickCategory(
@@ -467,6 +472,7 @@ class QuickCategory {
         colorValue: const Color(0xFFE91E63).value, // Pink
         isSystem: true,
         userId: null,
+        type: TransactionType.income,
         createdAt: now,
       ),
       QuickCategory(
@@ -492,6 +498,7 @@ class QuickCategory {
         colorValue: const Color(0xFFFF9800).value, // Orange
         isSystem: true,
         userId: null,
+        type: TransactionType.income,
         createdAt: now,
       ),
       QuickCategory(
@@ -511,6 +518,7 @@ class QuickCategory {
         colorValue: const Color(0xFF9C27B0).value, // Purple
         isSystem: true,
         userId: null,
+        type: TransactionType.income,
         createdAt: now,
       ),
     ];
