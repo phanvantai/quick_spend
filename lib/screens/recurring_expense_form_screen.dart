@@ -51,6 +51,7 @@ class _RecurringExpenseFormScreenState
     }
     return double.tryParse(numericString.trim()) ?? 0.0;
   }
+
   bool _hasEndDate = false;
 
   @override
@@ -207,9 +208,7 @@ class _RecurringExpenseFormScreenState
         );
       }
     } catch (e) {
-      debugPrint(
-        '❌ [RecurringExpenseFormScreen] Error saving template: $e',
-      );
+      debugPrint('❌ [RecurringExpenseFormScreen] Error saving template: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -354,7 +353,10 @@ class _RecurringExpenseFormScreenState
                   return context.tr('home.amount_required');
                 }
                 // Parse formatted value for validation (locale-aware)
-                final language = context.read<AppConfigProvider>().config.language;
+                final language = context
+                    .read<AppConfigProvider>()
+                    .config
+                    .language;
                 final amount = _parseAmount(value, language);
                 if (amount <= 0) {
                   return context.tr('home.amount_invalid');
@@ -366,7 +368,7 @@ class _RecurringExpenseFormScreenState
 
             // Category selector (filtered by transaction type)
             DropdownButtonFormField<String>(
-              value: _categoryId,
+              initialValue: _categoryId,
               decoration: InputDecoration(
                 labelText: context.tr('home.category'),
                 border: const OutlineInputBorder(),
@@ -399,20 +401,20 @@ class _RecurringExpenseFormScreenState
 
             // Recurrence pattern selector
             DropdownButtonFormField<RecurrencePattern>(
-              value: _pattern,
+              initialValue: _pattern,
               decoration: InputDecoration(
                 labelText: context.tr('recurring.pattern'),
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.repeat),
               ),
-              items: [RecurrencePattern.monthly, RecurrencePattern.yearly]
-                  .map((pattern) {
-                    return DropdownMenuItem(
-                      value: pattern,
-                      child: Text(pattern.getDescription(appConfig.language)),
-                    );
-                  })
-                  .toList(),
+              items: [RecurrencePattern.monthly, RecurrencePattern.yearly].map((
+                pattern,
+              ) {
+                return DropdownMenuItem(
+                  value: pattern,
+                  child: Text(pattern.getDescription(appConfig.language)),
+                );
+              }).toList(),
               onChanged: (value) {
                 if (value != null) {
                   setState(() {
@@ -468,9 +470,7 @@ class _RecurringExpenseFormScreenState
                   ),
                   child: Text(
                     _endDate != null
-                        ? DateFormat.yMMMd(
-                            appConfig.language,
-                          ).format(_endDate!)
+                        ? DateFormat.yMMMd(appConfig.language).format(_endDate!)
                         : context.tr('recurring.select_end_date'),
                     style: theme.textTheme.bodyLarge,
                   ),

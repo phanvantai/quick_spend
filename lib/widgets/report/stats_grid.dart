@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
 import '../../models/period_stats.dart';
 import '../../theme/app_theme.dart';
 
@@ -101,11 +100,7 @@ class StatsGrid extends StatelessWidget {
                 color: iconColor.withValues(alpha: 0.1),
                 borderRadius: AppTheme.borderRadiusSmall,
               ),
-              child: Icon(
-                icon,
-                size: 20,
-                color: iconColor,
-              ),
+              child: Icon(icon, size: 20, color: iconColor),
             ),
             const SizedBox(height: AppTheme.spacing12),
             Text(
@@ -140,14 +135,20 @@ class StatsGrid extends StatelessWidget {
 
     if (language == 'vi') {
       // Vietnamese format: use period as thousand separator
-      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
       formatted = formatter.format(amount).replaceAll(',', '.');
       return currency == 'VND'
           ? '$formatted${context.tr('currency.symbol_vnd')}'
           : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
       // English format: use comma as thousand separator
-      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
       formatted = formatter.format(amount);
       return currency == 'USD'
           ? '${context.tr('currency.symbol_usd')}$formatted'

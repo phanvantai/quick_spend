@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
@@ -208,26 +207,26 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 });
               },
               style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return _selectedType == TransactionType.expense
-                          ? AppTheme.error.withValues(alpha: 0.15)
-                          : AppTheme.success.withValues(alpha: 0.15);
-                    }
-                    return colorScheme.surface;
-                  },
-                ),
-                foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return _selectedType == TransactionType.expense
-                          ? AppTheme.error
-                          : AppTheme.success;
-                    }
-                    return colorScheme.onSurface;
-                  },
-                ),
+                backgroundColor: WidgetStateProperty.resolveWith<Color>((
+                  Set<WidgetState> states,
+                ) {
+                  if (states.contains(WidgetState.selected)) {
+                    return _selectedType == TransactionType.expense
+                        ? AppTheme.error.withValues(alpha: 0.15)
+                        : AppTheme.success.withValues(alpha: 0.15);
+                  }
+                  return colorScheme.surface;
+                }),
+                foregroundColor: WidgetStateProperty.resolveWith<Color>((
+                  Set<WidgetState> states,
+                ) {
+                  if (states.contains(WidgetState.selected)) {
+                    return _selectedType == TransactionType.expense
+                        ? AppTheme.error
+                        : AppTheme.success;
+                  }
+                  return colorScheme.onSurface;
+                }),
               ),
             ),
             const SizedBox(height: AppTheme.spacing20),
@@ -397,7 +396,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                     ),
                     const SizedBox(width: AppTheme.spacing16),
                     Text(
-                      DateFormat.yMMMd(context.locale.languageCode).format(_selectedDate),
+                      DateFormat.yMMMd(
+                        context.locale.languageCode,
+                      ).format(_selectedDate),
                       style: theme.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),

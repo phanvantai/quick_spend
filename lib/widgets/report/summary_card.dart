@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
 import '../../models/period_stats.dart';
 import '../../theme/app_theme.dart';
 
@@ -193,11 +192,7 @@ class SummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                size: 16,
-                color: accentColor,
-              ),
+              Icon(icon, size: 16, color: accentColor),
               const SizedBox(width: AppTheme.spacing4),
               Text(
                 label,
@@ -236,11 +231,7 @@ class SummaryCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
-              icon,
-              size: 16,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
+            Icon(icon, size: 16, color: Colors.white.withValues(alpha: 0.8)),
             const SizedBox(width: AppTheme.spacing4),
             Expanded(
               child: Text(
@@ -277,14 +268,20 @@ class SummaryCard extends StatelessWidget {
 
     if (language == 'vi') {
       // Vietnamese format: use period as thousand separator
-      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
       formatted = formatter.format(amount).replaceAll(',', '.');
       return currency == 'VND'
           ? '$formatted${context.tr('currency.symbol_vnd')}'
           : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
       // English format: use comma as thousand separator
-      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
       formatted = formatter.format(amount);
       return currency == 'USD'
           ? '${context.tr('currency.symbol_usd')}$formatted'

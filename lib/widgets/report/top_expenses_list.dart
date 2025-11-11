@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../../models/expense.dart';
 import '../../models/category.dart';
 import '../../providers/category_provider.dart';
@@ -187,7 +186,10 @@ class TopExpensesList extends StatelessWidget {
                       const SizedBox(width: AppTheme.spacing8),
                       Flexible(
                         child: Text(
-                          DateFormat('MMM d, y', context.locale.languageCode).format(expense.date),
+                          DateFormat(
+                            'MMM d, y',
+                            context.locale.languageCode,
+                          ).format(expense.date),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -223,12 +225,18 @@ class TopExpensesList extends StatelessWidget {
 
     if (language == 'vi') {
       // Vietnamese format: use period as thousand separator
-      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
       formatted = formatter.format(amount).replaceAll(',', '.');
       return currency == 'VND' ? '$formatted đ' : '\$$formatted';
     } else {
       // English format: use comma as thousand separator
-      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
       formatted = formatter.format(amount);
       return currency == 'USD' ? '\$$formatted' : '$formatted đ';
     }
