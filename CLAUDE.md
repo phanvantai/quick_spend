@@ -98,21 +98,33 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Wrapper around SharedPreferences
    - Handles app configuration persistence
 
-8. **ExpenseService** ([lib/services/expense_service.dart](lib/services/expense_service.dart))
-   - SQLite database operations for expense persistence
-   - CRUD operations: create, read, update, delete expenses
-   - Efficient querying and filtering by date range, category
-   - Local-first architecture (no cloud dependency)
-   - Database schema managed with sqflite migrations
+8. **DatabaseManager** ([lib/services/database_manager.dart](lib/services/database_manager.dart))
+   - **Centralized database management for the entire app**
+   - Single source of truth for SQLite database instance
+   - Manages database initialization, schema creation, and migrations
+   - Current schema version: 2
+   - Tables: `expenses`, `categories`, `recurring_templates`
+   - Handles onCreate for new installations and onUpgrade for existing users
+   - Provides shared database instance to all services
+   - **Services depend on DatabaseManager, not on each other**
 
-9. **RecurringTemplateService** ([lib/services/recurring_template_service.dart](lib/services/recurring_template_service.dart))
+9. **ExpenseService** ([lib/services/expense_service.dart](lib/services/expense_service.dart))
+   - SQLite operations for expense and category persistence
+   - Uses shared database from DatabaseManager
+   - CRUD operations: create, read, update, delete expenses and categories
+   - Efficient querying and filtering by date range, category, type
+   - Seeds system categories on first initialization
+   - Local-first architecture (no cloud dependency)
+
+10. **RecurringTemplateService** ([lib/services/recurring_template_service.dart](lib/services/recurring_template_service.dart))
    - SQLite operations for recurring expense templates
+   - Uses shared database from DatabaseManager
    - CRUD operations: create, read, update, delete templates
    - Toggle template active/inactive status
    - Stores template configurations separately from actual expenses
    - Database table: `recurring_templates` (added in schema v2)
 
-10. **RecurringExpenseService** ([lib/services/recurring_expense_service.dart](lib/services/recurring_expense_service.dart))
+11. **RecurringExpenseService** ([lib/services/recurring_expense_service.dart](lib/services/recurring_expense_service.dart))
    - Generates normal Expense objects from RecurringExpenseTemplate configurations
    - Automatically called on app startup to generate pending expenses
    - Calculates dates based on recurrence pattern (monthly/yearly)
@@ -261,7 +273,8 @@ lib/
 │   ├── language_detector.dart  # Fallback language detection
 │   ├── categorizer.dart        # Fallback keyword categorization
 │   ├── voice_service.dart      # Speech-to-text wrapper
-│   ├── expense_service.dart    # SQLite database operations
+│   ├── database_manager.dart   # Centralized database management
+│   ├── expense_service.dart    # Expense & category CRUD operations
 │   ├── recurring_template_service.dart # Recurring template CRUD operations
 │   ├── recurring_expense_service.dart  # Generates expenses from templates
 │   └── preferences_service.dart # SharedPreferences wrapper
