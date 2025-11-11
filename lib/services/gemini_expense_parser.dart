@@ -5,12 +5,12 @@ import 'package:firebase_ai/firebase_ai.dart';
 import 'package:uuid/uuid.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
+import '../utils/constants.dart';
 import 'expense_parser.dart';
 
 /// AI-powered expense parser using Firebase AI (Gemini 2.0)
 class GeminiExpenseParser {
   static GenerativeModel? _model;
-  static const int _apiTimeout = 30; // seconds - increased for first request
 
   /// Initialize the Gemini model with Firebase AI
   static void initialize() {
@@ -74,15 +74,15 @@ class GeminiExpenseParser {
       debugPrint(prompt.substring(0, prompt.length > 500 ? 500 : prompt.length));
       debugPrint('...');
       debugPrint('📤 [GeminiParser] Sending prompt to Gemini...');
-      debugPrint('⏱️ [GeminiParser] Timeout set to $_apiTimeout seconds');
+      debugPrint('⏱️ [GeminiParser] Timeout set to ${AppConstants.geminiApiTimeoutSeconds} seconds');
 
       final response = await _model!
           .generateContent([Content.text(prompt)])
           .timeout(
-            Duration(seconds: _apiTimeout),
+            Duration(seconds: AppConstants.geminiApiTimeoutSeconds),
             onTimeout: () {
               debugPrint(
-                '❌ [GeminiParser] Request timed out after $_apiTimeout seconds',
+                '❌ [GeminiParser] Request timed out after ${AppConstants.geminiApiTimeoutSeconds} seconds',
               );
               debugPrint('💡 [GeminiParser] This might mean:');
               debugPrint('   1. Network connectivity issue');
@@ -130,9 +130,9 @@ class GeminiExpenseParser {
       return false;
     }
 
-    // Check minimum length (at least 2 characters)
-    if (trimmed.length < 2) {
-      debugPrint('❌ [GeminiParser] Validation: Input too short (<2 chars)');
+    // Check minimum length
+    if (trimmed.length < AppConstants.minVoiceInputLength) {
+      debugPrint('❌ [GeminiParser] Validation: Input too short (<${AppConstants.minVoiceInputLength} chars)');
       return false;
     }
 

@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -261,6 +262,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       },
     );
 
+    if (success) {
+      // Provide haptic feedback when recording starts successfully
+      HapticFeedback.selectionClick();
+    }
+
     if (!success && mounted) {
       _listeningTextController.stop();
       _swipeTextController.stop();
@@ -280,6 +286,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Future<void> _stopRecording() async {
     debugPrint('🛑 [MainScreen] Stopping recording...');
     await _voiceService.stopListening();
+
+    // Provide haptic feedback when stopping recording
+    HapticFeedback.selectionClick();
 
     _listeningTextController.stop();
     _swipeTextController.stop();
@@ -669,9 +678,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             horizontal: AppTheme.spacing32,
                           ),
                           padding: const EdgeInsets.all(AppTheme.spacing20),
-                          constraints: const BoxConstraints(
-                            maxHeight: 200,
-                          ),
+                          constraints: const BoxConstraints(maxHeight: 200),
                           decoration: BoxDecoration(
                             color: colorScheme.surface.withValues(alpha: 0.95),
                             borderRadius: AppTheme.borderRadiusMedium,
@@ -686,11 +693,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           child: SingleChildScrollView(
                             child: Text(
                               _recognizedText,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                                height: 1.4,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: colorScheme.onSurface,
+                                    height: 1.4,
+                                  ),
                               textAlign: TextAlign.center,
                             ),
                           ),

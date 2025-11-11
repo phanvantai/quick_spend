@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/expense.dart';
 import '../models/recurring_expense_template.dart';
 import '../models/recurrence_pattern.dart';
+import '../utils/constants.dart';
 import 'expense_service.dart';
 import 'recurring_template_service.dart';
 import 'package:uuid/uuid.dart';
@@ -117,9 +118,9 @@ class RecurringExpenseService {
       dates.add(current);
       current = _getNextOccurrence(current, pattern);
 
-      // Safety limit: don't generate more than 100 instances at once
-      if (dates.length >= 100) {
-        debugPrint('⚠️ [RecurringExpenseService] Hit safety limit of 100 instances');
+      // Safety limit: don't generate too many instances at once
+      if (dates.length >= AppConstants.maxRecurringInstancesPerGeneration) {
+        debugPrint('⚠️ [RecurringExpenseService] Hit safety limit of ${AppConstants.maxRecurringInstancesPerGeneration} instances');
         break;
       }
     }

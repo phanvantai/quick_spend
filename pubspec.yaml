@@ -29,6 +29,7 @@ dependencies:
   shared_preferences: ^2.2.2
   easy_localization: ^3.0.7
   flutter_multi_formatter: ^2.12.6
+  package_info_plus: ^8.0.0
 
   # Local Database
   sqflite: ^2.4.1
