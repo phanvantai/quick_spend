@@ -259,7 +259,7 @@ class _ExpenseFormCard extends StatelessWidget {
         TextFormField(
           initialValue: toCurrencyString(
             formData.amount.toString(),
-            mantissaLength: 2,
+            mantissaLength: appConfig.currency == 'VND' ? 0 : 2,
             thousandSeparator: appConfig.language.startsWith('vi')
                 ? ThousandSeparator.Period
                 : ThousandSeparator.Comma,
@@ -278,7 +278,7 @@ class _ExpenseFormCard extends StatelessWidget {
               thousandSeparator: appConfig.language.startsWith('vi')
                   ? ThousandSeparator.Period
                   : ThousandSeparator.Comma,
-              mantissaLength: 2,
+              mantissaLength: appConfig.currency == 'VND' ? 0 : 2,
             ),
           ],
           validator: (value) {

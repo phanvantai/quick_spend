@@ -54,14 +54,16 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       _selectedDate = DateTime(now.year, now.month, now.day, 12, 0);
     }
 
-    // Format amount after first build when we have access to language
+    // Format amount after first build when we have access to language and currency
     if (widget.expense != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          final language = context.read<AppConfigProvider>().language;
+          final appConfig = context.read<AppConfigProvider>();
+          final language = appConfig.language;
+          final currency = appConfig.currency;
           final formattedAmount = toCurrencyString(
             widget.expense!.amount.toString(),
-            mantissaLength: 2,
+            mantissaLength: currency == 'VND' ? 0 : 2,
             thousandSeparator: language.startsWith('vi')
                 ? ThousandSeparator.Period
                 : ThousandSeparator.Comma,
@@ -147,7 +149,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final language = context.watch<AppConfigProvider>().language;
+    final appConfig = context.watch<AppConfigProvider>();
+    final language = appConfig.language;
+    final currency = appConfig.currency;
 
     return Scaffold(
       appBar: AppBar(
@@ -269,7 +273,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   thousandSeparator: language.startsWith('vi')
                       ? ThousandSeparator.Period
                       : ThousandSeparator.Comma,
-                  mantissaLength: 2,
+                  mantissaLength: currency == 'VND' ? 0 : 2,
                 ),
               ],
               validator: (value) {

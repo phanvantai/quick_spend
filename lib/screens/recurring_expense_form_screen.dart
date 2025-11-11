@@ -70,13 +70,15 @@ class _RecurringExpenseFormScreenState
       _endDate = template.endDate;
       _hasEndDate = template.endDate != null;
 
-      // Format amount after first build when we have access to language
+      // Format amount after first build when we have access to language and currency
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          final language = context.read<AppConfigProvider>().config.language;
+          final appConfig = context.read<AppConfigProvider>().config;
+          final language = appConfig.language;
+          final currency = appConfig.currency;
           final formattedAmount = toCurrencyString(
             template.amount.toString(),
-            mantissaLength: 2,
+            mantissaLength: currency == 'VND' ? 0 : 2,
             thousandSeparator: language.startsWith('vi')
                 ? ThousandSeparator.Period
                 : ThousandSeparator.Comma,
@@ -344,7 +346,7 @@ class _RecurringExpenseFormScreenState
                   thousandSeparator: language.startsWith('vi')
                       ? ThousandSeparator.Period
                       : ThousandSeparator.Comma,
-                  mantissaLength: 2,
+                  mantissaLength: appConfig.currency == 'VND' ? 0 : 2,
                 ),
               ],
               validator: (value) {

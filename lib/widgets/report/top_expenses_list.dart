@@ -218,14 +218,17 @@ class TopExpensesList extends StatelessWidget {
   String _formatAmount(double amount) {
     String formatted;
 
+    // Use decimals based on currency, not language
+    final useDecimals = currency != 'VND';
+
     if (language == 'vi') {
-      // Vietnamese format: use period as thousand separator, no decimals
-      final formatter = NumberFormat('#,##0', 'en_US');
+      // Vietnamese format: use period as thousand separator
+      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
       formatted = formatter.format(amount).replaceAll(',', '.');
       return currency == 'VND' ? '$formatted đ' : '\$$formatted';
     } else {
-      // English format: use comma as thousand separator, 2 decimals
-      final formatter = NumberFormat('#,##0.00', 'en_US');
+      // English format: use comma as thousand separator
+      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
       formatted = formatter.format(amount);
       return currency == 'USD' ? '\$$formatted' : '$formatted đ';
     }

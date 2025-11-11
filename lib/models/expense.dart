@@ -144,16 +144,23 @@ class Expense {
   }
 
   /// Get formatted amount string
-  String getFormattedAmount({bool includeCurrency = true}) {
+  /// Note: This method doesn't have access to currency, so it uses language as a proxy
+  /// For proper currency-based formatting, use the widgets which have access to currency
+  String getFormattedAmount({bool includeCurrency = true, String? currency}) {
     String formatted;
 
-    if (language == 'vi') {
-      // Vietnamese format: use period as thousand separator, no decimals
-      final formatter = NumberFormat('#,##0', 'en_US');
+    // Use currency if provided, otherwise assume based on language
+    final useDecimals = currency != null
+        ? (currency != 'VND')
+        : !language.startsWith('vi');
+
+    if (language.startsWith('vi')) {
+      // Vietnamese format: use period as thousand separator
+      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
       formatted = formatter.format(amount).replaceAll(',', '.');
     } else {
-      // English format: use comma as thousand separator, 2 decimals
-      final formatter = NumberFormat('#,##0.00', 'en_US');
+      // English format: use comma as thousand separator
+      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
       formatted = formatter.format(amount);
     }
 
@@ -161,7 +168,7 @@ class Expense {
       return formatted;
     }
 
-    return language == 'vi' ? '$formatted đ' : '\$$formatted';
+    return language.startsWith('vi') ? '$formatted đ' : '\$$formatted';
   }
 
   /// Check if this is an income transaction
