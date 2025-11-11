@@ -289,7 +289,8 @@ lib/
 │   ├── home_screen.dart        # Expense list tab
 │   ├── report_screen.dart      # Statistics and charts tab
 │   ├── settings_screen.dart    # App settings
-│   └── recurring_expenses_screen.dart # Recurring templates management
+│   ├── recurring_expenses_screen.dart # Recurring templates management
+│   └── recurring_expense_form_screen.dart # Add/edit recurring template form
 ├── widgets/                     # Reusable UI components
 │   ├── common/                 # Common widgets
 │   │   ├── expense_card.dart   # Swipeable expense card
@@ -307,8 +308,7 @@ lib/
 │   │   ├── period_filter.dart        # Period selector chips
 │   │   └── custom_date_range_picker.dart # Date range picker
 │   ├── recurring/              # Recurring expense widgets
-│   │   ├── recurring_template_card.dart # Template display card
-│   │   └── recurring_template_dialog.dart # Add/edit template dialog
+│   │   └── recurring_template_card.dart # Template display card
 │   ├── voice_input_button.dart     # Voice recording FAB
 │   ├── voice_tutorial_overlay.dart # First-time tutorial
 │   └── edit_expense_dialog.dart    # Edit expense modal
