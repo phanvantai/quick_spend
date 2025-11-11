@@ -9,6 +9,7 @@ import 'providers/category_provider.dart';
 import 'providers/report_provider.dart';
 import 'providers/recurring_template_provider.dart';
 import 'services/preferences_service.dart';
+import 'services/database_manager.dart';
 import 'services/expense_service.dart';
 import 'services/recurring_template_service.dart';
 import 'services/recurring_expense_service.dart';
@@ -31,10 +32,16 @@ void main() async {
   final preferencesService = PreferencesService();
   await preferencesService.init();
 
-  final expenseService = ExpenseService();
+  // Initialize database manager (centralized database)
+  final databaseManager = DatabaseManager();
+  await databaseManager.init();
+
+  // Initialize services with shared database
+  final expenseService = ExpenseService(databaseManager);
   await expenseService.init();
 
-  final recurringTemplateService = RecurringTemplateService(expenseService);
+  final recurringTemplateService = RecurringTemplateService(databaseManager);
+  await recurringTemplateService.init();
 
   final recurringExpenseService = RecurringExpenseService(
     expenseService,

@@ -1,22 +1,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/recurring_expense_template.dart';
-import 'expense_service.dart';
+import 'database_manager.dart';
 
 /// Service for managing recurring expense templates using SQLite
-/// Uses the shared database from ExpenseService
+/// Uses the shared database from DatabaseManager
 class RecurringTemplateService {
   static const String _tableName = 'recurring_templates';
 
-  final ExpenseService _expenseService;
+  final DatabaseManager _databaseManager;
   Database? _database;
 
-  RecurringTemplateService(this._expenseService);
+  RecurringTemplateService(this._databaseManager);
+
+  /// Initialize the service
+  Future<void> init() async {
+    _database = await _databaseManager.database;
+  }
 
   /// Ensure database is initialized
   Future<void> _ensureInitialized() async {
     if (_database == null) {
-      _database = await _expenseService.database;
+      await init();
     }
   }
 
