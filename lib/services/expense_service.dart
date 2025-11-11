@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/expense.dart';
-import '../models/category.dart';
+import '../models/category.dart' show QuickCategory;
 import 'database_manager.dart';
 
 /// Service for managing expenses using SQLite local database
@@ -160,7 +160,7 @@ class ExpenseService {
   // Category management methods
 
   /// Save a category
-  Future<void> saveCategory(Category category) async {
+  Future<void> saveCategory(QuickCategory category) async {
     await _ensureInitialized();
     debugPrint('💾 [ExpenseService] Saving category: ${category.nameEn}');
     await _database!.insert(
@@ -172,7 +172,7 @@ class ExpenseService {
   }
 
   /// Get all categories for a user
-  Future<List<Category>> getAllCategories(String? userId) async {
+  Future<List<QuickCategory>> getAllCategories(String? userId) async {
     await _ensureInitialized();
 
     final List<Map<String, dynamic>> maps = await _database!.query(
@@ -182,11 +182,11 @@ class ExpenseService {
       orderBy: 'isSystem DESC, nameEn ASC',
     );
 
-    return maps.map((map) => Category.fromJson(map)).toList();
+    return maps.map((map) => QuickCategory.fromJson(map)).toList();
   }
 
   /// Get a category by ID
-  Future<Category?> getCategoryById(String id) async {
+  Future<QuickCategory?> getCategoryById(String id) async {
     await _ensureInitialized();
 
     final List<Map<String, dynamic>> maps = await _database!.query(
@@ -197,11 +197,11 @@ class ExpenseService {
     );
 
     if (maps.isEmpty) return null;
-    return Category.fromJson(maps.first);
+    return QuickCategory.fromJson(maps.first);
   }
 
   /// Update a category
-  Future<void> updateCategory(Category category) async {
+  Future<void> updateCategory(QuickCategory category) async {
     await _ensureInitialized();
     debugPrint('📝 [ExpenseService] Updating category: ${category.id}');
     await _database!.update(
@@ -245,7 +245,7 @@ class ExpenseService {
     }
 
     debugPrint('🌱 [ExpenseService] Seeding system categories...');
-    final systemCategories = Category.getSystemCategories();
+    final systemCategories = QuickCategory.getSystemCategories();
     for (final category in systemCategories) {
       await saveCategory(category);
     }
