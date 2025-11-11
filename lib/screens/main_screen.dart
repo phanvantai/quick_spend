@@ -261,6 +261,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       },
     );
 
+    if (success) {
+      // Provide haptic feedback when recording starts successfully
+      HapticFeedback.selectionClick();
+    }
+
     if (!success && mounted) {
       _listeningTextController.stop();
       _swipeTextController.stop();
@@ -280,6 +285,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Future<void> _stopRecording() async {
     debugPrint('🛑 [MainScreen] Stopping recording...');
     await _voiceService.stopListening();
+
+    // Provide haptic feedback when stopping recording
+    HapticFeedback.selectionClick();
 
     _listeningTextController.stop();
     _swipeTextController.stop();

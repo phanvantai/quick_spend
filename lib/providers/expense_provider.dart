@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import '../models/expense.dart';
 import '../services/expense_service.dart';
 import '../services/recurring_expense_service.dart';
@@ -134,6 +135,8 @@ class ExpenseProvider extends ChangeNotifier {
     try {
       await _expenseService.saveExpense(expense);
       _expenses.insert(0, expense); // Add to beginning (newest first)
+      // Provide haptic feedback for successful addition
+      HapticFeedback.lightImpact();
       notifyListeners();
     } catch (e) {
       debugPrint('Error adding expense: $e');
@@ -182,6 +185,8 @@ class ExpenseProvider extends ChangeNotifier {
     try {
       await _expenseService.deleteExpense(expenseId);
       _expenses.removeWhere((e) => e.id == expenseId);
+      // Provide medium haptic feedback for deletion (destructive action)
+      HapticFeedback.mediumImpact();
       notifyListeners();
     } catch (e) {
       debugPrint('Error deleting expense: $e');
@@ -194,6 +199,8 @@ class ExpenseProvider extends ChangeNotifier {
     try {
       await _expenseService.deleteAllExpenses(_currentUserId);
       _expenses.clear();
+      // Provide heavy haptic feedback for deleting all (very destructive action)
+      HapticFeedback.heavyImpact();
       notifyListeners();
     } catch (e) {
       debugPrint('Error deleting all expenses: $e');

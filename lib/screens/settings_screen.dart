@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
@@ -23,6 +25,138 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  String _appVersion = '';
+  int _debugTapCount = 0;
+  DateTime? _lastTapTime;
+  bool _debugModeEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppVersion();
+    _loadDebugMode();
+  }
+
+  Future<void> _loadDebugMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _debugModeEnabled = prefs.getBool('debug_mode') ?? false;
+      });
+    }
+  }
+
+  Future<void> _toggleDebugMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _debugModeEnabled = !_debugModeEnabled;
+    });
+    await prefs.setBool('debug_mode', _debugModeEnabled);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _debugModeEnabled
+                ? '🐛 Debug mode ENABLED'
+                : '✅ Debug mode DISABLED',
+          ),
+          backgroundColor:
+              _debugModeEnabled ? AppTheme.warning : AppTheme.success,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _handleLogoTap() {
+    final now = DateTime.now();
+
+    // Reset counter if more than 3 seconds since last tap
+    if (_lastTapTime == null ||
+        now.difference(_lastTapTime!).inMilliseconds > 3000) {
+      _debugTapCount = 1;
+    } else {
+      _debugTapCount++;
+    }
+
+    _lastTapTime = now;
+
+    // Activate debug mode after 5 taps
+    if (_debugTapCount >= 5) {
+      _debugTapCount = 0;
+      _showDebugMenu();
+    }
+  }
+
+  void _showDebugMenu() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.bug_report, color: AppTheme.warning),
+            SizedBox(width: 8),
+            Text('Debug Menu'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Debug mode allows you to:',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            const Text('• Force parser selection (AI/Fallback)'),
+            const Text('• View confidence scores'),
+            const Text('• Access detailed logs'),
+            const Text('• Monitor performance'),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              title: const Text('Enable Debug Mode'),
+              subtitle: Text(
+                _debugModeEnabled ? 'Enabled' : 'Disabled',
+                style: TextStyle(
+                  color: _debugModeEnabled ? AppTheme.success : AppTheme.error,
+                ),
+              ),
+              value: _debugModeEnabled,
+              onChanged: (value) {
+                Navigator.pop(context);
+                _toggleDebugMode();
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      if (mounted) {
+        setState(() {
+          _appVersion = '${packageInfo.version} (${packageInfo.buildNumber})';
+        });
+      }
+    } catch (e) {
+      // If package info fails, fall back to pubspec version
+      if (mounted) {
+        setState(() {
+          _appVersion = '1.0.0';
+        });
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -134,17 +268,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         padding: const EdgeInsets.all(AppTheme.spacing16),
                         child: Row(
                           children: [
-                            Container(
-                              width: 56,
-                              height: 56,
-                              decoration: const BoxDecoration(
-                                gradient: AppTheme.primaryGradient,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.wallet_rounded,
-                                color: Colors.white,
-                                size: 28,
+                            GestureDetector(
+                              onTap: _handleLogoTap,
+                              child: Container(
+                                width: 56,
+                                height: 56,
+                                decoration: const BoxDecoration(
+                                  gradient: AppTheme.primaryGradient,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.wallet_rounded,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
                               ),
                             ),
                             const SizedBox(width: AppTheme.spacing16),
@@ -160,7 +297,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                   const SizedBox(height: AppTheme.spacing4),
                                   Text(
-                                    context.tr('settings.version'),
+                                    _appVersion.isEmpty
+                                        ? context.tr('settings.version')
+                                        : 'v$_appVersion',
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: colorScheme.onSurfaceVariant,
                                     ),
@@ -172,6 +311,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
+                                  if (_debugModeEnabled) ...[
+                                    const SizedBox(height: AppTheme.spacing8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.warning.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: AppTheme.warning.withValues(alpha: 0.5),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.bug_report,
+                                            size: 14,
+                                            color: AppTheme.warning,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Debug Mode Active',
+                                            style:
+                                                theme.textTheme.labelSmall?.copyWith(
+                                              color: AppTheme.warning,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),

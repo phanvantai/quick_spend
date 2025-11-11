@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../config/app_constants.dart';
 
 /// Service for handling voice input with speech-to-text
 class VoiceService {
@@ -128,7 +129,7 @@ class VoiceService {
       await _speechToText.stop();
       _isListening = false;
       // Add small delay to ensure service is fully stopped
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: AppConstants.voiceStopDelayMs));
     }
 
     try {
