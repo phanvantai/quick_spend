@@ -1,4 +1,4 @@
-import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+import 'package:intl/intl.dart';
 import 'expense.dart';
 import 'recurrence_pattern.dart';
 
@@ -105,13 +105,17 @@ class RecurringExpenseTemplate {
 
   /// Get formatted amount string
   String getFormattedAmount({bool includeCurrency = true}) {
-    final formatted = toCurrencyString(
-      amount.toString(),
-      mantissaLength: language == 'vi' ? 0 : 2,
-      thousandSeparator: language.startsWith('vi')
-          ? ThousandSeparator.Period
-          : ThousandSeparator.Comma,
-    );
+    String formatted;
+
+    if (language == 'vi') {
+      // Vietnamese format: use period as thousand separator, no decimals
+      final formatter = NumberFormat('#,##0', 'en_US');
+      formatted = formatter.format(amount).replaceAll(',', '.');
+    } else {
+      // English format: use comma as thousand separator, 2 decimals
+      final formatter = NumberFormat('#,##0.00', 'en_US');
+      formatted = formatter.format(amount);
+    }
 
     if (!includeCurrency) {
       return formatted;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+import 'package:intl/intl.dart';
 import '../../models/period_stats.dart';
 import '../../theme/app_theme.dart';
 
@@ -133,19 +133,19 @@ class StatsGrid extends StatelessWidget {
   }
 
   String _formatAmount(BuildContext context, double amount) {
-    final formatted = toCurrencyString(
-      amount.toString(),
-      mantissaLength: language == 'vi' ? 0 : 2,
-      thousandSeparator: language.startsWith('vi')
-          ? ThousandSeparator.Period
-          : ThousandSeparator.Comma,
-    );
+    String formatted;
 
     if (language == 'vi') {
+      // Vietnamese format: use period as thousand separator, no decimals
+      final formatter = NumberFormat('#,##0', 'en_US');
+      formatted = formatter.format(amount).replaceAll(',', '.');
       return currency == 'VND'
           ? '$formatted${context.tr('currency.symbol_vnd')}'
           : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
+      // English format: use comma as thousand separator, 2 decimals
+      final formatter = NumberFormat('#,##0.00', 'en_US');
+      formatted = formatter.format(amount);
       return currency == 'USD'
           ? '${context.tr('currency.symbol_usd')}$formatted'
           : '$formatted ${context.tr('currency.symbol_vnd')}';
