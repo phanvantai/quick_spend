@@ -7,6 +7,7 @@ import '../providers/category_provider.dart';
 import '../providers/app_config_provider.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
+import '../services/data_collection_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
@@ -72,6 +73,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
   }
 
   Future<void> _editExpense(Expense expense) async {
+    final originalCategoryId = expense.categoryId;
+
     final updatedExpense = await Navigator.push<Expense>(
       context,
       MaterialPageRoute(
@@ -83,6 +86,21 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
 
     try {
       await context.read<ExpenseProvider>().updateExpense(updatedExpense);
+
+      // Log category correction if category was changed
+      if (originalCategoryId != updatedExpense.categoryId) {
+        final dataCollectionService = context.read<DataCollectionService>();
+        await dataCollectionService.logCategoryCorrection(
+          expenseId: updatedExpense.id,
+          rawInput: updatedExpense.rawInput,
+          description: updatedExpense.description,
+          amount: updatedExpense.amount,
+          originalCategory: originalCategoryId,
+          correctedCategory: updatedExpense.categoryId,
+          language: updatedExpense.language,
+        );
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

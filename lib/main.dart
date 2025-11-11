@@ -14,6 +14,7 @@ import 'services/expense_service.dart';
 import 'services/recurring_template_service.dart';
 import 'services/recurring_expense_service.dart';
 import 'services/gemini_expense_parser.dart';
+import 'services/data_collection_service.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_screen.dart';
 import 'theme/app_theme.dart';
@@ -51,6 +52,10 @@ void main() async {
   // Initialize Gemini parser
   GeminiExpenseParser.initialize();
 
+  // Initialize data collection service
+  final dataCollectionService = DataCollectionService();
+  await dataCollectionService.init();
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('vi', 'VN')],
@@ -61,6 +66,7 @@ void main() async {
         expenseService: expenseService,
         recurringTemplateService: recurringTemplateService,
         recurringExpenseService: recurringExpenseService,
+        dataCollectionService: dataCollectionService,
       ),
     ),
   );
@@ -71,6 +77,7 @@ class MyApp extends StatelessWidget {
   final ExpenseService expenseService;
   final RecurringTemplateService recurringTemplateService;
   final RecurringExpenseService recurringExpenseService;
+  final DataCollectionService dataCollectionService;
 
   const MyApp({
     super.key,
@@ -78,12 +85,14 @@ class MyApp extends StatelessWidget {
     required this.expenseService,
     required this.recurringTemplateService,
     required this.recurringExpenseService,
+    required this.dataCollectionService,
   });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<DataCollectionService>.value(value: dataCollectionService),
         ChangeNotifierProvider(
           create: (_) => AppConfigProvider(preferencesService),
         ),

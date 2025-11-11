@@ -7,6 +7,7 @@ import '../../providers/expense_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/app_config_provider.dart';
 import '../../services/expense_parser.dart';
+import '../../services/data_collection_service.dart';
 import '../../theme/app_theme.dart';
 
 /// Editable expense confirmation dialog
@@ -28,7 +29,7 @@ class _EditableExpenseDialogState extends State<EditableExpenseDialog> {
     super.initState();
     // Initialize form data from parsed results
     _expenseForms = widget.results
-        .map((r) => _ExpenseFormData.fromExpense(r.expense!))
+        .map((r) => _ExpenseFormData.fromParseResult(r))
         .toList();
   }
 
@@ -42,11 +43,30 @@ class _EditableExpenseDialogState extends State<EditableExpenseDialog> {
 
     if (!mounted) return;
     final expenseProvider = context.read<ExpenseProvider>();
+    final dataCollectionService = context.read<DataCollectionService>();
 
     try {
       final expenses = _expenseForms.map((form) => form.toExpense()).toList();
 
       await expenseProvider.addExpenses(expenses);
+
+      // Log training data for each expense
+      for (var i = 0; i < _expenseForms.length; i++) {
+        final form = _expenseForms[i];
+        final expense = expenses[i];
+
+        await dataCollectionService.logExpenseParsing(
+          rawInput: expense.rawInput,
+          description: expense.description,
+          amount: expense.amount,
+          predictedCategory: form.originalCategoryId, // Original from parser
+          finalCategory: expense.categoryId, // Final after user edit
+          confidence: expense.confidence,
+          language: expense.language,
+          inputMethod: 'voice', // This dialog is for voice input
+          parserUsed: form.parserUsed,
+        );
+      }
 
       debugPrint('✅ [EditableExpenseDialog] Expenses saved successfully');
 
@@ -389,24 +409,28 @@ class _ExpenseFormData {
   String description;
   double amount;
   String categoryId;
+  String originalCategoryId; // Original predicted category (for training data)
   String language;
   DateTime date;
   String userId;
   String rawInput;
   double confidence;
   TransactionType type;
+  String parserUsed; // 'gemini' or 'fallback'
 
   _ExpenseFormData({
     required this.id,
     required this.description,
     required this.amount,
     required this.categoryId,
+    required this.originalCategoryId,
     required this.language,
     required this.date,
     required this.userId,
     required this.rawInput,
     required this.confidence,
     required this.type,
+    this.parserUsed = 'unknown',
   });
 
   factory _ExpenseFormData.fromExpense(Expense expense) {
@@ -415,12 +439,32 @@ class _ExpenseFormData {
       description: expense.description,
       amount: expense.amount,
       categoryId: expense.categoryId,
+      originalCategoryId: expense.categoryId, // Initially same as categoryId
       language: expense.language,
       date: expense.date,
       userId: expense.userId,
       rawInput: expense.rawInput,
       confidence: expense.confidence,
       type: expense.type,
+      parserUsed: 'unknown', // Will be set when available
+    );
+  }
+
+  factory _ExpenseFormData.fromParseResult(ParseResult result) {
+    final expense = result.expense!;
+    return _ExpenseFormData(
+      id: expense.id,
+      description: expense.description,
+      amount: expense.amount,
+      categoryId: expense.categoryId,
+      originalCategoryId: expense.categoryId, // Original predicted category
+      language: expense.language,
+      date: expense.date,
+      userId: expense.userId,
+      rawInput: expense.rawInput,
+      confidence: expense.confidence,
+      type: expense.type,
+      parserUsed: result.parserUsed ?? 'unknown',
     );
   }
 

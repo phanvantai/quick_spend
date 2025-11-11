@@ -12,6 +12,7 @@ import '../providers/expense_provider.dart';
 import '../providers/category_provider.dart';
 import '../services/export_service.dart';
 import '../services/import_service.dart';
+import '../services/data_collection_service.dart';
 import '../theme/app_theme.dart';
 import 'categories_screen.dart';
 import 'recurring_expenses_screen.dart';
@@ -253,6 +254,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle: context.tr('settings.import_data_subtitle'),
                       onTap: () => _handleImport(context),
                     ),
+
+                    _buildDataCollectionTile(context),
 
                     const Divider(height: 32),
 
@@ -982,5 +985,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     }
+  }
+
+  /// Build data collection consent tile
+  Widget _buildDataCollectionTile(BuildContext context) {
+    final dataCollectionService = context.read<DataCollectionService>();
+
+    return FutureBuilder<bool>(
+      future: dataCollectionService.hasConsent(),
+      builder: (context, snapshot) {
+        final hasConsent = snapshot.data ?? false;
+
+        return Card(
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing16,
+            vertical: AppTheme.spacing8,
+          ),
+          child: SwitchListTile(
+            secondary: const Icon(
+              Icons.insights,
+              color: AppTheme.accentPink,
+            ),
+            title: const Text('Help Improve Expense Categorization'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppTheme.spacing4),
+                Text(
+                  'Share anonymous usage data to train better AI models',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: AppTheme.spacing8),
+                Text(
+                  'Only collects: input text, amounts, categories\nNo personal information is shared',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.neutral60,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+            value: hasConsent,
+            onChanged: (bool value) async {
+              await dataCollectionService.setConsent(value);
+              setState(() {}); // Refresh UI
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      value
+                          ? '✅ Data collection enabled - Thank you!'
+                          : '✅ Data collection disabled',
+                    ),
+                    backgroundColor: AppTheme.success,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
+    );
   }
 }
