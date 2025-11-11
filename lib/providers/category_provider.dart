@@ -69,7 +69,7 @@ class CategoryProvider extends ChangeNotifier {
   /// Create a new user-defined category
   Future<void> createCategory(QuickCategory category) async {
     try {
-      await _expenseService.createCategory(category);
+      await _expenseService.saveCategory(category);
       _categories.add(category);
       notifyListeners();
       debugPrint('✅ [CategoryProvider] Created category: ${category.nameEn}');
