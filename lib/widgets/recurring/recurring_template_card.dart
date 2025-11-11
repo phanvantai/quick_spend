@@ -91,7 +91,7 @@ class RecurringTemplateCard extends StatelessWidget {
               children: [
                 const SizedBox(height: AppTheme.spacing4),
                 Text(
-                  template.getFormattedAmount(),
+                  template.getFormattedAmount(currency: appConfig.currency),
                   style: theme.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: template.type == TransactionType.expense
