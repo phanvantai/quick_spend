@@ -2,7 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../config/app_constants.dart';
+import '../utils/constants.dart';
 
 /// Service for handling voice input with speech-to-text
 class VoiceService {

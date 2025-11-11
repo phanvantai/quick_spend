@@ -5,7 +5,7 @@ import 'package:firebase_ai/firebase_ai.dart';
 import 'package:uuid/uuid.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
-import '../config/app_constants.dart';
+import '../utils/constants.dart';
 import 'expense_parser.dart';
 
 /// AI-powered expense parser using Firebase AI (Gemini 2.0)

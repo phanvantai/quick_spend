@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/expense.dart';
 import '../models/recurring_expense_template.dart';
 import '../models/recurrence_pattern.dart';
-import '../config/app_constants.dart';
+import '../utils/constants.dart';
 import 'expense_service.dart';
 import 'recurring_template_service.dart';
 import 'package:uuid/uuid.dart';
