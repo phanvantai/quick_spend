@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import '../../models/period_stats.dart';
 import '../../theme/app_theme.dart';
 
@@ -269,21 +270,19 @@ class SummaryCard extends StatelessWidget {
   }
 
   String _formatAmount(BuildContext context, double amount) {
+    final formatted = toCurrencyString(
+      amount.toString(),
+      mantissaLength: language == 'vi' ? 0 : 2,
+      thousandSeparator: language.startsWith('vi')
+          ? ThousandSeparator.Period
+          : ThousandSeparator.Comma,
+    );
+
     if (language == 'vi') {
-      // Vietnamese format
-      final formatted = amount.toStringAsFixed(0).replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
       return currency == 'VND'
           ? '$formatted${context.tr('currency.symbol_vnd')}'
           : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
-      // English format
-      final formatted = amount.toStringAsFixed(2).replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
       return currency == 'USD'
           ? '${context.tr('currency.symbol_usd')}$formatted'
           : '$formatted ${context.tr('currency.symbol_vnd')}';

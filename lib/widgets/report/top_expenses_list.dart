@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import '../../models/expense.dart';
 import '../../models/category.dart';
 import '../../providers/category_provider.dart';
@@ -215,21 +216,17 @@ class TopExpensesList extends StatelessWidget {
   }
 
   String _formatAmount(double amount) {
+    final formatted = toCurrencyString(
+      amount.toString(),
+      mantissaLength: language == 'vi' ? 0 : 2,
+      thousandSeparator: language.startsWith('vi')
+          ? ThousandSeparator.Period
+          : ThousandSeparator.Comma,
+    );
+
     if (language == 'vi') {
-      final formatted = amount
-          .toStringAsFixed(0)
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
-      return currency == 'VND' ? '$formattedđ' : '\$$formatted';
+      return currency == 'VND' ? '$formatted đ' : '\$$formatted';
     } else {
-      final formatted = amount
-          .toStringAsFixed(2)
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
       return currency == 'USD' ? '\$$formatted' : '$formatted đ';
     }
   }
