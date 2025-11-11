@@ -1,16 +1,21 @@
 import 'package:flutter/foundation.dart';
 import '../models/expense.dart';
 import '../services/expense_service.dart';
+import '../services/recurring_expense_service.dart';
 import '../utils/constants.dart';
 
 /// Provider for managing expense state
 class ExpenseProvider extends ChangeNotifier {
   final ExpenseService _expenseService;
+  final RecurringExpenseService? _recurringExpenseService;
   List<Expense> _expenses = [];
   bool _isLoading = true;
   String _currentUserId = AppConstants.defaultUserId;
 
-  ExpenseProvider(this._expenseService) {
+  ExpenseProvider(
+    this._expenseService, {
+    RecurringExpenseService? recurringExpenseService,
+  }) : _recurringExpenseService = recurringExpenseService {
     _loadExpenses();
   }
 
@@ -89,6 +94,34 @@ class ExpenseProvider extends ChangeNotifier {
   /// Reload expenses from database
   Future<void> refresh() async {
     await _loadExpenses();
+  }
+
+  /// Generate pending recurring expenses
+  /// This should be called when the app starts
+  Future<int> generateRecurringExpenses() async {
+    if (_recurringExpenseService == null) {
+      debugPrint('⚠️ [ExpenseProvider] RecurringExpenseService not available');
+      return 0;
+    }
+
+    try {
+      debugPrint('🔄 [ExpenseProvider] Generating recurring expenses...');
+      final count = await _recurringExpenseService!.generatePendingExpenses(_currentUserId);
+
+      if (count > 0) {
+        debugPrint('✅ [ExpenseProvider] Generated $count recurring expense(s), refreshing list...');
+        // Reload expenses without showing loading state
+        _expenses = await _expenseService.getAllExpenses(_currentUserId);
+        notifyListeners();
+      } else {
+        debugPrint('ℹ️ [ExpenseProvider] No recurring expenses to generate');
+      }
+
+      return count;
+    } catch (e) {
+      debugPrint('❌ [ExpenseProvider] Error generating recurring expenses: $e');
+      return 0;
+    }
   }
 
   /// Add a new expense

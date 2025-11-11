@@ -105,13 +105,30 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Local-first architecture (no cloud dependency)
    - Database schema managed with sqflite migrations
 
+9. **RecurringTemplateService** ([lib/services/recurring_template_service.dart](lib/services/recurring_template_service.dart))
+   - SQLite operations for recurring expense templates
+   - CRUD operations: create, read, update, delete templates
+   - Toggle template active/inactive status
+   - Stores template configurations separately from actual expenses
+   - Database table: `recurring_templates` (added in schema v2)
+
+10. **RecurringExpenseService** ([lib/services/recurring_expense_service.dart](lib/services/recurring_expense_service.dart))
+   - Generates normal Expense objects from RecurringExpenseTemplate configurations
+   - Automatically called on app startup to generate pending expenses
+   - Calculates dates based on recurrence pattern (monthly/yearly)
+   - Updates lastGeneratedDate to track generation progress
+   - Safety limit: max 100 instances per generation cycle
+   - Respects template isActive status and endDate
+
 ### Models
 
-- **Expense** ([lib/models/expense.dart](lib/models/expense.dart)): Core data model with SQLite serialization
+- **Expense** ([lib/models/expense.dart](lib/models/expense.dart)): Core data model with SQLite serialization (NO recurring fields - kept clean)
 - **Category** ([lib/models/category.dart](lib/models/category.dart)): 7 predefined categories with bilingual keywords/labels
 - **CategoryStats** ([lib/models/category_stats.dart](lib/models/category_stats.dart)): Statistics for individual expense categories
 - **PeriodStats** ([lib/models/period_stats.dart](lib/models/period_stats.dart)): Aggregated statistics for time periods
 - **AppConfig** ([lib/models/app_config.dart](lib/models/app_config.dart)): User preference model
+- **RecurringExpenseTemplate** ([lib/models/recurring_expense_template.dart](lib/models/recurring_expense_template.dart)): Template configuration for generating recurring expenses (separate from Expense)
+- **RecurrencePattern** ([lib/models/recurrence_pattern.dart](lib/models/recurrence_pattern.dart)): Enum for recurrence types (none, monthly, yearly)
 
 ### Localization
 
@@ -183,6 +200,46 @@ for (final result in results) {
 - **Global FAB**: Voice input button accessible from all tabs
 - Settings accessible from app bar actions
 
+### Recurring Expenses Feature
+
+**Architecture:** Template-based system where recurring configurations are separate from actual expense data.
+
+**Key Components:**
+- **RecurringExpenseTemplate**: Configuration model (separate from Expense)
+  - Contains: amount, description, category, pattern (monthly/yearly), start/end dates, isActive flag
+  - Stored in separate `recurring_templates` SQLite table
+  - Never appears in expense list - it's purely configuration
+
+- **RecurringTemplateService**: CRUD operations for templates
+  - Manages template storage and retrieval
+  - Toggles active/inactive status without deletion
+
+- **RecurringExpenseService**: Generates normal Expense objects
+  - Called automatically on app startup (MainScreen initState)
+  - Reads active templates, calculates due dates based on pattern
+  - Generates normal Expense objects (not templates!) for due dates
+  - Updates lastGeneratedDate to avoid duplicates
+
+- **RecurringTemplateProvider**: State management for templates
+  - Similar pattern to ExpenseProvider
+  - Manages template list and CRUD operations
+
+**User Flow:**
+1. User navigates to Settings → Recurring Expenses
+2. Add recurring template: amount, description, category, pattern (monthly/yearly), start date, optional end date
+3. Template saved with isActive = true
+4. Every app startup: RecurringExpenseService checks all active templates
+5. For each template: calculates dates since lastGeneratedDate, generates normal expenses
+6. Generated expenses appear in Home tab like any manual expense
+7. User can pause (isActive = false) or delete templates anytime
+8. Paused templates don't generate expenses until reactivated
+
+**Important Design Decision:**
+- Expense model has NO recurring fields - kept clean and focused
+- Recurring is a separate configuration layer that produces normal expenses
+- This separation ensures expenses remain simple transaction records
+- Templates are managed in Settings, not in expense add/edit flow
+
 ## Project Structure
 
 ```bash
@@ -190,11 +247,13 @@ lib/
 ├── main.dart                    # App entry point with EasyLocalization setup
 ├── firebase_options.dart        # Firebase AI configuration
 ├── models/                      # Data models
-│   ├── expense.dart            # Expense with SQLite serialization
+│   ├── expense.dart            # Expense with SQLite serialization (NO recurring fields)
 │   ├── category.dart           # Categories with bilingual support
 │   ├── category_stats.dart     # Category statistics model
 │   ├── period_stats.dart       # Period statistics model
-│   └── app_config.dart         # User preferences model
+│   ├── app_config.dart         # User preferences model
+│   ├── recurring_expense_template.dart # Recurring template configuration (separate from Expense)
+│   └── recurrence_pattern.dart # Recurrence pattern enum (monthly/yearly)
 ├── services/                    # Business logic layer
 │   ├── gemini_expense_parser.dart # AI parser (Gemini 2.5 Flash via Firebase)
 │   ├── expense_parser.dart     # Main orchestrator (AI + fallback)
@@ -203,17 +262,21 @@ lib/
 │   ├── categorizer.dart        # Fallback keyword categorization
 │   ├── voice_service.dart      # Speech-to-text wrapper
 │   ├── expense_service.dart    # SQLite database operations
+│   ├── recurring_template_service.dart # Recurring template CRUD operations
+│   ├── recurring_expense_service.dart  # Generates expenses from templates
 │   └── preferences_service.dart # SharedPreferences wrapper
 ├── providers/                   # State management
 │   ├── app_config_provider.dart # App configuration state
-│   ├── expense_provider.dart   # Expense CRUD state
-│   └── report_provider.dart    # Statistics and reports state
+│   ├── expense_provider.dart   # Expense CRUD state (with recurring generation)
+│   ├── report_provider.dart    # Statistics and reports state
+│   └── recurring_template_provider.dart # Recurring template state
 ├── screens/                     # UI screens
 │   ├── onboarding_screen.dart  # Language/currency selection
 │   ├── main_screen.dart        # Main container with bottom navigation
 │   ├── home_screen.dart        # Expense list tab
 │   ├── report_screen.dart      # Statistics and charts tab
-│   └── settings_screen.dart    # App settings
+│   ├── settings_screen.dart    # App settings
+│   └── recurring_expenses_screen.dart # Recurring templates management
 ├── widgets/                     # Reusable UI components
 │   ├── common/                 # Common widgets
 │   │   ├── expense_card.dart   # Swipeable expense card
@@ -230,6 +293,9 @@ lib/
 │   │   ├── stats_grid.dart           # Statistics grid
 │   │   ├── period_filter.dart        # Period selector chips
 │   │   └── custom_date_range_picker.dart # Date range picker
+│   ├── recurring/              # Recurring expense widgets
+│   │   ├── recurring_template_card.dart # Template display card
+│   │   └── recurring_template_dialog.dart # Add/edit template dialog
 │   ├── voice_input_button.dart     # Voice recording FAB
 │   ├── voice_tutorial_overlay.dart # First-time tutorial
 │   └── edit_expense_dialog.dart    # Edit expense modal

@@ -7,8 +7,11 @@ import 'providers/app_config_provider.dart';
 import 'providers/expense_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/report_provider.dart';
+import 'providers/recurring_template_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/expense_service.dart';
+import 'services/recurring_template_service.dart';
+import 'services/recurring_expense_service.dart';
 import 'services/gemini_expense_parser.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_screen.dart';
@@ -31,6 +34,14 @@ void main() async {
   final expenseService = ExpenseService();
   await expenseService.init();
 
+  final recurringTemplateService = RecurringTemplateService();
+  await recurringTemplateService.init();
+
+  final recurringExpenseService = RecurringExpenseService(
+    expenseService,
+    recurringTemplateService,
+  );
+
   // Initialize Gemini parser
   GeminiExpenseParser.initialize();
 
@@ -42,6 +53,8 @@ void main() async {
       child: MyApp(
         preferencesService: preferencesService,
         expenseService: expenseService,
+        recurringTemplateService: recurringTemplateService,
+        recurringExpenseService: recurringExpenseService,
       ),
     ),
   );
@@ -50,11 +63,15 @@ void main() async {
 class MyApp extends StatelessWidget {
   final PreferencesService preferencesService;
   final ExpenseService expenseService;
+  final RecurringTemplateService recurringTemplateService;
+  final RecurringExpenseService recurringExpenseService;
 
   const MyApp({
     super.key,
     required this.preferencesService,
     required this.expenseService,
+    required this.recurringTemplateService,
+    required this.recurringExpenseService,
   });
 
   @override
@@ -64,8 +81,16 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AppConfigProvider(preferencesService),
         ),
-        ChangeNotifierProvider(create: (_) => ExpenseProvider(expenseService)),
+        ChangeNotifierProvider(
+          create: (_) => ExpenseProvider(
+            expenseService,
+            recurringExpenseService: recurringExpenseService,
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => CategoryProvider(expenseService)),
+        ChangeNotifierProvider(
+          create: (_) => RecurringTemplateProvider(recurringTemplateService),
+        ),
         ChangeNotifierProxyProvider3<ExpenseProvider, CategoryProvider,
             AppConfigProvider, ReportProvider>(
           create: (context) => ReportProvider(
