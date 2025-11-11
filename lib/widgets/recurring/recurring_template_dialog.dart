@@ -32,7 +32,7 @@ class _RecurringTemplateDialogState extends State<RecurringTemplateDialog> {
   final _amountController = TextEditingController();
 
   late TransactionType _type;
-  late String _categoryId;
+  String? _categoryId; // Make nullable
   late RecurrencePattern _pattern;
   late DateTime _startDate;
   DateTime? _endDate;
@@ -60,14 +60,14 @@ class _RecurringTemplateDialogState extends State<RecurringTemplateDialog> {
       _endDate = null;
       _hasEndDate = false;
 
-      // Set default category for expense type
+      // Set default category for expense type immediately
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           final categoryProvider = context.read<CategoryProvider>();
           final categories = categoryProvider.categories
               .where((cat) => cat.type == _type)
               .toList();
-          if (categories.isNotEmpty) {
+          if (categories.isNotEmpty && _categoryId == null) {
             setState(() {
               _categoryId = categories.first.id;
             });
@@ -120,6 +120,17 @@ class _RecurringTemplateDialogState extends State<RecurringTemplateDialog> {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
 
+    // Ensure category is selected
+    if (_categoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('home.category_required')),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+      return;
+    }
+
     if (!mounted) return;
     final templateProvider = context.read<RecurringTemplateProvider>();
     final appConfig = context.read<AppConfigProvider>().config;
@@ -129,7 +140,7 @@ class _RecurringTemplateDialogState extends State<RecurringTemplateDialog> {
         id: widget.template?.id ?? const Uuid().v4(),
         amount: double.parse(_amountController.text),
         description: _descriptionController.text.trim(),
-        categoryId: _categoryId,
+        categoryId: _categoryId!,
         language: appConfig.language,
         userId: widget.userId,
         type: _type,
