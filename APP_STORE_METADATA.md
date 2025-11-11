@@ -35,13 +35,13 @@ TRACK EXPENSES IN SECONDS WITH YOUR VOICE
 
 QuickSpend revolutionizes expense tracking with voice-powered AI. No more typing—just speak naturally and watch your expenses organize themselves automatically.
 
-🎙️ VOICE-FIRST DESIGN
+VOICE-FIRST DESIGN
 • Long-press to record, release to save
 • Speak naturally: "50 dollars for coffee" or "30k parking"
 • AI understands context and extracts all details
 • Supports both English and Vietnamese
 
-🤖 SMART AI PARSING
+SMART AI PARSING
 • Powered by advanced AI (Gemini 2.5 Flash)
 • Automatically categorizes expenses intelligently
 • Extracts multiple expenses from one sentence
@@ -49,7 +49,7 @@ QuickSpend revolutionizes expense tracking with voice-powered AI. No more typing
 • Recognizes Vietnamese slang: "50ca", "1 củ", "2 triệu"
 • Fixes voice recognition errors automatically
 
-📊 BEAUTIFUL INSIGHTS
+BEAUTIFUL INSIGHTS
 • Interactive charts and graphs
 • Category breakdown with donut charts
 • Spending trends over time
@@ -57,32 +57,32 @@ QuickSpend revolutionizes expense tracking with voice-powered AI. No more typing
 • Track top expenses and averages
 • Compare with previous periods
 
-⚡ LIGHTNING FAST
+LIGHTNING FAST
 • Add expenses in under 2 seconds
 • Swipe to edit or delete
 • No signup required
 • Works completely offline
 • All data stored locally and securely
 
-🌍 BILINGUAL SUPPORT
+BILINGUAL SUPPORT
 • Full English and Vietnamese interface
 • Automatic language detection
 • Vietnamese slang and colloquialisms supported
 • Perfect for Vietnamese speakers worldwide
 
-💰 FLEXIBLE CURRENCY
+FLEXIBLE CURRENCY
 • Support for USD, VND, and more
 • Handles various amount formats
 • Recognizes: "50k", "1.5m", "100 thousand", "1 million"
 
-📱 CLEAN & MODERN DESIGN
+CLEAN & MODERN DESIGN
 • Beautiful Material Design 3 interface
 • Mint green gradient theme
 • Light and dark mode support
 • Intuitive navigation
 • Accessible and user-friendly
 
-🔒 PRIVACY FIRST
+PRIVACY FIRST
 • 100% local storage—no cloud required
 • Your data never leaves your device
 • No account needed
@@ -155,13 +155,13 @@ GHI CHI TIÊU TRONG GIÂY LÁT BẰNG GIỌNG NÓI
 
 QuickSpend cách mạng hóa việc ghi chi tiêu với AI điều khiển bằng giọng nói. Không cần gõ chữ—chỉ cần nói tự nhiên và xem chi tiêu tự động sắp xếp.
 
-🎙️ THIẾT KẾ ƯU TIÊN GIỌNG NÓI
+THIẾT KẾ ƯU TIÊN GIỌNG NÓI
 • Nhấn giữ để ghi âm, thả ra để lưu
 • Nói tự nhiên: "50k tiền cơm" hoặc "30 nghìn đổ xăng"
 • AI hiểu ngữ cảnh và trích xuất mọi chi tiết
 • Hỗ trợ cả tiếng Việt và tiếng Anh
 
-🤖 PHÂN TÍCH AI THÔNG MINH
+PHÂN TÍCH AI THÔNG MINH
 • Sử dụng AI tiên tiến (Gemini 2.5 Flash)
 • Tự động phân loại chi tiêu thông minh
 • Trích xuất nhiều chi tiêu từ một câu nói
@@ -169,7 +169,7 @@ QuickSpend cách mạng hóa việc ghi chi tiêu với AI điều khiển bằn
 • Nhận diện tiếng lóng Việt: "50ca", "1 củ", "2 cọc", "2 triệu"
 • Tự động sửa lỗi nhận dạng giọng nói
 
-📊 THỐNG KÊ TRỰC QUAN ĐẸP MẮT
+THỐNG KÊ TRỰC QUAN ĐẸP MẮT
 • Biểu đồ và đồ thị tương tác
 • Phân tích theo danh mục với biểu đồ donut
 • Xu hướng chi tiêu theo thời gian
@@ -177,32 +177,32 @@ QuickSpend cách mạng hóa việc ghi chi tiêu với AI điều khiển bằn
 • Theo dõi chi tiêu cao nhất và trung bình
 • So sánh với kỳ trước
 
-⚡ CỰC KỲ NHANH
+CỰC KỲ NHANH
 • Thêm chi tiêu trong vòng 2 giây
 • Vuốt để chỉnh sửa hoặc xóa
 • Không cần đăng ký
 • Hoạt động hoàn toàn offline
 • Mọi dữ liệu được lưu cục bộ và an toàn
 
-🌍 HỖ TRỢ SONG NGỮ
+HỖ TRỢ SONG NGỮ
 • Giao diện tiếng Việt và tiếng Anh đầy đủ
 • Tự động phát hiện ngôn ngữ
 • Hỗ trợ tiếng lóng và thành ngữ Việt Nam
 • Hoàn hảo cho người Việt trên toàn thế giới
 
-💰 LINH HOẠT TIỀN TỆ
+LINH HOẠT TIỀN TỆ
 • Hỗ trợ VND, USD và nhiều hơn nữa
 • Xử lý nhiều định dạng số tiền
 • Nhận diện: "50k", "1.5tr", "100 nghìn", "1 triệu", "50ca", "1 củ"
 
-📱 THIẾT KẾ HIỆN ĐẠI VÀ SẠCH SẼ
+THIẾT KẾ HIỆN ĐẠI VÀ SẠCH SẼ
 • Giao diện Material Design 3 đẹp mắt
 • Theme gradient xanh mint
 • Hỗ trợ chế độ sáng và tối
 • Điều hướng trực quan
 • Dễ sử dụng và thân thiện
 
-🔒 BẢO MẬT TUYỆT ĐỐI
+BẢO MẬT TUYỆT ĐỐI
 • 100% lưu trữ cục bộ—không cần đám mây
 • Dữ liệu của bạn không bao giờ rời khỏi thiết bị
 • Không cần tài khoản
@@ -324,7 +324,7 @@ Recommend highlighting these features in App Store screenshots (in order):
 
 ### English
 ```
-🎉 What's New in [Version]
+What's New in [Version]
 
 • [Feature 1]
 • [Feature 2]
@@ -335,7 +335,7 @@ We're constantly improving QuickSpend. Have feedback? Let us know!
 
 ### Vietnamese
 ```
-🎉 Có Gì Mới Trong Phiên Bản [Version]
+Có Gì Mới Trong Phiên Bản [Version]
 
 • [Tính năng 1]
 • [Tính năng 2]
@@ -356,4 +356,5 @@ Chúng tôi liên tục cải thiện QuickSpend. Có phản hồi? Hãy cho ch�
 - Focus on ASO (App Store Optimization) with relevant, searchable terms
 - Highlight unique features (voice input, AI, bilingual) prominently
 - Include social proof and benefits-focused copy
-- Use emojis sparingly for visual breaks and scannability
+- **IMPORTANT: Emojis and icons are NOT allowed in App Store descriptions**
+- Use clear section headers and bullet points for readability instead of emojis
