@@ -38,15 +38,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       text: widget.expense?.description ?? '',
     );
 
-    // Format amount with thousand separators if editing
+    // Initialize amount controller (will format after first build)
     _amountController = TextEditingController(
-      text: widget.expense != null
-          ? toCurrencyString(
-              widget.expense!.amount.toString(),
-              mantissaLength: 2,
-              thousandSeparator: ThousandSeparator.Comma,
-            )
-          : '',
+      text: widget.expense?.amount.toString() ?? '',
     );
 
     _selectedType = widget.expense?.type ?? TransactionType.expense;
@@ -58,6 +52,23 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     } else {
       final now = DateTime.now();
       _selectedDate = DateTime(now.year, now.month, now.day, 12, 0);
+    }
+
+    // Format amount after first build when we have access to language
+    if (widget.expense != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final language = context.read<AppConfigProvider>().language;
+          final formattedAmount = toCurrencyString(
+            widget.expense!.amount.toString(),
+            mantissaLength: 2,
+            thousandSeparator: language.startsWith('vi')
+                ? ThousandSeparator.Period
+                : ThousandSeparator.Comma,
+          );
+          _amountController.text = formattedAmount;
+        }
+      });
     }
   }
 

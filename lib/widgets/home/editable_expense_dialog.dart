@@ -247,7 +247,9 @@ class _ExpenseFormCard extends StatelessWidget {
           initialValue: toCurrencyString(
             formData.amount.toString(),
             mantissaLength: 2,
-            thousandSeparator: ThousandSeparator.Comma,
+            thousandSeparator: appConfig.language.startsWith('vi')
+                ? ThousandSeparator.Period
+                : ThousandSeparator.Comma,
           ),
           decoration: InputDecoration(
             labelText: context.tr('home.amount'),

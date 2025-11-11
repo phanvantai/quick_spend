@@ -48,18 +48,29 @@ class _RecurringExpenseFormScreenState
     if (widget.template != null) {
       final template = widget.template!;
       _descriptionController.text = template.description;
-      // Format amount with thousand separators
-      _amountController.text = toCurrencyString(
-        template.amount.toString(),
-        mantissaLength: 2,
-        thousandSeparator: ThousandSeparator.Comma,
-      );
+      // Initialize amount controller (will format after first build)
+      _amountController.text = template.amount.toString();
       _type = template.type;
       _categoryId = template.categoryId;
       _pattern = template.pattern;
       _startDate = template.startDate;
       _endDate = template.endDate;
       _hasEndDate = template.endDate != null;
+
+      // Format amount after first build when we have access to language
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final language = context.read<AppConfigProvider>().config.language;
+          final formattedAmount = toCurrencyString(
+            template.amount.toString(),
+            mantissaLength: 2,
+            thousandSeparator: language.startsWith('vi')
+                ? ThousandSeparator.Period
+                : ThousandSeparator.Comma,
+          );
+          _amountController.text = formattedAmount;
+        }
+      });
     } else {
       _type = TransactionType.expense;
       _pattern = RecurrencePattern.monthly;
