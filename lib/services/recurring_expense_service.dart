@@ -44,7 +44,11 @@ class RecurringExpenseService {
     }
 
     final now = DateTime.now();
-    final startDate = template.lastGeneratedDate ?? template.startDate;
+    // If we've generated before, start from NEXT occurrence after last generated
+    // Otherwise start from the template's startDate
+    final startDate = template.lastGeneratedDate != null
+        ? _getNextOccurrence(template.lastGeneratedDate!, template.pattern)
+        : template.startDate;
     final endDate = template.endDate ?? now;
 
     // Don't generate if we've reached the end date
@@ -101,7 +105,7 @@ class RecurringExpenseService {
     required DateTime now,
   }) {
     final dates = <DateTime>[];
-    DateTime current = _getNextOccurrence(startDate, pattern);
+    DateTime current = startDate; // Start from startDate, not next occurrence!
 
     // Generate up to the current date (don't generate future dates)
     final generateUntil = endDate.isBefore(now) ? endDate : now;
@@ -109,12 +113,6 @@ class RecurringExpenseService {
     while (current.isBefore(generateUntil) || _isSameDay(current, generateUntil)) {
       // Don't generate if it's in the future
       if (current.isAfter(now)) break;
-
-      // Don't generate if it's before the start date
-      if (current.isBefore(startDate)) {
-        current = _getNextOccurrence(current, pattern);
-        continue;
-      }
 
       dates.add(current);
       current = _getNextOccurrence(current, pattern);
