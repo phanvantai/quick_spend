@@ -12,6 +12,7 @@ import '../services/export_service.dart';
 import '../services/import_service.dart';
 import '../theme/app_theme.dart';
 import 'categories_screen.dart';
+import 'recurring_expenses_screen.dart';
 
 /// Settings screen for changing app preferences
 class SettingsScreen extends StatefulWidget {
@@ -49,6 +50,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => const CategoriesScreen(),
+                          ),
+                        );
+                      },
+                    ),
+
+                    _buildListTile(
+                      icon: Icons.repeat,
+                      iconColor: AppTheme.accentPink,
+                      title: context.tr('recurring.title'),
+                      subtitle: context.tr('recurring.manage_templates'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RecurringExpensesScreen(),
                           ),
                         );
                       },

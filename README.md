@@ -17,6 +17,7 @@ A Flutter mobile app for quickly logging expenses with voice input and automatic
   - "1 củ xăng" → 1,000,000 VND (Vietnamese slang!)
 - 📊 **Smart Categorization**: AI categorizes based on context (food, transport, shopping, etc.)
 - 🔄 **Hybrid Architecture**: Gemini AI primary + rule-based fallback for reliability
+- 🔁 **Recurring Expenses**: Set up monthly/yearly recurring expenses (rent, subscriptions, bills)
 - 📈 **Statistics Dashboard**: Visual spending insights with charts and analytics
 - 📱 **Bottom Navigation**: Seamless navigation between Home, Report, and Settings
 - ✏️ **Edit & Delete**: Swipeable cards to edit or delete expenses
@@ -42,10 +43,12 @@ A Flutter mobile app for quickly logging expenses with voice input and automatic
 lib/
 ├── models/           # Data models
 │   ├── expense.dart         # Expense model with SQLite integration
-│   ├── category.dart        # Category definitions with bilingual support
+│   ├── category.dart        # QuickCategory with bilingual support
 │   ├── category_stats.dart  # Statistics for expense categories
 │   ├── period_stats.dart    # Statistics for time periods
-│   └── app_config.dart      # App configuration and preferences
+│   ├── app_config.dart      # App configuration and preferences
+│   ├── recurring_expense_template.dart # Recurring expense templates
+│   └── recurrence_pattern.dart        # Recurrence pattern enum
 ├── services/         # Business logic
 │   ├── gemini_expense_parser.dart # AI-powered parser (Gemini 2.5 Flash)
 │   ├── expense_parser.dart        # Main parser orchestrator (AI + fallback)
@@ -53,18 +56,29 @@ lib/
 │   ├── language_detector.dart     # Fallback language detection
 │   ├── categorizer.dart           # Fallback keyword categorization
 │   ├── voice_service.dart         # Speech-to-text wrapper
-│   ├── expense_service.dart       # SQLite database operations
+│   ├── database_manager.dart      # Centralized database management
+│   ├── expense_service.dart       # Expense & category CRUD operations
+│   ├── recurring_template_service.dart # Recurring template CRUD operations
+│   ├── recurring_expense_service.dart  # Generate expenses from templates
 │   └── preferences_service.dart   # SharedPreferences wrapper
 ├── providers/        # State management
 │   ├── app_config_provider.dart # App configuration state
 │   ├── expense_provider.dart    # Expense management state
-│   └── report_provider.dart     # Statistics and reports state
+│   ├── category_provider.dart   # Category management state
+│   ├── report_provider.dart     # Statistics and reports state
+│   └── recurring_template_provider.dart # Recurring template state
 ├── screens/          # UI screens
 │   ├── onboarding_screen.dart # Language/currency selection
 │   ├── main_screen.dart       # Main screen with bottom navigation
 │   ├── home_screen.dart       # Expense list and input
+│   ├── expense_form_screen.dart # Add/edit expense manually
+│   ├── all_expenses_screen.dart # View all expenses
 │   ├── report_screen.dart     # Statistics and charts
-│   └── settings_screen.dart   # App settings
+│   ├── settings_screen.dart   # App settings
+│   ├── categories_screen.dart # Manage categories
+│   ├── category_form_screen.dart # Add/edit category
+│   ├── recurring_expenses_screen.dart # Manage recurring expenses
+│   └── recurring_expense_form_screen.dart # Add/edit recurring template
 ├── widgets/          # Reusable widgets
 │   ├── common/                    # Common UI components
 │   │   ├── expense_card.dart      # Expense list item
@@ -72,18 +86,23 @@ lib/
 │   │   ├── empty_state.dart       # Empty list placeholder
 │   │   ├── gradient_button.dart   # Custom button
 │   │   └── stat_card.dart         # Statistics card
+│   ├── home/                      # Home screen widgets
+│   │   ├── home_summary_card.dart # Home summary widget
+│   │   └── editable_expense_dialog.dart # Voice parsing confirmation
 │   ├── report/                    # Report-specific widgets
 │   │   ├── category_donut_chart.dart    # Category breakdown chart
 │   │   ├── spending_trend_chart.dart    # Spending over time chart
 │   │   ├── category_list.dart           # Category statistics list
+│   │   ├── category_breakdown_switcher.dart # Category view switcher
 │   │   ├── top_expenses_list.dart       # Largest expenses list
 │   │   ├── summary_card.dart            # Summary statistics
 │   │   ├── stats_grid.dart              # Statistics grid
 │   │   ├── period_filter.dart           # Date range selector
 │   │   └── custom_date_range_picker.dart # Custom date picker
+│   ├── recurring/                 # Recurring expense widgets
+│   │   └── recurring_template_card.dart # Recurring template card
 │   ├── voice_input_button.dart    # Voice recording FAB
-│   ├── voice_tutorial_overlay.dart # Voice input tutorial
-│   └── edit_expense_dialog.dart   # Edit expense modal
+│   └── voice_tutorial_overlay.dart # Voice input tutorial
 ├── theme/            # Design system
 │   └── app_theme.dart # Theme configuration and constants
 └── utils/            # Utilities
@@ -106,7 +125,7 @@ assets/
 - Formatted amount display (VND/USD)
 - Immutable with `copyWith` support
 
-#### Category Model ([lib/models/category.dart](lib/models/category.dart))
+#### QuickCategory Model ([lib/models/category.dart](lib/models/category.dart))
 
 - 7 categories: Food, Transport, Shopping, Bills, Health, Entertainment, Other
 - Bilingual labels and keywords
@@ -428,13 +447,37 @@ Text('welcome.message'.tr())
 - Component usage patterns
 - Spacing and layout system
 
+## Phase 7 ✅ Complete - Recurring Expenses
+
+### Recurring Expenses Feature
+
+**Template-based system** for managing recurring expenses:
+
+- Set up monthly or yearly recurring expenses (rent, subscriptions, bills, etc.)
+- Templates stored separately from actual expenses
+- Automatic generation on app startup
+- Active/inactive toggle without deletion
+- Optional end date for limited-time recurring expenses
+- Generated expenses appear as normal expenses in the home screen
+
+**Key Components:**
+
+- **RecurringExpenseTemplate**: Configuration model (amount, description, category, pattern, dates)
+- **RecurringTemplateService**: CRUD operations for templates
+- **RecurringExpenseService**: Generates normal Expense objects from templates
+- **RecurringTemplateProvider**: State management for templates
+
+**Screens:**
+
+- **recurring_expenses_screen.dart**: Manage recurring expense templates
+- **recurring_expense_form_screen.dart**: Add/edit recurring templates
+
 ## Next Steps (Future Enhancements)
 
 ### Potential Features
 
 - [ ] Search and filter expenses
 - [ ] Expense tags and notes
-- [ ] Recurring expenses
 - [ ] Budget tracking and alerts
 - [ ] Data export (CSV, PDF)
 - [ ] Multiple currency support in single session

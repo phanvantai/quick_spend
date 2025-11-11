@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../providers/expense_provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/app_config_provider.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
 import '../theme/app_theme.dart';
@@ -110,6 +111,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
 
   void _showExpenseDetailsDialog(Expense expense) {
     final categoryProvider = context.read<CategoryProvider>();
+    final appConfig = context.read<AppConfigProvider>();
+    final currency = appConfig.currency;
     final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
         QuickCategory.getDefaultSystemCategories().firstWhere(
@@ -136,7 +139,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
           children: [
             _buildDetailRow(
               context.tr('home.amount'),
-              expense.getFormattedAmount(),
+              expense.getFormattedAmount(currency: currency),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(

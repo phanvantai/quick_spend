@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/category_provider.dart';
@@ -149,6 +150,19 @@ class _ExpenseFormCard extends StatelessWidget {
 
   const _ExpenseFormCard({required this.formData, required this.onChanged});
 
+  double _parseAmount(String text, String language) {
+    // Remove formatting and parse based on locale
+    String numericString;
+    if (language.startsWith('vi')) {
+      // Vietnamese: remove periods (thousand sep), replace comma with period (decimal sep)
+      numericString = text.replaceAll('.', '').replaceAll(',', '.');
+    } else {
+      // English: remove commas (thousand sep), period is already decimal sep
+      numericString = text.replaceAll(',', '');
+    }
+    return double.tryParse(numericString.trim()) ?? 0.0;
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
@@ -243,24 +257,44 @@ class _ExpenseFormCard extends StatelessWidget {
 
         // Amount field
         TextFormField(
-          initialValue: formData.amount.toString(),
+          initialValue: toCurrencyString(
+            formData.amount.toString(),
+            mantissaLength: appConfig.currency == 'VND' ? 0 : 2,
+            thousandSeparator: appConfig.language.startsWith('vi')
+                ? ThousandSeparator.Period
+                : ThousandSeparator.Comma,
+          ),
           decoration: InputDecoration(
             labelText: context.tr('home.amount'),
+            hintText: '0',
             border: const OutlineInputBorder(),
             prefixIcon: const Icon(Icons.attach_money),
           ),
-          keyboardType: TextInputType.number,
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+          ),
+          inputFormatters: [
+            CurrencyInputFormatter(
+              thousandSeparator: appConfig.language.startsWith('vi')
+                  ? ThousandSeparator.Period
+                  : ThousandSeparator.Comma,
+              mantissaLength: appConfig.currency == 'VND' ? 0 : 2,
+            ),
+          ],
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return context.tr('home.amount_required');
             }
-            final amount = double.tryParse(value);
-            if (amount == null || amount <= 0) {
+            // Parse formatted value for validation (locale-aware)
+            final amount = _parseAmount(value, appConfig.language);
+            if (amount <= 0) {
               return context.tr('home.amount_invalid');
             }
             return null;
           },
-          onSaved: (value) => formData.amount = double.parse(value!),
+          onSaved: (value) {
+            formData.amount = _parseAmount(value!, appConfig.language);
+          },
         ),
         const SizedBox(height: AppTheme.spacing12),
 

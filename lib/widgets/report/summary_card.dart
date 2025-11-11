@@ -192,11 +192,7 @@ class SummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                size: 16,
-                color: accentColor,
-              ),
+              Icon(icon, size: 16, color: accentColor),
               const SizedBox(width: AppTheme.spacing4),
               Text(
                 label,
@@ -235,11 +231,7 @@ class SummaryCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
-              icon,
-              size: 16,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
+            Icon(icon, size: 16, color: Colors.white.withValues(alpha: 0.8)),
             const SizedBox(width: AppTheme.spacing4),
             Expanded(
               child: Text(
@@ -269,21 +261,28 @@ class SummaryCard extends StatelessWidget {
   }
 
   String _formatAmount(BuildContext context, double amount) {
+    String formatted;
+
+    // Use decimals based on currency, not language
+    final useDecimals = currency != 'VND';
+
     if (language == 'vi') {
-      // Vietnamese format
-      final formatted = amount.toStringAsFixed(0).replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
+      // Vietnamese format: use period as thousand separator
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
+      formatted = formatter.format(amount).replaceAll(',', '.');
       return currency == 'VND'
           ? '$formatted${context.tr('currency.symbol_vnd')}'
           : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
-      // English format
-      final formatted = amount.toStringAsFixed(2).replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
+      // English format: use comma as thousand separator
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
+      formatted = formatter.format(amount);
       return currency == 'USD'
           ? '${context.tr('currency.symbol_usd')}$formatted'
           : '$formatted ${context.tr('currency.symbol_vnd')}';

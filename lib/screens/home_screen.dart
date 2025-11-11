@@ -154,6 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showExpenseDetailsDialog(Expense expense) {
     final categoryProvider = context.read<CategoryProvider>();
+    final appConfig = context.read<AppConfigProvider>();
+    final currency = appConfig.currency;
     final categoryData =
         categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
@@ -181,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildDetailRow(
               context.tr('home.amount'),
-              expense.getFormattedAmount(),
+              expense.getFormattedAmount(currency: currency),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(

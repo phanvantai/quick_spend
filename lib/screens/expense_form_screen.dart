@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import '../models/expense.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
@@ -36,9 +36,12 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     _descriptionController = TextEditingController(
       text: widget.expense?.description ?? '',
     );
+
+    // Initialize amount controller (will format after first build)
     _amountController = TextEditingController(
       text: widget.expense?.amount.toString() ?? '',
     );
+
     _selectedType = widget.expense?.type ?? TransactionType.expense;
     _selectedCategoryId = widget.expense?.categoryId ?? 'other';
 
@@ -48,6 +51,25 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     } else {
       final now = DateTime.now();
       _selectedDate = DateTime(now.year, now.month, now.day, 12, 0);
+    }
+
+    // Format amount after first build when we have access to language and currency
+    if (widget.expense != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final appConfig = context.read<AppConfigProvider>();
+          final language = appConfig.language;
+          final currency = appConfig.currency;
+          final formattedAmount = toCurrencyString(
+            widget.expense!.amount.toString(),
+            mantissaLength: currency == 'VND' ? 0 : 2,
+            thousandSeparator: language.startsWith('vi')
+                ? ThousandSeparator.Period
+                : ThousandSeparator.Comma,
+          );
+          _amountController.text = formattedAmount;
+        }
+      });
     }
   }
 
@@ -80,17 +102,33 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     }
   }
 
+  double _parseAmount(String text, String language) {
+    // Remove formatting and parse based on locale
+    String numericString;
+    if (language.startsWith('vi')) {
+      // Vietnamese: remove periods (thousand sep), replace comma with period (decimal sep)
+      numericString = text.replaceAll('.', '').replaceAll(',', '.');
+    } else {
+      // English: remove commas (thousand sep), period is already decimal sep
+      numericString = text.replaceAll(',', '');
+    }
+    return double.tryParse(numericString.trim()) ?? 0.0;
+  }
+
   void _save() {
     if (_formKey.currentState?.validate() ?? false) {
       final language = context.read<AppConfigProvider>().language;
       final userId = context.read<ExpenseProvider>().currentUserId;
+
+      // Parse formatted amount (locale-aware)
+      final amount = _parseAmount(_amountController.text, language);
 
       final expense = Expense(
         id: _isEditMode
             ? widget.expense!.id
             : DateTime.now().millisecondsSinceEpoch.toString(),
         userId: _isEditMode ? widget.expense!.userId : userId,
-        amount: double.parse(_amountController.text),
+        amount: amount,
         description: _descriptionController.text.trim(),
         categoryId: _selectedCategoryId,
         date: _selectedDate,
@@ -110,7 +148,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final language = context.watch<AppConfigProvider>().language;
+    final appConfig = context.watch<AppConfigProvider>();
+    final language = appConfig.language;
+    final currency = appConfig.currency;
 
     return Scaffold(
       appBar: AppBar(
@@ -167,26 +207,26 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 });
               },
               style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return _selectedType == TransactionType.expense
-                          ? AppTheme.error.withValues(alpha: 0.15)
-                          : AppTheme.success.withValues(alpha: 0.15);
-                    }
-                    return colorScheme.surface;
-                  },
-                ),
-                foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return _selectedType == TransactionType.expense
-                          ? AppTheme.error
-                          : AppTheme.success;
-                    }
-                    return colorScheme.onSurface;
-                  },
-                ),
+                backgroundColor: WidgetStateProperty.resolveWith<Color>((
+                  Set<WidgetState> states,
+                ) {
+                  if (states.contains(WidgetState.selected)) {
+                    return _selectedType == TransactionType.expense
+                        ? AppTheme.error.withValues(alpha: 0.15)
+                        : AppTheme.success.withValues(alpha: 0.15);
+                  }
+                  return colorScheme.surface;
+                }),
+                foregroundColor: WidgetStateProperty.resolveWith<Color>((
+                  Set<WidgetState> states,
+                ) {
+                  if (states.contains(WidgetState.selected)) {
+                    return _selectedType == TransactionType.expense
+                        ? AppTheme.error
+                        : AppTheme.success;
+                  }
+                  return colorScheme.onSurface;
+                }),
               ),
             ),
             const SizedBox(height: AppTheme.spacing20),
@@ -218,7 +258,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
               controller: _amountController,
               decoration: InputDecoration(
                 labelText: context.tr('home.amount'),
-                hintText: '0.00',
+                hintText: '0',
                 prefixIcon: const Icon(Icons.attach_money),
                 border: OutlineInputBorder(
                   borderRadius: AppTheme.borderRadiusMedium,
@@ -228,14 +268,21 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 decimal: true,
               ),
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                CurrencyInputFormatter(
+                  thousandSeparator: language.startsWith('vi')
+                      ? ThousandSeparator.Period
+                      : ThousandSeparator.Comma,
+                  mantissaLength: currency == 'VND' ? 0 : 2,
+                ),
               ],
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return context.tr('home.amount_required');
                 }
-                final amount = double.tryParse(value);
-                if (amount == null || amount <= 0) {
+                // Parse formatted value for validation (locale-aware)
+                final language = context.read<AppConfigProvider>().language;
+                final amount = _parseAmount(value, language);
+                if (amount <= 0) {
                   return context.tr('home.amount_invalid');
                 }
                 return null;
@@ -349,7 +396,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                     ),
                     const SizedBox(width: AppTheme.spacing16),
                     Text(
-                      DateFormat.yMMMd(context.locale.languageCode).format(_selectedDate),
+                      DateFormat.yMMMd(
+                        context.locale.languageCode,
+                      ).format(_selectedDate),
                       style: theme.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),

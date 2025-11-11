@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 /// Transaction type enum
 enum TransactionType {
@@ -143,25 +144,35 @@ class Expense {
   }
 
   /// Get formatted amount string
-  String getFormattedAmount({bool includeCurrency = true}) {
-    if (language == 'vi') {
-      // Vietnamese format
-      final formatted = amount
-          .toStringAsFixed(0)
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
-      return includeCurrency ? '$formatted đ' : formatted;
+  /// Note: This method doesn't have access to currency, so it uses language as a proxy
+  /// For proper currency-based formatting, use the widgets which have access to currency
+  String getFormattedAmount({bool includeCurrency = true, String? currency}) {
+    String formatted;
+
+    // Use currency if provided, otherwise assume based on language
+    final useDecimals = currency != null
+        ? (currency != 'VND')
+        : !language.startsWith('vi');
+
+    if (language.startsWith('vi')) {
+      // Vietnamese format: use period as thousand separator
+      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
+      formatted = formatter.format(amount).replaceAll(',', '.');
     } else {
-      // English format
-      final formatted = amount
-          .toStringAsFixed(2)
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
-      return includeCurrency ? '\$$formatted' : formatted;
+      // English format: use comma as thousand separator
+      final formatter = NumberFormat(useDecimals ? '#,##0.00' : '#,##0', 'en_US');
+      formatted = formatter.format(amount);
+    }
+
+    if (!includeCurrency) {
+      return formatted;
+    }
+
+    // Use currency parameter if provided, otherwise assume based on language
+    if (currency != null) {
+      return currency == 'VND' ? '$formatted đ' : '\$$formatted';
+    } else {
+      return language.startsWith('vi') ? '$formatted đ' : '\$$formatted';
     }
   }
 

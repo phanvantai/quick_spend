@@ -62,6 +62,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     // Check permission status on init
     _checkPermissionStatus();
 
+    // Generate pending recurring expenses on app start
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<ExpenseProvider>().generateRecurringExpenses();
+      }
+    });
+
     // Listen for app lifecycle changes to refresh permission status
     _lifecycleObserver = _AppLifecycleObserver(
       onResume: () {

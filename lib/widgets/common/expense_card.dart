@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/expense.dart';
 import '../../models/category.dart';
 import '../../providers/category_provider.dart';
+import '../../providers/app_config_provider.dart';
 import '../../theme/app_theme.dart';
 
 /// Card widget for displaying expense information
@@ -22,6 +23,8 @@ class ExpenseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final categoryProvider = context.watch<CategoryProvider>();
+    final appConfig = context.watch<AppConfigProvider>();
+    final currency = appConfig.currency;
     final categoryData =
         categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
@@ -121,7 +124,7 @@ class ExpenseCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '$amountPrefix${expense.getFormattedAmount()}',
+                      '$amountPrefix${expense.getFormattedAmount(currency: currency)}',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: accentColor,

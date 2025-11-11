@@ -186,7 +186,10 @@ class TopExpensesList extends StatelessWidget {
                       const SizedBox(width: AppTheme.spacing8),
                       Flexible(
                         child: Text(
-                          DateFormat('MMM d, y', context.locale.languageCode).format(expense.date),
+                          DateFormat(
+                            'MMM d, y',
+                            context.locale.languageCode,
+                          ).format(expense.date),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -215,21 +218,26 @@ class TopExpensesList extends StatelessWidget {
   }
 
   String _formatAmount(double amount) {
+    String formatted;
+
+    // Use decimals based on currency, not language
+    final useDecimals = currency != 'VND';
+
     if (language == 'vi') {
-      final formatted = amount
-          .toStringAsFixed(0)
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
-      return currency == 'VND' ? '$formattedđ' : '\$$formatted';
+      // Vietnamese format: use period as thousand separator
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
+      formatted = formatter.format(amount).replaceAll(',', '.');
+      return currency == 'VND' ? '$formatted đ' : '\$$formatted';
     } else {
-      final formatted = amount
-          .toStringAsFixed(2)
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
+      // English format: use comma as thousand separator
+      final formatter = NumberFormat(
+        useDecimals ? '#,##0.00' : '#,##0',
+        'en_US',
+      );
+      formatted = formatter.format(amount);
       return currency == 'USD' ? '\$$formatted' : '$formatted đ';
     }
   }

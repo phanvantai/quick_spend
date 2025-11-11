@@ -36,13 +36,9 @@ class EmptyState extends StatelessWidget {
                 gradient: AppTheme.primaryGradient,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 64,
-                color: Colors.white,
-              ),
+              child: Icon(icon, size: 64, color: Colors.white),
             ),
-            const SizedBox(height: AppTheme.spacing24),
+            const SizedBox(height: AppTheme.spacing12),
             Text(
               title,
               style: theme.textTheme.headlineSmall,
