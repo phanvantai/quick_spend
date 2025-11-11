@@ -15,7 +15,7 @@ A comprehensive, modern design system for the Quick Spend expense tracking app.
 
 The Quick Spend design system provides a cohesive visual language with:
 
-- **Modern aesthetic**: Purple-blue gradient theme with vibrant accents
+- **Modern aesthetic**: Mint green gradient theme with vibrant accents
 - **Material Design 3**: Full MD3 compliance
 - **Accessibility**: WCAG AA compliant color contrasts
 - **Dark mode ready**: Complete dark theme support
@@ -26,13 +26,13 @@ The Quick Spend design system provides a cohesive visual language with:
 ### Primary Colors
 
 ```dart
-Primary Purple: #6C5CE7
-Primary Blue: #5F5CF1
-Primary Dark: #5145CD
+Primary Mint: #00D9A3
+Primary Green: #00C896
+Primary Dark: #00B386
 ```
 
 - **Usage**: Primary actions, headers, key UI elements
-- **Gradient**: Purple to Blue (top-left to bottom-right)
+- **Gradient**: Mint to Green (top-left to bottom-right)
 
 ### Secondary/Accent Colors
 
