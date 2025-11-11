@@ -245,7 +245,7 @@ class ExpenseService {
     }
 
     debugPrint('🌱 [ExpenseService] Seeding system categories...');
-    final systemCategories = QuickCategory.getSystemCategories();
+    final systemCategories = QuickCategory.getDefaultSystemCategories();
     for (final category in systemCategories) {
       await saveCategory(category);
     }
