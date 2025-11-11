@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import '../models/expense.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
@@ -36,9 +37,18 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     _descriptionController = TextEditingController(
       text: widget.expense?.description ?? '',
     );
+
+    // Format amount with thousand separators if editing
     _amountController = TextEditingController(
-      text: widget.expense?.amount.toString() ?? '',
+      text: widget.expense != null
+          ? toCurrencyString(
+              widget.expense!.amount.toString(),
+              mantissaLength: 2,
+              thousandSeparator: ThousandSeparator.Comma,
+            )
+          : '',
     );
+
     _selectedType = widget.expense?.type ?? TransactionType.expense;
     _selectedCategoryId = widget.expense?.categoryId ?? 'other';
 
@@ -85,12 +95,16 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       final language = context.read<AppConfigProvider>().language;
       final userId = context.read<ExpenseProvider>().currentUserId;
 
+      // Parse formatted amount (removes thousand separators)
+      final amountString = toNumericString(_amountController.text);
+      final amount = double.tryParse(amountString) ?? 0.0;
+
       final expense = Expense(
         id: _isEditMode
             ? widget.expense!.id
             : DateTime.now().millisecondsSinceEpoch.toString(),
         userId: _isEditMode ? widget.expense!.userId : userId,
-        amount: double.parse(_amountController.text),
+        amount: amount,
         description: _descriptionController.text.trim(),
         categoryId: _selectedCategoryId,
         date: _selectedDate,
@@ -218,7 +232,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
               controller: _amountController,
               decoration: InputDecoration(
                 labelText: context.tr('home.amount'),
-                hintText: '0.00',
+                hintText: '0',
                 prefixIcon: const Icon(Icons.attach_money),
                 border: OutlineInputBorder(
                   borderRadius: AppTheme.borderRadiusMedium,
@@ -228,13 +242,20 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 decimal: true,
               ),
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                CurrencyInputFormatter(
+                  thousandSeparator: language.startsWith('vi')
+                      ? ThousandSeparator.Period
+                      : ThousandSeparator.Comma,
+                  mantissaLength: 2,
+                ),
               ],
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return context.tr('home.amount_required');
                 }
-                final amount = double.tryParse(value);
+                // Parse formatted value for validation
+                final numericString = toNumericString(value);
+                final amount = double.tryParse(numericString);
                 if (amount == null || amount <= 0) {
                   return context.tr('home.amount_invalid');
                 }

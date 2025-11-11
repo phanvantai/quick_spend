@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/category_provider.dart';
@@ -243,24 +244,44 @@ class _ExpenseFormCard extends StatelessWidget {
 
         // Amount field
         TextFormField(
-          initialValue: formData.amount.toString(),
+          initialValue: toCurrencyString(
+            formData.amount.toString(),
+            mantissaLength: 2,
+            thousandSeparator: ThousandSeparator.Comma,
+          ),
           decoration: InputDecoration(
             labelText: context.tr('home.amount'),
+            hintText: '0',
             border: const OutlineInputBorder(),
             prefixIcon: const Icon(Icons.attach_money),
           ),
-          keyboardType: TextInputType.number,
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+          ),
+          inputFormatters: [
+            CurrencyInputFormatter(
+              thousandSeparator: appConfig.language.startsWith('vi')
+                  ? ThousandSeparator.Period
+                  : ThousandSeparator.Comma,
+              mantissaLength: 2,
+            ),
+          ],
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return context.tr('home.amount_required');
             }
-            final amount = double.tryParse(value);
+            // Parse formatted value for validation
+            final numericString = toNumericString(value);
+            final amount = double.tryParse(numericString);
             if (amount == null || amount <= 0) {
               return context.tr('home.amount_invalid');
             }
             return null;
           },
-          onSaved: (value) => formData.amount = double.parse(value!),
+          onSaved: (value) {
+            final numericString = toNumericString(value!);
+            formData.amount = double.tryParse(numericString) ?? 0.0;
+          },
         ),
         const SizedBox(height: AppTheme.spacing12),
 

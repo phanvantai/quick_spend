@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import '../models/expense.dart';
 import '../models/recurring_expense_template.dart';
 import '../models/recurrence_pattern.dart';
@@ -47,7 +48,12 @@ class _RecurringExpenseFormScreenState
     if (widget.template != null) {
       final template = widget.template!;
       _descriptionController.text = template.description;
-      _amountController.text = template.amount.toString();
+      // Format amount with thousand separators
+      _amountController.text = toCurrencyString(
+        template.amount.toString(),
+        mantissaLength: 2,
+        thousandSeparator: ThousandSeparator.Comma,
+      );
       _type = template.type;
       _categoryId = template.categoryId;
       _pattern = template.pattern;
@@ -137,9 +143,13 @@ class _RecurringExpenseFormScreenState
     final appConfig = context.read<AppConfigProvider>().config;
 
     try {
+      // Parse formatted amount (removes thousand separators)
+      final amountString = toNumericString(_amountController.text);
+      final amount = double.tryParse(amountString) ?? 0.0;
+
       final template = RecurringExpenseTemplate(
         id: widget.template?.id ?? const Uuid().v4(),
-        amount: double.parse(_amountController.text),
+        amount: amount,
         description: _descriptionController.text.trim(),
         categoryId: _categoryId!,
         language: appConfig.language,
@@ -195,6 +205,7 @@ class _RecurringExpenseFormScreenState
   Widget build(BuildContext context) {
     final categoryProvider = context.watch<CategoryProvider>();
     final appConfig = context.watch<AppConfigProvider>().config;
+    final language = appConfig.language;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -298,15 +309,28 @@ class _RecurringExpenseFormScreenState
               controller: _amountController,
               decoration: InputDecoration(
                 labelText: context.tr('home.amount'),
+                hintText: '0',
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.attach_money),
               ),
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                CurrencyInputFormatter(
+                  thousandSeparator: language.startsWith('vi')
+                      ? ThousandSeparator.Period
+                      : ThousandSeparator.Comma,
+                  mantissaLength: 2,
+                ),
+              ],
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return context.tr('home.amount_required');
                 }
-                final amount = double.tryParse(value);
+                // Parse formatted value for validation
+                final numericString = toNumericString(value);
+                final amount = double.tryParse(numericString);
                 if (amount == null || amount <= 0) {
                   return context.tr('home.amount_invalid');
                 }
