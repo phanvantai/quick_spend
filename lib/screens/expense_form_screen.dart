@@ -101,14 +101,26 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     }
   }
 
+  double _parseAmount(String text, String language) {
+    // Remove formatting and parse based on locale
+    String numericString;
+    if (language.startsWith('vi')) {
+      // Vietnamese: remove periods (thousand sep), replace comma with period (decimal sep)
+      numericString = text.replaceAll('.', '').replaceAll(',', '.');
+    } else {
+      // English: remove commas (thousand sep), period is already decimal sep
+      numericString = text.replaceAll(',', '');
+    }
+    return double.tryParse(numericString.trim()) ?? 0.0;
+  }
+
   void _save() {
     if (_formKey.currentState?.validate() ?? false) {
       final language = context.read<AppConfigProvider>().language;
       final userId = context.read<ExpenseProvider>().currentUserId;
 
-      // Parse formatted amount (removes thousand separators)
-      final amountString = toNumericString(_amountController.text);
-      final amount = double.tryParse(amountString) ?? 0.0;
+      // Parse formatted amount (locale-aware)
+      final amount = _parseAmount(_amountController.text, language);
 
       final expense = Expense(
         id: _isEditMode
@@ -264,10 +276,10 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 if (value == null || value.trim().isEmpty) {
                   return context.tr('home.amount_required');
                 }
-                // Parse formatted value for validation
-                final numericString = toNumericString(value);
-                final amount = double.tryParse(numericString);
-                if (amount == null || amount <= 0) {
+                // Parse formatted value for validation (locale-aware)
+                final language = context.read<AppConfigProvider>().language;
+                final amount = _parseAmount(value, language);
+                if (amount <= 0) {
                   return context.tr('home.amount_invalid');
                 }
                 return null;

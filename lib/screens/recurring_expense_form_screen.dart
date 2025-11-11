@@ -38,6 +38,19 @@ class _RecurringExpenseFormScreenState
   late RecurrencePattern _pattern;
   late DateTime _startDate;
   DateTime? _endDate;
+
+  double _parseAmount(String text, String language) {
+    // Remove formatting and parse based on locale
+    String numericString;
+    if (language.startsWith('vi')) {
+      // Vietnamese: remove periods (thousand sep), replace comma with period (decimal sep)
+      numericString = text.replaceAll('.', '').replaceAll(',', '.');
+    } else {
+      // English: remove commas (thousand sep), period is already decimal sep
+      numericString = text.replaceAll(',', '');
+    }
+    return double.tryParse(numericString.trim()) ?? 0.0;
+  }
   bool _hasEndDate = false;
 
   @override
@@ -154,9 +167,8 @@ class _RecurringExpenseFormScreenState
     final appConfig = context.read<AppConfigProvider>().config;
 
     try {
-      // Parse formatted amount (removes thousand separators)
-      final amountString = toNumericString(_amountController.text);
-      final amount = double.tryParse(amountString) ?? 0.0;
+      // Parse formatted amount (locale-aware)
+      final amount = _parseAmount(_amountController.text, appConfig.language);
 
       final template = RecurringExpenseTemplate(
         id: widget.template?.id ?? const Uuid().v4(),
@@ -339,10 +351,10 @@ class _RecurringExpenseFormScreenState
                 if (value == null || value.trim().isEmpty) {
                   return context.tr('home.amount_required');
                 }
-                // Parse formatted value for validation
-                final numericString = toNumericString(value);
-                final amount = double.tryParse(numericString);
-                if (amount == null || amount <= 0) {
+                // Parse formatted value for validation (locale-aware)
+                final language = context.read<AppConfigProvider>().config.language;
+                final amount = _parseAmount(value, language);
+                if (amount <= 0) {
                   return context.tr('home.amount_invalid');
                 }
                 return null;
