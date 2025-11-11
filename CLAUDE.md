@@ -135,7 +135,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
 ### Models
 
 - **Expense** ([lib/models/expense.dart](lib/models/expense.dart)): Core data model with SQLite serialization (NO recurring fields - kept clean)
-- **Category** ([lib/models/category.dart](lib/models/category.dart)): 7 predefined categories with bilingual keywords/labels
+- **QuickCategory** ([lib/models/category.dart](lib/models/category.dart)): 7 predefined categories with bilingual keywords/labels
 - **CategoryStats** ([lib/models/category_stats.dart](lib/models/category_stats.dart)): Statistics for individual expense categories
 - **PeriodStats** ([lib/models/period_stats.dart](lib/models/period_stats.dart)): Aggregated statistics for time periods
 - **AppConfig** ([lib/models/app_config.dart](lib/models/app_config.dart)): User preference model
@@ -287,8 +287,12 @@ lib/
 │   ├── onboarding_screen.dart  # Language/currency selection
 │   ├── main_screen.dart        # Main container with bottom navigation
 │   ├── home_screen.dart        # Expense list tab
+│   ├── expense_form_screen.dart # Add/edit expense manually (full screen)
+│   ├── all_expenses_screen.dart # View all expenses list
 │   ├── report_screen.dart      # Statistics and charts tab
 │   ├── settings_screen.dart    # App settings
+│   ├── categories_screen.dart  # Manage categories
+│   ├── category_form_screen.dart # Add/edit category form
 │   ├── recurring_expenses_screen.dart # Recurring templates management
 │   └── recurring_expense_form_screen.dart # Add/edit recurring template form
 ├── widgets/                     # Reusable UI components
@@ -298,10 +302,14 @@ lib/
 │   │   ├── empty_state.dart    # Empty list placeholder
 │   │   ├── gradient_button.dart # Custom button
 │   │   └── stat_card.dart      # Statistics card
+│   ├── home/                   # Home screen widgets
+│   │   ├── home_summary_card.dart # Home summary widget
+│   │   └── editable_expense_dialog.dart # Voice parsing confirmation dialog
 │   ├── report/                 # Report-specific widgets
 │   │   ├── category_donut_chart.dart # Category breakdown chart
 │   │   ├── spending_trend_chart.dart # Spending trend line chart
 │   │   ├── category_list.dart        # Category statistics list
+│   │   ├── category_breakdown_switcher.dart # Category breakdown view switcher
 │   │   ├── top_expenses_list.dart    # Top expenses widget
 │   │   ├── summary_card.dart         # Summary statistics
 │   │   ├── stats_grid.dart           # Statistics grid
@@ -310,8 +318,7 @@ lib/
 │   ├── recurring/              # Recurring expense widgets
 │   │   └── recurring_template_card.dart # Template display card
 │   ├── voice_input_button.dart     # Voice recording FAB
-│   ├── voice_tutorial_overlay.dart # First-time tutorial
-│   └── edit_expense_dialog.dart    # Edit expense modal
+│   └── voice_tutorial_overlay.dart # First-time tutorial
 ├── theme/                       # Design system
 │   └── app_theme.dart          # Theme configuration and constants
 └── utils/                       # Utilities
