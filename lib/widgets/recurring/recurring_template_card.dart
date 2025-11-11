@@ -46,12 +46,12 @@ class RecurringTemplateCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: category != null
                     ? category.color.withValues(alpha: 0.15)
-                    : AppTheme.neutral40.withValues(alpha: 0.15),
+                    : AppTheme.neutral500.withValues(alpha: 0.15),
                 borderRadius: AppTheme.borderRadiusSmall,
               ),
               child: Icon(
                 category?.icon ?? Icons.help_outline,
-                color: category?.color ?? AppTheme.neutral40,
+                color: category?.color ?? AppTheme.neutral500,
                 size: 24,
               ),
             ),
@@ -72,13 +72,13 @@ class RecurringTemplateCard extends StatelessWidget {
                       vertical: AppTheme.spacing4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.neutral40.withValues(alpha: 0.15),
+                      color: AppTheme.neutral500.withValues(alpha: 0.15),
                       borderRadius: AppTheme.borderRadiusSmall,
                     ),
                     child: Text(
                       context.tr('recurring.inactive'),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppTheme.neutral40,
+                        color: AppTheme.neutral500,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -191,7 +191,7 @@ class RecurringTemplateCard extends StatelessWidget {
                 Icon(
                   template.isActive ? Icons.check_circle : Icons.pause_circle,
                   size: 16,
-                  color: template.isActive ? AppTheme.success : AppTheme.neutral40,
+                  color: template.isActive ? AppTheme.success : AppTheme.neutral500,
                 ),
                 const SizedBox(width: AppTheme.spacing8),
                 Text(
@@ -201,7 +201,7 @@ class RecurringTemplateCard extends StatelessWidget {
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: template.isActive
                         ? AppTheme.success
-                        : AppTheme.neutral40,
+                        : AppTheme.neutral500,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
