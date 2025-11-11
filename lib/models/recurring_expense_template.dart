@@ -128,7 +128,12 @@ class RecurringExpenseTemplate {
       return formatted;
     }
 
-    return language.startsWith('vi') ? '$formatted đ' : '\$$formatted';
+    // Use currency parameter if provided, otherwise assume based on language
+    if (currency != null) {
+      return currency == 'VND' ? '$formatted đ' : '\$$formatted';
+    } else {
+      return language.startsWith('vi') ? '$formatted đ' : '\$$formatted';
+    }
   }
 
   @override
