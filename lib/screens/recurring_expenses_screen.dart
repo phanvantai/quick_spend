@@ -4,30 +4,34 @@ import 'package:provider/provider.dart';
 import '../providers/recurring_template_provider.dart';
 import '../providers/expense_provider.dart';
 import '../widgets/recurring/recurring_template_card.dart';
-import '../widgets/recurring/recurring_template_dialog.dart';
 import '../widgets/common/empty_state.dart';
 import '../theme/app_theme.dart';
+import 'recurring_expense_form_screen.dart';
 
 /// Screen for managing recurring expense templates
 class RecurringExpensesScreen extends StatelessWidget {
   const RecurringExpensesScreen({super.key});
 
-  void _showAddDialog(BuildContext context, String userId) {
-    showDialog(
-      context: context,
-      builder: (context) => RecurringTemplateDialog(userId: userId),
+  void _showAddScreen(BuildContext context, String userId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RecurringExpenseFormScreen(userId: userId),
+      ),
     );
   }
 
-  void _showEditDialog(BuildContext context, String templateId, String userId) {
+  void _showEditScreen(BuildContext context, String templateId, String userId) {
     final templateProvider = context.read<RecurringTemplateProvider>();
     final template = templateProvider.getTemplateById(templateId);
 
     if (template != null) {
-      showDialog(
-        context: context,
-        builder: (context) =>
-            RecurringTemplateDialog(template: template, userId: userId),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              RecurringExpenseFormScreen(template: template, userId: userId),
+        ),
       );
     }
   }
@@ -198,7 +202,7 @@ class RecurringExpensesScreen extends StatelessWidget {
                       return RecurringTemplateCard(
                         template: template,
                         onEdit: () =>
-                            _showEditDialog(context, template.id, userId),
+                            _showEditScreen(context, template.id, userId),
                         onDelete: () => _showDeleteConfirmation(
                           context,
                           template.id,
@@ -211,7 +215,7 @@ class RecurringExpensesScreen extends StatelessWidget {
                   ),
                 ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddDialog(context, userId),
+            onPressed: () => _showAddScreen(context, userId),
             icon: const Icon(Icons.add),
             label: Text(context.tr('recurring.add_template')),
           ),
