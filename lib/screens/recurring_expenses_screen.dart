@@ -26,10 +26,8 @@ class RecurringExpensesScreen extends StatelessWidget {
     if (template != null) {
       showDialog(
         context: context,
-        builder: (context) => RecurringTemplateDialog(
-          template: template,
-          userId: userId,
-        ),
+        builder: (context) =>
+            RecurringTemplateDialog(template: template, userId: userId),
       );
     }
   }
@@ -57,9 +55,7 @@ class RecurringExpensesScreen extends StatelessWidget {
           FilledButton.icon(
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.delete),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.error,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
             label: Text(context.tr('common.delete')),
           ),
         ],
@@ -68,7 +64,9 @@ class RecurringExpensesScreen extends StatelessWidget {
 
     if (confirmed == true && context.mounted) {
       try {
-        await context.read<RecurringTemplateProvider>().deleteTemplate(templateId);
+        await context.read<RecurringTemplateProvider>().deleteTemplate(
+          templateId,
+        );
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -103,9 +101,9 @@ class RecurringExpensesScreen extends StatelessWidget {
   ) async {
     try {
       await context.read<RecurringTemplateProvider>().toggleActive(
-            templateId,
-            isActive,
-          );
+        templateId,
+        isActive,
+      );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -163,9 +161,7 @@ class RecurringExpensesScreen extends StatelessWidget {
                           children: [
                             const Icon(Icons.info, color: AppTheme.info),
                             const SizedBox(width: AppTheme.spacing12),
-                            Expanded(
-                              child: Text(context.tr('recurring.info')),
-                            ),
+                            Expanded(child: Text(context.tr('recurring.info'))),
                           ],
                         ),
                         content: Text(context.tr('recurring.info_message')),
@@ -184,35 +180,36 @@ class RecurringExpensesScreen extends StatelessWidget {
           body: templateProvider.isLoading
               ? const Center(child: CircularProgressIndicator())
               : templateProvider.templates.isEmpty
-                  ? EmptyState(
-                      icon: Icons.repeat,
-                      title: context.tr('recurring.empty_title'),
-                      message: context.tr('recurring.empty_message'),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: () => templateProvider.refresh(),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.only(
-                          top: AppTheme.spacing8,
-                          bottom: AppTheme.spacing80,
-                        ),
-                        itemCount: templateProvider.templates.length,
-                        itemBuilder: (context, index) {
-                          final template = templateProvider.templates[index];
-                          return RecurringTemplateCard(
-                            template: template,
-                            onEdit: () => _showEditDialog(context, template.id, userId),
-                            onDelete: () => _showDeleteConfirmation(
-                              context,
-                              template.id,
-                              template.description,
-                            ),
-                            onToggleActive: (isActive) =>
-                                _toggleActive(context, template.id, isActive),
-                          );
-                        },
-                      ),
+              ? EmptyState(
+                  icon: Icons.repeat,
+                  title: context.tr('recurring.empty_title'),
+                  message: context.tr('recurring.empty_message'),
+                )
+              : RefreshIndicator(
+                  onRefresh: () => templateProvider.refresh(),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(
+                      top: AppTheme.spacing8,
+                      bottom: AppTheme.spacing64,
                     ),
+                    itemCount: templateProvider.templates.length,
+                    itemBuilder: (context, index) {
+                      final template = templateProvider.templates[index];
+                      return RecurringTemplateCard(
+                        template: template,
+                        onEdit: () =>
+                            _showEditDialog(context, template.id, userId),
+                        onDelete: () => _showDeleteConfirmation(
+                          context,
+                          template.id,
+                          template.description,
+                        ),
+                        onToggleActive: (isActive) =>
+                            _toggleActive(context, template.id, isActive),
+                      );
+                    },
+                  ),
+                ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _showAddDialog(context, userId),
             icon: const Icon(Icons.add),

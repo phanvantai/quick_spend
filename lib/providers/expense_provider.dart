@@ -38,7 +38,8 @@ class ExpenseProvider extends ChangeNotifier {
   int get incomeCount => _expenses.where((e) => e.isIncome).length;
 
   /// List of expenses only (filtered)
-  List<Expense> get expensesOnly => _expenses.where((e) => e.isExpense).toList();
+  List<Expense> get expensesOnly =>
+      _expenses.where((e) => e.isExpense).toList();
 
   /// List of income only (filtered)
   List<Expense> get incomeOnly => _expenses.where((e) => e.isIncome).toList();
@@ -106,15 +107,19 @@ class ExpenseProvider extends ChangeNotifier {
 
     try {
       debugPrint('🔄 [ExpenseProvider] Generating recurring expenses...');
-      final count = await _recurringExpenseService!.generatePendingExpenses(_currentUserId);
+      final count = await _recurringExpenseService.generatePendingExpenses(
+        _currentUserId,
+      );
 
       if (count > 0) {
-        debugPrint('✅ [ExpenseProvider] Generated $count recurring expense(s), refreshing list...');
+        debugPrint(
+          '✅ [ExpenseProvider] Generated $count recurring expense(s), refreshing list...',
+        );
         // Reload expenses without showing loading state
         _expenses = await _expenseService.getAllExpenses(_currentUserId);
         notifyListeners();
       } else {
-        debugPrint('ℹ️ [ExpenseProvider] No recurring expenses to generate');
+        debugPrint('[ExpenseProvider] No recurring expenses to generate');
       }
 
       return count;
@@ -139,13 +144,17 @@ class ExpenseProvider extends ChangeNotifier {
   /// Add multiple expenses at once (useful for batch imports)
   Future<void> addExpenses(List<Expense> expenses) async {
     try {
-      debugPrint('💾 [ExpenseProvider] Saving ${expenses.length} expense(s)...');
+      debugPrint(
+        '💾 [ExpenseProvider] Saving ${expenses.length} expense(s)...',
+      );
       for (final expense in expenses) {
         await _expenseService.saveExpense(expense);
       }
       // Reload expenses from database without showing loading state
       _expenses = await _expenseService.getAllExpenses(_currentUserId);
-      debugPrint('✅ [ExpenseProvider] Saved! Total expenses now: ${_expenses.length}');
+      debugPrint(
+        '✅ [ExpenseProvider] Saved! Total expenses now: ${_expenses.length}',
+      );
       notifyListeners();
     } catch (e) {
       debugPrint('❌ [ExpenseProvider] Error adding expenses: $e');

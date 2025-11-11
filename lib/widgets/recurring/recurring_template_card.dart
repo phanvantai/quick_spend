@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:quick_spend/models/expense.dart';
 import '../../models/recurring_expense_template.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/app_config_provider.dart';
@@ -93,7 +94,7 @@ class RecurringTemplateCard extends StatelessWidget {
                   template.getFormattedAmount(),
                   style: theme.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: template.type.isExpense
+                    color: template.type == TransactionType.expense
                         ? AppTheme.error
                         : AppTheme.success,
                   ),
@@ -132,8 +133,9 @@ class RecurringTemplateCard extends StatelessWidget {
                         context.tr(
                           'recurring.until',
                           namedArgs: {
-                            'date': DateFormat.yMMMd(appConfig.language)
-                                .format(template.endDate!),
+                            'date': DateFormat.yMMMd(
+                              appConfig.language,
+                            ).format(template.endDate!),
                           },
                         ),
                         style: theme.textTheme.bodySmall?.copyWith(
@@ -191,7 +193,9 @@ class RecurringTemplateCard extends StatelessWidget {
                 Icon(
                   template.isActive ? Icons.check_circle : Icons.pause_circle,
                   size: 16,
-                  color: template.isActive ? AppTheme.success : AppTheme.neutral500,
+                  color: template.isActive
+                      ? AppTheme.success
+                      : AppTheme.neutral500,
                 ),
                 const SizedBox(width: AppTheme.spacing8),
                 Text(
@@ -209,7 +213,7 @@ class RecurringTemplateCard extends StatelessWidget {
                 Switch(
                   value: template.isActive,
                   onChanged: onToggleActive,
-                  activeColor: AppTheme.success,
+                  activeThumbColor: AppTheme.success,
                 ),
               ],
             ),

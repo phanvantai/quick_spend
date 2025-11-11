@@ -226,26 +226,26 @@ class _RecurringTemplateDialogState extends State<RecurringTemplateDialog> {
                   });
                 },
                 style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                    (Set<WidgetState> states) {
-                      if (states.contains(WidgetState.selected)) {
-                        return _type == TransactionType.expense
-                            ? AppTheme.error.withValues(alpha: 0.15)
-                            : AppTheme.success.withValues(alpha: 0.15);
-                      }
-                      return colorScheme.surface;
-                    },
-                  ),
-                  foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                    (Set<WidgetState> states) {
-                      if (states.contains(WidgetState.selected)) {
-                        return _type == TransactionType.expense
-                            ? AppTheme.error
-                            : AppTheme.success;
-                      }
-                      return colorScheme.onSurface;
-                    },
-                  ),
+                  backgroundColor: WidgetStateProperty.resolveWith<Color>((
+                    Set<WidgetState> states,
+                  ) {
+                    if (states.contains(WidgetState.selected)) {
+                      return _type == TransactionType.expense
+                          ? AppTheme.error.withValues(alpha: 0.15)
+                          : AppTheme.success.withValues(alpha: 0.15);
+                    }
+                    return colorScheme.surface;
+                  }),
+                  foregroundColor: WidgetStateProperty.resolveWith<Color>((
+                    Set<WidgetState> states,
+                  ) {
+                    if (states.contains(WidgetState.selected)) {
+                      return _type == TransactionType.expense
+                          ? AppTheme.error
+                          : AppTheme.success;
+                    }
+                    return colorScheme.onSurface;
+                  }),
                 ),
               ),
               const SizedBox(height: AppTheme.spacing16),
@@ -291,7 +291,7 @@ class _RecurringTemplateDialogState extends State<RecurringTemplateDialog> {
 
               // Category selector (filtered by transaction type)
               DropdownButtonFormField<String>(
-                value: _categoryId,
+                initialValue: _categoryId,
                 decoration: InputDecoration(
                   labelText: context.tr('home.category'),
                   border: const OutlineInputBorder(),
@@ -300,17 +300,18 @@ class _RecurringTemplateDialogState extends State<RecurringTemplateDialog> {
                 items: categoryProvider.categories
                     .where((cat) => cat.type == _type)
                     .map((cat) {
-                  return DropdownMenuItem(
-                    value: cat.id,
-                    child: Row(
-                      children: [
-                        Icon(cat.icon, color: cat.color, size: 20),
-                        const SizedBox(width: AppTheme.spacing8),
-                        Text(cat.getLabel(appConfig.language)),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                      return DropdownMenuItem(
+                        value: cat.id,
+                        child: Row(
+                          children: [
+                            Icon(cat.icon, color: cat.color, size: 20),
+                            const SizedBox(width: AppTheme.spacing8),
+                            Text(cat.getLabel(appConfig.language)),
+                          ],
+                        ),
+                      );
+                    })
+                    .toList(),
                 onChanged: (value) {
                   if (value != null) {
                     setState(() {
@@ -323,21 +324,20 @@ class _RecurringTemplateDialogState extends State<RecurringTemplateDialog> {
 
               // Recurrence pattern selector
               DropdownButtonFormField<RecurrencePattern>(
-                value: _pattern,
+                initialValue: _pattern,
                 decoration: InputDecoration(
                   labelText: context.tr('recurring.pattern'),
                   border: const OutlineInputBorder(),
                   prefixIcon: const Icon(Icons.repeat),
                 ),
-                items: [
-                  RecurrencePattern.monthly,
-                  RecurrencePattern.yearly,
-                ].map((pattern) {
-                  return DropdownMenuItem(
-                    value: pattern,
-                    child: Text(pattern.getDescription(appConfig.language)),
-                  );
-                }).toList(),
+                items: [RecurrencePattern.monthly, RecurrencePattern.yearly]
+                    .map((pattern) {
+                      return DropdownMenuItem(
+                        value: pattern,
+                        child: Text(pattern.getDescription(appConfig.language)),
+                      );
+                    })
+                    .toList(),
                 onChanged: (value) {
                   if (value != null) {
                     setState(() {
@@ -393,7 +393,9 @@ class _RecurringTemplateDialogState extends State<RecurringTemplateDialog> {
                     ),
                     child: Text(
                       _endDate != null
-                          ? DateFormat.yMMMd(appConfig.language).format(_endDate!)
+                          ? DateFormat.yMMMd(
+                              appConfig.language,
+                            ).format(_endDate!)
                           : context.tr('recurring.select_end_date'),
                       style: theme.textTheme.bodyLarge,
                     ),

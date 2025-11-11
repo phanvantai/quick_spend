@@ -514,12 +514,6 @@ class QuickCategory {
     ];
   }
 
-  /// Legacy: Get all categories (for backward compatibility)
-  /// @deprecated Use CategoryService.getAllCategories() instead
-  static List<QuickCategory> getAllCategories() {
-    return getDefaultSystemCategories();
-  }
-
   /// Copy with method for creating modified copies
   QuickCategory copyWith({
     String? id,
