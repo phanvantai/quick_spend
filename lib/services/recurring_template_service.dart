@@ -1,87 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 import '../models/recurring_expense_template.dart';
+import 'expense_service.dart';
 
 /// Service for managing recurring expense templates using SQLite
+/// Uses the shared database from ExpenseService
 class RecurringTemplateService {
-  static const String _databaseName = 'quick_spend.db';
-  static const int _databaseVersion = 2; // v2 adds recurring_templates table
   static const String _tableName = 'recurring_templates';
 
+  final ExpenseService _expenseService;
   Database? _database;
 
-  /// Initialize the service
-  Future<void> init() async {
-    if (_database != null) return;
-
-    final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, _databaseName);
-
-    _database = await openDatabase(
-      path,
-      version: _databaseVersion,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
-    );
-  }
-
-  /// Create the database schema
-  Future<void> _onCreate(Database db, int version) async {
-    // Create recurring_templates table
-    await db.execute('''
-      CREATE TABLE $_tableName (
-        id TEXT PRIMARY KEY,
-        amount REAL NOT NULL,
-        description TEXT NOT NULL,
-        categoryId TEXT NOT NULL,
-        language TEXT NOT NULL,
-        userId TEXT NOT NULL,
-        type TEXT NOT NULL,
-        pattern TEXT NOT NULL,
-        startDate TEXT NOT NULL,
-        endDate TEXT,
-        lastGeneratedDate TEXT,
-        isActive INTEGER NOT NULL DEFAULT 1
-      )
-    ''');
-
-    debugPrint('✅ [RecurringTemplateService] Database schema created (v$version)');
-  }
-
-  /// Upgrade the database schema
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    debugPrint('🔄 [RecurringTemplateService] Upgrading database from v$oldVersion to v$newVersion');
-
-    // Migrate from version 1 to version 2 (add recurring_templates table)
-    if (oldVersion < 2) {
-      debugPrint('   Creating recurring_templates table...');
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS $_tableName (
-          id TEXT PRIMARY KEY,
-          amount REAL NOT NULL,
-          description TEXT NOT NULL,
-          categoryId TEXT NOT NULL,
-          language TEXT NOT NULL,
-          userId TEXT NOT NULL,
-          type TEXT NOT NULL,
-          pattern TEXT NOT NULL,
-          startDate TEXT NOT NULL,
-          endDate TEXT,
-          lastGeneratedDate TEXT,
-          isActive INTEGER NOT NULL DEFAULT 1
-        )
-      ''');
-      debugPrint('✅ [RecurringTemplateService] recurring_templates table created');
-    }
-
-    debugPrint('✅ [RecurringTemplateService] Database upgraded to v$newVersion');
-  }
+  RecurringTemplateService(this._expenseService);
 
   /// Ensure database is initialized
   Future<void> _ensureInitialized() async {
     if (_database == null) {
-      await init();
+      _database = await _expenseService.database;
     }
   }
 
@@ -206,12 +141,6 @@ class RecurringTemplateService {
       [userId],
     );
     return Sqflite.firstIntValue(result) ?? 0;
-  }
-
-  /// Close the database connection
-  Future<void> close() async {
-    await _database?.close();
-    _database = null;
   }
 
   /// Clear all data (for testing)

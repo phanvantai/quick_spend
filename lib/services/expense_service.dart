@@ -7,7 +7,7 @@ import '../models/category.dart';
 /// Service for managing expenses using SQLite local database
 class ExpenseService {
   static const String _databaseName = 'quick_spend.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
   static const String _tableName = 'expenses';
   static const String _categoriesTableName = 'categories';
 
@@ -24,6 +24,7 @@ class ExpenseService {
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
 
     // Seed system categories if needed
@@ -65,7 +66,51 @@ class ExpenseService {
       )
     ''');
 
+    // Create recurring_templates table (v2)
+    await db.execute('''
+      CREATE TABLE recurring_templates (
+        id TEXT PRIMARY KEY,
+        amount REAL NOT NULL,
+        description TEXT NOT NULL,
+        categoryId TEXT NOT NULL,
+        language TEXT NOT NULL,
+        userId TEXT NOT NULL,
+        type TEXT NOT NULL DEFAULT 'expense',
+        pattern TEXT NOT NULL,
+        startDate TEXT NOT NULL,
+        endDate TEXT,
+        lastGeneratedDate TEXT,
+        isActive INTEGER NOT NULL DEFAULT 1
+      )
+    ''');
+
     debugPrint('✅ [ExpenseService] Database schema created (v$version)');
+  }
+
+  /// Upgrade the database schema
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    debugPrint('🔄 [ExpenseService] Upgrading database from v$oldVersion to v$newVersion');
+
+    if (oldVersion < 2) {
+      // Add recurring_templates table
+      await db.execute('''
+        CREATE TABLE recurring_templates (
+          id TEXT PRIMARY KEY,
+          amount REAL NOT NULL,
+          description TEXT NOT NULL,
+          categoryId TEXT NOT NULL,
+          language TEXT NOT NULL,
+          userId TEXT NOT NULL,
+          type TEXT NOT NULL DEFAULT 'expense',
+          pattern TEXT NOT NULL,
+          startDate TEXT NOT NULL,
+          endDate TEXT,
+          lastGeneratedDate TEXT,
+          isActive INTEGER NOT NULL DEFAULT 1
+        )
+      ''');
+      debugPrint('✅ [ExpenseService] Added recurring_templates table');
+    }
   }
 
   /// Ensure database is initialized
@@ -73,6 +118,12 @@ class ExpenseService {
     if (_database == null) {
       await init();
     }
+  }
+
+  /// Get the database instance (for use by other services)
+  Future<Database> get database async {
+    await _ensureInitialized();
+    return _database!;
   }
 
   /// Save a new expense

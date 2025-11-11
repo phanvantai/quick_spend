@@ -34,8 +34,7 @@ void main() async {
   final expenseService = ExpenseService();
   await expenseService.init();
 
-  final recurringTemplateService = RecurringTemplateService();
-  await recurringTemplateService.init();
+  final recurringTemplateService = RecurringTemplateService(expenseService);
 
   final recurringExpenseService = RecurringExpenseService(
     expenseService,
