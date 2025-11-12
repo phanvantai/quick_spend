@@ -306,5 +306,15 @@
     "inactive": "Không hoạt động",
     "info": "Thông tin",
     "info_message": "Chi tiêu định kỳ được tự động tạo vào ngày đến hạn khi bạn mở ứng dụng. Mẫu đang hoạt động sẽ tạo chi tiêu mới, trong khi mẫu tạm dừng sẽ không tạo gì cho đến khi bạn kích hoạt lại."
+  },
+  "data_collection": {
+    "consent_title": "Giúp cải thiện Quick Spend",
+    "consent_message": "Chúng tôi muốn thu thập dữ liệu sử dụng ẩn danh để huấn luyện mô hình AI tốt hơn cho phân loại chi tiêu.\n\nNhững gì chúng tôi thu thập:\n• Văn bản nhập và số tiền\n• Danh mục và sửa đổi\n• Ngôn ngữ sử dụng\n\nNhững gì chúng tôi KHÔNG thu thập:\n• Thông tin cá nhân\n• Tên hoặc danh bạ\n• Dữ liệu vị trí",
+    "consent_question": "Bạn có muốn giúp cải thiện Quick Spend không?",
+    "accept": "Có, giúp cải thiện",
+    "decline": "Không, cảm ơn",
+    "settings_note": "Bạn có thể thay đổi điều này bất cứ lúc nào trong Cài đặt",
+    "thank_you": "Cảm ơn bạn đã giúp cải thiện Quick Spend!",
+    "no_problem": "Không sao! Bạn có thể bật tính năng này bất cứ lúc nào trong Cài đặt."
   }
 }
