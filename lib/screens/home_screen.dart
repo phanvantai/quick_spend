@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../providers/report_provider.dart';
 import '../providers/app_config_provider.dart';
+import '../providers/expense_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/report/period_filter.dart';
 import '../widgets/report/summary_card.dart';
@@ -11,11 +12,49 @@ import '../widgets/report/category_breakdown_switcher.dart';
 import '../widgets/report/top_expenses_list.dart';
 import '../widgets/report/custom_date_range_picker.dart';
 import '../widgets/common/empty_state.dart';
+import '../models/expense.dart';
 import 'settings_screen.dart';
+import 'expense_form_screen.dart';
 
 /// Home screen showing analytics dashboard with statistics and charts
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  Future<void> _addExpense(BuildContext context) async {
+    final newExpense = await Navigator.push<Expense>(
+      context,
+      MaterialPageRoute(builder: (context) => const ExpenseFormScreen()),
+    );
+
+    if (newExpense == null || !context.mounted) return;
+
+    try {
+      await context.read<ExpenseProvider>().addExpense(newExpense);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('home.expense_added')),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [HomeScreen] Error adding expense: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.tr(
+                'home.error_adding_expense',
+                namedArgs: {'error': e.toString()},
+              ),
+            ),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +102,14 @@ class HomeScreen extends StatelessWidget {
                   ),
                   pinned: true,
                   actions: [
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: () => _addExpense(context),
+                      tooltip: context.tr('home.add_expense_tooltip'),
+                      style: IconButton.styleFrom(
+                        foregroundColor: AppTheme.primaryMint,
+                      ),
+                    ),
                     IconButton(
                       icon: const Icon(Icons.settings_outlined),
                       onPressed: () {
