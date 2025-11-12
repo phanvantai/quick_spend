@@ -6,10 +6,7 @@ import '../../theme/app_theme.dart';
 class DateSectionHeader extends StatelessWidget {
   final DateTime date;
 
-  const DateSectionHeader({
-    super.key,
-    required this.date,
-  });
+  const DateSectionHeader({super.key, required this.date});
 
   String _getDateLabel(BuildContext context) {
     final now = DateTime.now();
@@ -46,31 +43,24 @@ class DateSectionHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AppTheme.spacing16,
-        AppTheme.spacing20,
+        AppTheme.spacing8,
         AppTheme.spacing16,
         AppTheme.spacing8,
       ),
       child: Row(
         children: [
-          Icon(
-            _getDateIcon(),
-            size: 16,
-            color: AppTheme.primaryMint,
-          ),
+          Icon(_getDateIcon(), size: 16, color: AppTheme.primaryMint),
           const SizedBox(width: AppTheme.spacing8),
           Text(
             _getDateLabel(context),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
           ),
           const SizedBox(width: AppTheme.spacing12),
           Expanded(
-            child: Container(
-              height: 1,
-              color: colorScheme.outlineVariant,
-            ),
+            child: Container(height: 1, color: colorScheme.outlineVariant),
           ),
         ],
       ),

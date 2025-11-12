@@ -74,11 +74,12 @@ class CalendarGrid extends StatelessWidget {
 
           // Calendar grid
           GridView.builder(
+            padding: EdgeInsets.zero,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              childAspectRatio: 0.75,
+              childAspectRatio: 0.9,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
             ),
@@ -90,12 +91,18 @@ class CalendarGrid extends StatelessWidget {
               }
 
               final day = index - firstWeekday + 1;
-              final date = DateTime(selectedMonth.year, selectedMonth.month, day);
+              final date = DateTime(
+                selectedMonth.year,
+                selectedMonth.month,
+                day,
+              );
               final dayData = dailyTotals[day];
-              final isToday = date.year == today.year &&
+              final isToday =
+                  date.year == today.year &&
                   date.month == today.month &&
                   date.day == today.day;
-              final isSelected = selectedDate != null &&
+              final isSelected =
+                  selectedDate != null &&
                   date.year == selectedDate!.year &&
                   date.month == selectedDate!.month &&
                   date.day == selectedDate!.day;
@@ -118,7 +125,7 @@ class CalendarGrid extends StatelessWidget {
   }
 
   Widget _buildWeekdayHeaders(BuildContext context) {
-    final locale = context.locale.languageCode;
+    //final locale = context.locale.languageCode;
     final weekdays = [
       'calendar.sunday',
       'calendar.monday',
@@ -136,9 +143,9 @@ class CalendarGrid extends StatelessWidget {
             child: Text(
               context.tr(key),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         );
@@ -205,15 +212,15 @@ class CalendarDayCell extends StatelessWidget {
           color: isSelected
               ? AppTheme.primaryMint.withValues(alpha: 0.1)
               : hasData
-                  ? colorScheme.surfaceContainerHighest
-                  : Colors.transparent,
+              ? colorScheme.surfaceContainerHighest
+              : Colors.transparent,
           borderRadius: AppTheme.borderRadiusSmall,
           border: Border.all(
             color: isToday
                 ? AppTheme.primaryMint
                 : hasData
-                    ? colorScheme.outlineVariant
-                    : Colors.transparent,
+                ? colorScheme.outlineVariant
+                : Colors.transparent,
             width: isToday ? 2 : 1,
           ),
           boxShadow: hasData
@@ -235,13 +242,13 @@ class CalendarDayCell extends StatelessWidget {
             Text(
               day.toString(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: isToday ? FontWeight.w700 : FontWeight.w600,
-                    color: isToday
-                        ? AppTheme.primaryMint
-                        : hasData
-                            ? colorScheme.onSurface
-                            : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                  ),
+                fontWeight: isToday ? FontWeight.w700 : FontWeight.w600,
+                color: isToday
+                    ? AppTheme.primaryMint
+                    : hasData
+                    ? colorScheme.onSurface
+                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
             ),
 
             if (hasData) ...[
@@ -252,10 +259,10 @@ class CalendarDayCell extends StatelessWidget {
                 Text(
                   '+${_formatAmount(income)}',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontSize: 9,
-                        color: AppTheme.success,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    fontSize: 9,
+                    color: AppTheme.success,
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -265,10 +272,10 @@ class CalendarDayCell extends StatelessWidget {
                 Text(
                   '-${_formatAmount(expense)}',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontSize: 9,
-                        color: AppTheme.error,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    fontSize: 9,
+                    color: AppTheme.error,
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

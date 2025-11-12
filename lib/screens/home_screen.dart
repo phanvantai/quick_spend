@@ -128,10 +128,8 @@ class HomeScreen extends StatelessWidget {
                         onPeriodChanged: (period) {
                           reportProvider.selectPeriod(period);
                         },
-                        onCustomTap: () => _showCustomDatePicker(
-                          context,
-                          reportProvider,
-                        ),
+                        onCustomTap: () =>
+                            _showCustomDatePicker(context, reportProvider),
                       ),
                     ),
                   ),
@@ -188,17 +186,15 @@ class HomeScreen extends StatelessWidget {
                         AppTheme.spacing16,
                         0,
                         AppTheme.spacing16,
-                        AppTheme.spacing16,
+                        AppTheme.spacing8,
                       ),
                       child: PeriodFilter(
                         selectedPeriod: reportProvider.selectedPeriod,
                         onPeriodChanged: (period) {
                           reportProvider.selectPeriod(period);
                         },
-                        onCustomTap: () => _showCustomDatePicker(
-                          context,
-                          reportProvider,
-                        ),
+                        onCustomTap: () =>
+                            _showCustomDatePicker(context, reportProvider),
                       ),
                     ),
                   ),
@@ -208,7 +204,7 @@ class HomeScreen extends StatelessWidget {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(
                     AppTheme.spacing16,
-                    AppTheme.spacing8,
+                    0,
                     AppTheme.spacing16,
                     AppTheme.spacing24,
                   ),

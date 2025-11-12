@@ -89,8 +89,7 @@ class _ReportScreenState extends State<ReportScreen> {
     }
 
     // Sort by date descending
-    final sortedKeys = grouped.keys.toList()
-      ..sort((a, b) => b.compareTo(a));
+    final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
     final sortedGrouped = <DateTime, List<Expense>>{};
     for (final key in sortedKeys) {
@@ -213,7 +212,8 @@ class _ReportScreenState extends State<ReportScreen> {
     final categoryProvider = context.read<CategoryProvider>();
     final appConfig = context.read<AppConfigProvider>();
     final currency = appConfig.currency;
-    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
         QuickCategory.getDefaultSystemCategories().firstWhere(
           (c) => c.id == 'other',
@@ -250,7 +250,9 @@ class _ReportScreenState extends State<ReportScreen> {
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.date'),
-              DateFormat.yMMMd(context.locale.languageCode).format(expense.date),
+              DateFormat.yMMMd(
+                context.locale.languageCode,
+              ).format(expense.date),
             ),
             if (expense.rawInput.isNotEmpty) ...[
               const SizedBox(height: AppTheme.spacing12),
@@ -288,16 +290,16 @@ class _ReportScreenState extends State<ReportScreen> {
           child: Text(
             '$label:',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -316,9 +318,7 @@ class _ReportScreenState extends State<ReportScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
             tooltip: context.tr('navigation.settings'),
@@ -378,7 +378,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 // Empty state or expense list
                 if (groupedExpenses.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacing32),
+                    padding: const EdgeInsets.all(AppTheme.spacing16),
                     child: EmptyState(
                       icon: Icons.calendar_today_outlined,
                       title: context.tr('calendar.no_expenses_this_month'),
@@ -413,7 +413,8 @@ class _ReportScreenState extends State<ReportScreen> {
                                 motion: const ScrollMotion(),
                                 children: [
                                   SlidableAction(
-                                    onPressed: (_) => _deleteExpense(expense.id),
+                                    onPressed: (_) =>
+                                        _deleteExpense(expense.id),
                                     backgroundColor: AppTheme.error,
                                     foregroundColor: Colors.white,
                                     icon: Icons.delete,
@@ -427,12 +428,12 @@ class _ReportScreenState extends State<ReportScreen> {
                               ),
                             ),
                           );
-                        }).toList(),
+                        }),
 
                         const SizedBox(height: AppTheme.spacing8),
                       ],
                     );
-                  }).toList(),
+                  }),
 
                 // Bottom padding
                 const SizedBox(height: AppTheme.spacing64),
