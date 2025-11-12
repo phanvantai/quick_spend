@@ -39,6 +39,7 @@ class MonthNavigator extends StatelessWidget {
     final now = DateTime.now();
     final isCurrentMonth = selectedMonth.year == now.year &&
         selectedMonth.month == now.month;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -54,7 +55,7 @@ class MonthNavigator extends StatelessWidget {
             icon: const Icon(Icons.chevron_left),
             tooltip: context.tr('calendar.previous_month'),
             style: IconButton.styleFrom(
-              foregroundColor: AppTheme.neutral700,
+              foregroundColor: colorScheme.onSurfaceVariant,
             ),
           ),
 
@@ -74,7 +75,7 @@ class MonthNavigator extends StatelessWidget {
                     _getMonthLabel(context),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.neutral900,
+                          color: colorScheme.onSurface,
                         ),
                   ),
                   if (!isCurrentMonth) ...[
@@ -109,7 +110,7 @@ class MonthNavigator extends StatelessWidget {
             icon: const Icon(Icons.chevron_right),
             tooltip: context.tr('calendar.next_month'),
             style: IconButton.styleFrom(
-              foregroundColor: AppTheme.neutral700,
+              foregroundColor: colorScheme.onSurfaceVariant,
             ),
           ),
         ],

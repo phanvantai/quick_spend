@@ -136,7 +136,7 @@ class CalendarGrid extends StatelessWidget {
             child: Text(
               context.tr(key),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.neutral600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
             ),
@@ -196,6 +196,8 @@ class CalendarDayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: hasData ? onTap : null,
       child: Container(
@@ -203,21 +205,21 @@ class CalendarDayCell extends StatelessWidget {
           color: isSelected
               ? AppTheme.primaryMint.withValues(alpha: 0.1)
               : hasData
-                  ? Colors.white
+                  ? colorScheme.surfaceContainerHighest
                   : Colors.transparent,
           borderRadius: AppTheme.borderRadiusSmall,
           border: Border.all(
             color: isToday
                 ? AppTheme.primaryMint
                 : hasData
-                    ? AppTheme.neutral200
+                    ? colorScheme.outlineVariant
                     : Colors.transparent,
             width: isToday ? 2 : 1,
           ),
           boxShadow: hasData
               ? [
                   BoxShadow(
-                    color: AppTheme.neutral900.withValues(alpha: 0.03),
+                    color: colorScheme.shadow.withValues(alpha: 0.03),
                     offset: const Offset(0, 1),
                     blurRadius: 2,
                   ),
@@ -237,8 +239,8 @@ class CalendarDayCell extends StatelessWidget {
                     color: isToday
                         ? AppTheme.primaryMint
                         : hasData
-                            ? AppTheme.neutral900
-                            : AppTheme.neutral400,
+                            ? colorScheme.onSurface
+                            : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                   ),
             ),
 

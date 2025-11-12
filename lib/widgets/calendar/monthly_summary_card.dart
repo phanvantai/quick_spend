@@ -52,6 +52,7 @@ class MonthlySummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final netBalance = income - expense;
     final netBalanceColor = _getNetBalanceColor(netBalance);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -81,7 +82,7 @@ class MonthlySummaryCard extends StatelessWidget {
             context.tr('calendar.monthly_summary'),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.neutral900,
+                  color: colorScheme.onSurface,
                 ),
           ),
           const SizedBox(height: AppTheme.spacing16),
@@ -103,7 +104,7 @@ class MonthlySummaryCard extends StatelessWidget {
               Container(
                 width: 1,
                 height: 40,
-                color: AppTheme.neutral300,
+                color: colorScheme.outlineVariant,
                 margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacing12),
               ),
 
@@ -121,7 +122,7 @@ class MonthlySummaryCard extends StatelessWidget {
               Container(
                 width: 1,
                 height: 40,
-                color: AppTheme.neutral300,
+                color: colorScheme.outlineVariant,
                 margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacing12),
               ),
 
@@ -149,6 +150,8 @@ class MonthlySummaryCard extends StatelessWidget {
     required Color color,
     required IconData icon,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -160,7 +163,7 @@ class MonthlySummaryCard extends StatelessWidget {
               child: Text(
                 label,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppTheme.neutral600,
+                      color: colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
                     ),
                 maxLines: 1,

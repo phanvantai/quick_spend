@@ -41,6 +41,8 @@ class DateSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AppTheme.spacing16,
@@ -60,14 +62,14 @@ class DateSectionHeader extends StatelessWidget {
             _getDateLabel(context),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.neutral900,
+                  color: colorScheme.onSurface,
                 ),
           ),
           const SizedBox(width: AppTheme.spacing12),
           Expanded(
             child: Container(
               height: 1,
-              color: AppTheme.neutral200,
+              color: colorScheme.outlineVariant,
             ),
           ),
         ],
