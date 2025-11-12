@@ -54,11 +54,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Show data collection consent dialog
+  /// Show data collection information dialog
+  /// Automatically enables data collection, but allows user to opt-out
   void _showConsentDialog(DataCollectionService dataCollectionService) {
+    // Automatically enable data collection by default
+    dataCollectionService.setConsent(true);
+
     showDialog(
       context: context,
-      barrierDismissible: false, // User must make a choice
+      barrierDismissible: false, // User must acknowledge
       builder: (context) => AlertDialog(
         title: Row(
           children: [
@@ -127,13 +131,13 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () async {
-              // User declined
+              // User wants to disable data collection
               await dataCollectionService.setConsent(false);
               if (mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(context.tr('data_collection.no_problem')),
+                    content: Text(context.tr('data_collection.disabled')),
                     backgroundColor: AppTheme.neutral50,
                     duration: const Duration(seconds: 3),
                   ),
@@ -144,15 +148,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           FilledButton.icon(
             onPressed: () async {
-              // User accepted
-              await dataCollectionService.setConsent(true);
+              // User acknowledges (data collection already enabled)
               if (mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(context.tr('data_collection.thank_you')),
                     backgroundColor: AppTheme.success,
-                    duration: const Duration(seconds: 3),
+                    duration: const Duration(seconds: 2),
                   ),
                 );
               }
