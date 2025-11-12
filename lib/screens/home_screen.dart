@@ -114,23 +114,24 @@ class HomeScreen extends StatelessWidget {
                       tooltip: context.tr('navigation.settings'),
                     ),
                   ],
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppTheme.spacing16,
-                      AppTheme.spacing16,
-                      AppTheme.spacing16,
-                      AppTheme.spacing8,
-                    ),
-                    child: PeriodFilter(
-                      selectedPeriod: reportProvider.selectedPeriod,
-                      onPeriodChanged: (period) {
-                        reportProvider.selectPeriod(period);
-                      },
-                      onCustomTap: () => _showCustomDatePicker(
-                        context,
-                        reportProvider,
+                  bottom: PreferredSize(
+                    preferredSize: const Size.fromHeight(60),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.spacing16,
+                        0,
+                        AppTheme.spacing16,
+                        AppTheme.spacing16,
+                      ),
+                      child: PeriodFilter(
+                        selectedPeriod: reportProvider.selectedPeriod,
+                        onPeriodChanged: (period) {
+                          reportProvider.selectPeriod(period);
+                        },
+                        onCustomTap: () => _showCustomDatePicker(
+                          context,
+                          reportProvider,
+                        ),
                       ),
                     ),
                   ),
@@ -180,25 +181,24 @@ class HomeScreen extends StatelessWidget {
                       tooltip: context.tr('navigation.settings'),
                     ),
                   ],
-                ),
-
-                // Period filter
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppTheme.spacing16,
-                      AppTheme.spacing16,
-                      AppTheme.spacing16,
-                      AppTheme.spacing8,
-                    ),
-                    child: PeriodFilter(
-                      selectedPeriod: reportProvider.selectedPeriod,
-                      onPeriodChanged: (period) {
-                        reportProvider.selectPeriod(period);
-                      },
-                      onCustomTap: () => _showCustomDatePicker(
-                        context,
-                        reportProvider,
+                  bottom: PreferredSize(
+                    preferredSize: const Size.fromHeight(60),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.spacing16,
+                        0,
+                        AppTheme.spacing16,
+                        AppTheme.spacing16,
+                      ),
+                      child: PeriodFilter(
+                        selectedPeriod: reportProvider.selectedPeriod,
+                        onPeriodChanged: (period) {
+                          reportProvider.selectPeriod(period);
+                        },
+                        onCustomTap: () => _showCustomDatePicker(
+                          context,
+                          reportProvider,
+                        ),
                       ),
                     ),
                   ),
