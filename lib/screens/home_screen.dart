@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Check if user has been asked for data collection consent
-  /// If not, show the consent dialog
+  /// If not, show the consent dialog after a delay for better UX
   Future<void> _checkAndShowConsentDialog() async {
     if (!mounted) return;
 
@@ -49,6 +49,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final hasBeenAsked = await dataCollectionService.hasBeenAskedForConsent();
 
     if (!hasBeenAsked) {
+      // Wait 2 seconds to let tutorials/animations complete
+      // and avoid overwhelming the user right after onboarding
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (!mounted) return;
+
       // Show consent dialog
       _showConsentDialog(dataCollectionService);
     }
