@@ -1006,18 +1006,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Icons.insights,
               color: AppTheme.accentPink,
             ),
-            title: const Text('Help Improve Expense Categorization'),
+            title: Text(context.tr('data_collection.settings_title')),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: AppTheme.spacing4),
                 Text(
-                  'Share anonymous usage data to train better AI models',
+                  context.tr('data_collection.settings_subtitle'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: AppTheme.spacing8),
                 Text(
-                  'Only collects: input text, amounts, categories\nNo personal information is shared',
+                  context.tr('data_collection.settings_description'),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppTheme.neutral60,
                     fontSize: 11,
@@ -1035,8 +1035,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   SnackBar(
                     content: Text(
                       value
-                          ? '✅ Data collection enabled - Thank you!'
-                          : '✅ Data collection disabled',
+                          ? context.tr('data_collection.enabled_message')
+                          : context.tr('data_collection.disabled_message'),
                     ),
                     backgroundColor: AppTheme.success,
                     duration: const Duration(seconds: 2),

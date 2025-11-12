@@ -315,6 +315,11 @@
     "decline": "Disable Data Collection",
     "settings_note": "You can disable this anytime in Settings",
     "thank_you": "Thank you for helping improve Quick Spend!",
-    "disabled": "Data collection disabled. You can re-enable this anytime in Settings."
+    "disabled": "Data collection disabled. You can re-enable this anytime in Settings.",
+    "settings_title": "Help Improve Expense Categorization",
+    "settings_subtitle": "Share anonymous usage data to train better AI models",
+    "settings_description": "Only collects: input text, amounts, categories\nNo personal information is shared",
+    "enabled_message": "Data collection enabled - Thank you!",
+    "disabled_message": "Data collection disabled"
   }
 }

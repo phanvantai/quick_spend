@@ -315,6 +315,11 @@
     "decline": "Tắt thu thập dữ liệu",
     "settings_note": "Bạn có thể tắt tính năng này bất cứ lúc nào trong Cài đặt",
     "thank_you": "Cảm ơn bạn đã giúp cải thiện Quick Spend!",
-    "disabled": "Đã tắt thu thập dữ liệu. Bạn có thể bật lại bất cứ lúc nào trong Cài đặt."
+    "disabled": "Đã tắt thu thập dữ liệu. Bạn có thể bật lại bất cứ lúc nào trong Cài đặt.",
+    "settings_title": "Giúp cải thiện phân loại chi tiêu",
+    "settings_subtitle": "Chia sẻ dữ liệu sử dụng ẩn danh để huấn luyện mô hình AI tốt hơn",
+    "settings_description": "Chỉ thu thập: văn bản nhập, số tiền, danh mục\nKhông chia sẻ thông tin cá nhân",
+    "enabled_message": "Đã bật thu thập dữ liệu - Cảm ơn bạn!",
+    "disabled_message": "Đã tắt thu thập dữ liệu"
   }
 }
