@@ -11,6 +11,7 @@ import '../providers/category_provider.dart';
 import '../services/voice_service.dart';
 import '../services/expense_parser.dart';
 import '../services/preferences_service.dart';
+import '../services/data_collection_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/voice_tutorial_overlay.dart';
 import '../widgets/home/editable_expense_dialog.dart';
@@ -191,6 +192,123 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     // Start pulsing animation for next few uses
     _pulseController.repeat(reverse: true);
+
+    // Show data collection consent dialog after tutorial is dismissed
+    if (mounted) {
+      _checkAndShowConsentDialog();
+    }
+  }
+
+  /// Check if user has been asked for data collection consent
+  /// If not, show the consent dialog
+  Future<void> _checkAndShowConsentDialog() async {
+    if (!mounted) return;
+
+    final dataCollectionService = context.read<DataCollectionService>();
+
+    // Check if user has been asked before
+    final hasBeenAsked = await dataCollectionService.hasBeenAskedForConsent();
+
+    if (!hasBeenAsked) {
+      // Wait a moment for tutorial dismissal animation to complete
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (!mounted) return;
+
+      // Show consent dialog
+      _showConsentDialog(dataCollectionService);
+    }
+  }
+
+  /// Show data collection consent dialog
+  void _showConsentDialog(DataCollectionService dataCollectionService) {
+    // Automatically enable data collection by default
+    dataCollectionService.setConsent(true);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing8),
+              decoration: BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              ),
+              child: const Icon(
+                Icons.insights,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: AppTheme.spacing12),
+            Expanded(
+              child: Text(
+                context.tr('data_collection.consent_title'),
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.tr('data_collection.consent_message'),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: AppTheme.spacing16),
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spacing12),
+                decoration: BoxDecoration(
+                  color: AppTheme.info.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  border: Border.all(
+                    color: AppTheme.info.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline,
+                      color: AppTheme.info,
+                      size: 20,
+                    ),
+                    const SizedBox(width: AppTheme.spacing8),
+                    Expanded(
+                      child: Text(
+                        context.tr('data_collection.settings_note'),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.info,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          FilledButton.icon(
+            onPressed: () {
+              if (mounted) {
+                Navigator.pop(context);
+              }
+            },
+            icon: const Icon(Icons.check_circle_outline),
+            label: Text(context.tr('data_collection.accept')),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.primaryMint,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   bool _hasRequiredPermissions() {

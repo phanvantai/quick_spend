@@ -97,11 +97,16 @@
     "export_format": "Export Format",
     "export_csv": "Export as CSV",
     "export_json": "Export as JSON",
+    "exporting": "Exporting...",
+    "importing": "Importing...",
     "export_success": "Data exported successfully!",
     "export_error": "Error exporting data: {error}",
     "share_subject": "Quick Spend Export",
     "share_text": "My expense data from Quick Spend",
     "import_success": "Import completed: {success} imported, {failed} failed, {duplicates} duplicates",
+    "import_success_with_categories": "Imported {categories} categories, {expenses} expenses",
+    "import_failed_count": ", {count} failed",
+    "import_duplicate_count": ", {count} duplicates",
     "import_error": "Error importing data: {error}",
     "import_select_file": "Select File to Import",
     "import_no_file": "No file selected",
@@ -306,5 +311,20 @@
     "inactive": "Inactive",
     "info": "About",
     "info_message": "Recurring expenses are automatically generated on their due dates when you open the app. Active templates will create new expenses, while paused templates won't generate anything until you activate them again."
+  },
+  "data_collection": {
+    "consent_title": "Improving Quick Spend Together",
+    "consent_message": "To provide better AI-powered expense categorization, we collect anonymous usage data.\n\nWhat we collect:\n• Input text and amounts\n• Categories and corrections\n• Language preferences\n\nWhat we DON'T collect:\n• Personal information\n• Names or contacts\n• Location data\n\nThis helps train better AI models for everyone.",
+    "consent_question": "Would you like to help improve Quick Spend?",
+    "accept": "Got It, Thanks!",
+    "decline": "Disable Data Collection",
+    "settings_note": "You can disable this anytime in Settings",
+    "thank_you": "Thank you for helping improve Quick Spend!",
+    "disabled": "Data collection disabled. You can re-enable this anytime in Settings.",
+    "settings_title": "Help Improve Expense Categorization",
+    "settings_subtitle": "Share anonymous usage data to train better AI models",
+    "settings_description": "Only collects: input text, amounts, categories\nNo personal information is shared",
+    "enabled_message": "Data collection enabled - Thank you!",
+    "disabled_message": "Data collection disabled"
   }
 }

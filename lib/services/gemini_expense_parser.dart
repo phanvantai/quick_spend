@@ -394,6 +394,7 @@ Examples:
                   0.95, // Gemini is very good at language detection
               categoryConfidence: confidence,
               overallConfidence: confidence,
+              parserUsed: 'gemini',
             ),
           );
 

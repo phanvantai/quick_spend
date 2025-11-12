@@ -6,12 +6,14 @@ class AppConfig {
   final String currency; // 'USD', 'VND'
   final String themeMode; // 'light', 'dark', 'system'
   final bool isOnboardingComplete;
+  final bool dataCollectionConsent; // User consent for training data collection
 
   const AppConfig({
     this.language = 'en',
     this.currency = 'USD',
     this.themeMode = 'system',
     this.isOnboardingComplete = false,
+    this.dataCollectionConsent = false,
   });
 
   /// Create config from JSON
@@ -21,6 +23,7 @@ class AppConfig {
       currency: json['currency'] as String? ?? 'USD',
       themeMode: json['themeMode'] as String? ?? 'system',
       isOnboardingComplete: json['isOnboardingComplete'] as bool? ?? false,
+      dataCollectionConsent: json['dataCollectionConsent'] as bool? ?? false,
     );
   }
 
@@ -31,6 +34,7 @@ class AppConfig {
       'currency': currency,
       'themeMode': themeMode,
       'isOnboardingComplete': isOnboardingComplete,
+      'dataCollectionConsent': dataCollectionConsent,
     };
   }
 
@@ -40,12 +44,14 @@ class AppConfig {
     String? currency,
     String? themeMode,
     bool? isOnboardingComplete,
+    bool? dataCollectionConsent,
   }) {
     return AppConfig(
       language: language ?? this.language,
       currency: currency ?? this.currency,
       themeMode: themeMode ?? this.themeMode,
       isOnboardingComplete: isOnboardingComplete ?? this.isOnboardingComplete,
+      dataCollectionConsent: dataCollectionConsent ?? this.dataCollectionConsent,
     );
   }
 
@@ -75,7 +81,7 @@ class AppConfig {
 
   @override
   String toString() {
-    return 'AppConfig(language: $language, currency: $currency, themeMode: $themeMode, isOnboardingComplete: $isOnboardingComplete)';
+    return 'AppConfig(language: $language, currency: $currency, themeMode: $themeMode, isOnboardingComplete: $isOnboardingComplete, dataCollectionConsent: $dataCollectionConsent)';
   }
 
   @override
@@ -86,12 +92,13 @@ class AppConfig {
         other.language == language &&
         other.currency == currency &&
         other.themeMode == themeMode &&
-        other.isOnboardingComplete == isOnboardingComplete;
+        other.isOnboardingComplete == isOnboardingComplete &&
+        other.dataCollectionConsent == dataCollectionConsent;
   }
 
   @override
   int get hashCode {
-    return Object.hash(language, currency, themeMode, isOnboardingComplete);
+    return Object.hash(language, currency, themeMode, isOnboardingComplete, dataCollectionConsent);
   }
 }
 

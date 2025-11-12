@@ -12,6 +12,7 @@ import '../providers/expense_provider.dart';
 import '../providers/category_provider.dart';
 import '../services/export_service.dart';
 import '../services/import_service.dart';
+import '../services/data_collection_service.dart';
 import '../theme/app_theme.dart';
 import 'categories_screen.dart';
 import 'recurring_expenses_screen.dart';
@@ -61,8 +62,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ? '🐛 Debug mode ENABLED'
                 : '✅ Debug mode DISABLED',
           ),
-          backgroundColor:
-              _debugModeEnabled ? AppTheme.warning : AppTheme.success,
+          backgroundColor: _debugModeEnabled
+              ? AppTheme.warning
+              : AppTheme.success,
           duration: const Duration(seconds: 2),
         ),
       );
@@ -157,6 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -198,7 +201,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const RecurringExpensesScreen(),
+                            builder: (context) =>
+                                const RecurringExpensesScreen(),
                           ),
                         );
                       },
@@ -253,6 +257,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle: context.tr('settings.import_data_subtitle'),
                       onTap: () => _handleImport(context),
                     ),
+
+                    _buildDataCollectionTile(context),
 
                     const Divider(height: 32),
 
@@ -319,10 +325,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.warning.withValues(alpha: 0.2),
+                                        color: AppTheme.warning.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         borderRadius: BorderRadius.circular(4),
                                         border: Border.all(
-                                          color: AppTheme.warning.withValues(alpha: 0.5),
+                                          color: AppTheme.warning.withValues(
+                                            alpha: 0.5,
+                                          ),
                                         ),
                                       ),
                                       child: Row(
@@ -336,11 +346,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                           const SizedBox(width: 4),
                                           Text(
                                             'Debug Mode Active',
-                                            style:
-                                                theme.textTheme.labelSmall?.copyWith(
-                                              color: AppTheme.warning,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                  color: AppTheme.warning,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -780,7 +790,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(width: AppTheme.spacing12),
-                Text('Exporting...'),
+                Text(context.tr('settings.exporting')),
               ],
             ),
             duration: const Duration(seconds: 30),
@@ -881,7 +891,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(width: AppTheme.spacing12),
-                Text('Importing...'),
+                Text(context.tr('settings.importing')),
               ],
             ),
             duration: const Duration(seconds: 30),
@@ -935,13 +945,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Build success message with category info if applicable
         String message;
         if (importResult.categoriesImported > 0) {
-          message =
-              'Imported ${importResult.categoriesImported} categories, ${importResult.successCount} expenses';
+          message = context.tr(
+            'settings.import_success_with_categories',
+            namedArgs: {
+              'categories': importResult.categoriesImported.toString(),
+              'expenses': importResult.successCount.toString(),
+            },
+          );
           if (importResult.failureCount > 0) {
-            message += ', ${importResult.failureCount} failed';
+            message += context.tr(
+              'settings.import_failed_count',
+              namedArgs: {'count': importResult.failureCount.toString()},
+            );
           }
           if (importResult.duplicateCount > 0) {
-            message += ', ${importResult.duplicateCount} duplicates';
+            message += context.tr(
+              'settings.import_duplicate_count',
+              namedArgs: {'count': importResult.duplicateCount.toString()},
+            );
           }
         } else {
           message = context.tr(
@@ -982,5 +1003,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     }
+  }
+
+  /// Build data collection consent tile
+  Widget _buildDataCollectionTile(BuildContext context) {
+    final dataCollectionService = context.read<DataCollectionService>();
+
+    return FutureBuilder<bool>(
+      future: dataCollectionService.hasConsent(),
+      builder: (context, snapshot) {
+        final hasConsent = snapshot.data ?? false;
+
+        return Card(
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing16,
+            vertical: AppTheme.spacing8,
+          ),
+          child: SwitchListTile(
+            secondary: const Icon(Icons.insights, color: AppTheme.accentPink),
+            title: Text(context.tr('data_collection.settings_title')),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppTheme.spacing4),
+                Text(
+                  context.tr('data_collection.settings_subtitle'),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: AppTheme.spacing8),
+                Text(
+                  context.tr('data_collection.settings_description'),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.neutral50,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+            value: hasConsent,
+            onChanged: (bool value) async {
+              await dataCollectionService.setConsent(value);
+              setState(() {}); // Refresh UI
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      value
+                          ? context.tr('data_collection.enabled_message')
+                          : context.tr('data_collection.disabled_message'),
+                    ),
+                    backgroundColor: AppTheme.success,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
+    );
   }
 }

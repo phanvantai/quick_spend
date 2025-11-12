@@ -66,6 +66,18 @@ class PreferencesService {
     return config.isOnboardingComplete;
   }
 
+  /// Set data collection consent
+  Future<void> setDataCollectionConsent(bool consent) async {
+    final config = await getConfig();
+    await saveConfig(config.copyWith(dataCollectionConsent: consent));
+  }
+
+  /// Get data collection consent
+  Future<bool> getDataCollectionConsent() async {
+    final config = await getConfig();
+    return config.dataCollectionConsent;
+  }
+
   /// Clear all preferences (for testing/debugging)
   Future<void> clearAll() async {
     await _ensureInitialized();

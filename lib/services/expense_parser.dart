@@ -66,6 +66,7 @@ class ExpenseParser {
       return ParseResult(
         success: false,
         errorMessage: 'Input cannot be empty',
+        parserUsed: 'fallback',
       );
     }
 
@@ -86,6 +87,7 @@ class ExpenseParser {
       return ParseResult(
         success: false,
         errorMessage: 'Could not find a valid amount in the input',
+        parserUsed: 'fallback',
       );
     }
 
@@ -98,6 +100,7 @@ class ExpenseParser {
       return ParseResult(
         success: false,
         errorMessage: 'Amount must be greater than zero',
+        parserUsed: 'fallback',
       );
     }
 
@@ -172,6 +175,7 @@ class ExpenseParser {
         categories,
         type: transactionType,
       ),
+      parserUsed: 'fallback',
     );
   }
 
@@ -249,6 +253,7 @@ class ParseResult {
   final double? categoryConfidence;
   final double? overallConfidence;
   final List<CategoryResult>? suggestedCategories;
+  final String? parserUsed; // 'gemini' or 'fallback'
 
   ParseResult({
     required this.success,
@@ -259,6 +264,7 @@ class ParseResult {
     this.categoryConfidence,
     this.overallConfidence,
     this.suggestedCategories,
+    this.parserUsed,
   });
 
   @override

@@ -97,11 +97,16 @@
     "export_format": "Định Dạng Xuất",
     "export_csv": "Xuất dạng CSV",
     "export_json": "Xuất dạng JSON",
+    "exporting": "Đang xuất...",
+    "importing": "Đang nhập...",
     "export_success": "Đã xuất dữ liệu thành công!",
     "export_error": "Lỗi khi xuất dữ liệu: {error}",
     "share_subject": "Xuất Dữ Liệu Quick Spend",
     "share_text": "Dữ liệu chi tiêu của tôi từ Quick Spend",
     "import_success": "Hoàn tất nhập: {success} thành công, {failed} lỗi, {duplicates} trùng",
+    "import_success_with_categories": "Đã nhập {categories} danh mục, {expenses} chi tiêu",
+    "import_failed_count": ", {count} lỗi",
+    "import_duplicate_count": ", {count} trùng",
     "import_error": "Lỗi khi nhập dữ liệu: {error}",
     "import_select_file": "Chọn File Để Nhập",
     "import_no_file": "Chưa chọn file",
@@ -306,5 +311,20 @@
     "inactive": "Không hoạt động",
     "info": "Thông tin",
     "info_message": "Chi tiêu định kỳ được tự động tạo vào ngày đến hạn khi bạn mở ứng dụng. Mẫu đang hoạt động sẽ tạo chi tiêu mới, trong khi mẫu tạm dừng sẽ không tạo gì cho đến khi bạn kích hoạt lại."
+  },
+  "data_collection": {
+    "consent_title": "Cùng cải thiện Quick Spend",
+    "consent_message": "Để cung cấp phân loại chi tiêu AI tốt hơn, chúng tôi thu thập dữ liệu sử dụng ẩn danh.\n\nNhững gì chúng tôi thu thập:\n• Văn bản nhập và số tiền\n• Danh mục và sửa đổi\n• Ngôn ngữ sử dụng\n\nNhững gì chúng tôi KHÔNG thu thập:\n• Thông tin cá nhân\n• Tên hoặc danh bạ\n• Dữ liệu vị trí\n\nĐiều này giúp huấn luyện mô hình AI tốt hơn cho mọi người.",
+    "consent_question": "Bạn có muốn giúp cải thiện Quick Spend không?",
+    "accept": "Đã hiểu, cảm ơn!",
+    "decline": "Tắt thu thập dữ liệu",
+    "settings_note": "Bạn có thể tắt tính năng này bất cứ lúc nào trong Cài đặt",
+    "thank_you": "Cảm ơn bạn đã giúp cải thiện Quick Spend!",
+    "disabled": "Đã tắt thu thập dữ liệu. Bạn có thể bật lại bất cứ lúc nào trong Cài đặt.",
+    "settings_title": "Giúp cải thiện phân loại chi tiêu",
+    "settings_subtitle": "Chia sẻ dữ liệu sử dụng ẩn danh để huấn luyện mô hình AI tốt hơn",
+    "settings_description": "Chỉ thu thập: văn bản nhập, số tiền, danh mục\nKhông chia sẻ thông tin cá nhân",
+    "enabled_message": "Đã bật thu thập dữ liệu - Cảm ơn bạn!",
+    "disabled_message": "Đã tắt thu thập dữ liệu"
   }
 }

@@ -7,6 +7,7 @@ import '../providers/category_provider.dart';
 import '../providers/app_config_provider.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
+import '../services/data_collection_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/empty_state.dart';
 import '../widgets/common/expense_card.dart';
@@ -72,6 +73,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
   }
 
   Future<void> _editExpense(Expense expense) async {
+    final originalCategoryId = expense.categoryId;
+
     final updatedExpense = await Navigator.push<Expense>(
       context,
       MaterialPageRoute(
@@ -83,6 +86,23 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
 
     try {
       await context.read<ExpenseProvider>().updateExpense(updatedExpense);
+
+      // Log category correction if category was changed
+      if (originalCategoryId != updatedExpense.categoryId) {
+        if (mounted) {
+          final dataCollectionService = context.read<DataCollectionService>();
+          await dataCollectionService.logCategoryCorrection(
+            expenseId: updatedExpense.id,
+            rawInput: updatedExpense.rawInput,
+            description: updatedExpense.description,
+            amount: updatedExpense.amount,
+            originalCategory: originalCategoryId,
+            correctedCategory: updatedExpense.categoryId,
+            language: updatedExpense.language,
+          );
+        }
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -113,7 +133,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
     final categoryProvider = context.read<CategoryProvider>();
     final appConfig = context.read<AppConfigProvider>();
     final currency = appConfig.currency;
-    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
         QuickCategory.getDefaultSystemCategories().firstWhere(
           (c) => c.id == 'other',
@@ -149,7 +170,9 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.date'),
-              DateFormat.yMMMd(context.locale.languageCode).format(expense.date),
+              DateFormat.yMMMd(
+                context.locale.languageCode,
+              ).format(expense.date),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
@@ -191,8 +214,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
                           },
                         ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.warning,
-                            ),
+                          color: AppTheme.warning,
+                        ),
                       ),
                     ),
                   ],
@@ -228,8 +251,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
           child: Text(
             '$label:',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         Expanded(
@@ -247,9 +270,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.tr('home.all_expenses')),
-      ),
+      appBar: AppBar(title: Text(context.tr('home.all_expenses'))),
       body: Consumer<ExpenseProvider>(
         builder: (context, expenseProvider, _) {
           if (expenseProvider.isLoading) {
