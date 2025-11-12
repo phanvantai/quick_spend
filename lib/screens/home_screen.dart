@@ -90,16 +90,7 @@ class HomeScreen extends StatelessWidget {
             return CustomScrollView(
               slivers: [
                 SliverAppBar(
-                  title: PeriodFilter(
-                    selectedPeriod: reportProvider.selectedPeriod,
-                    onPeriodChanged: (period) {
-                      reportProvider.selectPeriod(period);
-                    },
-                    onCustomTap: () => _showCustomDatePicker(
-                      context,
-                      reportProvider,
-                    ),
-                  ),
+                  title: Text(context.tr('home.hello')),
                   pinned: true,
                   actions: [
                     IconButton(
@@ -126,6 +117,26 @@ class HomeScreen extends StatelessWidget {
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppTheme.spacing16,
+                      AppTheme.spacing16,
+                      AppTheme.spacing16,
+                      AppTheme.spacing8,
+                    ),
+                    child: PeriodFilter(
+                      selectedPeriod: reportProvider.selectedPeriod,
+                      onPeriodChanged: (period) {
+                        reportProvider.selectPeriod(period);
+                      },
+                      onCustomTap: () => _showCustomDatePicker(
+                        context,
+                        reportProvider,
+                      ),
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
                     padding: const EdgeInsets.all(AppTheme.spacing16),
                     child: EmptyState(
                       icon: Icons.bar_chart_outlined,
@@ -143,21 +154,19 @@ class HomeScreen extends StatelessWidget {
             onRefresh: () => reportProvider.refresh(),
             child: CustomScrollView(
               slivers: [
-                // SliverAppBar with summary in flexible space
+                // SliverAppBar with greeting title
                 SliverAppBar(
-                  expandedHeight: 340,
+                  title: Text(context.tr('home.hello')),
                   pinned: true,
-                  title: PeriodFilter(
-                    selectedPeriod: reportProvider.selectedPeriod,
-                    onPeriodChanged: (period) {
-                      reportProvider.selectPeriod(period);
-                    },
-                    onCustomTap: () => _showCustomDatePicker(
-                      context,
-                      reportProvider,
-                    ),
-                  ),
                   actions: [
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: () => _addExpense(context),
+                      tooltip: context.tr('home.add_expense_tooltip'),
+                      style: IconButton.styleFrom(
+                        foregroundColor: AppTheme.primaryMint,
+                      ),
+                    ),
                     IconButton(
                       icon: const Icon(Icons.settings_outlined),
                       onPressed: () {
@@ -171,22 +180,25 @@ class HomeScreen extends StatelessWidget {
                       tooltip: context.tr('navigation.settings'),
                     ),
                   ],
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppTheme.spacing16,
-                          64, // Account for app bar height
-                          AppTheme.spacing16,
-                          AppTheme.spacing8,
-                        ),
-                        child: SummaryCard(
-                          stats: stats,
-                          trendPercentage: reportProvider.trendPercentage,
-                          isTrendPositive: reportProvider.isTrendPositive,
-                          currency: configProvider.currency,
-                          language: context.locale.languageCode,
-                        ),
+                ),
+
+                // Period filter
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppTheme.spacing16,
+                      AppTheme.spacing16,
+                      AppTheme.spacing16,
+                      AppTheme.spacing8,
+                    ),
+                    child: PeriodFilter(
+                      selectedPeriod: reportProvider.selectedPeriod,
+                      onPeriodChanged: (period) {
+                        reportProvider.selectPeriod(period);
+                      },
+                      onCustomTap: () => _showCustomDatePicker(
+                        context,
+                        reportProvider,
                       ),
                     ),
                   ),
@@ -196,12 +208,22 @@ class HomeScreen extends StatelessWidget {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(
                     AppTheme.spacing16,
-                    AppTheme.spacing16,
+                    AppTheme.spacing8,
                     AppTheme.spacing16,
                     AppTheme.spacing24,
                   ),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
+                      // Summary card
+                      SummaryCard(
+                        stats: stats,
+                        trendPercentage: reportProvider.trendPercentage,
+                        isTrendPositive: reportProvider.isTrendPositive,
+                        currency: configProvider.currency,
+                        language: context.locale.languageCode,
+                      ),
+                      const SizedBox(height: AppTheme.spacing16),
+
                       // Stats grid (avg/day, highest expense)
                       StatsGrid(
                         stats: stats,
