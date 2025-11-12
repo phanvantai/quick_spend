@@ -129,35 +129,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () async {
-              // User wants to disable data collection
-              await dataCollectionService.setConsent(false);
-              if (mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(context.tr('data_collection.disabled')),
-                    backgroundColor: AppTheme.neutral50,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              }
-            },
-            child: Text(context.tr('data_collection.decline')),
-          ),
           FilledButton.icon(
             onPressed: () async {
               // User acknowledges (data collection already enabled)
               if (mounted) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(context.tr('data_collection.thank_you')),
-                    backgroundColor: AppTheme.success,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
               }
             },
             icon: const Icon(Icons.check_circle_outline),
