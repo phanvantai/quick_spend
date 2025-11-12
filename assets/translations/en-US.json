@@ -326,5 +326,21 @@
     "settings_description": "Only collects: input text, amounts, categories\nNo personal information is shared",
     "enabled_message": "Data collection enabled - Thank you!",
     "disabled_message": "Data collection disabled"
+  },
+  "calendar": {
+    "previous_month": "Previous month",
+    "next_month": "Next month",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "sunday": "Su",
+    "monday": "Mo",
+    "tuesday": "Tu",
+    "wednesday": "We",
+    "thursday": "Th",
+    "friday": "Fr",
+    "saturday": "Sa",
+    "monthly_summary": "Monthly Summary",
+    "no_expenses_this_month": "No expenses this month",
+    "no_expenses_message": "Add your first expense to start tracking your spending for this month."
   }
 }

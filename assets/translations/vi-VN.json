@@ -316,7 +316,7 @@
     "consent_title": "Cùng cải thiện Quick Spend",
     "consent_message": "Để cung cấp phân loại chi tiêu AI tốt hơn, chúng tôi thu thập dữ liệu sử dụng ẩn danh.\n\nNhững gì chúng tôi thu thập:\n• Văn bản nhập và số tiền\n• Danh mục và sửa đổi\n• Ngôn ngữ sử dụng\n\nNhững gì chúng tôi KHÔNG thu thập:\n• Thông tin cá nhân\n• Tên hoặc danh bạ\n• Dữ liệu vị trí\n\nĐiều này giúp huấn luyện mô hình AI tốt hơn cho mọi người.",
     "consent_question": "Bạn có muốn giúp cải thiện Quick Spend không?",
-    "accept": "Đã hiểu, cảm ơn!",
+    "accept": "Đã hiểu, cảm ọn!",
     "decline": "Tắt thu thập dữ liệu",
     "settings_note": "Bạn có thể tắt tính năng này bất cứ lúc nào trong Cài đặt",
     "thank_you": "Cảm ơn bạn đã giúp cải thiện Quick Spend!",
@@ -326,5 +326,21 @@
     "settings_description": "Chỉ thu thập: văn bản nhập, số tiền, danh mục\nKhông chia sẻ thông tin cá nhân",
     "enabled_message": "Đã bật thu thập dữ liệu - Cảm ơn bạn!",
     "disabled_message": "Đã tắt thu thập dữ liệu"
+  },
+  "calendar": {
+    "previous_month": "Tháng trước",
+    "next_month": "Tháng sau",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "sunday": "CN",
+    "monday": "T2",
+    "tuesday": "T3",
+    "wednesday": "T4",
+    "thursday": "T5",
+    "friday": "T6",
+    "saturday": "T7",
+    "monthly_summary": "Tổng kết tháng",
+    "no_expenses_this_month": "Chưa có chi tiêu tháng này",
+    "no_expenses_message": "Thêm chi tiêu đầu tiên để bắt đầu theo dõi tháng này."
   }
 }
