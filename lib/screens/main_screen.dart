@@ -670,14 +670,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     child: IconButton(
                       icon: Icon(
                         _currentIndex == 1
-                            ? Icons.bar_chart
-                            : Icons.bar_chart_outlined,
+                            ? Icons.calendar_month
+                            : Icons.calendar_month_outlined,
                       ),
                       color: _currentIndex == 1
                           ? colorScheme.primary
                           : colorScheme.onSurfaceVariant,
                       onPressed: () => _onTabTapped(1),
-                      tooltip: context.tr('navigation.report'),
+                      tooltip: context.tr('navigation.transactions'),
                     ),
                   ),
                 ),
