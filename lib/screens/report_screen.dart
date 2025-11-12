@@ -308,6 +308,23 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        title: Text(context.tr('navigation.report')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+            tooltip: context.tr('navigation.settings'),
+          ),
+        ],
+      ),
       body: Consumer2<ExpenseProvider, AppConfigProvider>(
         builder: (context, expenseProvider, configProvider, _) {
           if (expenseProvider.isLoading) {
@@ -332,129 +349,95 @@ class _ReportScreenState extends State<ReportScreen> {
           // Group expenses by date
           final groupedExpenses = _groupExpensesByDate(monthExpenses);
 
-          return CustomScrollView(
+          return SingleChildScrollView(
             controller: _scrollController,
-            slivers: [
-              // App bar
-              SliverAppBar(
-                pinned: true,
-                title: Text(context.tr('navigation.report')),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.settings_outlined),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SettingsScreen(),
-                        ),
-                      );
-                    },
-                    tooltip: context.tr('navigation.settings'),
-                  ),
-                ],
-              ),
-
-              // Month Navigator
-              SliverToBoxAdapter(
-                child: MonthNavigator(
+            child: Column(
+              children: [
+                // Month Navigator
+                MonthNavigator(
                   selectedMonth: _selectedMonth,
                   onMonthChanged: _onMonthChanged,
                 ),
-              ),
 
-              // Calendar Grid
-              SliverToBoxAdapter(
-                child: CalendarGrid(
+                // Calendar Grid
+                CalendarGrid(
                   selectedMonth: _selectedMonth,
                   expenses: allExpenses,
                   selectedDate: _selectedDate,
                   onDayTap: _onDayTap,
                   currency: currency,
                 ),
-              ),
 
-              // Monthly Summary Card
-              SliverToBoxAdapter(
-                child: MonthlySummaryCard(
+                // Monthly Summary Card
+                MonthlySummaryCard(
                   income: monthIncome,
                   expense: monthExpense,
                   currency: currency,
                 ),
-              ),
 
-              // Empty state or expense list
-              if (groupedExpenses.isEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
+                // Empty state or expense list
+                if (groupedExpenses.isEmpty)
+                  Padding(
                     padding: const EdgeInsets.all(AppTheme.spacing32),
                     child: EmptyState(
                       icon: Icons.calendar_today_outlined,
                       title: context.tr('calendar.no_expenses_this_month'),
                       message: context.tr('calendar.no_expenses_message'),
                     ),
-                  ),
-                )
-              else
-                // Grouped expense list
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final dates = groupedExpenses.keys.toList();
-                      final date = dates[index];
-                      final expenses = groupedExpenses[date]!;
+                  )
+                else
+                  // Grouped expense list
+                  ...groupedExpenses.entries.map((entry) {
+                    final date = entry.key;
+                    final expenses = entry.value;
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Date section header
-                          DateSectionHeader(
-                            key: _dateHeaderKeys[date],
-                            date: date,
-                          ),
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Date section header
+                        DateSectionHeader(
+                          key: _dateHeaderKeys[date],
+                          date: date,
+                        ),
 
-                          // Expenses for this date
-                          ...expenses.map((expense) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppTheme.spacing16,
-                                vertical: AppTheme.spacing4,
+                        // Expenses for this date
+                        ...expenses.map((expense) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacing16,
+                              vertical: AppTheme.spacing4,
+                            ),
+                            child: Slidable(
+                              key: ValueKey(expense.id),
+                              endActionPane: ActionPane(
+                                motion: const ScrollMotion(),
+                                children: [
+                                  SlidableAction(
+                                    onPressed: (_) => _deleteExpense(expense.id),
+                                    backgroundColor: AppTheme.error,
+                                    foregroundColor: Colors.white,
+                                    icon: Icons.delete,
+                                    label: context.tr('common.delete'),
+                                  ),
+                                ],
                               ),
-                              child: Slidable(
-                                key: ValueKey(expense.id),
-                                endActionPane: ActionPane(
-                                  motion: const ScrollMotion(),
-                                  children: [
-                                    SlidableAction(
-                                      onPressed: (_) => _deleteExpense(expense.id),
-                                      backgroundColor: AppTheme.error,
-                                      foregroundColor: Colors.white,
-                                      icon: Icons.delete,
-                                      label: context.tr('common.delete'),
-                                    ),
-                                  ],
-                                ),
-                                child: ExpenseCard(
-                                  expense: expense,
-                                  onTap: () => _showExpenseDetailsDialog(expense),
-                                ),
+                              child: ExpenseCard(
+                                expense: expense,
+                                onTap: () => _showExpenseDetailsDialog(expense),
                               ),
-                            );
-                          }).toList(),
+                            ),
+                          );
+                        }).toList(),
 
-                          const SizedBox(height: AppTheme.spacing8),
-                        ],
-                      );
-                    },
-                    childCount: groupedExpenses.length,
-                  ),
-                ),
+                        const SizedBox(height: AppTheme.spacing8),
+                      ],
+                    );
+                  }).toList(),
 
-              // Bottom padding
-              const SliverToBoxAdapter(
-                child: SizedBox(height: AppTheme.spacing64),
-              ),
-            ],
+                // Bottom padding
+                const SizedBox(height: AppTheme.spacing64),
+              ],
+            ),
           );
         },
       ),
