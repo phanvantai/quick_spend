@@ -783,7 +783,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(width: AppTheme.spacing12),
-                Text('Exporting...'),
+                Text(context.tr('settings.exporting')),
               ],
             ),
             duration: const Duration(seconds: 30),
@@ -884,7 +884,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(width: AppTheme.spacing12),
-                Text('Importing...'),
+                Text(context.tr('settings.importing')),
               ],
             ),
             duration: const Duration(seconds: 30),
@@ -938,13 +938,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Build success message with category info if applicable
         String message;
         if (importResult.categoriesImported > 0) {
-          message =
-              'Imported ${importResult.categoriesImported} categories, ${importResult.successCount} expenses';
+          message = context.tr(
+            'settings.import_success_with_categories',
+            namedArgs: {
+              'categories': importResult.categoriesImported.toString(),
+              'expenses': importResult.successCount.toString(),
+            },
+          );
           if (importResult.failureCount > 0) {
-            message += ', ${importResult.failureCount} failed';
+            message += context.tr(
+              'settings.import_failed_count',
+              namedArgs: {'count': importResult.failureCount.toString()},
+            );
           }
           if (importResult.duplicateCount > 0) {
-            message += ', ${importResult.duplicateCount} duplicates';
+            message += context.tr(
+              'settings.import_duplicate_count',
+              namedArgs: {'count': importResult.duplicateCount.toString()},
+            );
           }
         } else {
           message = context.tr(
