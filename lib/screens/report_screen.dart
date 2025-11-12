@@ -309,7 +309,7 @@ class _ReportScreenState extends State<ReportScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text(context.tr('navigation.report')),
+        title: Text(context.tr('navigation.transactions')),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
