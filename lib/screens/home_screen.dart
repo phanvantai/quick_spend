@@ -8,7 +8,6 @@ import '../widgets/report/period_filter.dart';
 import '../widgets/report/summary_card.dart';
 import '../widgets/report/stats_grid.dart';
 import '../widgets/report/category_breakdown_switcher.dart';
-import '../widgets/report/spending_trend_chart.dart';
 import '../widgets/report/top_expenses_list.dart';
 import '../widgets/report/custom_date_range_picker.dart';
 import '../widgets/common/empty_state.dart';
@@ -170,15 +169,6 @@ class HomeScreen extends StatelessWidget {
                         CategoryBreakdownSwitcher(
                           expenseCategoryStats: stats.expenseCategoryBreakdown,
                           incomeCategoryStats: stats.incomeCategoryBreakdown,
-                          currency: configProvider.currency,
-                          language: context.locale.languageCode,
-                        ),
-                      const SizedBox(height: AppTheme.spacing16),
-
-                      // Spending trend chart
-                      if (stats.dailySpending.isNotEmpty)
-                        SpendingTrendChart(
-                          stats: stats,
                           currency: configProvider.currency,
                           language: context.locale.languageCode,
                         ),
