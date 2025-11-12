@@ -233,26 +233,26 @@ class _ExpenseFormCard extends StatelessWidget {
             onChanged();
           },
           style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.resolveWith<Color>(
-              (Set<WidgetState> states) {
-                if (states.contains(WidgetState.selected)) {
-                  return formData.type == TransactionType.expense
-                      ? AppTheme.error.withValues(alpha: 0.15)
-                      : AppTheme.success.withValues(alpha: 0.15);
-                }
-                return colorScheme.surface;
-              },
-            ),
-            foregroundColor: WidgetStateProperty.resolveWith<Color>(
-              (Set<WidgetState> states) {
-                if (states.contains(WidgetState.selected)) {
-                  return formData.type == TransactionType.expense
-                      ? AppTheme.error
-                      : AppTheme.success;
-                }
-                return colorScheme.onSurface;
-              },
-            ),
+            backgroundColor: WidgetStateProperty.resolveWith<Color>((
+              Set<WidgetState> states,
+            ) {
+              if (states.contains(WidgetState.selected)) {
+                return formData.type == TransactionType.expense
+                    ? AppTheme.error.withValues(alpha: 0.15)
+                    : AppTheme.success.withValues(alpha: 0.15);
+              }
+              return colorScheme.surface;
+            }),
+            foregroundColor: WidgetStateProperty.resolveWith<Color>((
+              Set<WidgetState> states,
+            ) {
+              if (states.contains(WidgetState.selected)) {
+                return formData.type == TransactionType.expense
+                    ? AppTheme.error
+                    : AppTheme.success;
+              }
+              return colorScheme.onSurface;
+            }),
           ),
         ),
         const SizedBox(height: AppTheme.spacing12),
@@ -290,9 +290,7 @@ class _ExpenseFormCard extends StatelessWidget {
             border: const OutlineInputBorder(),
             prefixIcon: const Icon(Icons.attach_money),
           ),
-          keyboardType: const TextInputType.numberWithOptions(
-            decimal: true,
-          ),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
             CurrencyInputFormatter(
               thousandSeparator: appConfig.language.startsWith('vi')
@@ -327,19 +325,22 @@ class _ExpenseFormCard extends StatelessWidget {
             prefixIcon: const Icon(Icons.category_outlined),
           ),
           items: categoryProvider.categories
-              .where((cat) => cat.type == formData.type) // Filter by transaction type
+              .where(
+                (cat) => cat.type == formData.type,
+              ) // Filter by transaction type
               .map((cat) {
-            return DropdownMenuItem(
-              value: cat.id,
-              child: Row(
-                children: [
-                  Icon(cat.icon, color: cat.color, size: 20),
-                  const SizedBox(width: AppTheme.spacing8),
-                  Text(cat.getLabel(appConfig.language)),
-                ],
-              ),
-            );
-          }).toList(),
+                return DropdownMenuItem(
+                  value: cat.id,
+                  child: Row(
+                    children: [
+                      Icon(cat.icon, color: cat.color, size: 20),
+                      const SizedBox(width: AppTheme.spacing8),
+                      Text(cat.getLabel(appConfig.language)),
+                    ],
+                  ),
+                );
+              })
+              .toList(),
           onChanged: (value) {
             if (value != null) {
               formData.categoryId = value;
@@ -360,7 +361,9 @@ class _ExpenseFormCard extends StatelessWidget {
               suffixIcon: const Icon(Icons.arrow_drop_down),
             ),
             child: Text(
-              DateFormat.yMMMd(context.locale.languageCode).format(formData.date),
+              DateFormat.yMMMd(
+                context.locale.languageCode,
+              ).format(formData.date),
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
@@ -432,23 +435,6 @@ class _ExpenseFormData {
     required this.type,
     this.parserUsed = 'unknown',
   });
-
-  factory _ExpenseFormData.fromExpense(Expense expense) {
-    return _ExpenseFormData(
-      id: expense.id,
-      description: expense.description,
-      amount: expense.amount,
-      categoryId: expense.categoryId,
-      originalCategoryId: expense.categoryId, // Initially same as categoryId
-      language: expense.language,
-      date: expense.date,
-      userId: expense.userId,
-      rawInput: expense.rawInput,
-      confidence: expense.confidence,
-      type: expense.type,
-      parserUsed: 'unknown', // Will be set when available
-    );
-  }
 
   factory _ExpenseFormData.fromParseResult(ParseResult result) {
     final expense = result.expense!;

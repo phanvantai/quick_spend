@@ -62,8 +62,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ? '🐛 Debug mode ENABLED'
                 : '✅ Debug mode DISABLED',
           ),
-          backgroundColor:
-              _debugModeEnabled ? AppTheme.warning : AppTheme.success,
+          backgroundColor: _debugModeEnabled
+              ? AppTheme.warning
+              : AppTheme.success,
           duration: const Duration(seconds: 2),
         ),
       );
@@ -158,6 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -199,7 +201,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const RecurringExpensesScreen(),
+                            builder: (context) =>
+                                const RecurringExpensesScreen(),
                           ),
                         );
                       },
@@ -322,10 +325,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.warning.withValues(alpha: 0.2),
+                                        color: AppTheme.warning.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         borderRadius: BorderRadius.circular(4),
                                         border: Border.all(
-                                          color: AppTheme.warning.withValues(alpha: 0.5),
+                                          color: AppTheme.warning.withValues(
+                                            alpha: 0.5,
+                                          ),
                                         ),
                                       ),
                                       child: Row(
@@ -339,11 +346,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                           const SizedBox(width: 4),
                                           Text(
                                             'Debug Mode Active',
-                                            style:
-                                                theme.textTheme.labelSmall?.copyWith(
-                                              color: AppTheme.warning,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                  color: AppTheme.warning,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -1013,10 +1020,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             vertical: AppTheme.spacing8,
           ),
           child: SwitchListTile(
-            secondary: const Icon(
-              Icons.insights,
-              color: AppTheme.accentPink,
-            ),
+            secondary: const Icon(Icons.insights, color: AppTheme.accentPink),
             title: Text(context.tr('data_collection.settings_title')),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1030,7 +1034,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   context.tr('data_collection.settings_description'),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.neutral60,
+                    color: AppTheme.neutral50,
                     fontSize: 11,
                   ),
                 ),

@@ -96,16 +96,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Log category correction if category was changed
       if (originalCategoryId != updatedExpense.categoryId) {
-        final dataCollectionService = context.read<DataCollectionService>();
-        await dataCollectionService.logCategoryCorrection(
-          expenseId: updatedExpense.id,
-          rawInput: updatedExpense.rawInput,
-          description: updatedExpense.description,
-          amount: updatedExpense.amount,
-          originalCategory: originalCategoryId,
-          correctedCategory: updatedExpense.categoryId,
-          language: updatedExpense.language,
-        );
+        if (mounted) {
+          final dataCollectionService = context.read<DataCollectionService>();
+          await dataCollectionService.logCategoryCorrection(
+            expenseId: updatedExpense.id,
+            rawInput: updatedExpense.rawInput,
+            description: updatedExpense.description,
+            amount: updatedExpense.amount,
+            originalCategory: originalCategoryId,
+            correctedCategory: updatedExpense.categoryId,
+            language: updatedExpense.language,
+          );
+        }
       }
 
       if (mounted) {

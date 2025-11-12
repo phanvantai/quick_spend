@@ -89,16 +89,18 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
 
       // Log category correction if category was changed
       if (originalCategoryId != updatedExpense.categoryId) {
-        final dataCollectionService = context.read<DataCollectionService>();
-        await dataCollectionService.logCategoryCorrection(
-          expenseId: updatedExpense.id,
-          rawInput: updatedExpense.rawInput,
-          description: updatedExpense.description,
-          amount: updatedExpense.amount,
-          originalCategory: originalCategoryId,
-          correctedCategory: updatedExpense.categoryId,
-          language: updatedExpense.language,
-        );
+        if (mounted) {
+          final dataCollectionService = context.read<DataCollectionService>();
+          await dataCollectionService.logCategoryCorrection(
+            expenseId: updatedExpense.id,
+            rawInput: updatedExpense.rawInput,
+            description: updatedExpense.description,
+            amount: updatedExpense.amount,
+            originalCategory: originalCategoryId,
+            correctedCategory: updatedExpense.categoryId,
+            language: updatedExpense.language,
+          );
+        }
       }
 
       if (mounted) {
@@ -131,7 +133,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
     final categoryProvider = context.read<CategoryProvider>();
     final appConfig = context.read<AppConfigProvider>();
     final currency = appConfig.currency;
-    final categoryData = categoryProvider.getCategoryById(expense.categoryId) ??
+    final categoryData =
+        categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
         QuickCategory.getDefaultSystemCategories().firstWhere(
           (c) => c.id == 'other',
@@ -167,7 +170,9 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.date'),
-              DateFormat.yMMMd(context.locale.languageCode).format(expense.date),
+              DateFormat.yMMMd(
+                context.locale.languageCode,
+              ).format(expense.date),
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
@@ -209,8 +214,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
                           },
                         ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.warning,
-                            ),
+                          color: AppTheme.warning,
+                        ),
                       ),
                     ),
                   ],
@@ -246,8 +251,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
           child: Text(
             '$label:',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         Expanded(
@@ -265,9 +270,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.tr('home.all_expenses')),
-      ),
+      appBar: AppBar(title: Text(context.tr('home.all_expenses'))),
       body: Consumer<ExpenseProvider>(
         builder: (context, expenseProvider, _) {
           if (expenseProvider.isLoading) {
