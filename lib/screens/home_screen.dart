@@ -29,40 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Filter state
   TransactionType? _selectedFilter; // null means "All"
 
-  @override
-  void initState() {
-    super.initState();
-    // Show data collection consent dialog after first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndShowConsentDialog();
-    });
-  }
-
-  /// Check if user has been asked for data collection consent
-  /// If not, show the consent dialog after a delay for better UX
-  Future<void> _checkAndShowConsentDialog() async {
-    if (!mounted) return;
-
-    final dataCollectionService = context.read<DataCollectionService>();
-
-    // Check if user has been asked before
-    final hasBeenAsked = await dataCollectionService.hasBeenAskedForConsent();
-
-    if (!hasBeenAsked) {
-      // Wait 2 seconds to let tutorials/animations complete
-      // and avoid overwhelming the user right after onboarding
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (!mounted) return;
-
-      // Show consent dialog
-      _showConsentDialog(dataCollectionService);
-    }
-  }
-
   /// Show data collection information dialog
+  /// Called from MainScreen after tutorial is dismissed
   /// Automatically enables data collection, but allows user to opt-out
-  void _showConsentDialog(DataCollectionService dataCollectionService) {
+  void showConsentDialog(DataCollectionService dataCollectionService) {
     // Automatically enable data collection by default
     dataCollectionService.setConsent(true);
 
