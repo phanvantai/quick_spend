@@ -215,20 +215,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
       if (!mounted) return;
 
-      // Find the HomeScreen widget in the widget tree and show consent dialog
-      final homeScreenKey = _screens[0].key as GlobalKey?;
-      if (homeScreenKey != null && homeScreenKey.currentState != null) {
-        final homeScreenState = homeScreenKey.currentState as _HomeScreenState;
-        homeScreenState.showConsentDialog(dataCollectionService);
-      } else {
-        // Fallback: show dialog directly from MainScreen
-        _showConsentDialogDirectly(dataCollectionService);
-      }
+      // Show consent dialog
+      _showConsentDialog(dataCollectionService);
     }
   }
 
-  /// Show consent dialog directly from MainScreen (fallback)
-  void _showConsentDialogDirectly(DataCollectionService dataCollectionService) {
+  /// Show data collection consent dialog
+  void _showConsentDialog(DataCollectionService dataCollectionService) {
     // Automatically enable data collection by default
     dataCollectionService.setConsent(true);
 
