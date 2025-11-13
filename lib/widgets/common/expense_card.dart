@@ -28,7 +28,7 @@ class ExpenseCard extends StatelessWidget {
     final categoryData =
         categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
-        QuickCategory.getDefaultSystemCategories().firstWhere(
+        QuickCategory.getDefaultSystemCategories(appConfig.language).firstWhere(
           (c) => c.id == 'other',
         ); // Fallback to system 'other' category
     final theme = Theme.of(context);
@@ -43,12 +43,7 @@ class ExpenseCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       child: Container(
         decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              color: accentColor,
-              width: 4,
-            ),
-          ),
+          border: Border(left: BorderSide(color: accentColor, width: 4)),
           borderRadius: AppTheme.borderRadiusMedium,
         ),
         child: InkWell(

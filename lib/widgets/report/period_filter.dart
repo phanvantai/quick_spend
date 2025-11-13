@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import '../../utils/date_range_helper.dart';
 import '../../theme/app_theme.dart';
 
@@ -28,35 +28,35 @@ class PeriodFilter extends StatelessWidget {
           _buildFilterChip(
             context,
             TimePeriod.today,
-            TimePeriod.today.name,
+            TimePeriod.today.getLabel(locale),
             Icons.today,
           ),
           const SizedBox(width: AppTheme.spacing8),
           _buildFilterChip(
             context,
             TimePeriod.thisWeek,
-            TimePeriod.thisWeek.name,
+            TimePeriod.thisWeek.getLabel(locale),
             Icons.date_range,
           ),
           const SizedBox(width: AppTheme.spacing8),
           _buildFilterChip(
             context,
             TimePeriod.thisMonth,
-            TimePeriod.thisMonth.name,
+            TimePeriod.thisMonth.getLabel(locale),
             Icons.calendar_month,
           ),
           const SizedBox(width: AppTheme.spacing8),
           _buildFilterChip(
             context,
             TimePeriod.thisYear,
-            TimePeriod.thisYear.name,
+            TimePeriod.thisYear.getLabel(locale),
             Icons.calendar_today,
           ),
           const SizedBox(width: AppTheme.spacing8),
           _buildFilterChip(
             context,
             TimePeriod.custom,
-            TimePeriod.custom.name,
+            TimePeriod.custom.getLabel(locale),
             Icons.tune,
             onTap: onCustomTap,
           ),

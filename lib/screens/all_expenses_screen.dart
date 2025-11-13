@@ -136,9 +136,9 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
     final categoryData =
         categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
-        QuickCategory.getDefaultSystemCategories().firstWhere(
-          (c) => c.id == 'other',
-        );
+        QuickCategory.getDefaultSystemCategories(
+          appConfig.language,
+        ).firstWhere((c) => c.id == 'other');
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -163,10 +163,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
               expense.getFormattedAmount(currency: currency),
             ),
             const SizedBox(height: AppTheme.spacing12),
-            _buildDetailRow(
-              context.tr('home.category'),
-              categoryData.name,
-            ),
+            _buildDetailRow(context.tr('home.category'), categoryData.name),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.date'),

@@ -102,7 +102,7 @@ class TopExpensesList extends StatelessWidget {
     final categoryData =
         categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
-        QuickCategory.getDefaultSystemCategories().firstWhere(
+        QuickCategory.getDefaultSystemCategories(language).firstWhere(
           (c) => c.id == 'other',
         ); // Fallback to system 'other' category
 

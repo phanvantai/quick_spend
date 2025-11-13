@@ -69,9 +69,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(context.tr('settings.categories')),
-      ),
+      appBar: AppBar(title: Text(context.tr('settings.categories'))),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToAddCategory(context),
         icon: const Icon(Icons.add),
@@ -209,9 +207,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               horizontal: AppTheme.spacing16,
               vertical: AppTheme.spacing4,
             )
-          : const EdgeInsets.symmetric(
-              horizontal: AppTheme.spacing16,
-            ),
+          : const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(AppTheme.spacing12),
@@ -219,22 +215,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             color: category.color.withValues(alpha: 0.15),
             borderRadius: AppTheme.borderRadiusSmall,
           ),
-          child: Icon(
-            category.icon,
-            color: category.color,
-            size: 24,
-          ),
+          child: Icon(category.icon, color: category.color, size: 24),
         ),
-        title: Text(
-          category.name,
-          style: theme.textTheme.titleMedium,
-        ),
+        title: Text(category.name, style: theme.textTheme.titleMedium),
         subtitle: Text(
           isFallbackCategory
               ? context.tr('categories.required_category_locked')
               : isSystem
-                  ? context.tr('categories.system_category')
-                  : _formatKeywords(category.keywords),
+              ? context.tr('categories.system_category')
+              : _formatKeywords(category.keywords),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -244,7 +233,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 message: context.tr('categories.cannot_edit_other'),
                 child: Icon(
                   Icons.lock_outline,
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.5,
+                  ),
                   size: 20,
                 ),
               )
@@ -336,9 +327,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Future<void> _navigateToAddCategory(BuildContext context) async {
     final result = await Navigator.push<QuickCategory>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CategoryFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const CategoryFormScreen()),
     );
 
     if (result != null && context.mounted) {
@@ -418,8 +407,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     BuildContext context,
     QuickCategory category,
   ) async {
-    final appConfig = context.read<AppConfigProvider>().config;
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
