@@ -226,7 +226,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
         ),
         title: Text(
-          category.getLabel(language),
+          category.name,
           style: theme.textTheme.titleMedium,
         ),
         subtitle: Text(
@@ -234,7 +234,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ? context.tr('categories.required_category_locked')
               : isSystem
                   ? context.tr('categories.system_category')
-                  : _formatKeywords(category.getKeywords(language)),
+                  : _formatKeywords(category.keywords),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -427,7 +427,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         content: Text(
           context.tr(
             'categories.delete_category_confirm',
-            namedArgs: {'name': category.getLabel(appConfig.language)},
+            namedArgs: {'name': category.name},
           ),
         ),
         actions: [

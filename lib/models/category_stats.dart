@@ -34,7 +34,7 @@ class CategoryStats {
   }) {
     return CategoryStats(
       categoryId: category.id,
-      categoryName: category.getLabel(language),
+      categoryName: category.name,
       totalAmount: totalAmount,
       count: count,
       percentage: grandTotal > 0 ? (totalAmount / grandTotal * 100) : 0,

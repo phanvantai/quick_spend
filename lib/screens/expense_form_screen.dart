@@ -333,7 +333,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                             color: isSelected ? Colors.white : category.color,
                           ),
                           const SizedBox(width: AppTheme.spacing8),
-                          Text(category.getLabel(language)),
+                          Text(category.name),
                         ],
                       ),
                       backgroundColor: category.color.withValues(alpha: 0.15),

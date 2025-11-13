@@ -159,7 +159,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
               const SizedBox(width: AppTheme.spacing8),
               Expanded(
                 child: Text(
-                  stat.getLabel(widget.language),
+                  stat.name,
                   style: theme.textTheme.bodySmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

@@ -3,11 +3,11 @@ import '../models/expense.dart';
 
 /// Service for auto-categorizing expenses based on description keywords
 class Categorizer {
-  /// Categorize expense based on description and language
+  /// Categorize expense based on description
   /// Returns CategoryResult with the matched category ID and confidence score
+  /// Note: Categories now contain keywords in a single language (set during onboarding)
   static CategoryResult categorize(
     String description,
-    String language,
     List<QuickCategory> categories, {
     TransactionType type = TransactionType.expense,
   }) {
@@ -36,7 +36,7 @@ class Categorizer {
       // Skip 'other' and 'other_income' categories in matching
       if (category.id == 'other' || category.id == 'other_income') continue;
 
-      final keywords = category.getKeywords(language);
+      final keywords = category.keywords;
       int matchCount = 0;
       double score = 0.0;
 
@@ -90,9 +90,9 @@ class Categorizer {
 
   /// Get all possible categories for a description
   /// Returns a list of CategoryResult sorted by confidence (highest first)
+  /// Note: Categories now contain keywords in a single language (set during onboarding)
   static List<CategoryResult> getAllMatches(
     String description,
-    String language,
     List<QuickCategory> categories, {
     TransactionType type = TransactionType.expense,
   }) {
@@ -118,7 +118,7 @@ class Categorizer {
     for (final category in relevantCategories) {
       if (category.id == 'other' || category.id == 'other_income') continue;
 
-      final keywords = category.getKeywords(language);
+      final keywords = category.keywords;
       int matchCount = 0;
 
       for (final keyword in keywords) {

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
+import '../services/expense_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/gradient_button.dart';
 import 'main_screen.dart';
@@ -58,12 +59,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _completeOnboarding() async {
     final configProvider = context.read<AppConfigProvider>();
+    final expenseService = context.read<ExpenseService>();
 
+    // Save preferences
     await configProvider.updatePreferences(
       language: _selectedLanguage,
       currency: _selectedCurrency,
       isOnboardingComplete: true,
     );
+
+    // Seed system categories with selected language (one-time initialization)
+    await expenseService.seedSystemCategories(_selectedLanguage);
 
     if (mounted) {
       Navigator.of(context).pushReplacement(

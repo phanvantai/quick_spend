@@ -91,7 +91,7 @@ class ExpenseCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            categoryData.getLabel(expense.language),
+                            categoryData.name,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: categoryData.color,
                             ),

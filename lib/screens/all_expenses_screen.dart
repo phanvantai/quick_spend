@@ -165,7 +165,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(
               context.tr('home.category'),
-              categoryData.getLabel(expense.language),
+              categoryData.name,
             ),
             const SizedBox(height: AppTheme.spacing12),
             _buildDetailRow(

@@ -17,8 +17,7 @@ class ExpenseService {
   /// Initialize the expense service
   Future<void> init() async {
     _database = await _databaseManager.database;
-    // Seed system categories if needed
-    await _seedSystemCategories();
+    // Note: System categories are now seeded after onboarding, not here
   }
 
   /// Ensure database is initialized
@@ -236,20 +235,22 @@ class ExpenseService {
     debugPrint('✅ [ExpenseService] Expenses reassigned');
   }
 
-  /// Seed system categories
-  Future<void> _seedSystemCategories() async {
+  /// Seed system categories with specified language
+  /// Should be called once after onboarding is complete
+  /// [language] should be 'en' or 'vi'
+  Future<void> seedSystemCategories(String language) async {
     final categories = await getAllCategories(null);
     if (categories.isNotEmpty) {
-      debugPrint('ℹ️ [ExpenseService] System categories already seeded');
+      debugPrint('ℹ️ [ExpenseService] System categories already exist, skipping seed');
       return;
     }
 
-    debugPrint('🌱 [ExpenseService] Seeding system categories...');
-    final systemCategories = QuickCategory.getDefaultSystemCategories();
+    debugPrint('🌱 [ExpenseService] Seeding system categories for language: $language');
+    final systemCategories = QuickCategory.getDefaultSystemCategories(language);
     for (final category in systemCategories) {
       await saveCategory(category);
     }
-    debugPrint('✅ [ExpenseService] System categories seeded');
+    debugPrint('✅ [ExpenseService] System categories seeded (${systemCategories.length} categories)');
   }
 
   /// Clear all data (for testing)

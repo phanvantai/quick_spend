@@ -171,7 +171,7 @@ class TopExpensesList extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        categoryData.getLabel(language),
+                        categoryData.name,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
