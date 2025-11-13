@@ -19,7 +19,7 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = category.getLabel(language);
+    final label = category.name;
 
     return Material(
       color: Colors.transparent,

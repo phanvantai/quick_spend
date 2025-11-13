@@ -6,13 +6,17 @@ import 'package:path/path.dart';
 /// Manages database initialization, schema creation, and migrations
 class DatabaseManager {
   static const String _databaseName = 'quick_spend.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
 
   Database? _database;
+  String? _migrationLanguage;
 
   /// Initialize the database
-  Future<void> init() async {
+  /// [language] is used for migrating existing category data to single language
+  Future<void> init({String? language}) async {
     if (_database != null) return;
+
+    _migrationLanguage = language;
 
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, _databaseName);
@@ -56,14 +60,12 @@ class DatabaseManager {
     ''');
     debugPrint('  ✓ Created expenses table');
 
-    // Create categories table
+    // Create categories table (v3 schema with single language)
     await db.execute('''
       CREATE TABLE categories (
         id TEXT PRIMARY KEY,
-        nameEn TEXT NOT NULL,
-        nameVi TEXT NOT NULL,
-        keywordsEn TEXT NOT NULL,
-        keywordsVi TEXT NOT NULL,
+        name TEXT NOT NULL,
+        keywords TEXT NOT NULL,
         iconCodePoint INTEGER NOT NULL,
         colorValue INTEGER NOT NULL,
         isSystem INTEGER NOT NULL,
@@ -119,6 +121,48 @@ class DatabaseManager {
         )
       ''');
       debugPrint('  ✓ Added recurring_templates table');
+    }
+
+    if (oldVersion < 3) {
+      // Migrate categories to single language schema (v2 -> v3 migration)
+      debugPrint('📦 [DatabaseManager] Migrating categories to single language schema...');
+
+      // Determine which language to use based on user preference
+      final useVietnamese = _migrationLanguage == 'vi';
+      final nameColumn = useVietnamese ? 'nameVi' : 'nameEn';
+      final keywordsColumn = useVietnamese ? 'keywordsVi' : 'keywordsEn';
+
+      debugPrint('   Using language: ${useVietnamese ? "Vietnamese" : "English"}');
+
+      // SQLite doesn't support DROP COLUMN, so we need to recreate the table
+      await db.execute('''
+        CREATE TABLE categories_new (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          keywords TEXT NOT NULL,
+          iconCodePoint INTEGER NOT NULL,
+          colorValue INTEGER NOT NULL,
+          isSystem INTEGER NOT NULL,
+          userId TEXT,
+          type TEXT NOT NULL DEFAULT 'expense',
+          createdAt TEXT NOT NULL
+        )
+      ''');
+
+      // Copy data with selected language
+      await db.execute('''
+        INSERT INTO categories_new
+          (id, name, keywords, iconCodePoint, colorValue, isSystem, userId, type, createdAt)
+        SELECT
+          id, $nameColumn, $keywordsColumn, iconCodePoint, colorValue, isSystem, userId, type, createdAt
+        FROM categories
+      ''');
+
+      // Drop old table and rename new one
+      await db.execute('DROP TABLE categories');
+      await db.execute('ALTER TABLE categories_new RENAME TO categories');
+
+      debugPrint('✅ [DatabaseManager] Categories migrated successfully');
     }
 
     debugPrint('✅ [DatabaseManager] Database upgraded successfully');

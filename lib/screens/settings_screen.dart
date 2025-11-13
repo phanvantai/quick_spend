@@ -918,19 +918,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // skip 'other' & 'other_income' built-in categories
           if (category.id == 'other' || category.id == 'other_income') {
             debugPrint(
-              'ℹ️ [SettingsScreen] Skipping built-in category: ${category.nameEn}',
+              'ℹ️ [SettingsScreen] Skipping built-in category: ${category.name}',
             );
             continue;
           }
           // Override existing category with imported data
           await categoryProvider.updateCategory(category);
           debugPrint(
-            '🔄 [SettingsScreen] Updated category: ${category.nameEn}',
+            '🔄 [SettingsScreen] Updated category: ${category.name}',
           );
         } else {
           // Create new category
           await categoryProvider.createCategory(category);
-          debugPrint('➕ [SettingsScreen] Created category: ${category.nameEn}');
+          debugPrint('➕ [SettingsScreen] Created category: ${category.name}');
         }
       }
 

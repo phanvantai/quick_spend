@@ -72,7 +72,7 @@ class CategoryProvider extends ChangeNotifier {
       await _expenseService.saveCategory(category);
       _categories.add(category);
       notifyListeners();
-      debugPrint('✅ [CategoryProvider] Created category: ${category.nameEn}');
+      debugPrint('✅ [CategoryProvider] Created category: ${category.name}');
     } catch (e) {
       debugPrint('❌ [CategoryProvider] Error creating category: $e');
       rethrow;
@@ -88,7 +88,7 @@ class CategoryProvider extends ChangeNotifier {
         _categories[index] = category;
         notifyListeners();
       }
-      debugPrint('✅ [CategoryProvider] Updated category: ${category.nameEn}');
+      debugPrint('✅ [CategoryProvider] Updated category: ${category.name}');
     } catch (e) {
       debugPrint('❌ [CategoryProvider] Error updating category: $e');
       rethrow;

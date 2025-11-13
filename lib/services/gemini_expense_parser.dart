@@ -211,16 +211,16 @@ class GeminiExpenseParser {
 
     final incomeCategoryDesc = incomeCategories
         .map((cat) {
-          final keywords = cat.getKeywords(language);
-          final label = cat.getLabel(language);
+          final keywords = cat.keywords;
+          final label = cat.name;
           return '  - ${cat.id}: $label (${keywords.take(2).join(", ")})';
         })
         .join('\n');
 
     final expenseCategoryDesc = expenseCategories
         .map((cat) {
-          final keywords = cat.getKeywords(language);
-          final label = cat.getLabel(language);
+          final keywords = cat.keywords;
+          final label = cat.name;
           return '  - ${cat.id}: $label (${keywords.take(2).join(", ")})';
         })
         .join('\n');

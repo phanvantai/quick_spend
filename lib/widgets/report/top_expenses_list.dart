@@ -102,7 +102,7 @@ class TopExpensesList extends StatelessWidget {
     final categoryData =
         categoryProvider.getCategoryById(expense.categoryId) ??
         categoryProvider.getCategoryById('other') ??
-        QuickCategory.getDefaultSystemCategories().firstWhere(
+        QuickCategory.getDefaultSystemCategories(language).firstWhere(
           (c) => c.id == 'other',
         ); // Fallback to system 'other' category
 
@@ -171,7 +171,7 @@ class TopExpensesList extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        categoryData.getLabel(language),
+                        categoryData.name,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),

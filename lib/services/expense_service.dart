@@ -17,8 +17,7 @@ class ExpenseService {
   /// Initialize the expense service
   Future<void> init() async {
     _database = await _databaseManager.database;
-    // Seed system categories if needed
-    await _seedSystemCategories();
+    // Note: System categories are now seeded after onboarding, not here
   }
 
   /// Ensure database is initialized
@@ -162,7 +161,7 @@ class ExpenseService {
   /// Save a category
   Future<void> saveCategory(QuickCategory category) async {
     await _ensureInitialized();
-    debugPrint('💾 [ExpenseService] Saving category: ${category.nameEn}');
+    debugPrint('💾 [ExpenseService] Saving category: ${category.name}');
     await _database!.insert(
       _categoriesTableName,
       category.toJson(),
@@ -179,7 +178,7 @@ class ExpenseService {
       _categoriesTableName,
       where: userId != null ? 'userId = ? OR userId IS NULL' : 'userId IS NULL',
       whereArgs: userId != null ? [userId] : null,
-      orderBy: 'isSystem DESC, nameEn ASC',
+      orderBy: 'isSystem DESC, name ASC',
     );
 
     return maps.map((map) => QuickCategory.fromJson(map)).toList();
@@ -236,20 +235,22 @@ class ExpenseService {
     debugPrint('✅ [ExpenseService] Expenses reassigned');
   }
 
-  /// Seed system categories
-  Future<void> _seedSystemCategories() async {
+  /// Seed system categories with specified language
+  /// Should be called once after onboarding is complete
+  /// [language] should be 'en' or 'vi'
+  Future<void> seedSystemCategories(String language) async {
     final categories = await getAllCategories(null);
     if (categories.isNotEmpty) {
-      debugPrint('ℹ️ [ExpenseService] System categories already seeded');
+      debugPrint('ℹ️ [ExpenseService] System categories already exist, skipping seed');
       return;
     }
 
-    debugPrint('🌱 [ExpenseService] Seeding system categories...');
-    final systemCategories = QuickCategory.getDefaultSystemCategories();
+    debugPrint('🌱 [ExpenseService] Seeding system categories for language: $language');
+    final systemCategories = QuickCategory.getDefaultSystemCategories(language);
     for (final category in systemCategories) {
       await saveCategory(category);
     }
-    debugPrint('✅ [ExpenseService] System categories seeded');
+    debugPrint('✅ [ExpenseService] System categories seeded (${systemCategories.length} categories)');
   }
 
   /// Clear all data (for testing)

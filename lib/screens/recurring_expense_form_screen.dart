@@ -383,7 +383,7 @@ class _RecurringExpenseFormScreenState
                         children: [
                           Icon(cat.icon, color: cat.color, size: 20),
                           const SizedBox(width: AppTheme.spacing8),
-                          Text(cat.getLabel(appConfig.language)),
+                          Text(cat.name),
                         ],
                       ),
                     );

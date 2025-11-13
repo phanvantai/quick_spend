@@ -126,7 +126,6 @@ class ExpenseParser {
     // Step 4: Auto-categorize based on description
     final categoryResult = Categorizer.categorize(
       description,
-      language,
       categories,
       type: transactionType,
     );
@@ -171,7 +170,6 @@ class ExpenseParser {
       overallConfidence: overallConfidence,
       suggestedCategories: Categorizer.getAllMatches(
         description,
-        language,
         categories,
         type: transactionType,
       ),

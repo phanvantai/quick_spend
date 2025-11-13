@@ -33,9 +33,13 @@ void main() async {
   final preferencesService = PreferencesService();
   await preferencesService.init();
 
-  // Initialize database manager (centralized database)
+  // Get current language for database migration
+  final config = await preferencesService.getConfig();
+  final currentLanguage = config.language;
+
+  // Initialize database manager (centralized database) with language for migration
   final databaseManager = DatabaseManager();
-  await databaseManager.init();
+  await databaseManager.init(language: currentLanguage);
 
   // Initialize services with shared database
   final expenseService = ExpenseService(databaseManager);
@@ -93,6 +97,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<DataCollectionService>.value(value: dataCollectionService),
+        Provider<ExpenseService>.value(value: expenseService),
         ChangeNotifierProvider(
           create: (_) => AppConfigProvider(preferencesService),
         ),

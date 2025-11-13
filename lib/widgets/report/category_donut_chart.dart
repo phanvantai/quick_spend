@@ -49,8 +49,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
           builder: (context, constraints) {
             // Use the available width to determine chart size
             final chartSize = constraints.maxWidth * 0.65; // 65% for chart
-            final legendWidth =
-                constraints.maxWidth * 0.30; // 30% for legend
+            final legendWidth = constraints.maxWidth * 0.30; // 30% for legend
 
             return SizedBox(
               height: 200,
@@ -68,8 +67,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                                 setState(() {
                                   if (!event.isInterestedForInteractions ||
                                       pieTouchResponse == null ||
-                                      pieTouchResponse.touchedSection ==
-                                          null) {
+                                      pieTouchResponse.touchedSection == null) {
                                     touchedIndex = -1;
                                     return;
                                   }
@@ -88,10 +86,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                   ),
                   const SizedBox(width: AppTheme.spacing16),
                   // Legend
-                  SizedBox(
-                    width: legendWidth,
-                    child: _buildLegend(context),
-                  ),
+                  SizedBox(width: legendWidth, child: _buildLegend(context)),
                 ],
               ),
             );
@@ -159,7 +154,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
               const SizedBox(width: AppTheme.spacing8),
               Expanded(
                 child: Text(
-                  stat.getLabel(widget.language),
+                  stat.categoryName,
                   style: theme.textTheme.bodySmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

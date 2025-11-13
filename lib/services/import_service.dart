@@ -310,7 +310,7 @@ class ImportService {
             importedCategories.add(category);
             categoriesImported++;
             debugPrint(
-              '✅ [ImportService] Imported category: ${category.nameEn} (${category.isSystem ? "system" : "user"})',
+              '✅ [ImportService] Imported category: ${category.name} (${category.isSystem ? "system" : "user"})',
             );
           } catch (e) {
             errors.add('Category "${entry.key}": $e');
@@ -347,7 +347,7 @@ class ImportService {
             importedCategories.add(category);
             categoriesImported++;
             debugPrint(
-              '✅ [ImportService] Imported category: ${category.nameEn}',
+              '✅ [ImportService] Imported category: ${category.name}',
             );
           } catch (e) {
             errors.add('Category ${i + 1}: $e');
