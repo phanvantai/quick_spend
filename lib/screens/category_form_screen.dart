@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../utils/constants.dart';
 
 /// Full-screen form for adding/editing expense categories
+/// Simplified to single language (user's current language)
 class CategoryFormScreen extends StatefulWidget {
   final QuickCategory? category; // Null for add, non-null for edit
 
@@ -19,15 +20,12 @@ class CategoryFormScreen extends StatefulWidget {
 
 class _CategoryFormScreenState extends State<CategoryFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameEnController;
-  late TextEditingController _nameViController;
-  late TextEditingController _keywordsEnController;
-  late TextEditingController _keywordsViController;
+  late TextEditingController _nameController;
+  late TextEditingController _keywordsController;
 
   late IconData _selectedIcon;
   late Color _selectedColor;
   late TransactionType _selectedType;
-  bool _showOtherLanguage = false;
 
   // Extended icon library for user selection (60+ icons)
   static const List<IconData> _availableIcons = [
@@ -225,17 +223,11 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
     final isEdit = widget.category != null;
 
-    _nameEnController = TextEditingController(
-      text: isEdit ? widget.category!.nameEn : '',
+    _nameController = TextEditingController(
+      text: isEdit ? widget.category!.name : '',
     );
-    _nameViController = TextEditingController(
-      text: isEdit ? widget.category!.nameVi : '',
-    );
-    _keywordsEnController = TextEditingController(
-      text: isEdit ? widget.category!.keywordsEn.join(', ') : '',
-    );
-    _keywordsViController = TextEditingController(
-      text: isEdit ? widget.category!.keywordsVi.join(', ') : '',
+    _keywordsController = TextEditingController(
+      text: isEdit ? widget.category!.keywords.join(', ') : '',
     );
 
     _selectedIcon = isEdit ? widget.category!.icon : _availableIcons[0];
@@ -245,10 +237,8 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
   @override
   void dispose() {
-    _nameEnController.dispose();
-    _nameViController.dispose();
-    _keywordsEnController.dispose();
-    _keywordsViController.dispose();
+    _nameController.dispose();
+    _keywordsController.dispose();
     super.dispose();
   }
 
@@ -257,7 +247,6 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     final theme = Theme.of(context);
     final isEdit = widget.category != null;
     final userLanguage = context.watch<AppConfigProvider>().language;
-    final isPrimaryEn = userLanguage == 'en';
 
     return Scaffold(
       appBar: AppBar(
@@ -268,7 +257,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => _saveCategory(userLanguage),
+            onPressed: _saveCategory,
             child: Text(
               context.tr('common.save'),
               style: TextStyle(
@@ -287,7 +276,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
           padding: const EdgeInsets.all(AppTheme.spacing16),
           children: [
             // Preview Card
-            _buildPreviewCard(theme, isPrimaryEn),
+            _buildPreviewCard(theme),
             const SizedBox(height: AppTheme.spacing24),
 
             // Type Selector (Income/Expense)
@@ -320,84 +309,47 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
             ),
             const SizedBox(height: AppTheme.spacing24),
 
-            // Primary Language Fields (based on user's language)
-            if (isPrimaryEn) ...[
-              // Name (English)
-              TextFormField(
-                controller: _nameEnController,
-                decoration: InputDecoration(
-                  labelText: context.tr('categories.name_en'),
-                  hintText: 'Food, Transport, etc.',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.label),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.tr('categories.name_required');
-                  }
-                  return null;
-                },
-                onChanged: (_) => setState(() {}), // Update preview
+            // Name Field
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: context.tr('categories.name'),
+                hintText: userLanguage == 'vi'
+                    ? 'Ăn uống, Di chuyển, etc.'
+                    : 'Food, Transport, etc.',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.label),
               ),
-              const SizedBox(height: AppTheme.spacing16),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return context.tr('categories.name_required');
+                }
+                return null;
+              },
+              onChanged: (_) => setState(() {}), // Update preview
+            ),
+            const SizedBox(height: AppTheme.spacing16),
 
-              // Keywords (English)
-              TextFormField(
-                controller: _keywordsEnController,
-                decoration: InputDecoration(
-                  labelText: context.tr('categories.keywords_en'),
-                  hintText: 'food, eat, lunch, dinner',
-                  helperText: context.tr('categories.keywords_hint'),
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.vpn_key),
-                ),
-                maxLines: 2,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.tr('categories.keywords_required');
-                  }
-                  return null;
-                },
+            // Keywords Field
+            TextFormField(
+              controller: _keywordsController,
+              decoration: InputDecoration(
+                labelText: context.tr('categories.keywords'),
+                hintText: userLanguage == 'vi'
+                    ? 'ăn, cơm, phở, bún'
+                    : 'food, eat, lunch, dinner',
+                helperText: context.tr('categories.keywords_hint'),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.vpn_key),
               ),
-            ] else ...[
-              // Name (Vietnamese)
-              TextFormField(
-                controller: _nameViController,
-                decoration: InputDecoration(
-                  labelText: context.tr('categories.name_vi'),
-                  hintText: 'Ăn uống, Di chuyển, etc.',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.label),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.tr('categories.name_required');
-                  }
-                  return null;
-                },
-                onChanged: (_) => setState(() {}), // Update preview
-              ),
-              const SizedBox(height: AppTheme.spacing16),
-
-              // Keywords (Vietnamese)
-              TextFormField(
-                controller: _keywordsViController,
-                decoration: InputDecoration(
-                  labelText: context.tr('categories.keywords_vi'),
-                  hintText: 'ăn, cơm, phở, bún',
-                  helperText: context.tr('categories.keywords_hint'),
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.vpn_key),
-                ),
-                maxLines: 2,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.tr('categories.keywords_required');
-                  }
-                  return null;
-                },
-              ),
-            ],
+              maxLines: 2,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return context.tr('categories.keywords_required');
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: AppTheme.spacing24),
 
             // Keywords Help Section
@@ -432,89 +384,6 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: AppTheme.spacing16),
-
-            // Toggle for other language
-            TextButton.icon(
-              onPressed: () {
-                setState(() {
-                  _showOtherLanguage = !_showOtherLanguage;
-                });
-              },
-              icon: Icon(
-                _showOtherLanguage ? Icons.expand_less : Icons.expand_more,
-              ),
-              label: Text(
-                _showOtherLanguage
-                    ? (isPrimaryEn
-                          ? 'Hide Vietnamese translation'
-                          : 'Hide English translation')
-                    : (isPrimaryEn
-                          ? 'Add Vietnamese translation (optional)'
-                          : 'Add English translation (optional)'),
-              ),
-              style: TextButton.styleFrom(alignment: Alignment.centerLeft),
-            ),
-
-            // Secondary Language Fields (optional)
-            if (_showOtherLanguage) ...[
-              const SizedBox(height: AppTheme.spacing8),
-              if (isPrimaryEn) ...[
-                // Name (Vietnamese) - Optional
-                TextFormField(
-                  controller: _nameViController,
-                  decoration: InputDecoration(
-                    labelText: '${context.tr('categories.name_vi')} (optional)',
-                    hintText: 'Ăn uống, Di chuyển, etc.',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.translate),
-                  ),
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: AppTheme.spacing16),
-
-                // Keywords (Vietnamese) - Optional
-                TextFormField(
-                  controller: _keywordsViController,
-                  decoration: InputDecoration(
-                    labelText:
-                        '${context.tr('categories.keywords_vi')} (optional)',
-                    hintText: 'ăn, cơm, phở, bún',
-                    helperText: context.tr('categories.keywords_hint'),
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.vpn_key),
-                  ),
-                  maxLines: 2,
-                ),
-              ] else ...[
-                // Name (English) - Optional
-                TextFormField(
-                  controller: _nameEnController,
-                  decoration: InputDecoration(
-                    labelText: '${context.tr('categories.name_en')} (optional)',
-                    hintText: 'Food, Transport, etc.',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.translate),
-                  ),
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: AppTheme.spacing16),
-
-                // Keywords (English) - Optional
-                TextFormField(
-                  controller: _keywordsEnController,
-                  decoration: InputDecoration(
-                    labelText:
-                        '${context.tr('categories.keywords_en')} (optional)',
-                    hintText: 'food, eat, lunch, dinner',
-                    helperText: context.tr('categories.keywords_hint'),
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.vpn_key),
-                  ),
-                  maxLines: 2,
-                ),
-              ],
-            ],
             const SizedBox(height: AppTheme.spacing32),
 
             // Icon Picker Section
@@ -544,14 +413,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     );
   }
 
-  Widget _buildPreviewCard(ThemeData theme, bool isPrimaryEn) {
-    final primaryName = isPrimaryEn
-        ? _nameEnController.text
-        : _nameViController.text;
-    final secondaryName = isPrimaryEn
-        ? _nameViController.text
-        : _nameEnController.text;
-
+  Widget _buildPreviewCard(ThemeData theme) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -579,23 +441,13 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                 ),
                 const SizedBox(width: AppTheme.spacing16),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        primaryName.isEmpty ? 'Category Name' : primaryName,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (secondaryName.isNotEmpty)
-                        Text(
-                          secondaryName,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                    ],
+                  child: Text(
+                    _nameController.text.isEmpty
+                        ? 'Category Name'
+                        : _nameController.text,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -693,38 +545,13 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     );
   }
 
-  void _saveCategory(String userLanguage) {
+  void _saveCategory() {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    // Auto-fill secondary language if empty
-    if (userLanguage == 'en') {
-      // Primary is English, check Vietnamese
-      if (_nameViController.text.trim().isEmpty) {
-        _nameViController.text = _nameEnController.text;
-      }
-      if (_keywordsViController.text.trim().isEmpty) {
-        _keywordsViController.text = _keywordsEnController.text;
-      }
-    } else {
-      // Primary is Vietnamese, check English
-      if (_nameEnController.text.trim().isEmpty) {
-        _nameEnController.text = _nameViController.text;
-      }
-      if (_keywordsEnController.text.trim().isEmpty) {
-        _keywordsEnController.text = _keywordsViController.text;
-      }
-    }
-
     // Parse keywords (split by comma and trim)
-    final keywordsEn = _keywordsEnController.text
-        .split(',')
-        .map((k) => k.trim())
-        .where((k) => k.isNotEmpty)
-        .toList();
-
-    final keywordsVi = _keywordsViController.text
+    final keywords = _keywordsController.text
         .split(',')
         .map((k) => k.trim())
         .where((k) => k.isNotEmpty)
@@ -732,13 +559,10 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
     // Create category
     final category = QuickCategory(
-      id:
-          widget.category?.id ??
-          _nameEnController.text.toLowerCase().replaceAll(' ', '_'),
-      nameEn: _nameEnController.text.trim(),
-      nameVi: _nameViController.text.trim(),
-      keywordsEn: keywordsEn,
-      keywordsVi: keywordsVi,
+      id: widget.category?.id ??
+          _nameController.text.toLowerCase().replaceAll(' ', '_'),
+      name: _nameController.text.trim(),
+      keywords: keywords,
       iconCodePoint: _selectedIcon.codePoint,
       colorValue: _selectedColor.toARGB32(),
       isSystem: widget.category?.isSystem ?? false,

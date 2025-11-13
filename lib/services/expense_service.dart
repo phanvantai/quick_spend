@@ -161,7 +161,7 @@ class ExpenseService {
   /// Save a category
   Future<void> saveCategory(QuickCategory category) async {
     await _ensureInitialized();
-    debugPrint('💾 [ExpenseService] Saving category: ${category.nameEn}');
+    debugPrint('💾 [ExpenseService] Saving category: ${category.name}');
     await _database!.insert(
       _categoriesTableName,
       category.toJson(),
@@ -178,7 +178,7 @@ class ExpenseService {
       _categoriesTableName,
       where: userId != null ? 'userId = ? OR userId IS NULL' : 'userId IS NULL',
       whereArgs: userId != null ? [userId] : null,
-      orderBy: 'isSystem DESC, nameEn ASC',
+      orderBy: 'isSystem DESC, name ASC',
     );
 
     return maps.map((map) => QuickCategory.fromJson(map)).toList();
