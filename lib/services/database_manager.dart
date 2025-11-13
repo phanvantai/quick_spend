@@ -149,14 +149,31 @@ class DatabaseManager {
         )
       ''');
 
+      // Check if type column exists in old table (added in later versions)
+      final tableInfo = await db.rawQuery('PRAGMA table_info(categories)');
+      final hasTypeColumn = tableInfo.any((col) => col['name'] == 'type');
+
       // Copy data with selected language
-      await db.execute('''
-        INSERT INTO categories_new
-          (id, name, keywords, iconCodePoint, colorValue, isSystem, userId, type, createdAt)
-        SELECT
-          id, $nameColumn, $keywordsColumn, iconCodePoint, colorValue, isSystem, userId, type, createdAt
-        FROM categories
-      ''');
+      if (hasTypeColumn) {
+        // Old table has type column, copy it
+        await db.execute('''
+          INSERT INTO categories_new
+            (id, name, keywords, iconCodePoint, colorValue, isSystem, userId, type, createdAt)
+          SELECT
+            id, $nameColumn, $keywordsColumn, iconCodePoint, colorValue, isSystem, userId, type, createdAt
+          FROM categories
+        ''');
+      } else {
+        // Old table doesn't have type column, use default 'expense'
+        debugPrint('   Old table missing type column, using default "expense"');
+        await db.execute('''
+          INSERT INTO categories_new
+            (id, name, keywords, iconCodePoint, colorValue, isSystem, userId, type, createdAt)
+          SELECT
+            id, $nameColumn, $keywordsColumn, iconCodePoint, colorValue, isSystem, userId, 'expense', createdAt
+          FROM categories
+        ''');
+      }
 
       // Drop old table and rename new one
       await db.execute('DROP TABLE categories');
