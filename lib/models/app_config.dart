@@ -108,12 +108,14 @@ class LanguageOption {
   final String countryCode;
   final String displayName;
   final String flag;
+  final String defaultCurrency; // Default currency for this language
 
   const LanguageOption({
     required this.code,
     required this.countryCode,
     required this.displayName,
     required this.flag,
+    required this.defaultCurrency,
   });
 
   static const List<LanguageOption> options = [
@@ -122,14 +124,25 @@ class LanguageOption {
       displayName: 'English',
       flag: '🇺🇸',
       countryCode: 'US',
+      defaultCurrency: 'USD',
     ),
     LanguageOption(
       code: 'vi',
       displayName: 'Tiếng Việt',
       flag: '🇻🇳',
       countryCode: 'VN',
+      defaultCurrency: 'VND',
     ),
   ];
+
+  /// Get default currency for a language code
+  static String getDefaultCurrency(String languageCode) {
+    final option = options.firstWhere(
+      (opt) => opt.code == languageCode,
+      orElse: () => options.first,
+    );
+    return option.defaultCurrency;
+  }
 }
 
 /// Currency option for selection

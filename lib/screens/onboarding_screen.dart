@@ -20,7 +20,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   late String _selectedLanguage;
-  String _selectedCurrency = 'USD';
+  late String _selectedCurrency;
   bool _isInitialized = false;
 
   @override
@@ -29,6 +29,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     // Initialize with current locale (only once)
     if (!_isInitialized) {
       _selectedLanguage = context.locale.languageCode;
+      // Auto-select currency based on language
+      _selectedCurrency = LanguageOption.getDefaultCurrency(_selectedLanguage);
+      debugPrint(
+        '🌍 [Onboarding] Initialized: language=$_selectedLanguage, currency=$_selectedCurrency',
+      );
       _isInitialized = true;
     }
   }
@@ -322,6 +327,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               onTap: () async {
                 setState(() {
                   _selectedLanguage = option.code;
+                  // Auto-select currency based on language
+                  _selectedCurrency = option.defaultCurrency;
+                  debugPrint(
+                    '🌍 [Onboarding] Language changed: $_selectedLanguage → Currency auto-selected: $_selectedCurrency',
+                  );
                 });
                 // Update locale immediately for preview
                 await context.setLocale(
@@ -385,6 +395,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               onTap: () {
                 setState(() {
                   _selectedCurrency = option.code;
+                  debugPrint(
+                    '💰 [Onboarding] Currency manually changed: $_selectedCurrency',
+                  );
                 });
               },
               leading: Text(
