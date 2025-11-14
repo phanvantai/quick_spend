@@ -215,16 +215,14 @@ class HomeScreen extends StatelessWidget {
                         stats: stats,
                         trendPercentage: reportProvider.trendPercentage,
                         isTrendPositive: reportProvider.isTrendPositive,
-                        currency: configProvider.currency,
-                        language: context.locale.languageCode,
+                        appConfig: configProvider.config,
                       ),
                       const SizedBox(height: AppTheme.spacing16),
 
                       // Stats grid (avg/day, highest expense)
                       StatsGrid(
                         stats: stats,
-                        currency: configProvider.currency,
-                        language: context.locale.languageCode,
+                        appConfig: configProvider.config,
                       ),
                       const SizedBox(height: AppTheme.spacing16),
 
@@ -234,8 +232,7 @@ class HomeScreen extends StatelessWidget {
                         CategoryBreakdownSwitcher(
                           expenseCategoryStats: stats.expenseCategoryBreakdown,
                           incomeCategoryStats: stats.incomeCategoryBreakdown,
-                          currency: configProvider.currency,
-                          language: context.locale.languageCode,
+                          appConfig: configProvider.config,
                         ),
                       const SizedBox(height: AppTheme.spacing16),
 

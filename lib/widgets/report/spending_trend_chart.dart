@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../models/period_stats.dart';
+import '../../models/app_config.dart';
 import '../../theme/app_theme.dart';
 
 /// Bar chart showing spending trend over time
 class SpendingTrendChart extends StatefulWidget {
   final PeriodStats stats;
-  final String currency;
-  final String language;
+  final AppConfig appConfig;
 
   const SpendingTrendChart({
     super.key,
     required this.stats,
-    required this.currency,
-    required this.language,
+    required this.appConfig,
   });
 
   @override
@@ -222,21 +221,26 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
     final colorScheme = theme.colorScheme;
 
     String text;
-    if (widget.language == 'vi') {
-      // Vietnamese: Show in thousands (k)
+    final isVietnameseOrSpanish = widget.appConfig.language == 'vi' || widget.appConfig.language == 'es';
+
+    // Determine decimal places based on currency
+    final decimals = _getDecimalPlaces();
+
+    if (isVietnameseOrSpanish) {
+      // Vietnamese/Spanish: Show in thousands (k)
       if (value >= 1000000) {
         text = '${(value / 1000000).toStringAsFixed(0)}${context.tr('currency.suffix_million')}';
       } else if (value >= 1000) {
         text = '${(value / 1000).toStringAsFixed(0)}${context.tr('currency.suffix_thousand')}';
       } else {
-        text = value.toStringAsFixed(0);
+        text = value.toStringAsFixed(decimals);
       }
     } else {
-      // English: Show in dollars
+      // Other languages: Show with currency symbol
       if (value >= 1000) {
-        text = '${context.tr('currency.symbol_usd')}${(value / 1000).toStringAsFixed(0)}${context.tr('currency.suffix_thousand')}';
+        text = '${widget.appConfig.currencySymbol}${(value / 1000).toStringAsFixed(0)}${context.tr('currency.suffix_thousand')}';
       } else {
-        text = '${context.tr('currency.symbol_usd')}${value.toStringAsFixed(0)}';
+        text = '${widget.appConfig.currencySymbol}${value.toStringAsFixed(decimals)}';
       }
     }
 
@@ -307,26 +311,52 @@ class _SpendingTrendChartState extends State<SpendingTrendChart> {
   }
 
   String _formatAmount(BuildContext context, double amount) {
-    if (widget.language == 'vi') {
-      final formatted = amount
-          .toStringAsFixed(0)
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
-      return widget.currency == 'VND'
-          ? '$formatted${context.tr('currency.symbol_vnd')}'
-          : '${context.tr('currency.symbol_usd')}$formatted';
+    final decimals = _getDecimalPlaces();
+    final isVietnameseOrSpanish = widget.appConfig.language == 'vi' || widget.appConfig.language == 'es';
+
+    // Use period for thousands and comma for decimal (vi/es), or comma for thousands and period for decimal (en/ja/ko/th)
+    final String formattedAmount;
+    final String decimalSeparator = isVietnameseOrSpanish ? ',' : '.';
+    final String thousandsSeparator = isVietnameseOrSpanish ? '.' : ',';
+
+    final baseFormatted = amount.toStringAsFixed(decimals);
+
+    // Split into integer and decimal parts
+    final parts = baseFormatted.split('.');
+    final integerPart = parts[0];
+    final decimalPart = decimals > 0 ? parts.length > 1 ? parts[1] : '00' : '';
+
+    // Format thousand separators in integer part
+    final integerFormatted = integerPart.replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}$thousandsSeparator',
+    );
+
+    // Combine with decimal separator
+    formattedAmount = decimals > 0
+        ? '$integerFormatted$decimalSeparator$decimalPart'
+        : integerFormatted;
+
+    // Add currency symbol at appropriate position
+    if (isVietnameseOrSpanish) {
+      return '$formattedAmount${widget.appConfig.currencySymbol}';
     } else {
-      final formatted = amount
-          .toStringAsFixed(2)
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
-      return widget.currency == 'USD'
-          ? '${context.tr('currency.symbol_usd')}$formatted'
-          : '$formatted ${context.tr('currency.symbol_vnd')}';
+      return '${widget.appConfig.currencySymbol}$formattedAmount';
+    }
+  }
+
+  /// Get decimal places based on currency
+  int _getDecimalPlaces() {
+    switch (widget.appConfig.currency) {
+      case 'VND':
+      case 'JPY':
+      case 'KRW':
+        return 0;
+      case 'USD':
+      case 'THB':
+      case 'EUR':
+      default:
+        return 2;
     }
   }
 }
