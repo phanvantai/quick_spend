@@ -65,22 +65,30 @@ class _EditableExpenseDialogState extends State<EditableExpenseDialog> {
 
       await expenseProvider.addExpenses(expenses);
 
-      // Log training data for each expense
+      // Log training data for each expense (non-blocking)
+      // Wrap in try-catch to prevent Firestore errors from blocking UI
       for (var i = 0; i < _expenseForms.length; i++) {
-        final form = _expenseForms[i];
-        final expense = expenses[i];
+        try {
+          final form = _expenseForms[i];
+          final expense = expenses[i];
 
-        await dataCollectionService.logExpenseParsing(
-          rawInput: expense.rawInput,
-          description: expense.description,
-          amount: expense.amount,
-          predictedCategory: form.originalCategoryId, // Original from parser
-          finalCategory: expense.categoryId, // Final after user edit
-          confidence: expense.confidence,
-          language: expense.language,
-          inputMethod: 'voice', // This dialog is for voice input
-          parserUsed: form.parserUsed,
-        );
+          await dataCollectionService.logExpenseParsing(
+            rawInput: expense.rawInput,
+            description: expense.description,
+            amount: expense.amount,
+            predictedCategory: form.originalCategoryId, // Original from parser
+            finalCategory: expense.categoryId, // Final after user edit
+            confidence: expense.confidence,
+            language: expense.language,
+            inputMethod: 'voice', // This dialog is for voice input
+            parserUsed: form.parserUsed,
+          );
+        } catch (e) {
+          debugPrint(
+            '⚠️ [EditableExpenseDialog] Failed to log training data: $e',
+          );
+          // Continue anyway - logging is optional
+        }
       }
 
       debugPrint('✅ [EditableExpenseDialog] Expenses saved successfully');
