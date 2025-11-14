@@ -247,6 +247,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       iconColor: AppTheme.success,
                       title: context.tr('settings.export_data'),
                       subtitle: context.tr('settings.export_data_subtitle'),
+                      description: 'Includes expenses, categories, language & currency',
                       onTap: () => _showExportDialog(context),
                     ),
 
@@ -255,6 +256,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       iconColor: AppTheme.info,
                       title: context.tr('settings.import_data'),
                       subtitle: context.tr('settings.import_data_subtitle'),
+                      description: 'Restores expenses, categories, and app settings',
                       onTap: () => _handleImport(context),
                     ),
 
@@ -768,11 +770,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _handleExport(context, 'json');
   }
 
-  // Handle Export (JSON only - includes all categories and expenses)
+  // Handle Export (JSON only - includes all categories, expenses, and settings)
   Future<void> _handleExport(BuildContext context, String format) async {
     final messenger = ScaffoldMessenger.of(context);
     final expenseProvider = context.read<ExpenseProvider>();
     final categoryProvider = context.read<CategoryProvider>();
+    final configProvider = context.read<AppConfigProvider>();
 
     try {
       // Show loading indicator
@@ -800,9 +803,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       final expenses = expenseProvider.expenses;
       final categories = categoryProvider.categories;
+      final appConfig = configProvider.config;
 
-      // JSON exports both expenses and all categories (complete backup)
-      final filePath = await ExportService.exportToJSON(expenses, categories);
+      // JSON exports expenses, categories, and app settings (complete backup)
+      final filePath = await ExportService.exportToJSON(
+        expenses,
+        categories,
+        appConfig,
+      );
 
       // Calculate share position origin for iOS (required for iPad popover)
       final box = context.findRenderObject() as RenderBox?;
@@ -854,7 +862,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final expenseProvider = context.read<ExpenseProvider>();
     final categoryProvider = context.read<CategoryProvider>();
-    //final configProvider = context.read<AppConfigProvider>();
+    final configProvider = context.read<AppConfigProvider>();
 
     try {
       // Pick JSON file only (CSV doesn't include categories)
@@ -939,10 +947,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await expenseProvider.addExpense(expense);
       }
 
+      // Apply imported settings if available
+      if (importResult.hasSettings) {
+        debugPrint(
+          '⚙️ [SettingsScreen] Applying imported settings: language=${importResult.language}, currency=${importResult.currency}',
+        );
+
+        if (importResult.language != null &&
+            importResult.language != configProvider.language) {
+          // Find the language option to get country code
+          final languageOption = LanguageOption.options.firstWhere(
+            (opt) => opt.code == importResult.language,
+            orElse: () => LanguageOption.options.first,
+          );
+
+          // Update locale
+          await context.setLocale(
+            Locale(languageOption.code, languageOption.countryCode),
+          );
+
+          // Update provider
+          await configProvider.setLanguage(importResult.language!);
+          debugPrint(
+            '✅ [SettingsScreen] Language updated to: ${importResult.language}',
+          );
+        }
+
+        if (importResult.currency != null &&
+            importResult.currency != configProvider.currency) {
+          await configProvider.setCurrency(importResult.currency!);
+          debugPrint(
+            '✅ [SettingsScreen] Currency updated to: ${importResult.currency}',
+          );
+        }
+      }
+
       if (mounted) {
         messenger.clearSnackBars();
 
-        // Build success message with category info if applicable
+        // Build success message with category and settings info if applicable
         String message;
         if (importResult.categoriesImported > 0) {
           message = context.tr(
@@ -973,6 +1016,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'duplicates': importResult.duplicateCount.toString(),
             },
           );
+        }
+
+        // Add settings import info if applicable
+        if (importResult.hasSettings) {
+          final settingsParts = <String>[];
+          if (importResult.language != null) {
+            settingsParts.add(
+              'language: ${importResult.language}',
+            );
+          }
+          if (importResult.currency != null) {
+            settingsParts.add(
+              'currency: ${importResult.currency}',
+            );
+          }
+          if (settingsParts.isNotEmpty) {
+            message += '\n⚙️ Settings restored: ${settingsParts.join(", ")}';
+          }
         }
 
         messenger.showSnackBar(

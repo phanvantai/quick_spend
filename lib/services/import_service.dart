@@ -16,6 +16,8 @@ class ImportResult {
   final int categoriesImported;
   final int categoriesSkipped;
   final List<String> errors;
+  final String? language; // Language setting from import file
+  final String? currency; // Currency setting from import file
 
   ImportResult({
     required this.successCount,
@@ -26,11 +28,14 @@ class ImportResult {
     required this.categoriesImported,
     required this.categoriesSkipped,
     required this.errors,
+    this.language,
+    this.currency,
   });
 
   bool get hasErrors => errors.isNotEmpty;
   bool get isSuccessful => successCount > 0 || categoriesImported > 0;
   int get totalProcessed => successCount + failureCount + duplicateCount;
+  bool get hasSettings => language != null || currency != null;
 }
 
 /// Service for importing expense data from various formats
@@ -93,6 +98,8 @@ class ImportService {
           categoriesImported: 0,
           categoriesSkipped: 0,
           errors: errors,
+          language: null,
+          currency: null,
         );
       }
 
@@ -114,6 +121,8 @@ class ImportService {
             categoriesImported: 0,
             categoriesSkipped: 0,
             errors: errors,
+            language: null,
+            currency: null,
           );
         }
       }
@@ -236,6 +245,8 @@ class ImportService {
         categoriesImported: 0,
         categoriesSkipped: 0,
         errors: errors,
+        language: null,
+        currency: null,
       );
     } catch (e) {
       debugPrint('❌ [ImportService] Error importing CSV: $e');
@@ -249,12 +260,14 @@ class ImportService {
         categoriesImported: 0,
         categoriesSkipped: 0,
         errors: errors,
+        language: null,
+        currency: null,
       );
     }
   }
 
   /// Import expenses and categories from JSON file
-  /// Handles v1.0 (expenses only), v2.0 (with userCategories), and v3.0 (with full categories)
+  /// Handles v1.0 (expenses only), v2.0 (with userCategories), v3.0 (with full categories), and v4.0 (with settings)
   static Future<ImportResult> importFromJSON(
     String filePath,
     String userId,
@@ -271,6 +284,8 @@ class ImportService {
     int duplicateCount = 0;
     int categoriesImported = 0;
     int categoriesSkipped = 0;
+    String? importedLanguage;
+    String? importedCurrency;
 
     try {
       // Read file
@@ -283,6 +298,16 @@ class ImportService {
       // Check version
       final version = jsonData['version'] as String? ?? '1.0';
       debugPrint('📋 [ImportService] Import file version: $version');
+
+      // Import settings (v4.0+)
+      if (jsonData.containsKey('settings')) {
+        final settings = jsonData['settings'] as Map<String, dynamic>;
+        importedLanguage = settings['language'] as String?;
+        importedCurrency = settings['currency'] as String?;
+        debugPrint(
+          '⚙️ [ImportService] Found settings: language=$importedLanguage, currency=$importedCurrency',
+        );
+      }
 
       // Import categories based on version
       if (version == '3.0' && jsonData.containsKey('categories')) {
@@ -368,6 +393,8 @@ class ImportService {
           categoriesImported: categoriesImported,
           categoriesSkipped: categoriesSkipped,
           errors: errors,
+          language: importedLanguage,
+          currency: importedCurrency,
         );
       }
 
@@ -447,6 +474,8 @@ class ImportService {
         categoriesImported: categoriesImported,
         categoriesSkipped: categoriesSkipped,
         errors: errors,
+        language: importedLanguage,
+        currency: importedCurrency,
       );
     } catch (e) {
       debugPrint('❌ [ImportService] Error importing JSON: $e');
@@ -460,6 +489,8 @@ class ImportService {
         categoriesImported: categoriesImported,
         categoriesSkipped: categoriesSkipped,
         errors: errors,
+        language: importedLanguage,
+        currency: importedCurrency,
       );
     }
   }
