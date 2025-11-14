@@ -246,6 +246,14 @@ class VoiceService {
     switch (language) {
       case 'vi':
         return 'vi_VN'; // Vietnamese
+      case 'ja':
+        return 'ja_JP'; // Japanese
+      case 'ko':
+        return 'ko_KR'; // Korean
+      case 'th':
+        return 'th_TH'; // Thai
+      case 'es':
+        return 'es_ES'; // Spanish (Spain)
       case 'en':
       default:
         return 'en_US'; // English (US)

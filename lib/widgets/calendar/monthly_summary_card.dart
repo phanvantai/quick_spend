@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../theme/app_theme.dart';
+import '../../models/app_config.dart';
 
 /// Monthly summary card showing income, expense, and net balance
 class MonthlySummaryCard extends StatelessWidget {
   final double income;
   final double expense;
-  final String currency;
+  final AppConfig appConfig;
 
   const MonthlySummaryCard({
     super.key,
     required this.income,
     required this.expense,
-    required this.currency,
+    required this.appConfig,
   });
 
   String _formatAmount(BuildContext context, double amount) {
-    if (currency == 'VND') {
+    // Currencies without decimals: VND, JPY, KRW
+    final useDecimals = appConfig.currency != 'VND' &&
+        appConfig.currency != 'JPY' &&
+        appConfig.currency != 'KRW';
+
+    if (!useDecimals) {
+      // VND, JPY, KRW - use abbreviated format for large numbers
       if (amount >= 1000000) {
         return '${(amount / 1000000).toStringAsFixed(1)}${context.tr('currency.suffix_million')}';
       } else if (amount >= 1000) {
@@ -24,7 +31,8 @@ class MonthlySummaryCard extends StatelessWidget {
       }
       return amount.toStringAsFixed(0);
     } else {
-      return '${context.tr('currency.symbol_usd')}${amount.toStringAsFixed(0)}';
+      // USD, THB, EUR - show with currency symbol
+      return '${appConfig.currencySymbol}${amount.toStringAsFixed(0)}';
     }
   }
 

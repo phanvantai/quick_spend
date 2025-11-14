@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
+import '../models/app_config.dart';
 
 /// Service for exporting expense data to various formats
 class ExportService {
@@ -67,11 +68,13 @@ class ExportService {
 
   /// Export expenses and categories to JSON format
   /// Includes FULL category info for ALL categories (system + user)
+  /// Also includes app settings (language, currency) for complete backup
   /// This ensures complete portability and preserves customizations
   /// Returns the file path of the exported JSON file
   static Future<String> exportToJSON(
     List<Expense> expenses,
     List<QuickCategory> categories,
+    AppConfig appConfig,
   ) async {
     debugPrint(
       '📤 [ExportService] Exporting ${expenses.length} expenses and ${categories.length} categories to JSON',
@@ -92,14 +95,23 @@ class ExportService {
 
       // Create JSON structure
       final jsonData = {
-        'version': '3.0', // Updated version to include full category info
+        'version': '4.0', // Updated version to include app settings
         'exportDate': DateTime.now().toIso8601String(),
         'totalExpenses': expenses.length,
         'totalCategories': categoryMap.length,
+        // App settings (language and currency)
+        'settings': {
+          'language': appConfig.language,
+          'currency': appConfig.currency,
+        },
         // Full category definitions (includes system + user categories)
         'categories': categoryMap,
         'expenses': expenses.map((e) => e.toJson()).toList(),
       };
+
+      debugPrint(
+        '📤 [ExportService] Including app settings: language=${appConfig.language}, currency=${appConfig.currency}',
+      );
 
       // Convert to JSON string with pretty formatting
       final jsonString = const JsonEncoder.withIndent('  ').convert(jsonData);

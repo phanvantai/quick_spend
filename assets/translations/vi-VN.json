@@ -11,12 +11,12 @@
     "back": "Quay Lại",
     "select_language_subtitle": "Cho hiển thị ứng dụng và nhận dạng giọng nói",
     "select_currency_subtitle": "Chọn đơn vị tiền tệ chính của bạn",
-    "feature_quick_entry": "Nhập Nhanh",
-    "feature_quick_entry_desc": "Ghi lại chi tiêu trong vài giây bằng giọng nói hoặc văn bản",
-    "feature_bilingual": "Song Ngữ",
-    "feature_bilingual_desc": "Hỗ trợ đầy đủ tiếng Anh & tiếng Việt",
-    "feature_smart_categories": "Phân Loại Thông Minh",
-    "feature_smart_categories_desc": "Tự động phân loại được hỗ trợ bởi AI"
+    "feature_ai_voice": "Nhập Liệu Bằng Giọng Nói AI",
+    "feature_ai_voice_desc": "Gemini hiểu ngôn ngữ tự nhiên và tiếng lóng Việt Nam",
+    "feature_multilingual": "6 Ngôn Ngữ",
+    "feature_multilingual_desc": "Anh, Việt, Nhật, Hàn, Thái, Tây Ban Nha với tự động chọn tiền tệ",
+    "feature_smart_reports": "Báo Cáo Thông Minh",
+    "feature_smart_reports_desc": "Biểu đồ tương tác, xu hướng, lịch và thông tin chi tiết"
   },
   "home": {
     "title": "Quick Spend",
@@ -59,6 +59,7 @@
     "description_required": "Mô tả là bắt buộc",
     "amount_required": "Số tiền là bắt buộc",
     "amount_invalid": "Vui lòng nhập số tiền hợp lệ",
+    "please_check_form_errors": "Vui lòng kiểm tra lỗi trong biểu mẫu",
     "quick_summary": "Tổng Quan Nhanh",
     "total_income": "Tổng Thu Nhập",
     "total_expenses": "Tổng Chi Tiêu",
@@ -234,11 +235,31 @@
     "vnd": {
       "name": "Đồng Việt Nam",
       "code": "VND"
+    },
+    "jpy": {
+      "name": "Yên Nhật",
+      "code": "JPY"
+    },
+    "krw": {
+      "name": "Won Hàn Quốc",
+      "code": "KRW"
+    },
+    "thb": {
+      "name": "Baht Thái",
+      "code": "THB"
+    },
+    "eur": {
+      "name": "Euro",
+      "code": "EUR"
     }
   },
   "languages": {
     "en": "English",
-    "vi": "Tiếng Việt"
+    "vi": "Tiếng Việt",
+    "ja": "日本語",
+    "ko": "한국어",
+    "th": "ไทย",
+    "es": "Español"
   },
   "report": {
     "total_spending": "Tổng Chi Tiêu",

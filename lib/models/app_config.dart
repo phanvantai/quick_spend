@@ -62,6 +62,14 @@ class AppConfig {
         return 'đ';
       case 'USD':
         return '\$';
+      case 'JPY':
+        return '¥';
+      case 'KRW':
+        return '₩';
+      case 'THB':
+        return '฿';
+      case 'EUR':
+        return '€';
       default:
         return currency;
     }
@@ -74,6 +82,14 @@ class AppConfig {
         return 'Tiếng Việt';
       case 'en':
         return 'English';
+      case 'ja':
+        return '日本語';
+      case 'ko':
+        return '한국어';
+      case 'th':
+        return 'ไทย';
+      case 'es':
+        return 'Español';
       default:
         return language;
     }
@@ -108,12 +124,14 @@ class LanguageOption {
   final String countryCode;
   final String displayName;
   final String flag;
+  final String defaultCurrency; // Default currency for this language
 
   const LanguageOption({
     required this.code,
     required this.countryCode,
     required this.displayName,
     required this.flag,
+    required this.defaultCurrency,
   });
 
   static const List<LanguageOption> options = [
@@ -122,14 +140,53 @@ class LanguageOption {
       displayName: 'English',
       flag: '🇺🇸',
       countryCode: 'US',
+      defaultCurrency: 'USD',
     ),
     LanguageOption(
       code: 'vi',
       displayName: 'Tiếng Việt',
       flag: '🇻🇳',
       countryCode: 'VN',
+      defaultCurrency: 'VND',
+    ),
+    LanguageOption(
+      code: 'ja',
+      displayName: '日本語',
+      flag: '🇯🇵',
+      countryCode: 'JP',
+      defaultCurrency: 'JPY',
+    ),
+    LanguageOption(
+      code: 'ko',
+      displayName: '한국어',
+      flag: '🇰🇷',
+      countryCode: 'KR',
+      defaultCurrency: 'KRW',
+    ),
+    LanguageOption(
+      code: 'th',
+      displayName: 'ไทย',
+      flag: '🇹🇭',
+      countryCode: 'TH',
+      defaultCurrency: 'THB',
+    ),
+    LanguageOption(
+      code: 'es',
+      displayName: 'Español',
+      flag: '🇪🇸',
+      countryCode: 'ES',
+      defaultCurrency: 'EUR',
     ),
   ];
+
+  /// Get default currency for a language code
+  static String getDefaultCurrency(String languageCode) {
+    final option = options.firstWhere(
+      (opt) => opt.code == languageCode,
+      orElse: () => options.first,
+    );
+    return option.defaultCurrency;
+  }
 }
 
 /// Currency option for selection
@@ -147,6 +204,10 @@ class CurrencyOption {
   static const List<CurrencyOption> options = [
     CurrencyOption(code: 'USD', displayNameKey: 'currencies.usd.name', symbol: '\$'),
     CurrencyOption(code: 'VND', displayNameKey: 'currencies.vnd.name', symbol: 'đ'),
+    CurrencyOption(code: 'JPY', displayNameKey: 'currencies.jpy.name', symbol: '¥'),
+    CurrencyOption(code: 'KRW', displayNameKey: 'currencies.krw.name', symbol: '₩'),
+    CurrencyOption(code: 'THB', displayNameKey: 'currencies.thb.name', symbol: '฿'),
+    CurrencyOption(code: 'EUR', displayNameKey: 'currencies.eur.name', symbol: '€'),
   ];
 }
 

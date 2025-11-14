@@ -21,6 +21,7 @@ class DataCollectionService {
   String? _anonymousUserId;
   bool? _hasConsent;
   String? _appVersion;
+  bool _firestoreAvailable = true; // Assume available until proven otherwise
 
   DataCollectionService({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
@@ -105,6 +106,11 @@ class DataCollectionService {
     required String inputMethod, // 'voice' or 'manual'
     required String parserUsed, // 'gemini' or 'fallback'
   }) async {
+    // Skip if Firestore is known to be unavailable
+    if (!_firestoreAvailable) {
+      return;
+    }
+
     // Check consent first
     if (!await hasConsent()) {
       developer.log('📊 Skipping data collection - no user consent');
@@ -136,7 +142,14 @@ class DataCollectionService {
 
       developer.log('📊 Logged training data: $description ($predictedCategory → $finalCategory)');
     } catch (e) {
-      developer.log('⚠️ Failed to log training data: $e');
+      // Check if error is due to Firestore not being configured
+      if (e.toString().contains('NOT_FOUND') ||
+          e.toString().contains('does not exist')) {
+        developer.log('⚠️ Firestore not configured - disabling data collection');
+        _firestoreAvailable = false;
+      } else {
+        developer.log('⚠️ Failed to log training data: $e');
+      }
       // Fail silently - don't disrupt user experience
     }
   }
@@ -153,6 +166,11 @@ class DataCollectionService {
     required String correctedCategory,
     required String language,
   }) async {
+    // Skip if Firestore is known to be unavailable
+    if (!_firestoreAvailable) {
+      return;
+    }
+
     // Check consent first
     if (!await hasConsent()) {
       developer.log('📊 Skipping correction logging - no user consent');
@@ -181,7 +199,14 @@ class DataCollectionService {
 
       developer.log('📊 Logged category correction: $description ($originalCategory → $correctedCategory)');
     } catch (e) {
-      developer.log('⚠️ Failed to log category correction: $e');
+      // Check if error is due to Firestore not being configured
+      if (e.toString().contains('NOT_FOUND') ||
+          e.toString().contains('does not exist')) {
+        developer.log('⚠️ Firestore not configured - disabling data collection');
+        _firestoreAvailable = false;
+      } else {
+        developer.log('⚠️ Failed to log category correction: $e');
+      }
       // Fail silently - don't disrupt user experience
     }
   }

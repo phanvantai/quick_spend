@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../models/category_stats.dart';
 import '../../models/expense.dart';
+import '../../models/app_config.dart';
 import '../../theme/app_theme.dart';
 import 'category_donut_chart.dart';
 import 'category_list.dart';
@@ -10,15 +11,13 @@ import 'category_list.dart';
 class CategoryBreakdownSwitcher extends StatefulWidget {
   final List<CategoryStats> expenseCategoryStats;
   final List<CategoryStats> incomeCategoryStats;
-  final String currency;
-  final String language;
+  final AppConfig appConfig;
 
   const CategoryBreakdownSwitcher({
     super.key,
     required this.expenseCategoryStats,
     required this.incomeCategoryStats,
-    required this.currency,
-    required this.language,
+    required this.appConfig,
   });
 
   @override
@@ -101,7 +100,7 @@ class _CategoryBreakdownSwitcherState extends State<CategoryBreakdownSwitcher> {
             if (currentStats.isNotEmpty)
               CategoryDonutChart(
                 categoryStats: currentStats,
-                language: widget.language,
+                language: widget.appConfig.language,
                 title: null, // No title since we have it above
                 showCard: false, // Don't show card wrapper
               ),
@@ -111,8 +110,7 @@ class _CategoryBreakdownSwitcherState extends State<CategoryBreakdownSwitcher> {
             if (currentStats.isNotEmpty)
               CategoryList(
                 categoryStats: currentStats,
-                currency: widget.currency,
-                language: widget.language,
+                appConfig: widget.appConfig,
               ),
           ],
         ),

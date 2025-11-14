@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+import 'package:quick_spend/models/app_config.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/category_provider.dart';
@@ -34,7 +36,20 @@ class _EditableExpenseDialogState extends State<EditableExpenseDialog> {
   }
 
   Future<void> _saveExpenses() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      debugPrint('❌ [EditableExpenseDialog] Form validation failed');
+      // Show feedback to user that validation failed
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('home.please_check_form_errors')),
+            backgroundColor: AppTheme.error,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
     _formKey.currentState!.save();
 
     debugPrint(
@@ -50,22 +65,30 @@ class _EditableExpenseDialogState extends State<EditableExpenseDialog> {
 
       await expenseProvider.addExpenses(expenses);
 
-      // Log training data for each expense
+      // Log training data for each expense (non-blocking)
+      // Wrap in try-catch to prevent Firestore errors from blocking UI
       for (var i = 0; i < _expenseForms.length; i++) {
-        final form = _expenseForms[i];
-        final expense = expenses[i];
+        try {
+          final form = _expenseForms[i];
+          final expense = expenses[i];
 
-        await dataCollectionService.logExpenseParsing(
-          rawInput: expense.rawInput,
-          description: expense.description,
-          amount: expense.amount,
-          predictedCategory: form.originalCategoryId, // Original from parser
-          finalCategory: expense.categoryId, // Final after user edit
-          confidence: expense.confidence,
-          language: expense.language,
-          inputMethod: 'voice', // This dialog is for voice input
-          parserUsed: form.parserUsed,
-        );
+          await dataCollectionService.logExpenseParsing(
+            rawInput: expense.rawInput,
+            description: expense.description,
+            amount: expense.amount,
+            predictedCategory: form.originalCategoryId, // Original from parser
+            finalCategory: expense.categoryId, // Final after user edit
+            confidence: expense.confidence,
+            language: expense.language,
+            inputMethod: 'voice', // This dialog is for voice input
+            parserUsed: form.parserUsed,
+          );
+        } catch (e) {
+          debugPrint(
+            '⚠️ [EditableExpenseDialog] Failed to log training data: $e',
+          );
+          // Continue anyway - logging is optional
+        }
       }
 
       debugPrint('✅ [EditableExpenseDialog] Expenses saved successfully');
@@ -150,11 +173,17 @@ class _EditableExpenseDialogState extends State<EditableExpenseDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            debugPrint('❌ [EditableExpenseDialog] Cancel button pressed');
+            Navigator.pop(context);
+          },
           child: Text(context.tr('common.cancel')),
         ),
         FilledButton.icon(
-          onPressed: _saveExpenses,
+          onPressed: () {
+            debugPrint('💾 [EditableExpenseDialog] Save button pressed');
+            _saveExpenses();
+          },
           icon: const Icon(Icons.check),
           label: Text(context.tr('common.save')),
         ),
@@ -170,17 +199,68 @@ class _ExpenseFormCard extends StatelessWidget {
 
   const _ExpenseFormCard({required this.formData, required this.onChanged});
 
+  String _formatAmount(double amount, AppConfig appConfig) {
+    // Format amount for initial display
+    // Map language to locale identifier
+    String locale;
+    switch (appConfig.language) {
+      case 'vi':
+        locale = 'vi_VN';
+        break;
+      case 'ja':
+        locale = 'ja_JP';
+        break;
+      case 'ko':
+        locale = 'ko_KR';
+        break;
+      case 'th':
+        locale = 'th_TH';
+        break;
+      case 'es':
+        locale = 'es_ES';
+        break;
+      case 'en':
+      default:
+        locale = 'en_US';
+        break;
+    }
+
+    // Determine decimal digits based on currency
+    // VND, JPY, KRW don't use decimal places
+    final decimalDigits = (appConfig.currency == 'VND' ||
+            appConfig.currency == 'JPY' ||
+            appConfig.currency == 'KRW')
+        ? 0
+        : 2;
+
+    final numberFormat = intl.NumberFormat.currency(
+      locale: locale,
+      symbol: '',
+      decimalDigits: decimalDigits,
+    );
+    final formatted = numberFormat.format(amount).trim();
+    debugPrint(
+      '💵 [ExpenseFormCard] Formatting amount $amount -> "$formatted" (locale: $locale)',
+    );
+    return formatted;
+  }
+
   double _parseAmount(String text, String language) {
     // Remove formatting and parse based on locale
+    // Different locales use different number formatting:
+    // - en, ja, ko, th: 1,234.56 (comma for thousands, period for decimal)
+    // - vi, es: 1.234,56 (period for thousands, comma for decimal)
     String numericString;
-    if (language.startsWith('vi')) {
-      // Vietnamese: remove periods (thousand sep), replace comma with period (decimal sep)
+    if (language == 'vi' || language == 'es') {
+      // Vietnamese/Spanish: remove periods (thousand sep), replace comma with period (decimal sep)
       numericString = text.replaceAll('.', '').replaceAll(',', '.');
     } else {
-      // English: remove commas (thousand sep), period is already decimal sep
+      // English/Japanese/Korean/Thai: remove commas (thousand sep), period is already decimal sep
       numericString = text.replaceAll(',', '');
     }
-    return double.tryParse(numericString.trim()) ?? 0.0;
+    final result = double.tryParse(numericString.trim()) ?? 0.0;
+    debugPrint('🔢 [ExpenseFormCard] Parsing "$text" -> $result (language: $language)');
+    return result;
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -271,19 +351,24 @@ class _ExpenseFormCard extends StatelessWidget {
             }
             return null;
           },
-          onSaved: (value) => formData.description = value!.trim(),
+          onSaved: (value) {
+            formData.description = value!.trim();
+            debugPrint(
+              '💾 [ExpenseFormCard] Description saved: "${formData.description}"',
+            );
+          },
+          onChanged: (value) {
+            formData.description = value.trim();
+            debugPrint(
+              '✏️ [ExpenseFormCard] Description changed: "${formData.description}"',
+            );
+          },
         ),
         const SizedBox(height: AppTheme.spacing12),
 
         // Amount field
         TextFormField(
-          initialValue: toCurrencyString(
-            formData.amount.toString(),
-            mantissaLength: appConfig.currency == 'VND' ? 0 : 2,
-            thousandSeparator: appConfig.language.startsWith('vi')
-                ? ThousandSeparator.Period
-                : ThousandSeparator.Comma,
-          ),
+          initialValue: _formatAmount(formData.amount, appConfig),
           decoration: InputDecoration(
             labelText: context.tr('home.amount'),
             hintText: '0',
@@ -293,10 +378,18 @@ class _ExpenseFormCard extends StatelessWidget {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
             CurrencyInputFormatter(
-              thousandSeparator: appConfig.language.startsWith('vi')
+              // vi and es use period for thousands, comma for decimal
+              // en, ja, ko, th use comma for thousands, period for decimal
+              thousandSeparator: (appConfig.language == 'vi' ||
+                      appConfig.language == 'es')
                   ? ThousandSeparator.Period
                   : ThousandSeparator.Comma,
-              mantissaLength: appConfig.currency == 'VND' ? 0 : 2,
+              // VND, JPY, KRW don't use decimal places
+              mantissaLength: (appConfig.currency == 'VND' ||
+                      appConfig.currency == 'JPY' ||
+                      appConfig.currency == 'KRW')
+                  ? 0
+                  : 2,
             ),
           ],
           validator: (value) {
@@ -311,7 +404,24 @@ class _ExpenseFormCard extends StatelessWidget {
             return null;
           },
           onSaved: (value) {
-            formData.amount = _parseAmount(value!, appConfig.language);
+            if (value != null && value.isNotEmpty) {
+              formData.amount = _parseAmount(value, appConfig.language);
+              debugPrint(
+                '💾 [ExpenseFormCard] Amount saved: ${formData.amount}',
+              );
+            }
+          },
+          onChanged: (value) {
+            // Update form data immediately on change
+            if (value.isNotEmpty) {
+              final parsed = _parseAmount(value, appConfig.language);
+              if (parsed > 0) {
+                formData.amount = parsed;
+                debugPrint(
+                  '✏️ [ExpenseFormCard] Amount changed: ${formData.amount}',
+                );
+              }
+            }
           },
         ),
         const SizedBox(height: AppTheme.spacing12),
@@ -344,7 +454,18 @@ class _ExpenseFormCard extends StatelessWidget {
           onChanged: (value) {
             if (value != null) {
               formData.categoryId = value;
+              debugPrint(
+                '✏️ [ExpenseFormCard] Category changed: ${formData.categoryId}',
+              );
               onChanged();
+            }
+          },
+          onSaved: (value) {
+            if (value != null) {
+              formData.categoryId = value;
+              debugPrint(
+                '💾 [ExpenseFormCard] Category saved: ${formData.categoryId}',
+              );
             }
           },
         ),

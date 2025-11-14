@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../models/app_config.dart';
 import '../../models/period_stats.dart';
 import '../../theme/app_theme.dart';
 
 /// Grid of statistic cards showing various metrics
 class StatsGrid extends StatelessWidget {
   final PeriodStats stats;
-  final String currency;
-  final String language;
+  final AppConfig appConfig;
 
   const StatsGrid({
     super.key,
     required this.stats,
-    required this.currency,
-    required this.language,
+    required this.appConfig,
   });
 
   @override
@@ -129,30 +128,32 @@ class StatsGrid extends StatelessWidget {
 
   String _formatAmount(BuildContext context, double amount) {
     String formatted;
+    final currency = appConfig.currency;
+    final language = appConfig.language;
 
-    // Use decimals based on currency, not language
-    final useDecimals = currency != 'VND';
+    // Determine if currency uses decimals
+    // VND, JPY, KRW: no decimals
+    // USD, THB, EUR: 2 decimals
+    final useDecimals = currency != 'VND' && currency != 'JPY' && currency != 'KRW';
+    final pattern = useDecimals ? '#,##0.00' : '#,##0';
 
-    if (language == 'vi') {
-      // Vietnamese format: use period as thousand separator
-      final formatter = NumberFormat(
-        useDecimals ? '#,##0.00' : '#,##0',
-        'en_US',
-      );
+    // Format based on language: use appropriate thousand/decimal separators
+    // vi and es: period for thousands, comma for decimal
+    // en, ja, ko, th: comma for thousands, period for decimal
+    if (language == 'vi' || language == 'es') {
+      // Vietnamese and Spanish format: period as thousand separator, comma as decimal
+      final formatter = NumberFormat(pattern, 'en_US');
       formatted = formatter.format(amount).replaceAll(',', '.');
-      return currency == 'VND'
-          ? '$formatted${context.tr('currency.symbol_vnd')}'
-          : '${context.tr('currency.symbol_usd')}$formatted';
     } else {
-      // English format: use comma as thousand separator
-      final formatter = NumberFormat(
-        useDecimals ? '#,##0.00' : '#,##0',
-        'en_US',
-      );
+      // English, Japanese, Korean, Thai format: comma as thousand separator, period as decimal
+      final formatter = NumberFormat(pattern, 'en_US');
       formatted = formatter.format(amount);
-      return currency == 'USD'
-          ? '${context.tr('currency.symbol_usd')}$formatted'
-          : '$formatted ${context.tr('currency.symbol_vnd')}';
     }
+
+    // Add currency symbol
+    final currencySymbol = appConfig.currencySymbol;
+
+    // Most currencies: symbol before amount
+    return '$currencySymbol$formatted';
   }
 }

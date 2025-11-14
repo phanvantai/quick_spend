@@ -369,7 +369,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 MonthlySummaryCard(
                   income: monthIncome,
                   expense: monthExpense,
-                  currency: currency,
+                  appConfig: configProvider.config,
                 ),
 
                 // Empty state or expense list
