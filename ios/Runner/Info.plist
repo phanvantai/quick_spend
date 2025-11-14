@@ -55,6 +55,10 @@
 	<array>
 		<string>en</string>
 		<string>vi</string>
+		<string>ja</string>
+		<string>ko</string>
+		<string>es</string>
+		<string>th</string>
 	</array>
 </dict>
 </plist>

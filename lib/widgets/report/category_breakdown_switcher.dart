@@ -100,7 +100,7 @@ class _CategoryBreakdownSwitcherState extends State<CategoryBreakdownSwitcher> {
             if (currentStats.isNotEmpty)
               CategoryDonutChart(
                 categoryStats: currentStats,
-                language: widget.language,
+                language: widget.appConfig.language,
                 title: null, // No title since we have it above
                 showCard: false, // Don't show card wrapper
               ),

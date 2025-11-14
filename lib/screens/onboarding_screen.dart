@@ -149,7 +149,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 // Navigation buttons
                 Padding(
-                  padding: const EdgeInsets.all(AppTheme.spacing24),
+                  padding: const EdgeInsets.all(AppTheme.spacing8),
                   child: Row(
                     children: [
                       if (_currentPage > 0)
@@ -298,11 +298,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final colorScheme = theme.colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.all(AppTheme.spacing24),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: AppTheme.spacing40),
+          const SizedBox(height: AppTheme.spacing24),
           Container(
             width: 100,
             height: 100,
@@ -312,7 +312,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             child: const Icon(Icons.language, size: 56, color: Colors.white),
           ),
-          const SizedBox(height: AppTheme.spacing24),
+          const SizedBox(height: AppTheme.spacing8),
           Text(
             context.tr('onboarding.choose_language'),
             style: theme.textTheme.headlineMedium?.copyWith(
@@ -328,29 +328,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppTheme.spacing48),
-          ...LanguageOption.options.map((option) {
-            return _OptionCard(
-              isSelected: _selectedLanguage == option.code,
-              onTap: () async {
-                setState(() {
-                  _selectedLanguage = option.code;
-                  // Auto-select currency based on language
-                  _selectedCurrency = option.defaultCurrency;
-                  debugPrint(
-                    '🌍 [Onboarding] Language changed: $_selectedLanguage → Currency auto-selected: $_selectedCurrency',
-                  );
-                });
-                // Update locale immediately for preview
-                await context.setLocale(
-                  Locale(option.code, option.countryCode),
+          const SizedBox(height: AppTheme.spacing8),
+          Expanded(
+            child: ListView.separated(
+              itemBuilder: (cxt, index) {
+                final option = LanguageOption.options[index];
+                return _OptionCard(
+                  isSelected: _selectedLanguage == option.code,
+                  onTap: () async {
+                    setState(() {
+                      _selectedLanguage = option.code;
+                      // Auto-select currency based on language
+                      _selectedCurrency = option.defaultCurrency;
+                      debugPrint(
+                        '🌍 [Onboarding] Language changed: $_selectedLanguage → Currency auto-selected: $_selectedCurrency',
+                      );
+                    });
+                    // Update locale immediately for preview
+                    await context.setLocale(
+                      Locale(option.code, option.countryCode),
+                    );
+                  },
+                  leading: Text(
+                    option.flag,
+                    style: const TextStyle(fontSize: 32),
+                  ),
+                  title: option.displayName,
                 );
               },
-              leading: Text(option.flag, style: const TextStyle(fontSize: 32)),
-              title: option.displayName,
-            );
-          }),
-          const Spacer(),
+              itemCount: LanguageOption.options.length,
+              separatorBuilder: (context, index) => SizedBox(height: 8),
+            ),
+          ),
         ],
       ),
     );
@@ -362,11 +371,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final colorScheme = theme.colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.all(AppTheme.spacing24),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: AppTheme.spacing40),
+          const SizedBox(height: AppTheme.spacing24),
           Container(
             width: 100,
             height: 100,
@@ -380,7 +389,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: AppTheme.spacing24),
+          const SizedBox(height: AppTheme.spacing8),
           Text(
             context.tr('onboarding.choose_currency'),
             style: theme.textTheme.headlineMedium?.copyWith(
@@ -396,30 +405,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppTheme.spacing48),
-          ...CurrencyOption.options.map((option) {
-            return _OptionCard(
-              isSelected: _selectedCurrency == option.code,
-              onTap: () {
-                setState(() {
-                  _selectedCurrency = option.code;
-                  debugPrint(
-                    '💰 [Onboarding] Currency manually changed: $_selectedCurrency',
-                  );
-                });
+          const SizedBox(height: AppTheme.spacing8),
+
+          Expanded(
+            child: ListView.separated(
+              itemBuilder: (cxt, index) {
+                final option = CurrencyOption.options[index];
+                return _OptionCard(
+                  isSelected: _selectedCurrency == option.code,
+                  onTap: () {
+                    setState(() {
+                      _selectedCurrency = option.code;
+                      debugPrint(
+                        '💰 [Onboarding] Currency manually changed: $_selectedCurrency',
+                      );
+                    });
+                  },
+                  leading: Text(
+                    option.symbol,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  title: context.tr(option.displayNameKey),
+                  subtitle: option.code,
+                );
               },
-              leading: Text(
-                option.symbol,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              title: context.tr(option.displayNameKey),
-              subtitle: option.code,
-            );
-          }),
-          const Spacer(),
+              itemCount: CurrencyOption.options.length,
+              separatorBuilder: (context, index) => SizedBox(height: 8),
+            ),
+          ),
         ],
       ),
     );
@@ -447,69 +463,62 @@ class _OptionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppTheme.borderRadiusMedium,
-          child: Container(
-            padding: const EdgeInsets.all(AppTheme.spacing16),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: isSelected ? AppTheme.primaryMint : colorScheme.outline,
-                width: isSelected ? 2 : 1,
-              ),
-              borderRadius: AppTheme.borderRadiusMedium,
-              color: isSelected
-                  ? AppTheme.primaryMint.withValues(alpha: 0.08)
-                  : colorScheme.surfaceContainerHighest,
-              boxShadow: isSelected ? AppTheme.shadowSmall : null,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppTheme.borderRadiusMedium,
+        child: Container(
+          padding: const EdgeInsets.all(AppTheme.spacing8),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isSelected ? AppTheme.primaryMint : colorScheme.outline,
+              width: isSelected ? 2 : 1,
             ),
-            child: Row(
-              children: [
-                SizedBox(width: 48, child: Center(child: leading)),
-                const SizedBox(width: AppTheme.spacing16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+            borderRadius: AppTheme.borderRadiusMedium,
+            color: isSelected
+                ? AppTheme.primaryMint.withValues(alpha: 0.08)
+                : colorScheme.surfaceContainerHighest,
+            boxShadow: isSelected ? AppTheme.shadowSmall : null,
+          ),
+          child: Row(
+            children: [
+              SizedBox(width: 48, child: Center(child: leading)),
+              const SizedBox(width: AppTheme.spacing16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: AppTheme.spacing4),
                       Text(
-                        title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w500,
+                        subtitle!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: AppTheme.spacing4),
-                        Text(
-                          subtitle!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
                     ],
-                  ),
+                  ],
                 ),
-                if (isSelected)
-                  Container(
-                    padding: const EdgeInsets.all(AppTheme.spacing4),
-                    decoration: const BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+              ),
+              if (isSelected)
+                Container(
+                  padding: const EdgeInsets.all(AppTheme.spacing4),
+                  decoration: const BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
+                    shape: BoxShape.circle,
                   ),
-              ],
-            ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 20),
+                ),
+            ],
           ),
         ),
       ),
