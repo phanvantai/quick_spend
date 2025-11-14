@@ -201,30 +201,65 @@ class _ExpenseFormCard extends StatelessWidget {
 
   String _formatAmount(double amount, AppConfig appConfig) {
     // Format amount for initial display
+    // Map language to locale identifier
+    String locale;
+    switch (appConfig.language) {
+      case 'vi':
+        locale = 'vi_VN';
+        break;
+      case 'ja':
+        locale = 'ja_JP';
+        break;
+      case 'ko':
+        locale = 'ko_KR';
+        break;
+      case 'th':
+        locale = 'th_TH';
+        break;
+      case 'es':
+        locale = 'es_ES';
+        break;
+      case 'en':
+      default:
+        locale = 'en_US';
+        break;
+    }
+
+    // Determine decimal digits based on currency
+    // VND, JPY, KRW don't use decimal places
+    final decimalDigits = (appConfig.currency == 'VND' ||
+            appConfig.currency == 'JPY' ||
+            appConfig.currency == 'KRW')
+        ? 0
+        : 2;
+
     final numberFormat = intl.NumberFormat.currency(
-      locale: appConfig.language.startsWith('vi') ? 'vi_VN' : 'en_US',
+      locale: locale,
       symbol: '',
-      decimalDigits: appConfig.currency == 'VND' ? 0 : 2,
+      decimalDigits: decimalDigits,
     );
     final formatted = numberFormat.format(amount).trim();
     debugPrint(
-      '💵 [ExpenseFormCard] Formatting amount $amount -> "$formatted"',
+      '💵 [ExpenseFormCard] Formatting amount $amount -> "$formatted" (locale: $locale)',
     );
     return formatted;
   }
 
   double _parseAmount(String text, String language) {
     // Remove formatting and parse based on locale
+    // Different locales use different number formatting:
+    // - en, ja, ko, th: 1,234.56 (comma for thousands, period for decimal)
+    // - vi, es: 1.234,56 (period for thousands, comma for decimal)
     String numericString;
-    if (language.startsWith('vi')) {
-      // Vietnamese: remove periods (thousand sep), replace comma with period (decimal sep)
+    if (language == 'vi' || language == 'es') {
+      // Vietnamese/Spanish: remove periods (thousand sep), replace comma with period (decimal sep)
       numericString = text.replaceAll('.', '').replaceAll(',', '.');
     } else {
-      // English: remove commas (thousand sep), period is already decimal sep
+      // English/Japanese/Korean/Thai: remove commas (thousand sep), period is already decimal sep
       numericString = text.replaceAll(',', '');
     }
     final result = double.tryParse(numericString.trim()) ?? 0.0;
-    debugPrint('🔢 [ExpenseFormCard] Parsing "$text" -> $result');
+    debugPrint('🔢 [ExpenseFormCard] Parsing "$text" -> $result (language: $language)');
     return result;
   }
 
@@ -343,10 +378,18 @@ class _ExpenseFormCard extends StatelessWidget {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
             CurrencyInputFormatter(
-              thousandSeparator: appConfig.language.startsWith('vi')
+              // vi and es use period for thousands, comma for decimal
+              // en, ja, ko, th use comma for thousands, period for decimal
+              thousandSeparator: (appConfig.language == 'vi' ||
+                      appConfig.language == 'es')
                   ? ThousandSeparator.Period
                   : ThousandSeparator.Comma,
-              mantissaLength: appConfig.currency == 'VND' ? 0 : 2,
+              // VND, JPY, KRW don't use decimal places
+              mantissaLength: (appConfig.currency == 'VND' ||
+                      appConfig.currency == 'JPY' ||
+                      appConfig.currency == 'KRW')
+                  ? 0
+                  : 2,
             ),
           ],
           validator: (value) {

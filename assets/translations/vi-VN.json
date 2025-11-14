@@ -235,11 +235,31 @@
     "vnd": {
       "name": "Đồng Việt Nam",
       "code": "VND"
+    },
+    "jpy": {
+      "name": "Yên Nhật",
+      "code": "JPY"
+    },
+    "krw": {
+      "name": "Won Hàn Quốc",
+      "code": "KRW"
+    },
+    "thb": {
+      "name": "Baht Thái",
+      "code": "THB"
+    },
+    "eur": {
+      "name": "Euro",
+      "code": "EUR"
     }
   },
   "languages": {
     "en": "English",
-    "vi": "Tiếng Việt"
+    "vi": "Tiếng Việt",
+    "ja": "日本語",
+    "ko": "한국어",
+    "th": "ไทย",
+    "es": "Español"
   },
   "report": {
     "total_spending": "Tổng Chi Tiêu",

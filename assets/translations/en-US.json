@@ -235,11 +235,31 @@
     "vnd": {
       "name": "Vietnamese Dong",
       "code": "VND"
+    },
+    "jpy": {
+      "name": "Japanese Yen",
+      "code": "JPY"
+    },
+    "krw": {
+      "name": "South Korean Won",
+      "code": "KRW"
+    },
+    "thb": {
+      "name": "Thai Baht",
+      "code": "THB"
+    },
+    "eur": {
+      "name": "Euro",
+      "code": "EUR"
     }
   },
   "languages": {
     "en": "English",
-    "vi": "Tiếng Việt"
+    "vi": "Tiếng Việt",
+    "ja": "日本語",
+    "ko": "한국어",
+    "th": "ไทย",
+    "es": "Español"
   },
   "report": {
     "total_spending": "Total Spending",
