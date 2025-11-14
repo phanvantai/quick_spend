@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import '../../models/expense.dart';
@@ -34,7 +35,20 @@ class _EditableExpenseDialogState extends State<EditableExpenseDialog> {
   }
 
   Future<void> _saveExpenses() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      debugPrint('❌ [EditableExpenseDialog] Form validation failed');
+      // Show feedback to user that validation failed
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('home.please_check_form_errors')),
+            backgroundColor: AppTheme.error,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
     _formKey.currentState!.save();
 
     debugPrint(
@@ -150,11 +164,17 @@ class _EditableExpenseDialogState extends State<EditableExpenseDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            debugPrint('❌ [EditableExpenseDialog] Cancel button pressed');
+            Navigator.pop(context);
+          },
           child: Text(context.tr('common.cancel')),
         ),
         FilledButton.icon(
-          onPressed: _saveExpenses,
+          onPressed: () {
+            debugPrint('💾 [EditableExpenseDialog] Save button pressed');
+            _saveExpenses();
+          },
           icon: const Icon(Icons.check),
           label: Text(context.tr('common.save')),
         ),
@@ -170,6 +190,18 @@ class _ExpenseFormCard extends StatelessWidget {
 
   const _ExpenseFormCard({required this.formData, required this.onChanged});
 
+  String _formatAmount(double amount, AppConfig appConfig) {
+    // Format amount for initial display
+    final numberFormat = intl.NumberFormat.currency(
+      locale: appConfig.language.startsWith('vi') ? 'vi_VN' : 'en_US',
+      symbol: '',
+      decimalDigits: appConfig.currency == 'VND' ? 0 : 2,
+    );
+    final formatted = numberFormat.format(amount).trim();
+    debugPrint('💵 [ExpenseFormCard] Formatting amount $amount -> "$formatted"');
+    return formatted;
+  }
+
   double _parseAmount(String text, String language) {
     // Remove formatting and parse based on locale
     String numericString;
@@ -180,7 +212,9 @@ class _ExpenseFormCard extends StatelessWidget {
       // English: remove commas (thousand sep), period is already decimal sep
       numericString = text.replaceAll(',', '');
     }
-    return double.tryParse(numericString.trim()) ?? 0.0;
+    final result = double.tryParse(numericString.trim()) ?? 0.0;
+    debugPrint('🔢 [ExpenseFormCard] Parsing "$text" -> $result');
+    return result;
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -271,19 +305,20 @@ class _ExpenseFormCard extends StatelessWidget {
             }
             return null;
           },
-          onSaved: (value) => formData.description = value!.trim(),
+          onSaved: (value) {
+            formData.description = value!.trim();
+            debugPrint('💾 [ExpenseFormCard] Description saved: "${formData.description}"');
+          },
+          onChanged: (value) {
+            formData.description = value.trim();
+            debugPrint('✏️ [ExpenseFormCard] Description changed: "${formData.description}"');
+          },
         ),
         const SizedBox(height: AppTheme.spacing12),
 
         // Amount field
         TextFormField(
-          initialValue: toCurrencyString(
-            formData.amount.toString(),
-            mantissaLength: appConfig.currency == 'VND' ? 0 : 2,
-            thousandSeparator: appConfig.language.startsWith('vi')
-                ? ThousandSeparator.Period
-                : ThousandSeparator.Comma,
-          ),
+          initialValue: _formatAmount(formData.amount, appConfig),
           decoration: InputDecoration(
             labelText: context.tr('home.amount'),
             hintText: '0',
@@ -311,7 +346,20 @@ class _ExpenseFormCard extends StatelessWidget {
             return null;
           },
           onSaved: (value) {
-            formData.amount = _parseAmount(value!, appConfig.language);
+            if (value != null && value.isNotEmpty) {
+              formData.amount = _parseAmount(value, appConfig.language);
+              debugPrint('💾 [ExpenseFormCard] Amount saved: ${formData.amount}');
+            }
+          },
+          onChanged: (value) {
+            // Update form data immediately on change
+            if (value.isNotEmpty) {
+              final parsed = _parseAmount(value, appConfig.language);
+              if (parsed > 0) {
+                formData.amount = parsed;
+                debugPrint('✏️ [ExpenseFormCard] Amount changed: ${formData.amount}');
+              }
+            }
           },
         ),
         const SizedBox(height: AppTheme.spacing12),
@@ -344,7 +392,14 @@ class _ExpenseFormCard extends StatelessWidget {
           onChanged: (value) {
             if (value != null) {
               formData.categoryId = value;
+              debugPrint('✏️ [ExpenseFormCard] Category changed: ${formData.categoryId}');
               onChanged();
+            }
+          },
+          onSaved: (value) {
+            if (value != null) {
+              formData.categoryId = value;
+              debugPrint('💾 [ExpenseFormCard] Category saved: ${formData.categoryId}');
             }
           },
         ),

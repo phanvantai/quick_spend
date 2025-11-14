@@ -59,6 +59,7 @@
     "description_required": "Mô tả là bắt buộc",
     "amount_required": "Số tiền là bắt buộc",
     "amount_invalid": "Vui lòng nhập số tiền hợp lệ",
+    "please_check_form_errors": "Vui lòng kiểm tra lỗi trong biểu mẫu",
     "quick_summary": "Tổng Quan Nhanh",
     "total_income": "Tổng Thu Nhập",
     "total_expenses": "Tổng Chi Tiêu",
