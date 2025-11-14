@@ -11,12 +11,12 @@
     "back": "이전",
     "select_language_subtitle": "앱 표시 및 음성 인식에 사용됩니다",
     "select_currency_subtitle": "주요 통화를 선택하세요",
-    "feature_quick_entry": "빠른 입력",
-    "feature_quick_entry_desc": "음성 또는 텍스트로 몇 초 안에 지출을 기록하세요",
-    "feature_bilingual": "다국어 지원",
-    "feature_bilingual_desc": "여러 언어를 완벽히 지원합니다",
-    "feature_smart_categories": "스마트 카테고리",
-    "feature_smart_categories_desc": "AI를 통한 자동 카테고리 분류"
+    "feature_ai_voice": "AI 음성 입력",
+    "feature_ai_voice_desc": "Gemini 기반 분석이 자연어와 은어를 정확히 이해합니다",
+    "feature_multilingual": "6가지 언어",
+    "feature_multilingual_desc": "영어, 베트남어, 일본어, 한국어, 태국어, 스페인어 지원 및 자동 통화 변환",
+    "feature_smart_reports": "스마트 보고서",
+    "feature_smart_reports_desc": "상호작용형 차트, 추세, 캘린더 뷰 및 통계 제공"
   },
   "home": {
     "title": "Quick Spend",

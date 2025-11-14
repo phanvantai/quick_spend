@@ -11,12 +11,12 @@
     "back": "戻る",
     "select_language_subtitle": "アプリの表示と音声認識に使用",
     "select_currency_subtitle": "主要通貨を選択",
-    "feature_quick_entry": "クイック入力",
-    "feature_quick_entry_desc": "音声またはテキストで数秒で支出を記録",
-    "feature_bilingual": "多言語対応",
-    "feature_bilingual_desc": "複数言語に完全対応",
-    "feature_smart_categories": "スマートカテゴリ",
-    "feature_smart_categories_desc": "AIによる自動カテゴリ分類"
+    "feature_ai_voice": "AI音声入力",
+    "feature_ai_voice_desc": "Geminiのパワーで自然言語とスラングを理解",
+    "feature_multilingual": "6言語対応",
+    "feature_multilingual_desc": "英語、ベトナム語、日本語、韓国語、タイ語、スペイン語に対応（自動通貨換算付き）",
+    "feature_smart_reports": "スマートレポート",
+    "feature_smart_reports_desc": "インタラクティブなチャート、トレンド、カレンダービュー、インサイト"
   },
   "home": {
     "title": "Quick Spend",

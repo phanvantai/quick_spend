@@ -11,12 +11,12 @@
     "back": "Atrás",
     "select_language_subtitle": "Utilizado para la visualización de la aplicación y el reconocimiento de voz",
     "select_currency_subtitle": "Seleccione su moneda principal",
-    "feature_quick_entry": "Entrada rápida",
-    "feature_quick_entry_desc": "Registre gastos en segundos por voz o texto",
-    "feature_bilingual": "Soporte multilingüe",
-    "feature_bilingual_desc": "Compatibilidad completa con varios idiomas",
-    "feature_smart_categories": "Categorías inteligentes",
-    "feature_smart_categories_desc": "Categorización automática con IA"
+    "feature_ai_voice": "Entrada de voz con IA",
+    "feature_ai_voice_desc": "El análisis impulsado por Gemini comprende el lenguaje natural y la jerga",
+    "feature_multilingual": "6 Idiomas",
+    "feature_multilingual_desc": "Inglés, vietnamita, japonés, coreano, tailandés y español con conversión automática de moneda",
+    "feature_smart_reports": "Informes inteligentes",
+    "feature_smart_reports_desc": "Gráficos interactivos, tendencias, vista de calendario e información detallada"
   },
   "home": {
     "title": "Quick Spend",

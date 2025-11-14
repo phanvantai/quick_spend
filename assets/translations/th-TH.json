@@ -11,12 +11,12 @@
     "back": "ย้อนกลับ",
     "select_language_subtitle": "ใช้สำหรับการแสดงผลแอปและการรู้จำเสียง",
     "select_currency_subtitle": "เลือกสกุลเงินหลัก",
-    "feature_quick_entry": "การบันทึกอย่างรวดเร็ว",
-    "feature_quick_entry_desc": "บันทึกการใช้จ่ายในเวลาเพียงไม่กี่วินาทีด้วยเสียงหรือข้อความ",
-    "feature_bilingual": "รองรับหลายภาษา",
-    "feature_bilingual_desc": "รองรับหลายภาษาอย่างสมบูรณ์",
-    "feature_smart_categories": "หมวดหมู่อัจฉริยะ",
-    "feature_smart_categories_desc": "การจัดหมวดหมู่อัตโนมัติโดยใช้ AI"
+    "feature_ai_voice": "เสียงที่ขับเคลื่อนด้วย AI",
+    "feature_ai_voice_desc": "การแยกวิเคราะห์ที่ขับเคลื่อนด้วย Gemini เข้าใจภาษาธรรมชาติและสแลง",
+    "feature_multilingual": "รองรับ 6 ภาษา",
+    "feature_multilingual_desc": "ภาษาอังกฤษ เวียดนาม ญี่ปุ่น เกาหลี ไทย และสเปน พร้อมแปลงสกุลเงินอัตโนมัติ",
+    "feature_smart_reports": "รายงานอัจฉริยะ",
+    "feature_smart_reports_desc": "แผนภูมิแบบโต้ตอบ แนวโน้ม มุมมองปฏิทิน และข้อมูลเชิงลึก"
   },
   "home": {
     "title": "Quick Spend",
