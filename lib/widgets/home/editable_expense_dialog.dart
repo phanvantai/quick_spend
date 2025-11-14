@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+import 'package:quick_spend/models/app_config.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/category_provider.dart';
@@ -198,7 +199,9 @@ class _ExpenseFormCard extends StatelessWidget {
       decimalDigits: appConfig.currency == 'VND' ? 0 : 2,
     );
     final formatted = numberFormat.format(amount).trim();
-    debugPrint('💵 [ExpenseFormCard] Formatting amount $amount -> "$formatted"');
+    debugPrint(
+      '💵 [ExpenseFormCard] Formatting amount $amount -> "$formatted"',
+    );
     return formatted;
   }
 
@@ -307,11 +310,15 @@ class _ExpenseFormCard extends StatelessWidget {
           },
           onSaved: (value) {
             formData.description = value!.trim();
-            debugPrint('💾 [ExpenseFormCard] Description saved: "${formData.description}"');
+            debugPrint(
+              '💾 [ExpenseFormCard] Description saved: "${formData.description}"',
+            );
           },
           onChanged: (value) {
             formData.description = value.trim();
-            debugPrint('✏️ [ExpenseFormCard] Description changed: "${formData.description}"');
+            debugPrint(
+              '✏️ [ExpenseFormCard] Description changed: "${formData.description}"',
+            );
           },
         ),
         const SizedBox(height: AppTheme.spacing12),
@@ -348,7 +355,9 @@ class _ExpenseFormCard extends StatelessWidget {
           onSaved: (value) {
             if (value != null && value.isNotEmpty) {
               formData.amount = _parseAmount(value, appConfig.language);
-              debugPrint('💾 [ExpenseFormCard] Amount saved: ${formData.amount}');
+              debugPrint(
+                '💾 [ExpenseFormCard] Amount saved: ${formData.amount}',
+              );
             }
           },
           onChanged: (value) {
@@ -357,7 +366,9 @@ class _ExpenseFormCard extends StatelessWidget {
               final parsed = _parseAmount(value, appConfig.language);
               if (parsed > 0) {
                 formData.amount = parsed;
-                debugPrint('✏️ [ExpenseFormCard] Amount changed: ${formData.amount}');
+                debugPrint(
+                  '✏️ [ExpenseFormCard] Amount changed: ${formData.amount}',
+                );
               }
             }
           },
@@ -392,14 +403,18 @@ class _ExpenseFormCard extends StatelessWidget {
           onChanged: (value) {
             if (value != null) {
               formData.categoryId = value;
-              debugPrint('✏️ [ExpenseFormCard] Category changed: ${formData.categoryId}');
+              debugPrint(
+                '✏️ [ExpenseFormCard] Category changed: ${formData.categoryId}',
+              );
               onChanged();
             }
           },
           onSaved: (value) {
             if (value != null) {
               formData.categoryId = value;
-              debugPrint('💾 [ExpenseFormCard] Category saved: ${formData.categoryId}');
+              debugPrint(
+                '💾 [ExpenseFormCard] Category saved: ${formData.categoryId}',
+              );
             }
           },
         ),
