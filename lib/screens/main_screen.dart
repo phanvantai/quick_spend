@@ -481,16 +481,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.tr('voice.gemini_limit_reached')),
-              backgroundColor: AppTheme.warning,
-              duration: const Duration(seconds: 5),
-              action: SnackBarAction(
-                label: context.tr('home.add_expense'),
-                textColor: Colors.white,
-                onPressed: () {
-                  // Navigate to manual expense entry
-                  // This will be handled by the existing add expense button
-                },
-              ),
+              backgroundColor: AppTheme.error,
+              duration: const Duration(seconds: 6),
             ),
           );
         }
@@ -659,13 +651,89 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final usageLimitService = context.watch<GeminiUsageLimitService>();
 
     return Stack(
       children: [
         // Main Scaffold with content and bottom navigation
         Scaffold(
           extendBody: true,
-          body: IndexedStack(index: _currentIndex, children: _screens),
+          body: Column(
+            children: [
+              // Gemini usage limit banner
+              FutureBuilder<int>(
+                future: usageLimitService.getRemainingCount(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const SizedBox.shrink();
+
+                  final remaining = snapshot.data!;
+                  final limit = usageLimitService.dailyLimit;
+
+                  // Don't show banner if plenty remaining (> 5)
+                  if (remaining > 5) return const SizedBox.shrink();
+
+                  // Determine color and icon based on remaining count
+                  Color bannerColor;
+                  IconData bannerIcon;
+                  if (remaining == 0) {
+                    bannerColor = AppTheme.error;
+                    bannerIcon = Icons.block;
+                  } else if (remaining <= 3) {
+                    bannerColor = AppTheme.warning;
+                    bannerIcon = Icons.warning_amber;
+                  } else {
+                    bannerColor = AppTheme.info;
+                    bannerIcon = Icons.info_outline;
+                  }
+
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing16,
+                      vertical: AppTheme.spacing12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: bannerColor.withValues(alpha: 0.15),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: bannerColor.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          bannerIcon,
+                          color: bannerColor,
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppTheme.spacing8),
+                        Expanded(
+                          child: Text(
+                            remaining == 0
+                                ? context.tr('voice.gemini_limit_reached')
+                                : context.tr(
+                                    'voice.gemini_limit_warning',
+                                    namedArgs: {'remaining': remaining.toString()},
+                                  ),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: bannerColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              // Main content
+              Expanded(
+                child: IndexedStack(index: _currentIndex, children: _screens),
+              ),
+            ],
+          ),
           // Notched BottomAppBar with navigation items
           bottomNavigationBar: BottomAppBar(
             color: Colors.transparent,
