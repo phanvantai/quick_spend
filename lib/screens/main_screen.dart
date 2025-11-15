@@ -474,6 +474,29 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       );
       if (mounted) Navigator.pop(context);
 
+      // Check if Gemini limit was reached
+      if (results.isNotEmpty &&
+          results.first.errorMessage == 'GEMINI_LIMIT_REACHED') {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.tr('voice.gemini_limit_reached')),
+              backgroundColor: AppTheme.warning,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: context.tr('home.add_expense'),
+                textColor: Colors.white,
+                onPressed: () {
+                  // Navigate to manual expense entry
+                  // This will be handled by the existing add expense button
+                },
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
       if (results.isEmpty || !results.any((r) => r.success)) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -489,20 +512,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       final successfulResults = results
           .where((r) => r.success && r.expense != null)
           .toList();
-
-      // Check if Gemini limit was reached and fallback was used
-      final limitReached = await usageLimitService.hasReachedLimit();
-      final usedFallback = results.any((r) => r.parserUsed == 'fallback');
-      if (mounted && limitReached && usedFallback) {
-        // Show info message that limit was reached
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.tr('voice.gemini_limit_reached')),
-            backgroundColor: AppTheme.info,
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
 
       if (mounted && successfulResults.isNotEmpty) {
         _showExpenseResultsDialog(successfulResults);

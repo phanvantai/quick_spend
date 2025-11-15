@@ -147,7 +147,7 @@
     "tutorial_description": "ボタンをタップして音声で支出の録音を開始します。もう一度タップして停止、または上にスワイプしてキャンセル。",
     "tutorial_got_it": "了解！",
     "tutorial_tap_anywhere": "または任意の場所をタップして閉じる",
-    "gemini_limit_reached": "1日のAI解析制限に達しました（20回/日）。基本パーサーを使用します。",
+    "gemini_limit_reached": "1日のAI解析制限に達しました（20回/日）。+ボタンから手動で支出を追加してください。",
     "gemini_limit_warning": "AI解析：本日残り{remaining}/20回",
     "gemini_remaining": "{remaining}/20"
   },

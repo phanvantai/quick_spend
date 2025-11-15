@@ -39,6 +39,11 @@ class ExpenseParser {
           usageLimitService,
         );
         if (geminiResults.isNotEmpty) {
+          // Check if it's a limit reached error
+          if (geminiResults.first.errorMessage == 'GEMINI_LIMIT_REACHED') {
+            debugPrint('⛔ [ExpenseParser] Gemini limit reached, returning error to user');
+            return geminiResults; // Return the error, don't fall back
+          }
           debugPrint('✅ [ExpenseParser] Gemini returned ${geminiResults.length} result(s)');
           return geminiResults;
         }

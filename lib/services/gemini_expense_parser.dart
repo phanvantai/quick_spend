@@ -63,9 +63,16 @@ class GeminiExpenseParser {
         final usageCount = await usageLimitService.getUsageCount();
         final limit = usageLimitService.dailyLimit;
         debugPrint(
-          '⛔ [GeminiParser] Daily limit reached ($usageCount/$limit). Falling back to rule-based parser.',
+          '⛔ [GeminiParser] Daily limit reached ($usageCount/$limit). User should add manually.',
         );
-        return [];
+        // Return a specific error result indicating limit reached
+        return [
+          ParseResult(
+            success: false,
+            errorMessage: 'GEMINI_LIMIT_REACHED',
+            parserUsed: 'gemini',
+          ),
+        ];
       }
     }
 

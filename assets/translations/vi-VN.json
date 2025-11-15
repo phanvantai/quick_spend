@@ -162,7 +162,7 @@
     "tutorial_description": "Chạm nút để bắt đầu ghi âm chi tiêu bằng giọng nói. Chạm lại để dừng, hoặc vuốt lên để hủy.",
     "tutorial_got_it": "Đã Hiểu!",
     "tutorial_tap_anywhere": "hoặc chạm bất kỳ đâu để đóng",
-    "gemini_limit_reached": "Đã đạt giới hạn AI phân tích hàng ngày (20/ngày). Sử dụng phân tích cơ bản thay thế.",
+    "gemini_limit_reached": "Đã đạt giới hạn AI phân tích hàng ngày (20/ngày). Vui lòng thêm chi tiêu thủ công bằng nút +.",
     "gemini_limit_warning": "Phân tích AI: còn {remaining}/20 lần hôm nay",
     "gemini_remaining": "{remaining}/20"
   },
