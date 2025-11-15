@@ -12,6 +12,7 @@ import '../services/voice_service.dart';
 import '../services/expense_parser.dart';
 import '../services/preferences_service.dart';
 import '../services/data_collection_service.dart';
+import '../services/gemini_usage_limit_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/voice_tutorial_overlay.dart';
 import '../widgets/home/editable_expense_dialog.dart';
@@ -464,10 +465,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     try {
       final expenseProvider = context.read<ExpenseProvider>();
       final categoryProvider = context.read<CategoryProvider>();
+      final usageLimitService = context.read<GeminiUsageLimitService>();
       final results = await ExpenseParser.parse(
         input,
         expenseProvider.currentUserId,
         categoryProvider.categories,
+        usageLimitService: usageLimitService,
       );
       if (mounted) Navigator.pop(context);
 
@@ -486,6 +489,21 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       final successfulResults = results
           .where((r) => r.success && r.expense != null)
           .toList();
+
+      // Check if Gemini limit was reached and fallback was used
+      final limitReached = await usageLimitService.hasReachedLimit();
+      final usedFallback = results.any((r) => r.parserUsed == 'fallback');
+      if (mounted && limitReached && usedFallback) {
+        // Show info message that limit was reached
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('voice.gemini_limit_reached')),
+            backgroundColor: AppTheme.info,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+
       if (mounted && successfulResults.isNotEmpty) {
         _showExpenseResultsDialog(successfulResults);
       }

@@ -161,7 +161,10 @@
     "tutorial_title": "Tap to Record",
     "tutorial_description": "Tap the button to start recording your expense with voice. Tap again to stop, or swipe up to cancel.",
     "tutorial_got_it": "Got It!",
-    "tutorial_tap_anywhere": "or tap anywhere to dismiss"
+    "tutorial_tap_anywhere": "or tap anywhere to dismiss",
+    "gemini_limit_reached": "Daily AI parsing limit reached (20/day). Using basic parser instead.",
+    "gemini_limit_warning": "AI parsing: {remaining} of 20 remaining today",
+    "gemini_remaining": "{remaining}/20"
   },
   "navigation": {
     "home": "Home",

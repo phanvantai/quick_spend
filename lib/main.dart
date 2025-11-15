@@ -15,6 +15,7 @@ import 'services/recurring_template_service.dart';
 import 'services/recurring_expense_service.dart';
 import 'services/gemini_expense_parser.dart';
 import 'services/data_collection_service.dart';
+import 'services/gemini_usage_limit_service.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_screen.dart';
 import 'theme/app_theme.dart';
@@ -60,6 +61,10 @@ void main() async {
   final dataCollectionService = DataCollectionService();
   await dataCollectionService.init();
 
+  // Initialize Gemini usage limit service
+  final geminiUsageLimitService = GeminiUsageLimitService();
+  await geminiUsageLimitService.init();
+
   runApp(
     EasyLocalization(
       supportedLocales: const [
@@ -78,6 +83,7 @@ void main() async {
         recurringTemplateService: recurringTemplateService,
         recurringExpenseService: recurringExpenseService,
         dataCollectionService: dataCollectionService,
+        geminiUsageLimitService: geminiUsageLimitService,
       ),
     ),
   );
@@ -89,6 +95,7 @@ class MyApp extends StatelessWidget {
   final RecurringTemplateService recurringTemplateService;
   final RecurringExpenseService recurringExpenseService;
   final DataCollectionService dataCollectionService;
+  final GeminiUsageLimitService geminiUsageLimitService;
 
   const MyApp({
     super.key,
@@ -97,6 +104,7 @@ class MyApp extends StatelessWidget {
     required this.recurringTemplateService,
     required this.recurringExpenseService,
     required this.dataCollectionService,
+    required this.geminiUsageLimitService,
   });
 
   @override
@@ -105,6 +113,7 @@ class MyApp extends StatelessWidget {
       providers: [
         Provider<DataCollectionService>.value(value: dataCollectionService),
         Provider<ExpenseService>.value(value: expenseService),
+        Provider<GeminiUsageLimitService>.value(value: geminiUsageLimitService),
         ChangeNotifierProvider(
           create: (_) => AppConfigProvider(preferencesService),
         ),
