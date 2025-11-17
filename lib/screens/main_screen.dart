@@ -479,9 +479,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       if (results.isNotEmpty &&
           results.first.errorMessage == 'GEMINI_LIMIT_REACHED') {
         if (mounted) {
+          final limit = usageLimitService.dailyLimit;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(context.tr('voice.gemini_limit_reached')),
+              content: Text(
+                context.tr(
+                  'voice.gemini_limit_reached',
+                  namedArgs: {'limit': limit.toString()},
+                ),
+              ),
               backgroundColor: AppTheme.error,
               duration: const Duration(seconds: 6),
             ),
@@ -715,10 +721,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         Expanded(
                           child: Text(
                             remaining == 0
-                                ? context.tr('voice.gemini_limit_reached')
+                                ? context.tr(
+                                    'voice.gemini_limit_reached',
+                                    namedArgs: {'limit': limit.toString()},
+                                  )
                                 : context.tr(
                                     'voice.gemini_limit_warning',
-                                    namedArgs: {'remaining': remaining.toString()},
+                                    namedArgs: {
+                                      'remaining': remaining.toString(),
+                                      'limit': limit.toString(),
+                                    },
                                   ),
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: bannerColor,

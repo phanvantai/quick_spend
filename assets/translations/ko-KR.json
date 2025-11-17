@@ -147,9 +147,9 @@
     "tutorial_description": "버튼을 탭하여 음성으로 지출 녹음을 시작하세요. 다시 탭하여 중지하거나 위로 스와이프하여 취소하세요.",
     "tutorial_got_it": "알겠습니다!",
     "tutorial_tap_anywhere": "또는 아무 곳이나 탭하여 닫기",
-    "gemini_limit_reached": "일일 AI 분석 한도 도달 (20회/일). + 버튼을 사용하여 수동으로 지출을 추가하세요.",
-    "gemini_limit_warning": "AI 분석: 오늘 {remaining}/20회 남음",
-    "gemini_remaining": "{remaining}/20"
+    "gemini_limit_reached": "일일 AI 분석 한도 도달 ({limit}회/일). + 버튼을 사용하여 수동으로 지출을 추가하세요.",
+    "gemini_limit_warning": "AI 분석: 오늘 {remaining}/{limit}회 남음",
+    "gemini_remaining": "{remaining}/{limit}"
   },
   "navigation": {
     "home": "홈",

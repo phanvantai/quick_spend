@@ -147,9 +147,9 @@
     "tutorial_description": "Pulse el botón para comenzar a grabar un gasto por voz. Pulse de nuevo para detener o deslice hacia arriba para cancelar.",
     "tutorial_got_it": "¡Entendido!",
     "tutorial_tap_anywhere": "O pulse en cualquier lugar para cerrar",
-    "gemini_limit_reached": "Límite diario de análisis de IA alcanzado (20/día). Por favor, añada su gasto manualmente usando el botón +.",
-    "gemini_limit_warning": "Análisis de IA: {remaining} de 20 restantes hoy",
-    "gemini_remaining": "{remaining}/20"
+    "gemini_limit_reached": "Límite diario de análisis de IA alcanzado ({limit}/día). Por favor, añada su gasto manualmente usando el botón +.",
+    "gemini_limit_warning": "Análisis de IA: {remaining} de {limit} restantes hoy",
+    "gemini_remaining": "{remaining}/{limit}"
   },
   "navigation": {
     "home": "Inicio",
