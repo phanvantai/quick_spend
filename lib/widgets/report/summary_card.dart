@@ -260,33 +260,6 @@ class SummaryCard extends StatelessWidget {
   }
 
   String _formatAmount(BuildContext context, double amount) {
-    // Determine decimal places based on currency
-    final useDecimals = appConfig.currency != 'VND' &&
-        appConfig.currency != 'JPY' &&
-        appConfig.currency != 'KRW';
-
-    // Determine thousand/decimal separators based on language
-    // vi and es: period for thousands, comma for decimal
-    // en, ja, ko, th: comma for thousands, period for decimal
-    final usePeriodForThousands =
-        appConfig.language == 'vi' || appConfig.language == 'es';
-
-    // Create formatter with en_US locale first
-    final formatter = NumberFormat(
-      useDecimals ? '#,##0.00' : '#,##0',
-      'en_US',
-    );
-
-    String formatted = formatter.format(amount);
-
-    // Swap separators if needed for vi/es
-    if (usePeriodForThousands) {
-      formatted = formatted.replaceAll(',', '|'); // Temp placeholder
-      formatted = formatted.replaceAll('.', ','); // Decimal comma
-      formatted = formatted.replaceAll('|', '.'); // Thousand period
-    }
-
-    // Return with currency symbol
-    return '${appConfig.currencySymbol}$formatted';
+    return appConfig.formatCurrency(amount);
   }
 }

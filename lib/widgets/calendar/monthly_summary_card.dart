@@ -31,8 +31,16 @@ class MonthlySummaryCard extends StatelessWidget {
       }
       return amount.toStringAsFixed(0);
     } else {
-      // USD, THB, EUR - show with currency symbol
-      return '${appConfig.currencySymbol}${amount.toStringAsFixed(0)}';
+      // USD, EUR - symbol before value
+      // THB - symbol after value
+      final symbolAfter = appConfig.currency == 'THB';
+      final formatted = amount.toStringAsFixed(0);
+
+      if (symbolAfter) {
+        return '$formatted ${appConfig.currencySymbol}';
+      } else {
+        return '${appConfig.currencySymbol}$formatted';
+      }
     }
   }
 
