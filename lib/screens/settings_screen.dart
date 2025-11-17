@@ -247,7 +247,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       iconColor: AppTheme.success,
                       title: context.tr('settings.export_data'),
                       subtitle: context.tr('settings.export_data_subtitle'),
-                      description: 'Includes expenses, categories, language & currency',
+                      description: context.tr('settings.export_data_description'),
                       onTap: () => _showExportDialog(context),
                     ),
 
@@ -256,7 +256,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       iconColor: AppTheme.info,
                       title: context.tr('settings.import_data'),
                       subtitle: context.tr('settings.import_data_subtitle'),
-                      description: 'Restores expenses, categories, and app settings',
+                      description: context.tr('settings.import_data_description'),
                       onTap: () => _handleImport(context),
                     ),
 
