@@ -7,6 +7,7 @@ import '../models/expense.dart';
 import '../models/category.dart';
 import '../utils/constants.dart';
 import 'expense_parser.dart';
+import 'gemini_usage_limit_service.dart';
 
 /// AI-powered expense parser using Firebase AI (Gemini 2.0)
 class GeminiExpenseParser {
@@ -40,17 +41,39 @@ class GeminiExpenseParser {
 
   /// Parse expense using Gemini AI
   /// Returns a list of ParseResult (can be multiple expenses from one input)
+  /// Requires GeminiUsageLimitService to check daily limit (20 parses/day)
   static Future<List<ParseResult>> parse(
     String input,
     String userId,
     List<QuickCategory> categories,
     String language,
+    GeminiUsageLimitService? usageLimitService,
   ) async {
     debugPrint('🤖 [GeminiParser] Parsing input: "$input"');
 
     if (!isAvailable) {
       debugPrint('⚠️ [GeminiParser] Not available, cannot parse');
       return [];
+    }
+
+    // Check usage limit if service is provided
+    if (usageLimitService != null) {
+      final canParse = await usageLimitService.canParse();
+      if (!canParse) {
+        final usageCount = await usageLimitService.getUsageCount();
+        final limit = usageLimitService.dailyLimit;
+        debugPrint(
+          '⛔ [GeminiParser] Daily limit reached ($usageCount/$limit). User should add manually.',
+        );
+        // Return a specific error result indicating limit reached
+        return [
+          ParseResult(
+            success: false,
+            errorMessage: 'GEMINI_LIMIT_REACHED',
+            parserUsed: 'gemini',
+          ),
+        ];
+      }
     }
 
     // Pre-validate input to avoid meaningless API calls
@@ -113,6 +136,12 @@ class GeminiExpenseParser {
       final results = _parseResponse(jsonData, userId, input);
 
       debugPrint('✅ [GeminiParser] Successfully parsed ${results.length} expense(s)');
+
+      // Increment usage counter after successful parse
+      if (usageLimitService != null && results.isNotEmpty) {
+        await usageLimitService.incrementUsage();
+      }
+
       return results;
     } catch (e) {
       debugPrint('❌ [GeminiParser] Error parsing: $e');

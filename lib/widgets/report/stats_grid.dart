@@ -127,33 +127,6 @@ class StatsGrid extends StatelessWidget {
   }
 
   String _formatAmount(BuildContext context, double amount) {
-    String formatted;
-    final currency = appConfig.currency;
-    final language = appConfig.language;
-
-    // Determine if currency uses decimals
-    // VND, JPY, KRW: no decimals
-    // USD, THB, EUR: 2 decimals
-    final useDecimals = currency != 'VND' && currency != 'JPY' && currency != 'KRW';
-    final pattern = useDecimals ? '#,##0.00' : '#,##0';
-
-    // Format based on language: use appropriate thousand/decimal separators
-    // vi and es: period for thousands, comma for decimal
-    // en, ja, ko, th: comma for thousands, period for decimal
-    if (language == 'vi' || language == 'es') {
-      // Vietnamese and Spanish format: period as thousand separator, comma as decimal
-      final formatter = NumberFormat(pattern, 'en_US');
-      formatted = formatter.format(amount).replaceAll(',', '.');
-    } else {
-      // English, Japanese, Korean, Thai format: comma as thousand separator, period as decimal
-      final formatter = NumberFormat(pattern, 'en_US');
-      formatted = formatter.format(amount);
-    }
-
-    // Add currency symbol
-    final currencySymbol = appConfig.currencySymbol;
-
-    // Most currencies: symbol before amount
-    return '$currencySymbol$formatted';
+    return appConfig.formatCurrency(amount);
   }
 }

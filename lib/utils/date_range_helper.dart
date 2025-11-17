@@ -130,18 +130,20 @@ enum TimePeriod {
 }
 
 extension TimePeriodExtension on TimePeriod {
-  String getLabel(String locale) {
+  /// Get localization key for this period
+  /// Use with context.tr() to get translated label
+  String get labelKey {
     switch (this) {
       case TimePeriod.today:
-        return locale == 'vi' ? 'Hôm nay' : 'Today';
+        return 'common.today';
       case TimePeriod.thisWeek:
-        return locale == 'vi' ? 'Tuần' : 'Week';
+        return 'common.week';
       case TimePeriod.thisMonth:
-        return locale == 'vi' ? 'Tháng' : 'Month';
+        return 'common.month';
       case TimePeriod.thisYear:
-        return locale == 'vi' ? 'Năm' : 'Year';
+        return 'common.year';
       case TimePeriod.custom:
-        return locale == 'vi' ? 'Tùy chỉnh' : 'Custom';
+        return 'common.custom';
     }
   }
 

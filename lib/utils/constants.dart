@@ -23,6 +23,18 @@ class AppConstants {
   /// Timeout for Gemini AI API requests in seconds
   static const int geminiApiTimeoutSeconds = 30;
 
+  /// Daily limit for Gemini AI voice parsing (free tier)
+  /// Change this value to adjust the daily limit for AI parsing
+  static const int geminiDailyParsingLimit = 15;
+
+  /// Show warning banner when remaining parses <= this threshold
+  /// Default: 5 (banner appears at 5 or fewer remaining)
+  static const int geminiWarningThreshold = 5;
+
+  /// Show critical warning (orange) when remaining parses <= this threshold
+  /// Default: 3 (changes to orange at 3 or fewer remaining)
+  static const int geminiCriticalThreshold = 3;
+
   /// Maximum number of retries for API requests
   static const int maxApiRetries = 3;
 

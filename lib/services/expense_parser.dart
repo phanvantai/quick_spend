@@ -6,6 +6,7 @@ import 'amount_parser.dart';
 import 'language_detector.dart';
 import 'categorizer.dart';
 import 'gemini_expense_parser.dart';
+import 'gemini_usage_limit_service.dart';
 
 /// Main expense parser that orchestrates language detection,
 /// amount extraction, and auto-categorization
@@ -19,8 +20,9 @@ class ExpenseParser {
   static Future<List<ParseResult>> parse(
     String rawInput,
     String userId,
-    List<QuickCategory> categories,
-  ) async {
+    List<QuickCategory> categories, {
+    GeminiUsageLimitService? usageLimitService,
+  }) async {
     debugPrint('💸 [ExpenseParser] Starting parse for: "$rawInput"');
 
     // Try Gemini parser first if available
@@ -34,8 +36,14 @@ class ExpenseParser {
           userId,
           categories,
           language,
+          usageLimitService,
         );
         if (geminiResults.isNotEmpty) {
+          // Check if it's a limit reached error
+          if (geminiResults.first.errorMessage == 'GEMINI_LIMIT_REACHED') {
+            debugPrint('⛔ [ExpenseParser] Gemini limit reached, returning error to user');
+            return geminiResults; // Return the error, don't fall back
+          }
           debugPrint('✅ [ExpenseParser] Gemini returned ${geminiResults.length} result(s)');
           return geminiResults;
         }
@@ -182,9 +190,15 @@ class ExpenseParser {
     String rawInput,
     String userId,
     List<QuickCategory> categories,
-    String categoryId,
-  ) async {
-    final results = await parse(rawInput, userId, categories);
+    String categoryId, {
+    GeminiUsageLimitService? usageLimitService,
+  }) async {
+    final results = await parse(
+      rawInput,
+      userId,
+      categories,
+      usageLimitService: usageLimitService,
+    );
 
     if (results.isEmpty) {
       return [

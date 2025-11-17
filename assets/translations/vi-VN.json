@@ -93,8 +93,10 @@
     "data": "Dữ Liệu",
     "export_data": "Xuất Dữ Liệu",
     "export_data_subtitle": "Xuất chi tiêu và danh mục sang JSON",
+    "export_data_description": "Bao gồm chi tiêu, danh mục, ngôn ngữ & tiền tệ",
     "import_data": "Nhập Dữ Liệu",
     "import_data_subtitle": "Nhập chi tiêu từ file sao lưu",
+    "import_data_description": "Khôi phục chi tiêu, danh mục và cài đặt ứng dụng",
     "export_format": "Định Dạng Xuất",
     "export_csv": "Xuất dạng CSV",
     "export_json": "Xuất dạng JSON",
@@ -123,10 +125,18 @@
     "error_changing_language": "Lỗi khi thay đổi ngôn ngữ: {error}",
     "error_changing_currency": "Lỗi khi thay đổi tiền tệ: {error}",
     "error_changing_theme": "Lỗi khi thay đổi giao diện: {error}",
-    "language_vi": "Tiếng Việt",
     "language_en": "English",
-    "currency_vnd_display": "Đồng Việt Nam (đ)",
+    "language_vi": "Tiếng Việt",
+    "language_ja": "日本語",
+    "language_ko": "한국어",
+    "language_th": "ไทย",
+    "language_es": "Español",
     "currency_usd_display": "Đô la Mỹ ($)",
+    "currency_vnd_display": "Đồng Việt Nam (đ)",
+    "currency_jpy_display": "Yên Nhật (¥)",
+    "currency_krw_display": "Won Hàn Quốc (₩)",
+    "currency_thb_display": "Baht Thái (฿)",
+    "currency_eur_display": "Euro (€)",
     "coming_soon": "Cài đặt sẽ có sớm!"
   },
   "expense": {
@@ -161,7 +171,10 @@
     "tutorial_title": "Chạm để Ghi Âm",
     "tutorial_description": "Chạm nút để bắt đầu ghi âm chi tiêu bằng giọng nói. Chạm lại để dừng, hoặc vuốt lên để hủy.",
     "tutorial_got_it": "Đã Hiểu!",
-    "tutorial_tap_anywhere": "hoặc chạm bất kỳ đâu để đóng"
+    "tutorial_tap_anywhere": "hoặc chạm bất kỳ đâu để đóng",
+    "gemini_limit_reached": "Đã đạt giới hạn AI phân tích hàng ngày ({limit}/ngày). Vui lòng thêm chi tiêu thủ công bằng nút +.",
+    "gemini_limit_warning": "Phân tích AI: còn {remaining}/{limit} lần hôm nay",
+    "gemini_remaining": "{remaining}/{limit}"
   },
   "navigation": {
     "home": "Trang chính",
@@ -181,7 +194,11 @@
     "apply": "Áp Dụng",
     "error": "Lỗi: {error}",
     "today": "Hôm Nay",
-    "yesterday": "Hôm Qua"
+    "yesterday": "Hôm Qua",
+    "week": "Tuần",
+    "month": "Tháng",
+    "year": "Năm",
+    "custom": "Tùy chỉnh"
   },
   "categories": {
     "food": "Ăn Uống",

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 /// App configuration model for user preferences
 class AppConfig {
@@ -72,6 +73,48 @@ class AppConfig {
         return '€';
       default:
         return currency;
+    }
+  }
+
+  /// Format currency amount with proper symbol placement and number formatting
+  /// This method handles:
+  /// - Decimal places based on currency (VND, JPY, KRW don't use decimals)
+  /// - Thousand/decimal separators based on language
+  /// - Currency symbol position based on currency conventions
+  String formatCurrency(double amount) {
+    // Determine decimal places based on currency
+    // VND, JPY, KRW don't use decimal places
+    final useDecimals = currency != 'VND' && currency != 'JPY' && currency != 'KRW';
+
+    // Determine thousand/decimal separators based on language
+    // Vietnamese and Spanish: period for thousands, comma for decimals
+    // Others: comma for thousands, period for decimals
+    final usePeriodForThousands = language == 'vi' || language == 'es';
+
+    // Create formatter with en_US locale first
+    final formatter = NumberFormat(
+      useDecimals ? '#,##0.00' : '#,##0',
+      'en_US',
+    );
+
+    String formatted = formatter.format(amount);
+
+    // Swap separators if needed for Vietnamese/Spanish
+    if (usePeriodForThousands) {
+      formatted = formatted.replaceAll(',', '|'); // Temp placeholder
+      formatted = formatted.replaceAll('.', ','); // Decimal comma
+      formatted = formatted.replaceAll('|', '.'); // Thousand period
+    }
+
+    // Determine symbol position based on currency
+    // Currencies with symbol AFTER value: VND, THB
+    // Currencies with symbol BEFORE value: USD, EUR, JPY, KRW
+    final symbolAfter = currency == 'VND' || currency == 'THB';
+
+    if (symbolAfter) {
+      return '$formatted $currencySymbol';
+    } else {
+      return '$currencySymbol$formatted';
     }
   }
 

@@ -93,8 +93,10 @@
     "data": "Data",
     "export_data": "Export Data",
     "export_data_subtitle": "Export your expenses and categories to JSON",
+    "export_data_description": "Includes expenses, categories, language & currency",
     "import_data": "Import Data",
     "import_data_subtitle": "Import expenses from backup file",
+    "import_data_description": "Restores expenses, categories, and app settings",
     "export_format": "Export Format",
     "export_csv": "Export as CSV",
     "export_json": "Export as JSON",
@@ -123,10 +125,18 @@
     "error_changing_language": "Error changing language: {error}",
     "error_changing_currency": "Error changing currency: {error}",
     "error_changing_theme": "Error changing theme: {error}",
-    "language_vi": "Tiếng Việt",
     "language_en": "English",
-    "currency_vnd_display": "Vietnamese Dong (đ)",
+    "language_vi": "Tiếng Việt",
+    "language_ja": "日本語",
+    "language_ko": "한국어",
+    "language_th": "ไทย",
+    "language_es": "Español",
     "currency_usd_display": "US Dollar ($)",
+    "currency_vnd_display": "Vietnamese Dong (đ)",
+    "currency_jpy_display": "Japanese Yen (¥)",
+    "currency_krw_display": "South Korean Won (₩)",
+    "currency_thb_display": "Thai Baht (฿)",
+    "currency_eur_display": "Euro (€)",
     "coming_soon": "Settings coming soon!"
   },
   "expense": {
@@ -161,7 +171,10 @@
     "tutorial_title": "Tap to Record",
     "tutorial_description": "Tap the button to start recording your expense with voice. Tap again to stop, or swipe up to cancel.",
     "tutorial_got_it": "Got It!",
-    "tutorial_tap_anywhere": "or tap anywhere to dismiss"
+    "tutorial_tap_anywhere": "or tap anywhere to dismiss",
+    "gemini_limit_reached": "Daily AI parsing limit reached ({limit}/day). Please add your expense manually using the + button.",
+    "gemini_limit_warning": "AI parsing: {remaining} of {limit} remaining today",
+    "gemini_remaining": "{remaining}/{limit}"
   },
   "navigation": {
     "home": "Home",
@@ -181,7 +194,11 @@
     "apply": "Apply",
     "error": "Error: {error}",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "custom": "Custom"
   },
   "categories": {
     "food": "Food",

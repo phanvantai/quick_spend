@@ -247,7 +247,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       iconColor: AppTheme.success,
                       title: context.tr('settings.export_data'),
                       subtitle: context.tr('settings.export_data_subtitle'),
-                      description: 'Includes expenses, categories, language & currency',
+                      description: context.tr('settings.export_data_description'),
                       onTap: () => _showExportDialog(context),
                     ),
 
@@ -256,7 +256,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       iconColor: AppTheme.info,
                       title: context.tr('settings.import_data'),
                       subtitle: context.tr('settings.import_data_subtitle'),
-                      description: 'Restores expenses, categories, and app settings',
+                      description: context.tr('settings.import_data_description'),
                       onTap: () => _handleImport(context),
                     ),
 
@@ -451,9 +451,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   String _getLanguageDisplayName(String languageCode) {
     switch (languageCode) {
+      case 'en':
+        return context.tr('settings.language_en');
       case 'vi':
         return context.tr('settings.language_vi');
-      case 'en':
+      case 'ja':
+        return context.tr('settings.language_ja');
+      case 'ko':
+        return context.tr('settings.language_ko');
+      case 'th':
+        return context.tr('settings.language_th');
+      case 'es':
+        return context.tr('settings.language_es');
       default:
         return context.tr('settings.language_en');
     }
@@ -461,9 +470,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   String _getCurrencyDisplayName(String currencyCode) {
     switch (currencyCode) {
+      case 'USD':
+        return context.tr('settings.currency_usd_display');
       case 'VND':
         return context.tr('settings.currency_vnd_display');
-      case 'USD':
+      case 'JPY':
+        return context.tr('settings.currency_jpy_display');
+      case 'KRW':
+        return context.tr('settings.currency_krw_display');
+      case 'THB':
+        return context.tr('settings.currency_thb_display');
+      case 'EUR':
+        return context.tr('settings.currency_eur_display');
       default:
         return context.tr('settings.currency_usd_display');
     }

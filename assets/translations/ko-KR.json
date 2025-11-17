@@ -91,8 +91,10 @@
     "data": "데이터",
     "export_data": "데이터 내보내기",
     "export_data_subtitle": "지출 및 카테고리를 JSON으로 내보내기",
+    "export_data_description": "지출, 카테고리, 언어, 통화 포함",
     "import_data": "데이터 가져오기",
     "import_data_subtitle": "백업 파일에서 지출 가져오기",
+    "import_data_description": "지출, 카테고리, 앱 설정 복원",
     "export_format": "내보내기 형식",
     "export_csv": "CSV로 내보내기",
     "export_json": "JSON으로 내보내기",
@@ -120,7 +122,19 @@
     "theme_changed": "테마가 변경되었습니다",
     "error_changing_language": "언어 변경 오류: {error}",
     "error_changing_currency": "통화 변경 오류: {error}",
-    "error_changing_theme": "테마 변경 오류: {error}"
+    "error_changing_theme": "테마 변경 오류: {error}",
+    "language_en": "English",
+    "language_vi": "Tiếng Việt",
+    "language_ja": "日本語",
+    "language_ko": "한국어",
+    "language_th": "ไทย",
+    "language_es": "Español",
+    "currency_usd_display": "미국 달러 ($)",
+    "currency_vnd_display": "베트남 동 (đ)",
+    "currency_jpy_display": "일본 엔 (¥)",
+    "currency_krw_display": "대한민국 원 (₩)",
+    "currency_thb_display": "태국 바트 (฿)",
+    "currency_eur_display": "유로 (€)"
   },
   "expense": {
     "add_coming_soon": "지출 추가 기능이 곧 출시될 예정입니다!"
@@ -146,7 +160,10 @@
     "tutorial_title": "탭하여 녹음",
     "tutorial_description": "버튼을 탭하여 음성으로 지출 녹음을 시작하세요. 다시 탭하여 중지하거나 위로 스와이프하여 취소하세요.",
     "tutorial_got_it": "알겠습니다!",
-    "tutorial_tap_anywhere": "또는 아무 곳이나 탭하여 닫기"
+    "tutorial_tap_anywhere": "또는 아무 곳이나 탭하여 닫기",
+    "gemini_limit_reached": "일일 AI 분석 한도 도달 ({limit}회/일). + 버튼을 사용하여 수동으로 지출을 추가하세요.",
+    "gemini_limit_warning": "AI 분석: 오늘 {remaining}/{limit}회 남음",
+    "gemini_remaining": "{remaining}/{limit}"
   },
   "navigation": {
     "home": "홈",
@@ -166,7 +183,11 @@
     "apply": "적용",
     "error": "오류: {error}",
     "today": "오늘",
-    "yesterday": "어제"
+    "yesterday": "어제",
+    "week": "주",
+    "month": "월",
+    "year": "년",
+    "custom": "사용자 지정"
   },
   "categories": {
     "food": "식비",

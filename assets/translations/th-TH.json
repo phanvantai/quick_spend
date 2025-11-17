@@ -91,8 +91,10 @@
     "data": "ข้อมูล",
     "export_data": "ส่งออกข้อมูล",
     "export_data_subtitle": "ส่งออกการใช้จ่ายและหมวดหมู่เป็น JSON",
+    "export_data_description": "รวมการใช้จ่าย, หมวดหมู่, ภาษา และสกุลเงิน",
     "import_data": "นำเข้าข้อมูล",
     "import_data_subtitle": "นำเข้าการใช้จ่ายจากไฟล์สำรอง",
+    "import_data_description": "กู้คืนการใช้จ่าย, หมวดหมู่และการตั้งค่าแอป",
     "export_format": "รูปแบบการส่งออก",
     "export_csv": "ส่งออกเป็น CSV",
     "export_json": "ส่งออกเป็น JSON",
@@ -120,7 +122,19 @@
     "theme_changed": "เปลี่ยนธีมเรียบร้อยแล้ว",
     "error_changing_language": "เกิดข้อผิดพลาดในการเปลี่ยนภาษา: {error}",
     "error_changing_currency": "เกิดข้อผิดพลาดในการเปลี่ยนสกุลเงิน: {error}",
-    "error_changing_theme": "เกิดข้อผิดพลาดในการเปลี่ยนธีม: {error}"
+    "error_changing_theme": "เกิดข้อผิดพลาดในการเปลี่ยนธีม: {error}",
+    "language_en": "English",
+    "language_vi": "Tiếng Việt",
+    "language_ja": "日本語",
+    "language_ko": "한국어",
+    "language_th": "ไทย",
+    "language_es": "Español",
+    "currency_usd_display": "ดอลลาร์สหรัฐ ($)",
+    "currency_vnd_display": "ดองเวียดนาม (đ)",
+    "currency_jpy_display": "เยนญี่ปุ่น (¥)",
+    "currency_krw_display": "วอนเกาหลีใต้ (₩)",
+    "currency_thb_display": "บาทไทย (฿)",
+    "currency_eur_display": "ยูโร (€)"
   },
   "expense": {
     "add_coming_soon": "การเพิ่มการใช้จ่ายเร็ว ๆ นี้"
@@ -146,7 +160,10 @@
     "tutorial_title": "แตะเพื่อบันทึก",
     "tutorial_description": "แตะปุ่มเพื่อเริ่มบันทึกการใช้จ่ายด้วยเสียง แตะอีกครั้งเพื่อหยุด หรือปัดขึ้นเพื่อยกเลิก",
     "tutorial_got_it": "เข้าใจแล้ว!",
-    "tutorial_tap_anywhere": "หรือแตะที่ใดก็ได้เพื่อปิด"
+    "tutorial_tap_anywhere": "หรือแตะที่ใดก็ได้เพื่อปิด",
+    "gemini_limit_reached": "ถึงขีดจำกัดการวิเคราะห์ AI รายวันแล้ว ({limit} ครั้ง/วัน) กรุณาเพิ่มรายจ่ายด้วยตนเองโดยใช้ปุ่ม +",
+    "gemini_limit_warning": "การวิเคราะห์ AI: เหลือ {remaining}/{limit} ครั้งวันนี้",
+    "gemini_remaining": "{remaining}/{limit}"
   },
   "navigation": {
     "home": "หน้าแรก",
@@ -166,7 +183,11 @@
     "apply": "นำไปใช้",
     "error": "ข้อผิดพลาด: {error}",
     "today": "วันนี้",
-    "yesterday": "เมื่อวาน"
+    "yesterday": "เมื่อวาน",
+    "week": "สัปดาห์",
+    "month": "เดือน",
+    "year": "ปี",
+    "custom": "กำหนดเอง"
   },
   "categories": {
     "food": "อาหาร",
