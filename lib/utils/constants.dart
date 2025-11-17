@@ -25,8 +25,7 @@ class AppConstants {
 
   /// Daily limit for Gemini AI voice parsing (free tier)
   /// Change this value to adjust the daily limit for AI parsing
-  /// Default: 20 parses per day
-  static const int geminiDailyParsingLimit = 20;
+  static const int geminiDailyParsingLimit = 15;
 
   /// Show warning banner when remaining parses <= this threshold
   /// Default: 5 (banner appears at 5 or fewer remaining)
