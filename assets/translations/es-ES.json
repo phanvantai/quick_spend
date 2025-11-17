@@ -169,7 +169,11 @@
     "apply": "Aplicar",
     "error": "Error: {error}",
     "today": "Hoy",
-    "yesterday": "Ayer"
+    "yesterday": "Ayer",
+    "week": "Semana",
+    "month": "Mes",
+    "year": "Año",
+    "custom": "Personalizado"
   },
   "categories": {
     "food": "Alimentación",

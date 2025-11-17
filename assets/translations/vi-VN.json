@@ -184,7 +184,11 @@
     "apply": "Áp Dụng",
     "error": "Lỗi: {error}",
     "today": "Hôm Nay",
-    "yesterday": "Hôm Qua"
+    "yesterday": "Hôm Qua",
+    "week": "Tuần",
+    "month": "Tháng",
+    "year": "Năm",
+    "custom": "Tùy chỉnh"
   },
   "categories": {
     "food": "Ăn Uống",

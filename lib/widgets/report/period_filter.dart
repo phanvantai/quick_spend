@@ -18,8 +18,6 @@ class PeriodFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = context.locale.languageCode;
-
     return SizedBox(
       height: 44,
       child: ListView(
@@ -28,35 +26,35 @@ class PeriodFilter extends StatelessWidget {
           _buildFilterChip(
             context,
             TimePeriod.today,
-            TimePeriod.today.getLabel(locale),
+            context.tr(TimePeriod.today.labelKey),
             Icons.today,
           ),
           const SizedBox(width: AppTheme.spacing8),
           _buildFilterChip(
             context,
             TimePeriod.thisWeek,
-            TimePeriod.thisWeek.getLabel(locale),
+            context.tr(TimePeriod.thisWeek.labelKey),
             Icons.date_range,
           ),
           const SizedBox(width: AppTheme.spacing8),
           _buildFilterChip(
             context,
             TimePeriod.thisMonth,
-            TimePeriod.thisMonth.getLabel(locale),
+            context.tr(TimePeriod.thisMonth.labelKey),
             Icons.calendar_month,
           ),
           const SizedBox(width: AppTheme.spacing8),
           _buildFilterChip(
             context,
             TimePeriod.thisYear,
-            TimePeriod.thisYear.getLabel(locale),
+            context.tr(TimePeriod.thisYear.labelKey),
             Icons.calendar_today,
           ),
           const SizedBox(width: AppTheme.spacing8),
           _buildFilterChip(
             context,
             TimePeriod.custom,
-            TimePeriod.custom.getLabel(locale),
+            context.tr(TimePeriod.custom.labelKey),
             Icons.tune,
             onTap: onCustomTap,
           ),

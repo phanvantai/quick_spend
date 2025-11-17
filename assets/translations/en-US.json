@@ -184,7 +184,11 @@
     "apply": "Apply",
     "error": "Error: {error}",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "custom": "Custom"
   },
   "categories": {
     "food": "Food",

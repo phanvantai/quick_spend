@@ -169,7 +169,11 @@
     "apply": "適用",
     "error": "エラー: {error}",
     "today": "今日",
-    "yesterday": "昨日"
+    "yesterday": "昨日",
+    "week": "週",
+    "month": "月",
+    "year": "年",
+    "custom": "カスタム"
   },
   "categories": {
     "food": "食費",

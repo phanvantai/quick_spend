@@ -169,7 +169,11 @@
     "apply": "นำไปใช้",
     "error": "ข้อผิดพลาด: {error}",
     "today": "วันนี้",
-    "yesterday": "เมื่อวาน"
+    "yesterday": "เมื่อวาน",
+    "week": "สัปดาห์",
+    "month": "เดือน",
+    "year": "ปี",
+    "custom": "กำหนดเอง"
   },
   "categories": {
     "food": "อาหาร",
