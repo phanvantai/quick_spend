@@ -28,6 +28,14 @@ class AppConstants {
   /// Default: 20 parses per day
   static const int geminiDailyParsingLimit = 20;
 
+  /// Show warning banner when remaining parses <= this threshold
+  /// Default: 5 (banner appears at 5 or fewer remaining)
+  static const int geminiWarningThreshold = 5;
+
+  /// Show critical warning (orange) when remaining parses <= this threshold
+  /// Default: 3 (changes to orange at 3 or fewer remaining)
+  static const int geminiCriticalThreshold = 3;
+
   /// Maximum number of retries for API requests
   static const int maxApiRetries = 3;
 

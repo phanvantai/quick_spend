@@ -13,6 +13,7 @@ import '../services/expense_parser.dart';
 import '../services/preferences_service.dart';
 import '../services/data_collection_service.dart';
 import '../services/gemini_usage_limit_service.dart';
+import '../utils/constants.dart';
 import '../theme/app_theme.dart';
 import '../widgets/voice_tutorial_overlay.dart';
 import '../widgets/home/editable_expense_dialog.dart';
@@ -669,8 +670,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   final remaining = snapshot.data!;
                   final limit = usageLimitService.dailyLimit;
 
-                  // Don't show banner if plenty remaining (> 5)
-                  if (remaining > 5) return const SizedBox.shrink();
+                  // Don't show banner if plenty remaining
+                  if (remaining > AppConstants.geminiWarningThreshold) {
+                    return const SizedBox.shrink();
+                  }
 
                   // Determine color and icon based on remaining count
                   Color bannerColor;
@@ -678,7 +681,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   if (remaining == 0) {
                     bannerColor = AppTheme.error;
                     bannerIcon = Icons.block;
-                  } else if (remaining <= 3) {
+                  } else if (remaining <= AppConstants.geminiCriticalThreshold) {
                     bannerColor = AppTheme.warning;
                     bannerIcon = Icons.warning_amber;
                   } else {
