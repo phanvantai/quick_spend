@@ -122,7 +122,19 @@
     "theme_changed": "เปลี่ยนธีมเรียบร้อยแล้ว",
     "error_changing_language": "เกิดข้อผิดพลาดในการเปลี่ยนภาษา: {error}",
     "error_changing_currency": "เกิดข้อผิดพลาดในการเปลี่ยนสกุลเงิน: {error}",
-    "error_changing_theme": "เกิดข้อผิดพลาดในการเปลี่ยนธีม: {error}"
+    "error_changing_theme": "เกิดข้อผิดพลาดในการเปลี่ยนธีม: {error}",
+    "language_en": "English",
+    "language_vi": "Tiếng Việt",
+    "language_ja": "日本語",
+    "language_ko": "한국어",
+    "language_th": "ไทย",
+    "language_es": "Español",
+    "currency_usd_display": "ดอลลาร์สหรัฐ ($)",
+    "currency_vnd_display": "ดองเวียดนาม (đ)",
+    "currency_jpy_display": "เยนญี่ปุ่น (¥)",
+    "currency_krw_display": "วอนเกาหลีใต้ (₩)",
+    "currency_thb_display": "บาทไทย (฿)",
+    "currency_eur_display": "ยูโร (€)"
   },
   "expense": {
     "add_coming_soon": "การเพิ่มการใช้จ่ายเร็ว ๆ นี้"

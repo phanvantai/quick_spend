@@ -122,7 +122,19 @@
     "theme_changed": "테마가 변경되었습니다",
     "error_changing_language": "언어 변경 오류: {error}",
     "error_changing_currency": "통화 변경 오류: {error}",
-    "error_changing_theme": "테마 변경 오류: {error}"
+    "error_changing_theme": "테마 변경 오류: {error}",
+    "language_en": "English",
+    "language_vi": "Tiếng Việt",
+    "language_ja": "日本語",
+    "language_ko": "한국어",
+    "language_th": "ไทย",
+    "language_es": "Español",
+    "currency_usd_display": "미국 달러 ($)",
+    "currency_vnd_display": "베트남 동 (đ)",
+    "currency_jpy_display": "일본 엔 (¥)",
+    "currency_krw_display": "대한민국 원 (₩)",
+    "currency_thb_display": "태국 바트 (฿)",
+    "currency_eur_display": "유로 (€)"
   },
   "expense": {
     "add_coming_soon": "지출 추가 기능이 곧 출시될 예정입니다!"

@@ -122,7 +122,19 @@
     "theme_changed": "Tema cambiado",
     "error_changing_language": "Error al cambiar idioma: {error}",
     "error_changing_currency": "Error al cambiar moneda: {error}",
-    "error_changing_theme": "Error al cambiar tema: {error}"
+    "error_changing_theme": "Error al cambiar tema: {error}",
+    "language_en": "English",
+    "language_vi": "Tiếng Việt",
+    "language_ja": "日本語",
+    "language_ko": "한국어",
+    "language_th": "ไทย",
+    "language_es": "Español",
+    "currency_usd_display": "Dólar estadounidense ($)",
+    "currency_vnd_display": "Dong vietnamita (đ)",
+    "currency_jpy_display": "Yen japonés (¥)",
+    "currency_krw_display": "Won surcoreano (₩)",
+    "currency_thb_display": "Baht tailandés (฿)",
+    "currency_eur_display": "Euro (€)"
   },
   "expense": {
     "add_coming_soon": "¡Próximamente más opciones para añadir gastos!"
