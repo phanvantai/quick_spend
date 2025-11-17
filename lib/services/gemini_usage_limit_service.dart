@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/constants.dart';
 
 /// Service for tracking daily Gemini API usage limits
-/// Free tier allows 20 parses per day
+/// Daily limit is configurable via AppConstants.geminiDailyParsingLimit
 class GeminiUsageLimitService {
-  static const int _dailyLimit = 20;
   static const String _usageCountKey = 'gemini_daily_usage_count';
   static const String _lastResetDateKey = 'gemini_last_reset_date';
 
@@ -53,13 +53,13 @@ class GeminiUsageLimitService {
   /// Get remaining parses for today
   Future<int> getRemainingCount() async {
     final used = await getUsageCount();
-    return _dailyLimit - used;
+    return AppConstants.geminiDailyParsingLimit - used;
   }
 
   /// Check if limit has been reached
   Future<bool> hasReachedLimit() async {
     final count = await getUsageCount();
-    return count >= _dailyLimit;
+    return count >= AppConstants.geminiDailyParsingLimit;
   }
 
   /// Check if parse is allowed (not at limit)
@@ -77,18 +77,18 @@ class GeminiUsageLimitService {
     await _prefs!.setInt(_usageCountKey, newCount);
 
     debugPrint(
-      '📊 [GeminiUsageLimit] Usage: $newCount/$_dailyLimit (${_dailyLimit - newCount} remaining)',
+      '📊 [GeminiUsageLimit] Usage: $newCount/${AppConstants.geminiDailyParsingLimit} (${AppConstants.geminiDailyParsingLimit - newCount} remaining)',
     );
   }
 
   /// Get the daily limit
-  int get dailyLimit => _dailyLimit;
+  int get dailyLimit => AppConstants.geminiDailyParsingLimit;
 
   /// Get formatted usage string for display
   Future<String> getUsageString() async {
     final used = await getUsageCount();
-    final remaining = _dailyLimit - used;
-    return '$remaining/$_dailyLimit';
+    final remaining = AppConstants.geminiDailyParsingLimit - used;
+    return '$remaining/${AppConstants.geminiDailyParsingLimit}';
   }
 
   /// Reset counter (for testing purposes)

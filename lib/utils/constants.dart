@@ -23,6 +23,11 @@ class AppConstants {
   /// Timeout for Gemini AI API requests in seconds
   static const int geminiApiTimeoutSeconds = 30;
 
+  /// Daily limit for Gemini AI voice parsing (free tier)
+  /// Change this value to adjust the daily limit for AI parsing
+  /// Default: 20 parses per day
+  static const int geminiDailyParsingLimit = 20;
+
   /// Maximum number of retries for API requests
   static const int maxApiRetries = 3;
 
