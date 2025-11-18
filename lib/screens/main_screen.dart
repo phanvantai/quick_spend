@@ -710,13 +710,24 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             child: Column(
               children: [
                 // Gemini usage limit banner
-                FutureBuilder<int>(
-                  future: usageLimitService.getRemainingCount(),
+                FutureBuilder<Map<String, int>>(
+                  future: Future.wait([
+                    usageLimitService.getRemainingCount(),
+                    usageLimitService.getDailyLimit(),
+                  ]).then((values) => {
+                    'remaining': values[0],
+                    'limit': values[1],
+                  }),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) return const SizedBox.shrink();
 
-                    final remaining = snapshot.data!;
-                    final limit = usageLimitService.dailyLimit;
+                    final remaining = snapshot.data!['remaining']!;
+                    final limit = snapshot.data!['limit']!;
+
+                    // Don't show banner for premium users (unlimited)
+                    if (remaining == -1 || limit == -1) {
+                      return const SizedBox.shrink();
+                    }
 
                     // Don't show banner if plenty remaining
                     if (remaining > AppConstants.geminiWarningThreshold) {
