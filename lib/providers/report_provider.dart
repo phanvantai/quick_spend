@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import '../models/expense.dart';
 import '../models/period_stats.dart';
+import '../utils/constants.dart';
 import '../utils/date_range_helper.dart';
+import '../services/subscription_service.dart';
 import 'expense_provider.dart';
 import 'category_provider.dart';
 import 'app_config_provider.dart';
@@ -11,6 +13,7 @@ class ReportProvider extends ChangeNotifier {
   final ExpenseProvider _expenseProvider;
   final CategoryProvider _categoryProvider;
   final AppConfigProvider _appConfigProvider;
+  bool _isPremium = false;
 
   TimePeriod _selectedPeriod = TimePeriod.thisMonth;
   DateRange? _customDateRange;
@@ -26,7 +29,13 @@ class ReportProvider extends ChangeNotifier {
   ) {
     _expenseProvider.addListener(_onExpensesChanged);
     _categoryProvider.addListener(_onCategoriesChanged);
-    _calculateStats();
+    _initialize();
+  }
+
+  /// Initialize subscription status and calculate stats
+  Future<void> _initialize() async {
+    _isPremium = await SubscriptionService.isPremium();
+    await _calculateStats();
   }
 
   @override
@@ -67,12 +76,58 @@ class ReportProvider extends ChangeNotifier {
   /// Whether data is loading
   bool get isLoading => _expenseProvider.isLoading || _isCalculating;
 
+  /// Whether user has premium subscription
+  bool get isPremium => _isPremium;
+
+  /// Get available periods based on subscription tier
+  List<TimePeriod> get availablePeriods {
+    if (_isPremium) {
+      // Premium: all periods available
+      return TimePeriod.values;
+    } else {
+      // Free: only today and thisWeek (≤7 days)
+      return [TimePeriod.today, TimePeriod.thisWeek];
+    }
+  }
+
+  /// Check if a period is allowed for current subscription tier
+  bool isPeriodAllowed(TimePeriod period) {
+    return availablePeriods.contains(period);
+  }
+
+  /// Check if a custom date range is allowed (free tier: max 7 days)
+  bool isDateRangeAllowed(DateTime start, DateTime end) {
+    if (_isPremium) return true;
+
+    final days = end.difference(start).inDays + 1;
+    return days <= AppConstants.freeTierReportDaysLimit;
+  }
+
   /// Get current date range based on selected period
+  /// Free tier: automatically limited to last 7 days
   DateRange get currentDateRange {
     if (_selectedPeriod == TimePeriod.custom && _customDateRange != null) {
       return _customDateRange!;
     }
-    return _selectedPeriod.getDateRange();
+
+    final range = _selectedPeriod.getDateRange();
+
+    // For free tier, limit to last 7 days
+    if (!_isPremium) {
+      final now = DateTime.now();
+      final maxStart = now.subtract(
+        Duration(days: AppConstants.freeTierReportDaysLimit - 1),
+      );
+      if (range.start.isBefore(maxStart)) {
+        // Adjust to last 7 days
+        return DateRange(
+          start: DateTime(maxStart.year, maxStart.month, maxStart.day),
+          end: DateTime(now.year, now.month, now.day, 23, 59, 59),
+        );
+      }
+    }
+
+    return range;
   }
 
   /// Get trend percentage compared to previous period
@@ -92,19 +147,43 @@ class ReportProvider extends ChangeNotifier {
   }
 
   /// Select a time period and recalculate stats
-  void selectPeriod(TimePeriod period) {
+  /// Returns false if period is not allowed for current subscription tier
+  bool selectPeriod(TimePeriod period) {
+    // Check if period is allowed
+    if (!isPeriodAllowed(period)) {
+      debugPrint('⚠️ [ReportProvider] Period $period not allowed for free tier');
+      return false;
+    }
+
     if (_selectedPeriod != period) {
       _selectedPeriod = period;
       _customDateRange = null;
       _calculateStats();
     }
+    return true;
   }
 
   /// Set custom date range and recalculate stats
-  void setCustomDateRange(DateTime start, DateTime end) {
+  /// Returns false if date range exceeds free tier limit (7 days)
+  bool setCustomDateRange(DateTime start, DateTime end) {
+    // Check if date range is allowed
+    if (!isDateRangeAllowed(start, end)) {
+      debugPrint(
+        '⚠️ [ReportProvider] Date range exceeds free tier limit (${AppConstants.freeTierReportDaysLimit} days)',
+      );
+      return false;
+    }
+
     _selectedPeriod = TimePeriod.custom;
     _customDateRange = DateRange(start: start, end: end);
     _calculateStats();
+    return true;
+  }
+
+  /// Refresh subscription status (call when subscription changes)
+  Future<void> refreshSubscription() async {
+    _isPremium = await SubscriptionService.isPremium();
+    notifyListeners();
   }
 
   /// Calculate statistics for current and previous periods

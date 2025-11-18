@@ -17,6 +17,34 @@ class AppConstants {
   static const String defaultUserId = 'local_user';
 
   // ========================================
+  // Subscription & Monetization
+  // ========================================
+
+  /// Monthly subscription price in USD
+  static const double subscriptionMonthlyPriceUSD = 2.99;
+
+  /// Yearly subscription price in USD
+  static const double subscriptionYearlyPriceUSD = 24.99;
+
+  /// Free tier: Maximum Gemini AI parses per day
+  static const int freeTierGeminiLimit = 5;
+
+  /// Premium tier: Unlimited Gemini AI parses (represented as -1)
+  static const int premiumTierGeminiLimit = -1; // -1 means unlimited
+
+  /// Free tier: Maximum recurring templates
+  static const int freeTierRecurringTemplatesLimit = 3;
+
+  /// Premium tier: Unlimited recurring templates
+  static const int premiumTierRecurringTemplatesLimit = -1; // -1 means unlimited
+
+  /// Free tier: Report history days limit
+  static const int freeTierReportDaysLimit = 7;
+
+  /// Premium tier: Unlimited report history
+  static const int premiumTierReportDaysLimit = -1; // -1 means unlimited
+
+  // ========================================
   // API & Network Configuration
   // ========================================
 
@@ -25,7 +53,7 @@ class AppConstants {
 
   /// Daily limit for Gemini AI voice parsing (free tier)
   /// Change this value to adjust the daily limit for AI parsing
-  static const int geminiDailyParsingLimit = 15;
+  static const int geminiDailyParsingLimit = 5;
 
   /// Show warning banner when remaining parses <= this threshold
   /// Default: 5 (banner appears at 5 or fewer remaining)

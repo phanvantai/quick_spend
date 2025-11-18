@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/recurring_expense_template.dart';
 import '../services/recurring_template_service.dart';
+import '../services/subscription_service.dart';
 import '../utils/constants.dart';
 
 /// Provider for managing recurring expense templates
@@ -9,9 +10,16 @@ class RecurringTemplateProvider extends ChangeNotifier {
   List<RecurringExpenseTemplate> _templates = [];
   bool _isLoading = true;
   String _currentUserId = AppConstants.defaultUserId;
+  bool _isPremium = false;
 
   RecurringTemplateProvider(this._templateService) {
-    _loadTemplates();
+    _initialize();
+  }
+
+  /// Initialize subscription status and load templates
+  Future<void> _initialize() async {
+    _isPremium = await SubscriptionService.isPremium();
+    await _loadTemplates();
   }
 
   /// Current list of templates
@@ -41,6 +49,29 @@ class RecurringTemplateProvider extends ChangeNotifier {
   /// List of inactive templates only
   List<RecurringExpenseTemplate> get inactiveTemplates =>
       _templates.where((t) => !t.isActive).toList();
+
+  /// Whether user has premium subscription
+  bool get isPremium => _isPremium;
+
+  /// Get template limit based on subscription tier
+  int get templateLimit {
+    return _isPremium
+        ? AppConstants.premiumTierRecurringTemplatesLimit
+        : AppConstants.freeTierRecurringTemplatesLimit;
+  }
+
+  /// Check if user can add more templates
+  bool get canAddTemplate {
+    if (_isPremium) return true; // Unlimited for premium
+    return _templates.length < AppConstants.freeTierRecurringTemplatesLimit;
+  }
+
+  /// Get remaining template slots (free tier only)
+  int get remainingTemplates {
+    if (_isPremium) return -1; // Unlimited
+    final remaining = AppConstants.freeTierRecurringTemplatesLimit - _templates.length;
+    return remaining > 0 ? remaining : 0;
+  }
 
   /// Set the current user ID
   void setUserId(String userId) {
@@ -73,17 +104,33 @@ class RecurringTemplateProvider extends ChangeNotifier {
   }
 
   /// Add a new template
-  Future<void> addTemplate(RecurringExpenseTemplate template) async {
+  /// Returns false if template limit reached (free tier)
+  Future<bool> addTemplate(RecurringExpenseTemplate template) async {
+    // Check if user can add more templates
+    if (!canAddTemplate) {
+      debugPrint(
+        '⚠️ [RecurringTemplateProvider] Template limit reached (${AppConstants.freeTierRecurringTemplatesLimit} for free tier)',
+      );
+      return false;
+    }
+
     try {
       debugPrint('➕ [RecurringTemplateProvider] Adding template: ${template.description}');
       await _templateService.saveTemplate(template);
       _templates.insert(0, template); // Add to beginning (newest first)
       debugPrint('✅ [RecurringTemplateProvider] Template added successfully');
       notifyListeners();
+      return true;
     } catch (e) {
       debugPrint('❌ [RecurringTemplateProvider] Error adding template: $e');
       rethrow;
     }
+  }
+
+  /// Refresh subscription status (call when subscription changes)
+  Future<void> refreshSubscription() async {
+    _isPremium = await SubscriptionService.isPremium();
+    notifyListeners();
   }
 
   /// Update an existing template
