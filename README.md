@@ -92,9 +92,9 @@ lib/
 │   ├── gemini_usage_limit_service.dart # Daily usage limit tracking (15/day)
 │   ├── expense_parser.dart        # Main parser orchestrator (AI + fallback)
 │   ├── amount_parser.dart         # Fallback amount parser (with slang support)
-│   ├── language_detector.dart     # Fallback language detection
 │   ├── categorizer.dart           # Fallback keyword categorization
 │   ├── voice_service.dart         # Speech-to-text wrapper (6 languages)
+│   ├── analytics_service.dart     # Firebase Analytics integration
 │   ├── database_manager.dart      # Centralized database management (schema v3)
 │   ├── expense_service.dart       # Expense & category CRUD operations
 │   ├── recurring_template_service.dart # Recurring template CRUD operations
@@ -199,13 +199,6 @@ Handles various amount formats:
 - Formatted: "100,000"
 - Plain numbers: "50000"
 
-#### Language Detector ([lib/services/language_detector.dart](lib/services/language_detector.dart))
-
-- Detects Vietnamese by diacritics (à, á, ả, ã, ạ, etc.)
-- Checks Vietnamese keywords
-- Returns confidence score
-- Defaults to English when ambiguous
-
 #### Categorizer ([lib/services/categorizer.dart](lib/services/categorizer.dart))
 
 - Keyword-based matching
@@ -217,11 +210,12 @@ Handles various amount formats:
 
 Main orchestrator that:
 
-1. Detects language
-2. Extracts amount
-3. Cleans description
-4. Auto-categorizes
-5. Returns structured Expense with confidence scores
+1. Accepts user's language from app settings (no auto-detection)
+2. Tries Gemini AI parser first (if available)
+3. Falls back to rule-based parser if Gemini fails
+4. Extracts amount and cleans description
+5. Auto-categorizes expenses
+6. Returns structured Expense objects with confidence scores
 
 ## Usage Examples
 
@@ -229,22 +223,39 @@ Main orchestrator that:
 import 'package:quick_spend/services/expense_parser.dart';
 
 // Parse English input
-final result1 = ExpenseParser.parse("50k coffee", "user123");
+final results1 = await ExpenseParser.parse(
+  "50k coffee",
+  "user123",
+  categories,
+  language: 'en',
+);
 // Result: $50,000, "coffee", Category: Food, Language: en
 
 // Parse Vietnamese input
-final result2 = ExpenseParser.parse("100k xăng", "user123");
+final results2 = await ExpenseParser.parse(
+  "100k xăng",
+  "user123",
+  categories,
+  language: 'vi',
+);
 // Result: 100,000 VND, "xăng", Category: Transport, Language: vi
 
 // Parse with Vietnamese words
-final result3 = ExpenseParser.parse("1 triệu 5 mua sắm", "user123");
+final results3 = await ExpenseParser.parse(
+  "1 triệu 5 mua sắm",
+  "user123",
+  categories,
+  language: 'vi',
+);
 // Result: 1,500,000 VND, "mua sắm", Category: Shopping, Language: vi
 
 // Override category
-final result4 = ExpenseParser.parseWithCategory(
+final results4 = await ExpenseParser.parseWithCategory(
   "50k misc item",
   "user123",
-  ExpenseCategory.other,
+  categories,
+  "other",
+  language: 'en',
 );
 ```
 
@@ -253,26 +264,28 @@ final result4 = ExpenseParser.parseWithCategory(
 You can test the core parsing functionality:
 
 ```dart
-void main() {
-  // Test amount parsing
+void main() async {
+  // Test amount parsing (fallback parser only)
   final amount1 = AmountParser.parseAmount("50k");
   print(amount1); // 50000.0
 
   final amount2 = AmountParser.parseAmount("1.5m");
   print(amount2); // 1500000.0
 
-  // Test language detection
-  final lang1 = LanguageDetector.detectLanguage("coffee");
-  print(lang1); // en
+  // Test full parsing (requires async)
+  final results = await ExpenseParser.parse(
+    "50k coffee",
+    "user123",
+    categories,
+    language: 'en', // Language from user's app settings
+  );
 
-  final lang2 = LanguageDetector.detectLanguage("cà phê");
-  print(lang2); // vi
-
-  // Test full parsing
-  final result = ExpenseParser.parse("50k coffee", "user123");
-  if (result.success) {
-    print(result.expense);
-    print("Confidence: ${result.overallConfidence}");
+  for (final result in results) {
+    if (result.success) {
+      print(result.expense);
+      print("Confidence: ${result.overallConfidence}");
+      print("Parser used: ${result.parserUsed}"); // 'gemini' or 'fallback'
+    }
   }
 }
 ```
