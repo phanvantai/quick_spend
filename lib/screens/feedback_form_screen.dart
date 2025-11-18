@@ -25,7 +25,7 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
   final _imagePicker = ImagePicker();
 
   FeedbackType _selectedType = FeedbackType.general;
-  List<File> _attachments = [];
+  final List<File> _attachments = [];
   bool _isSubmitting = false;
   String _appVersion = '';
 
@@ -110,7 +110,10 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: AppTheme.primaryMint),
+              leading: const Icon(
+                Icons.photo_library,
+                color: AppTheme.primaryMint,
+              ),
               title: Text(context.tr('feedback.from_gallery')),
               onTap: () {
                 Navigator.pop(context);
@@ -118,7 +121,10 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: AppTheme.accentOrange),
+              leading: const Icon(
+                Icons.camera_alt,
+                color: AppTheme.accentOrange,
+              ),
               title: Text(context.tr('feedback.from_camera')),
               onTap: () {
                 Navigator.pop(context);
@@ -160,7 +166,11 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
           builder: (context) => AlertDialog(
             title: Row(
               children: [
-                const Icon(Icons.check_circle, color: AppTheme.success, size: 28),
+                const Icon(
+                  Icons.check_circle,
+                  color: AppTheme.success,
+                  size: 28,
+                ),
                 const SizedBox(width: 12),
                 Text(context.tr('feedback.success_title')),
               ],
@@ -223,9 +233,7 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(context.tr('feedback.title')),
-      ),
+      appBar: AppBar(title: Text(context.tr('feedback.title'))),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -253,7 +261,7 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
 
             // Feedback type dropdown
             DropdownButtonFormField<FeedbackType>(
-              value: _selectedType,
+              initialValue: _selectedType,
               decoration: InputDecoration(
                 labelText: context.tr('feedback.type'),
                 prefixIcon: const Icon(Icons.category),
@@ -393,7 +401,9 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         ),
                         const SizedBox(width: AppTheme.spacing12),

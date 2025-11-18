@@ -76,73 +76,70 @@ class _FeedbackAdminScreenState extends State<FeedbackAdminScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacing16),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: AppTheme.error,
-                        ),
-                        const SizedBox(height: AppTheme.spacing16),
-                        Text(
-                          'Error loading feedback',
-                          style: theme.textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: AppTheme.spacing8),
-                        Text(
-                          _error!,
-                          style: theme.textTheme.bodyMedium,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: AppTheme.spacing24),
-                        FilledButton.icon(
-                          onPressed: _loadFeedback,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                        ),
-                      ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppTheme.spacing16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: AppTheme.error,
+                    ),
+                    const SizedBox(height: AppTheme.spacing16),
+                    Text(
+                      'Error loading feedback',
+                      style: theme.textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: AppTheme.spacing8),
+                    Text(
+                      _error!,
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppTheme.spacing24),
+                    FilledButton.icon(
+                      onPressed: _loadFeedback,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : _feedbacks.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.inbox_outlined,
+                    size: 64,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: AppTheme.spacing16),
+                  Text('No feedback yet', style: theme.textTheme.titleLarge),
+                  const SizedBox(height: AppTheme.spacing8),
+                  Text(
+                    'Feedback submissions will appear here',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-                )
-              : _feedbacks.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.inbox_outlined,
-                            size: 64,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(height: AppTheme.spacing16),
-                          Text(
-                            'No feedback yet',
-                            style: theme.textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: AppTheme.spacing8),
-                          Text(
-                            'Feedback submissions will appear here',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(AppTheme.spacing16),
-                      itemCount: _feedbacks.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: AppTheme.spacing16),
-                      itemBuilder: (context, index) {
-                        final feedback = _feedbacks[index];
-                        return _FeedbackCard(feedback: feedback);
-                      },
-                    ),
+                ],
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.all(AppTheme.spacing16),
+              itemCount: _feedbacks.length,
+              separatorBuilder: (context, index) =>
+                  const SizedBox(height: AppTheme.spacing16),
+              itemBuilder: (context, index) {
+                final feedback = _feedbacks[index];
+                return _FeedbackCard(feedback: feedback);
+              },
+            ),
     );
   }
 }
@@ -197,133 +194,134 @@ class _FeedbackCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            // Header with type badge and timestamp
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing12,
-                    vertical: AppTheme.spacing4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: typeColor.withValues(alpha: 0.15),
-                    borderRadius: AppTheme.borderRadiusSmall,
-                    border: Border.all(
-                      color: typeColor.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _getTypeIcon(feedback.type),
-                        size: 16,
-                        color: typeColor,
-                      ),
-                      const SizedBox(width: AppTheme.spacing4),
-                      Text(
-                        context.tr('feedback.type_${feedback.type.name}'),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: typeColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  DateFormat('MMM d, y • HH:mm').format(feedback.timestamp),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppTheme.spacing12),
-
-            // Subject
-            Text(
-              feedback.subject,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-
-            const SizedBox(height: AppTheme.spacing8),
-
-            // Message preview (truncated)
-            Text(
-              feedback.message.length > 100
-                  ? '${feedback.message.substring(0, 100)}...'
-                  : feedback.message,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-
-            const SizedBox(height: AppTheme.spacing12),
-            const Divider(),
-            const SizedBox(height: AppTheme.spacing8),
-
-            // Footer with metadata and attachments count
-            Row(
-              children: [
-                Icon(
-                  Icons.phone_android,
-                  size: 14,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: AppTheme.spacing4),
-                Text(
-                  '${feedback.platform} • v${feedback.appVersion}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                if (feedback.attachmentUrls.isNotEmpty) ...[
-                  const SizedBox(width: AppTheme.spacing8),
+              // Header with type badge and timestamp
+              Row(
+                children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacing8,
+                      horizontal: AppTheme.spacing12,
                       vertical: AppTheme.spacing4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.info.withValues(alpha: 0.15),
+                      color: typeColor.withValues(alpha: 0.15),
                       borderRadius: AppTheme.borderRadiusSmall,
+                      border: Border.all(
+                        color: typeColor.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.image,
-                          size: 12,
-                          color: AppTheme.info,
+                        Icon(
+                          _getTypeIcon(feedback.type),
+                          size: 16,
+                          color: typeColor,
                         ),
                         const SizedBox(width: AppTheme.spacing4),
                         Text(
-                          '${feedback.attachmentUrls.length}',
+                          context.tr('feedback.type_${feedback.type.name}'),
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: AppTheme.info,
+                            color: typeColor,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
                   ),
+                  const Spacer(),
+                  Text(
+                    DateFormat('MMM d, y • HH:mm').format(feedback.timestamp),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
-                const Spacer(),
-                Icon(
-                  Icons.chevron_right,
-                  size: 20,
+              ),
+
+              const SizedBox(height: AppTheme.spacing12),
+
+              // Subject
+              Text(
+                feedback.subject,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const SizedBox(height: AppTheme.spacing8),
+
+              // Message preview (truncated)
+              Text(
+                feedback.message.length > 100
+                    ? '${feedback.message.substring(0, 100)}...'
+                    : feedback.message,
+                style: theme.textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
-              ],
-            ),
-          ],
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              const SizedBox(height: AppTheme.spacing12),
+              const Divider(),
+              const SizedBox(height: AppTheme.spacing8),
+
+              // Footer with metadata and attachments count
+              Row(
+                children: [
+                  Icon(
+                    Icons.phone_android,
+                    size: 14,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: AppTheme.spacing4),
+                  Text(
+                    '${feedback.platform} • v${feedback.appVersion}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  if (feedback.attachmentUrls.isNotEmpty) ...[
+                    const SizedBox(width: AppTheme.spacing8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacing8,
+                        vertical: AppTheme.spacing4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.info.withValues(alpha: 0.15),
+                        borderRadius: AppTheme.borderRadiusSmall,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.image,
+                            size: 12,
+                            color: AppTheme.info,
+                          ),
+                          const SizedBox(width: AppTheme.spacing4),
+                          Text(
+                            '${feedback.attachmentUrls.length}',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: AppTheme.info,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
