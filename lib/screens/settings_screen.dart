@@ -17,6 +17,7 @@ import '../theme/app_theme.dart';
 import 'categories_screen.dart';
 import 'recurring_expenses_screen.dart';
 import 'feedback_form_screen.dart';
+import 'feedback_admin_screen.dart';
 
 /// Settings screen for changing app preferences
 class SettingsScreen extends StatefulWidget {
@@ -129,6 +130,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (value) {
                 Navigator.pop(context);
                 _toggleDebugMode();
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.feedback, color: AppTheme.accentOrange),
+              title: const Text('View Feedback'),
+              subtitle: const Text('Admin: View all user feedback'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FeedbackAdminScreen(),
+                  ),
+                );
               },
             ),
           ],
