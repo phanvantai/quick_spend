@@ -698,7 +698,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final usageLimitService = context.watch<GeminiUsageLimitService>();
 
     return Stack(
       children: [
@@ -707,99 +706,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           extendBody: true,
           body: SafeArea(
             bottom: false, // Let bottom nav handle its own safe area
-            child: Column(
-              children: [
-                // Gemini usage limit banner
-                FutureBuilder<Map<String, int>>(
-                  future: Future.wait([
-                    usageLimitService.getRemainingCount(),
-                    usageLimitService.getDailyLimit(),
-                  ]).then((values) => {
-                    'remaining': values[0],
-                    'limit': values[1],
-                  }),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return const SizedBox.shrink();
-
-                    final remaining = snapshot.data!['remaining']!;
-                    final limit = snapshot.data!['limit']!;
-
-                    // Don't show banner for premium users (unlimited)
-                    if (remaining == -1 || limit == -1) {
-                      return const SizedBox.shrink();
-                    }
-
-                    // Don't show banner if plenty remaining
-                    if (remaining > AppConstants.geminiWarningThreshold) {
-                      return const SizedBox.shrink();
-                    }
-
-                    // Determine color and icon based on remaining count
-                    Color bannerColor;
-                    IconData bannerIcon;
-                    if (remaining == 0) {
-                      bannerColor = AppTheme.error;
-                      bannerIcon = Icons.block;
-                    } else if (remaining <=
-                        AppConstants.geminiCriticalThreshold) {
-                      bannerColor = AppTheme.warning;
-                      bannerIcon = Icons.warning_amber;
-                    } else {
-                      bannerColor = AppTheme.info;
-                      bannerIcon = Icons.info_outline;
-                    }
-
-                    return Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing16,
-                        vertical: AppTheme.spacing12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: bannerColor.withValues(alpha: 0.15),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: bannerColor.withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(bannerIcon, color: bannerColor, size: 20),
-                          const SizedBox(width: AppTheme.spacing8),
-                          Expanded(
-                            child: Text(
-                              remaining == 0
-                                  ? context.tr(
-                                      'voice.gemini_limit_reached',
-                                      namedArgs: {'limit': limit.toString()},
-                                    )
-                                  : context.tr(
-                                      'voice.gemini_limit_warning',
-                                      namedArgs: {
-                                        'remaining': remaining.toString(),
-                                        'limit': limit.toString(),
-                                      },
-                                    ),
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: bannerColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                // Main content
-                Expanded(
-                  child: IndexedStack(index: _currentIndex, children: _screens),
-                ),
-              ],
-            ),
+            child: IndexedStack(index: _currentIndex, children: _screens),
           ), // SafeArea
           // Notched BottomAppBar with navigation items
           bottomNavigationBar: BottomAppBar(
