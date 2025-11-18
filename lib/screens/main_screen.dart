@@ -698,13 +698,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     final colorScheme = Theme.of(context).colorScheme;
     final usageLimitService = context.watch<GeminiUsageLimitService>();
 
-    return SafeArea(
-      child: Stack(
-        children: [
-          // Main Scaffold with content and bottom navigation
-          Scaffold(
-            extendBody: true,
-            body: Column(
+    return Stack(
+      children: [
+        // Main Scaffold with content and bottom navigation
+        Scaffold(
+          extendBody: true,
+          body: SafeArea(
+            bottom: false, // Let bottom nav handle its own safe area
+            child: Column(
               children: [
                 // Gemini usage limit banner
                 FutureBuilder<int>(
@@ -786,8 +787,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 ),
               ],
             ),
-            // Notched BottomAppBar with navigation items
-            bottomNavigationBar: BottomAppBar(
+          ), // SafeArea
+          // Notched BottomAppBar with navigation items
+          bottomNavigationBar: BottomAppBar(
               color: Colors.transparent,
               elevation: 0,
               shape: const CircularNotchedRectangle(),
