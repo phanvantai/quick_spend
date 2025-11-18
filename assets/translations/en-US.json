@@ -98,7 +98,6 @@
     "import_data_subtitle": "Import expenses from backup file",
     "import_data_description": "Restores expenses, categories, and app settings",
     "export_format": "Export Format",
-    "export_csv": "Export as CSV",
     "export_json": "Export as JSON",
     "exporting": "Exporting...",
     "importing": "Importing...",

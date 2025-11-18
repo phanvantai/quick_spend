@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Quick Spend is a Flutter expense tracking mobile app with voice input support and **multilingual functionality** (English, Vietnamese, Japanese, Korean, Thai, Spanish). The app uses **SQLite for local storage** and features **AI-powered expense parsing** using **Gemini 2.5 Flash via Firebase AI**, with automatic categorization, Vietnamese slang support, and full income/expense tracking. The app includes comprehensive statistics and reporting with interactive charts, calendar view, data import/export capabilities, recurring expenses, daily usage limits, and optional opt-in ML training data collection.
+Quick Spend is a Flutter expense tracking mobile app with voice input support and **multilingual functionality** (English, Vietnamese, Japanese, Korean, Thai, Spanish). The app uses **SQLite for local storage** and features **AI-powered expense parsing** using **Gemini 2.5 Flash via Firebase AI**, with automatic categorization, Vietnamese slang support, and full income/expense tracking. The app includes comprehensive statistics and reporting with interactive charts, calendar view, data import/export capabilities, recurring expenses, daily usage limits, optional opt-in ML training data collection, and **Firebase Analytics** for tracking user behavior and app performance.
 
 ## Development Commands
 
@@ -155,8 +155,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Data used only for ML training to improve parsing accuracy
 
 14. **ExportService** ([lib/services/export_service.dart](lib/services/export_service.dart))
-   - **Export expenses and categories to CSV/JSON**
-   - CSV export: expenses only (amount, description, category, date, type)
+   - **Export expenses and categories to JSON**
    - JSON export: expenses + ALL categories + app settings (version 4.0 format)
    - Export summary statistics (total amount, count, date range)
    - Platform-native share functionality (iOS/Android compatible)
@@ -164,8 +163,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Supports full app backup and migration
 
 15. **ImportService** ([lib/services/import_service.dart](lib/services/import_service.dart))
-   - **Import expenses and categories from CSV/JSON**
-   - CSV import: expenses only with validated categories
+   - **Import expenses and categories from JSON**
    - JSON import: version-aware parsing (v1.0, v2.0, v3.0, v4.0)
    - Duplicate detection by expense ID
    - Category validation with fallback to "Other"
@@ -183,6 +181,19 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - UI/UX: Expenses per page (50), top expenses (5), animation duration (300ms)
    - Database: Version 3, database name
    - Debug: 5 taps to enable debug mode within 3 seconds
+
+17. **AnalyticsService** ([lib/services/analytics_service.dart](lib/services/analytics_service.dart))
+   - **Firebase Analytics integration for tracking user behavior and app performance**
+   - Singleton pattern for easy access throughout the app
+   - Privacy-aware: Never logs PII (amounts, descriptions, personal data)
+   - **Screen Tracking**: Automatic screen view logging for all major screens
+   - **User Actions**: Expense CRUD operations, voice input events, category management
+   - **Feature Usage**: Import/export, recurring templates, report period changes
+   - **AI Metrics**: Gemini parse success/failure, fallback parser usage, confidence scores
+   - **Settings Changes**: Language, currency, theme mode changes with before/after values
+   - **User Properties**: Language, currency, theme, data collection consent
+   - Helper methods: `getAmountRange()` for privacy-safe amount bucketing
+   - All events logged with debug output for development visibility
 
 ### Models
 
@@ -317,16 +328,14 @@ for (final result in results) {
 
 **Complete data portability system** for backing up and migrating data:
 
-**Export Options:**
-- **CSV Export**: Expenses only (amount, description, category, date, type) - universal format
+**Export:**
 - **JSON Export**: Complete backup (v4.0 format) includes:
   - All expenses with full metadata
   - ALL categories (system + user) with definitions, keywords, icons, colors
   - App settings (language, currency)
   - Export timestamp and summary statistics
 
-**Import Options:**
-- **CSV Import**: Expenses only with category validation and fallback
+**Import:**
 - **JSON Import**: Full restoration with version-aware parsing (v1.0-v4.0)
   - Duplicate detection by expense ID
   - Category validation with automatic fallback to "Other"
@@ -403,8 +412,8 @@ lib/
 │   ├── recurring_template_service.dart # Recurring template CRUD operations
 │   ├── recurring_expense_service.dart  # Generates expenses from templates
 │   ├── data_collection_service.dart # Opt-in ML training data collection
-│   ├── export_service.dart     # Export to CSV/JSON
-│   ├── import_service.dart     # Import from CSV/JSON
+│   ├── export_service.dart     # Export to JSON
+│   ├── import_service.dart     # Import from JSON
 │   └── preferences_service.dart # SharedPreferences wrapper
 ├── providers/                   # State management
 │   ├── app_config_provider.dart # App configuration state

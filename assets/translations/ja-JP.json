@@ -96,7 +96,6 @@
     "import_data_subtitle": "バックアップファイルから支出をインポート",
     "import_data_description": "支出、カテゴリ、アプリ設定を復元",
     "export_format": "エクスポート形式",
-    "export_csv": "CSVとしてエクスポート",
     "export_json": "JSONとしてエクスポート",
     "exporting": "エクスポート中...",
     "importing": "インポート中...",

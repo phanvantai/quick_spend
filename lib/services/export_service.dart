@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
-import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,62 +9,8 @@ import '../models/expense.dart';
 import '../models/category.dart';
 import '../models/app_config.dart';
 
-/// Service for exporting expense data to various formats
+/// Service for exporting expense data to JSON format
 class ExportService {
-  /// Export expenses to CSV format
-  /// NOTE: CSV export only includes expenses, not categories.
-  /// For complete backup with categories, use JSON export.
-  /// Returns the file path of the exported CSV file
-  static Future<String> exportToCSV(List<Expense> expenses) async {
-    debugPrint('📤 [ExportService] Exporting ${expenses.length} expenses to CSV');
-
-    try {
-      // Create CSV data
-      final List<List<dynamic>> csvData = [
-        // Header row
-        [
-          'ID',
-          'Type',
-          'Amount',
-          'Description',
-          'Category',
-          'Date',
-          'Language',
-          'Raw Input',
-          'Confidence',
-        ],
-        // Data rows
-        ...expenses.map((expense) => [
-              expense.id,
-              expense.type.name,
-              expense.amount,
-              expense.description,
-              expense.categoryId,
-              expense.date.toIso8601String(),
-              expense.language,
-              expense.rawInput,
-              expense.confidence,
-            ]),
-      ];
-
-      // Convert to CSV string
-      final csvString = const ListToCsvConverter().convert(csvData);
-
-      // Save to temporary file
-      final directory = await getTemporaryDirectory();
-      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final filePath = '${directory.path}/quick_spend_export_$timestamp.csv';
-      final file = File(filePath);
-      await file.writeAsString(csvString);
-
-      debugPrint('✅ [ExportService] CSV export saved to: $filePath');
-      return filePath;
-    } catch (e) {
-      debugPrint('❌ [ExportService] Error exporting to CSV: $e');
-      rethrow;
-    }
-  }
-
   /// Export expenses and categories to JSON format
   /// Includes FULL category info for ALL categories (system + user)
   /// Also includes app settings (language, currency) for complete backup

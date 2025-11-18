@@ -98,7 +98,6 @@
     "import_data_subtitle": "Nhập chi tiêu từ file sao lưu",
     "import_data_description": "Khôi phục chi tiêu, danh mục và cài đặt ứng dụng",
     "export_format": "Định Dạng Xuất",
-    "export_csv": "Xuất dạng CSV",
     "export_json": "Xuất dạng JSON",
     "exporting": "Đang xuất...",
     "importing": "Đang nhập...",

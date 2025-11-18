@@ -7,6 +7,7 @@ import 'language_detector.dart';
 import 'categorizer.dart';
 import 'gemini_expense_parser.dart';
 import 'gemini_usage_limit_service.dart';
+import 'analytics_service.dart';
 
 /// Main expense parser that orchestrates language detection,
 /// amount extraction, and auto-categorization
@@ -22,6 +23,7 @@ class ExpenseParser {
     String userId,
     List<QuickCategory> categories, {
     GeminiUsageLimitService? usageLimitService,
+    AnalyticsService? analyticsService,
   }) async {
     debugPrint('💸 [ExpenseParser] Starting parse for: "$rawInput"');
 
@@ -42,17 +44,59 @@ class ExpenseParser {
           // Check if it's a limit reached error
           if (geminiResults.first.errorMessage == 'GEMINI_LIMIT_REACHED') {
             debugPrint('⛔ [ExpenseParser] Gemini limit reached, returning error to user');
+            // Log limit reached event
+            analyticsService?.logGeminiLimitReached(remainingCount: 0);
             return geminiResults; // Return the error, don't fall back
           }
           debugPrint('✅ [ExpenseParser] Gemini returned ${geminiResults.length} result(s)');
+
+          // Log successful Gemini parse
+          for (final result in geminiResults) {
+            if (result.success && result.expense != null) {
+              analyticsService?.logGeminiParseSuccess(
+                confidence: result.overallConfidence ?? 0.9,
+                expenseCount: geminiResults.length,
+                language: result.language ?? language,
+              );
+            }
+          }
+
           return geminiResults;
         }
         debugPrint('⚠️ [ExpenseParser] Gemini returned no results, falling back to rule-based');
+
+        // Log fallback due to no results
+        analyticsService?.logFallbackParserUsed(
+          reason: 'gemini_failed',
+          language: language,
+        );
       } catch (e) {
         debugPrint('⚠️ [ExpenseParser] Gemini failed: $e, falling back to rule-based');
+
+        // Detect language for analytics
+        final language = LanguageDetector.detectLanguage(rawInput);
+
+        // Log fallback due to error
+        analyticsService?.logGeminiParseFailed(
+          errorReason: e.toString().substring(0, 100), // Limit error message length
+          language: language,
+        );
+        analyticsService?.logFallbackParserUsed(
+          reason: 'gemini_failed',
+          language: language,
+        );
       }
     } else {
       debugPrint('📋 [ExpenseParser] Gemini not available, using rule-based parser');
+
+      // Detect language for analytics
+      final language = LanguageDetector.detectLanguage(rawInput);
+
+      // Log fallback due to Gemini unavailable
+      analyticsService?.logFallbackParserUsed(
+        reason: 'gemini_unavailable',
+        language: language,
+      );
     }
 
     // Fallback to rule-based parser
@@ -192,12 +236,14 @@ class ExpenseParser {
     List<QuickCategory> categories,
     String categoryId, {
     GeminiUsageLimitService? usageLimitService,
+    AnalyticsService? analyticsService,
   }) async {
     final results = await parse(
       rawInput,
       userId,
       categories,
       usageLimitService: usageLimitService,
+      analyticsService: analyticsService,
     );
 
     if (results.isEmpty) {

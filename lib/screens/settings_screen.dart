@@ -13,6 +13,7 @@ import '../providers/category_provider.dart';
 import '../services/export_service.dart';
 import '../services/import_service.dart';
 import '../services/data_collection_service.dart';
+import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import 'categories_screen.dart';
 import 'recurring_expenses_screen.dart';
@@ -882,6 +883,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         sharePositionOrigin: sharePositionOrigin,
       );
 
+      // Log analytics
+      context.read<AnalyticsService>().logDataExported(
+            format: 'json',
+            expenseCount: expenses.length,
+          );
+
       if (mounted) {
         messenger.clearSnackBars();
         messenger.showSnackBar(
@@ -1036,6 +1043,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           );
         }
       }
+
+      // Log analytics
+      context.read<AnalyticsService>().logDataImported(
+            format: 'json',
+            successCount: importResult.successCount,
+            errorCount: importResult.failureCount,
+          );
 
       if (mounted) {
         messenger.clearSnackBars();

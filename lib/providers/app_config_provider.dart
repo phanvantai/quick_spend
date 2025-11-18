@@ -1,14 +1,19 @@
 import 'package:flutter/foundation.dart';
 import '../models/app_config.dart';
 import '../services/preferences_service.dart';
+import '../services/analytics_service.dart';
 
 /// Provider for managing app configuration state
 class AppConfigProvider extends ChangeNotifier {
   final PreferencesService _preferencesService;
+  final AnalyticsService? _analyticsService;
   AppConfig _config = const AppConfig();
   bool _isLoading = true;
 
-  AppConfigProvider(this._preferencesService) {
+  AppConfigProvider(
+    this._preferencesService, {
+    AnalyticsService? analyticsService,
+  }) : _analyticsService = analyticsService {
     _loadConfig();
   }
 
@@ -48,20 +53,44 @@ class AppConfigProvider extends ChangeNotifier {
 
   /// Update language
   Future<void> setLanguage(String language) async {
+    final oldLanguage = _config.language;
     final newConfig = _config.copyWith(language: language);
     await _updateConfig(newConfig);
+
+    // Log analytics
+    _analyticsService?.logLanguageChanged(
+      fromLanguage: oldLanguage,
+      toLanguage: language,
+    );
+    _analyticsService?.setLanguageProperty(language);
   }
 
   /// Update currency
   Future<void> setCurrency(String currency) async {
+    final oldCurrency = _config.currency;
     final newConfig = _config.copyWith(currency: currency);
     await _updateConfig(newConfig);
+
+    // Log analytics
+    _analyticsService?.logCurrencyChanged(
+      fromCurrency: oldCurrency,
+      toCurrency: currency,
+    );
+    _analyticsService?.setCurrencyProperty(currency);
   }
 
   /// Update theme mode
   Future<void> setThemeMode(String themeMode) async {
+    final oldThemeMode = _config.themeMode;
     final newConfig = _config.copyWith(themeMode: themeMode);
     await _updateConfig(newConfig);
+
+    // Log analytics
+    _analyticsService?.logThemeChanged(
+      fromTheme: oldThemeMode,
+      toTheme: themeMode,
+    );
+    _analyticsService?.setThemeModeProperty(themeMode);
   }
 
   /// Mark onboarding as complete

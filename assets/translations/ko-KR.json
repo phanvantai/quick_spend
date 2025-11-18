@@ -96,7 +96,6 @@
     "import_data_subtitle": "백업 파일에서 지출 가져오기",
     "import_data_description": "지출, 카테고리, 앱 설정 복원",
     "export_format": "내보내기 형식",
-    "export_csv": "CSV로 내보내기",
     "export_json": "JSON으로 내보내기",
     "exporting": "내보내는 중...",
     "importing": "가져오는 중...",

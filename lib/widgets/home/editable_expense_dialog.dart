@@ -63,7 +63,8 @@ class _EditableExpenseDialogState extends State<EditableExpenseDialog> {
     try {
       final expenses = _expenseForms.map((form) => form.toExpense()).toList();
 
-      await expenseProvider.addExpenses(expenses);
+      // Add expenses with voice method since they come from voice input
+      await expenseProvider.addExpenses(expenses, method: 'voice');
 
       // Log training data for each expense (non-blocking)
       // Wrap in try-catch to prevent Firestore errors from blocking UI
