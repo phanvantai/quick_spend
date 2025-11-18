@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/subscription_provider.dart';
 import '../utils/constants.dart';
 import '../theme/app_theme.dart';
@@ -20,7 +21,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Upgrade to Premium'),
+        title: Text(context.tr('subscription.upgrade_to_premium')),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -41,9 +42,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     color: Colors.white,
                   ),
                   const SizedBox(height: AppTheme.spacing16),
-                  const Text(
-                    'Unlock Premium Features',
-                    style: TextStyle(
+                  Text(
+                    context.tr('subscription.unlock_features'),
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -51,9 +52,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppTheme.spacing8),
-                  const Text(
-                    'Get unlimited AI parsing, voice input, and more!',
-                    style: TextStyle(
+                  Text(
+                    context.tr('subscription.get_unlimited'),
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white70,
                     ),
@@ -77,8 +78,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   children: [
                     Expanded(
                       child: _buildPricingOption(
-                        label: 'Monthly',
-                        price: '\$${AppConstants.subscriptionMonthlyPriceUSD}/mo',
+                        label: context.tr('subscription.monthly'),
+                        price: '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}',
                         isSelected: !_isYearly,
                         onTap: () => setState(() => _isYearly = false),
                       ),
@@ -88,8 +89,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         clipBehavior: Clip.none,
                         children: [
                           _buildPricingOption(
-                            label: 'Yearly',
-                            price: '\$${(AppConstants.subscriptionYearlyPriceUSD / 12).toStringAsFixed(2)}/mo',
+                            label: context.tr('subscription.yearly'),
+                            price: '\$${(AppConstants.subscriptionYearlyPriceUSD / 12).toStringAsFixed(2)}${context.tr('subscription.per_month')}',
                             isSelected: _isYearly,
                             onTap: () => setState(() => _isYearly = true),
                           ),
@@ -105,9 +106,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
                                 color: AppTheme.errorColor,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
-                                'Save 30%',
-                                style: TextStyle(
+                              child: Text(
+                                context.tr('subscription.save_percent', namedArgs: {'percent': '30'}),
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -131,9 +132,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Premium Features',
-                    style: TextStyle(
+                  Text(
+                    context.tr('subscription.premium_features'),
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -141,38 +142,38 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   const SizedBox(height: AppTheme.spacing16),
                   _buildFeatureItem(
                     icon: Icons.auto_awesome,
-                    title: 'Unlimited AI Parsing',
-                    subtitle: 'Free: 5 parses/day → Premium: Unlimited',
+                    title: context.tr('subscription.feature_unlimited_ai'),
+                    subtitle: context.tr('subscription.feature_unlimited_ai_subtitle', namedArgs: {'free': '5'}),
                     isPremium: true,
                   ),
                   _buildFeatureItem(
                     icon: Icons.mic,
-                    title: 'Unlimited Voice Input',
-                    subtitle: 'Add expenses hands-free, anytime',
+                    title: context.tr('subscription.feature_unlimited_voice'),
+                    subtitle: context.tr('subscription.feature_unlimited_voice_subtitle'),
                     isPremium: true,
                   ),
                   _buildFeatureItem(
                     icon: Icons.repeat,
-                    title: 'Unlimited Recurring Expenses',
-                    subtitle: 'Free: 3 templates → Premium: Unlimited',
+                    title: context.tr('subscription.feature_unlimited_recurring'),
+                    subtitle: context.tr('subscription.feature_unlimited_recurring_subtitle', namedArgs: {'free': '3'}),
                     isPremium: true,
                   ),
                   _buildFeatureItem(
                     icon: Icons.analytics,
-                    title: 'Advanced Reports',
-                    subtitle: 'Free: 7 days → Premium: All time',
+                    title: context.tr('subscription.feature_advanced_reports'),
+                    subtitle: context.tr('subscription.feature_advanced_reports_subtitle', namedArgs: {'free': '7'}),
                     isPremium: true,
                   ),
                   _buildFeatureItem(
                     icon: Icons.category,
-                    title: 'Custom Categories',
-                    subtitle: 'Create unlimited custom categories',
+                    title: context.tr('subscription.feature_custom_categories'),
+                    subtitle: context.tr('subscription.feature_custom_categories_subtitle'),
                     isPremium: false,
                   ),
                   _buildFeatureItem(
                     icon: Icons.import_export,
-                    title: 'Data Import/Export',
-                    subtitle: 'Backup and migrate your data',
+                    title: context.tr('subscription.feature_import_export'),
+                    subtitle: context.tr('subscription.feature_import_export_subtitle'),
                     isPremium: false,
                   ),
                 ],
@@ -209,9 +210,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
                               ),
                             )
                           : Text(
-                              _isYearly
-                                  ? 'Start for \$${AppConstants.subscriptionYearlyPriceUSD}/year'
-                                  : 'Start for \$${AppConstants.subscriptionMonthlyPriceUSD}/month',
+                              context.tr(
+                                'subscription.start_for_price',
+                                namedArgs: {
+                                  'price': _isYearly
+                                      ? '\$${AppConstants.subscriptionYearlyPriceUSD}${context.tr('subscription.per_year')}'
+                                      : '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}',
+                                },
+                              ),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -222,8 +228,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   const SizedBox(height: AppTheme.spacing16),
                   Text(
                     _isYearly
-                        ? 'Billed yearly (\$${AppConstants.subscriptionYearlyPriceUSD})'
-                        : 'Billed monthly',
+                        ? context.tr('subscription.billed_yearly', namedArgs: {'amount': '\$${AppConstants.subscriptionYearlyPriceUSD}'})
+                        : context.tr('subscription.billed_monthly'),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -231,7 +237,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   ),
                   const SizedBox(height: AppTheme.spacing8),
                   Text(
-                    '✨ Mock payment - Activates premium immediately',
+                    context.tr('subscription.mock_payment_notice'),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[500],
@@ -349,9 +355,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
                           color: AppTheme.primaryColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text(
-                          'PRO',
-                          style: TextStyle(
+                        child: Text(
+                          context.tr('subscription.pro_badge'),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -397,8 +403,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
       if (mounted) {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('🎉 Welcome to Premium!'),
+          SnackBar(
+            content: Text(context.tr('subscription.welcome_to_premium')),
             backgroundColor: AppTheme.successColor,
           ),
         );

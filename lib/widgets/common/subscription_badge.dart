@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../theme/app_theme.dart';
 
 /// Badge widget to show Premium status
@@ -42,7 +43,7 @@ class SubscriptionBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            'PREMIUM',
+            context.tr('subscription.premium_badge'),
             style: TextStyle(
               color: Colors.white,
               fontSize: fontSize ?? 10,

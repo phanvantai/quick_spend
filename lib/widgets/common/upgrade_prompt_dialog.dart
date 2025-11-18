@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../screens/paywall_screen.dart';
 import '../../theme/app_theme.dart';
 
@@ -90,7 +91,7 @@ class UpgradePromptDialog extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: Text(
-                    'Maybe Later',
+                    context.tr('subscription.maybe_later'),
                     style: TextStyle(
                       color: Colors.grey[600],
                     ),
@@ -116,9 +117,9 @@ class UpgradePromptDialog extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Upgrade',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  child: Text(
+                    context.tr('subscription.upgrade_prompt_button'),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

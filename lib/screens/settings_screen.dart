@@ -196,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               : ListView(
                   children: [
                     // Subscription Section
-                    _buildSectionHeader('Subscription'),
+                    _buildSectionHeader(context.tr('subscription.title')),
                     _buildSubscriptionCard(context, subscriptionProvider),
 
                     const Divider(height: 32),
@@ -1259,7 +1259,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Row(
                       children: [
                         Text(
-                          isPremium ? 'Premium' : 'Free Plan',
+                          isPremium
+                              ? context.tr('subscription.premium')
+                              : context.tr('subscription.free_plan'),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1277,9 +1279,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Text(
                       isPremium
                           ? status.expiryDate != null
-                              ? 'Expires on ${_formatDate(status.expiryDate!)}'
-                              : 'Active subscription'
-                          : 'Upgrade to unlock all features',
+                              ? context.tr('subscription.expires_on',
+                                  namedArgs: {
+                                      'date': _formatDate(status.expiryDate!)
+                                    })
+                              : context.tr('subscription.active_subscription')
+                          : context.tr('subscription.upgrade_to_unlock'),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
