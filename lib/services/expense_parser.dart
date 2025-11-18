@@ -3,7 +3,6 @@ import 'package:uuid/uuid.dart';
 import '../models/expense.dart';
 import '../models/category.dart';
 import 'amount_parser.dart';
-import 'language_detector.dart';
 import 'categorizer.dart';
 import 'gemini_expense_parser.dart';
 import 'gemini_usage_limit_service.dart';
