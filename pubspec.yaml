@@ -41,6 +41,9 @@ dependencies:
   # AI/ML - Firebase AI (official Gemini 2.5 SDK)
   firebase_ai: ^3.4.0
 
+  # Subscriptions & In-App Purchases
+  purchases_flutter: ^8.2.3
+
   # Charts
   fl_chart: ^1.1.1
 
