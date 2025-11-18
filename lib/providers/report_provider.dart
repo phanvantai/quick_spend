@@ -35,6 +35,14 @@ class ReportProvider extends ChangeNotifier {
   /// Initialize subscription status and calculate stats
   Future<void> _initialize() async {
     _isPremium = await SubscriptionService.isPremium();
+
+    // Set appropriate default period based on subscription tier
+    // Free users: default to thisWeek (available period)
+    // Premium users: keep thisMonth (all periods available)
+    if (!_isPremium && _selectedPeriod == TimePeriod.thisMonth) {
+      _selectedPeriod = TimePeriod.thisWeek;
+    }
+
     await _calculateStats();
   }
 
@@ -182,8 +190,20 @@ class ReportProvider extends ChangeNotifier {
 
   /// Refresh subscription status (call when subscription changes)
   Future<void> refreshSubscription() async {
+    final wasPremium = _isPremium;
     _isPremium = await SubscriptionService.isPremium();
-    notifyListeners();
+
+    // If downgraded to free and current period is not allowed, switch to thisWeek
+    if (wasPremium && !_isPremium && !isPeriodAllowed(_selectedPeriod)) {
+      debugPrint(
+        '⚠️ [ReportProvider] User downgraded - switching from $_selectedPeriod to thisWeek',
+      );
+      _selectedPeriod = TimePeriod.thisWeek;
+      _customDateRange = null;
+      await _calculateStats();
+    } else {
+      notifyListeners();
+    }
   }
 
   /// Calculate statistics for current and previous periods
