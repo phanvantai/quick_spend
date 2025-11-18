@@ -8,6 +8,7 @@ import 'providers/expense_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/report_provider.dart';
 import 'providers/recurring_template_provider.dart';
+import 'providers/subscription_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/database_manager.dart';
 import 'services/expense_service.dart';
@@ -137,6 +138,9 @@ class MyApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(create: (_) => CategoryProvider(expenseService)),
+        ChangeNotifierProvider(
+          create: (_) => SubscriptionProvider()..initialize(),
+        ),
         ChangeNotifierProvider(
           create: (_) => RecurringTemplateProvider(recurringTemplateService),
         ),
