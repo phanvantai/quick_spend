@@ -493,7 +493,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
       // Update subscription provider
       final subscriptionProvider = context.read<SubscriptionProvider>();
-      await subscriptionProvider.refreshSubscriptionStatus();
+      await subscriptionProvider.refresh();
 
       if (mounted) {
         // Show success message
@@ -550,7 +550,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
       // Update subscription provider
       final subscriptionProvider = context.read<SubscriptionProvider>();
-      await subscriptionProvider.refreshSubscriptionStatus();
+      await subscriptionProvider.refresh();
 
       if (mounted) {
         final isPremium = await SubscriptionService.isPremium();
