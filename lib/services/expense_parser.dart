@@ -73,6 +73,9 @@ class ExpenseParser {
       } catch (e) {
         debugPrint('⚠️ [ExpenseParser] Gemini failed: $e, falling back to rule-based');
 
+        // Detect language for analytics
+        final language = LanguageDetector.detectLanguage(rawInput);
+
         // Log fallback due to error
         analyticsService?.logGeminiParseFailed(
           errorReason: e.toString().substring(0, 100), // Limit error message length

@@ -146,7 +146,7 @@ class ExpenseProvider extends ChangeNotifier {
       // Log analytics event
       _analyticsService?.logExpenseAdded(
         method: method,
-        category: expense.category,
+        category: expense.categoryId,
         amountRange: _analyticsService!.getAmountRange(expense.amount),
         language: expense.language,
         transactionType: expense.isExpense ? 'expense' : 'income',
@@ -172,7 +172,7 @@ class ExpenseProvider extends ChangeNotifier {
         // Log analytics for each expense
         _analyticsService?.logExpenseAdded(
           method: method,
-          category: expense.category,
+          category: expense.categoryId,
           amountRange: _analyticsService!.getAmountRange(expense.amount),
           language: expense.language,
           transactionType: expense.isExpense ? 'expense' : 'income',
@@ -206,7 +206,7 @@ class ExpenseProvider extends ChangeNotifier {
       // Log analytics event
       _analyticsService?.logExpenseEdited(
         fieldsChanged: fieldsChanged ?? ['unknown'],
-        category: expense.category,
+        category: expense.categoryId,
       );
     } catch (e) {
       debugPrint('Error updating expense: $e');
@@ -228,7 +228,7 @@ class ExpenseProvider extends ChangeNotifier {
 
       // Log analytics event
       _analyticsService?.logExpenseDeleted(
-        category: expense.category,
+        category: expense.categoryId,
         ageDays: _analyticsService!.getExpenseAgeDays(expense.date),
       );
     } catch (e) {
