@@ -356,7 +356,7 @@ class AppTheme {
       // Card theme
       cardTheme: CardThemeData(
         elevation: 0,
-        color: lightSurface,
+        color: lightSurfaceVariant,
         shadowColor: neutral900.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(
           borderRadius: borderRadiusMedium,
