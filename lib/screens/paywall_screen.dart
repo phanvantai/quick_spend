@@ -103,7 +103,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.errorColor,
+                                color: AppTheme.error,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -405,7 +405,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.tr('subscription.welcome_to_premium')),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppTheme.success,
           ),
         );
 
@@ -417,7 +417,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
