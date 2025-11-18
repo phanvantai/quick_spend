@@ -454,7 +454,7 @@
     "limit_ai_parsing_message": "You've used all {limit} daily AI parses. Upgrade to Premium for unlimited AI-powered expense tracking!",
     "limit_recurring_templates": "Template limit reached",
     "limit_recurring_templates_message": "You've reached the limit of {limit} recurring templates. Upgrade to Premium for unlimited templates!",
-    "limit_advanced_reports": "Report limit reached",
-    "limit_advanced_reports_message": "Free tier is limited to {limit} days of history. Upgrade to Premium for unlimited reports and custom date ranges!"
+    "limit_advanced_reports": "Custom date range limited",
+    "limit_advanced_reports_message": "Free tier custom date ranges are limited to {limit} days. Upgrade to Premium for unlimited custom date ranges!"
   }
 }

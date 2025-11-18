@@ -443,7 +443,7 @@
     "limit_ai_parsing_message": "Ha utilizado todos los {limit} análisis de IA diarios. ¡Actualice a Premium para un seguimiento de gastos con IA ilimitado!",
     "limit_recurring_templates": "Límite de plantillas alcanzado",
     "limit_recurring_templates_message": "Ha alcanzado el límite de {limit} plantillas recurrentes. ¡Actualice a Premium para plantillas ilimitadas!",
-    "limit_advanced_reports": "Límite de informes alcanzado",
-    "limit_advanced_reports_message": "El plan gratuito está limitado a {limit} días de historial. ¡Actualice a Premium para informes ilimitados y rangos de fechas personalizados!"
+    "limit_advanced_reports": "Rango de fechas personalizado limitado",
+    "limit_advanced_reports_message": "El plan gratuito limita los rangos de fechas personalizados a {limit} días. ¡Actualice a Premium para rangos de fechas personalizados ilimitados!"
   }
 }

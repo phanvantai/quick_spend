@@ -443,7 +443,7 @@
     "limit_ai_parsing_message": "1日{limit}回のAI解析をすべて使用しました。プレミアムにアップグレードして無制限のAI支出追跡をご利用ください！",
     "limit_recurring_templates": "テンプレートの上限に達しました",
     "limit_recurring_templates_message": "{limit}個の定期テンプレートの上限に達しました。プレミアムにアップグレードして無制限のテンプレートをご利用ください！",
-    "limit_advanced_reports": "レポートの上限に達しました",
-    "limit_advanced_reports_message": "無料プランは{limit}日間の履歴に制限されています。プレミアムにアップグレードして無制限のレポートとカスタム日付範囲をご利用ください！"
+    "limit_advanced_reports": "カスタム日付範囲が制限されています",
+    "limit_advanced_reports_message": "無料プランのカスタム日付範囲は{limit}日間に制限されています。プレミアムにアップグレードして無制限のカスタム日付範囲をご利用ください！"
   }
 }
