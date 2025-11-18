@@ -3,8 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/subscription_status.dart';
 import '../models/subscription_tier.dart';
+import 'revenue_cat_service.dart';
 
 /// Service for managing subscription state
+///
+/// Integrates with RevenueCat for real subscription management.
+/// Uses SharedPreferences as a local cache for offline access.
 class SubscriptionService {
   static const String _subscriptionKey = 'subscription_status';
 
@@ -68,9 +72,82 @@ class SubscriptionService {
   }
 
   /// Check if user has premium subscription
+  ///
+  /// Checks RevenueCat first (source of truth), falls back to local cache if offline.
   static Future<bool> isPremium() async {
-    final status = await getSubscriptionStatus();
-    return status.isPremium;
+    try {
+      // Try to get real status from RevenueCat
+      final isPremiumRC = await RevenueCatService.instance.isPremium();
+
+      // Sync local cache with RevenueCat status
+      if (isPremiumRC) {
+        // User is premium according to RevenueCat
+        final currentStatus = await getSubscriptionStatus();
+        if (!currentStatus.isPremium) {
+          // Local cache is outdated, update it
+          await _syncFromRevenueCat();
+        }
+      } else {
+        // User is NOT premium according to RevenueCat
+        final currentStatus = await getSubscriptionStatus();
+        if (currentStatus.isPremium) {
+          // Local cache shows premium but RevenueCat says no, downgrade
+          await downgradeToFree();
+        }
+      }
+
+      return isPremiumRC;
+    } catch (e) {
+      debugPrint('⚠️ [SubscriptionService] Failed to check RevenueCat, using local cache: $e');
+      // Fallback to local cache if RevenueCat fails (offline, etc.)
+      final status = await getSubscriptionStatus();
+      return status.isPremium;
+    }
+  }
+
+  /// Sync subscription status from RevenueCat to local storage
+  ///
+  /// Call this after successful purchase or when app starts.
+  static Future<void> syncFromRevenueCat() async {
+    await _syncFromRevenueCat();
+  }
+
+  /// Internal method to sync from RevenueCat
+  static Future<void> _syncFromRevenueCat() async {
+    try {
+      debugPrint('🔄 [SubscriptionService] Syncing from RevenueCat...');
+
+      final customerInfo = await RevenueCatService.instance.getCustomerInfo();
+      if (customerInfo == null) {
+        debugPrint('⚠️ [SubscriptionService] No customer info available');
+        return;
+      }
+
+      final premiumEntitlement = customerInfo.entitlements.all[RevenueCatService.premiumEntitlementId];
+
+      if (premiumEntitlement != null && premiumEntitlement.isActive) {
+        // User has active premium subscription
+        final expiryDate = premiumEntitlement.expirationDate != null
+            ? DateTime.parse(premiumEntitlement.expirationDate!)
+            : null;
+
+        final status = SubscriptionStatus(
+          tier: SubscriptionTier.premium,
+          expiryDate: expiryDate,
+          platform: customerInfo.originalAppUserId.contains('apple') ? 'apple' : 'google',
+          purchaseDate: DateTime.now(), // We don't have exact purchase date from RevenueCat
+        );
+
+        await saveSubscriptionStatus(status);
+        debugPrint('✅ [SubscriptionService] Synced: Premium until ${expiryDate ?? "forever"}');
+      } else {
+        // No active premium subscription
+        await downgradeToFree();
+        debugPrint('✅ [SubscriptionService] Synced: Free tier');
+      }
+    } catch (e) {
+      debugPrint('❌ [SubscriptionService] Failed to sync from RevenueCat: $e');
+    }
   }
 
   /// Check if user can use a feature

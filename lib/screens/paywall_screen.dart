@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import '../providers/subscription_provider.dart';
+import '../services/revenue_cat_service.dart';
+import '../services/subscription_service.dart';
 import '../utils/constants.dart';
 import '../theme/app_theme.dart';
 
@@ -16,6 +19,64 @@ class PaywallScreen extends StatefulWidget {
 class _PaywallScreenState extends State<PaywallScreen> {
   bool _isYearly = true; // Default to yearly (better value)
   bool _isProcessing = false;
+  bool _isLoading = true;
+  bool _isRestoring = false;
+
+  // RevenueCat products
+  Offering? _currentOffering;
+  Package? _monthlyPackage;
+  Package? _yearlyPackage;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  /// Load subscription products from RevenueCat
+  Future<void> _loadProducts() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final offerings = await RevenueCatService.instance.getOfferings();
+
+      if (!mounted) return;
+
+      if (offerings == null || offerings.current == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'No subscription products available';
+        });
+        return;
+      }
+
+      _currentOffering = offerings.current;
+
+      // Find monthly and yearly packages
+      // RevenueCat standard identifiers: $rc_monthly, $rc_annual
+      for (final package in _currentOffering!.availablePackages) {
+        if (package.identifier == '\$rc_monthly') {
+          _monthlyPackage = package;
+        } else if (package.identifier == '\$rc_annual') {
+          _yearlyPackage = package;
+        }
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load products: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +85,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
         title: Text(context.tr('subscription.upgrade_to_premium')),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? _buildErrorState()
+              : SingleChildScrollView(
         child: Column(
           children: [
             // Header section
@@ -76,7 +141,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     Expanded(
                       child: _buildPricingOption(
                         label: context.tr('subscription.monthly'),
-                        price:
+                        price: _monthlyPackage?.storeProduct.priceString ??
                             '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}',
                         isSelected: !_isYearly,
                         onTap: () => setState(() => _isYearly = false),
@@ -88,8 +153,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         children: [
                           _buildPricingOption(
                             label: context.tr('subscription.yearly'),
-                            price:
-                                '\$${(AppConstants.subscriptionYearlyPriceUSD / 12).toStringAsFixed(2)}${context.tr('subscription.per_month')}',
+                            price: _getYearlyPricePerMonth(),
                             isSelected: _isYearly,
                             onTap: () => setState(() => _isYearly = true),
                           ),
@@ -233,9 +297,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                               context.tr(
                                 'subscription.start_for_price',
                                 namedArgs: {
-                                  'price': _isYearly
-                                      ? '\$${AppConstants.subscriptionYearlyPriceUSD}${context.tr('subscription.per_year')}'
-                                      : '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}',
+                                  'price': _getCurrentPrice(),
                                 },
                               ),
                               style: const TextStyle(
@@ -251,22 +313,24 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         ? context.tr(
                             'subscription.billed_yearly',
                             namedArgs: {
-                              'amount':
+                              'amount': _yearlyPackage?.storeProduct.priceString ??
                                   '\$${AppConstants.subscriptionYearlyPriceUSD}',
                             },
                           )
                         : context.tr('subscription.billed_monthly'),
                     style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
-                  const SizedBox(height: AppTheme.spacing8),
-                  Text(
-                    context.tr('subscription.mock_payment_notice'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                      fontStyle: FontStyle.italic,
-                    ),
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: AppTheme.spacing16),
+                  // Restore purchases button
+                  TextButton(
+                    onPressed: _isRestoring ? null : _handleRestore,
+                    child: _isRestoring
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(context.tr('subscription.restore_purchases')),
                   ),
                 ],
               ),
@@ -404,24 +468,32 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   Future<void> _handlePurchase() async {
+    final package = _isYearly ? _yearlyPackage : _monthlyPackage;
+
+    if (package == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('subscription.price_unavailable')),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isProcessing = true);
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      // Purchase via RevenueCat
+      await RevenueCatService.instance.purchasePackage(package);
 
       if (!mounted) return;
 
-      // Mock upgrade to premium
-      final subscriptionProvider = context.read<SubscriptionProvider>();
-      final expiryDate = _isYearly
-          ? DateTime.now().add(const Duration(days: 365))
-          : DateTime.now().add(const Duration(days: 30));
+      // Sync subscription status from RevenueCat
+      await SubscriptionService.syncFromRevenueCat();
 
-      await subscriptionProvider.upgradeToPremium(
-        expiryDate: expiryDate,
-        platform: 'mock',
-      );
+      // Update subscription provider
+      final subscriptionProvider = context.read<SubscriptionProvider>();
+      await subscriptionProvider.refreshSubscriptionStatus();
 
       if (mounted) {
         // Show success message
@@ -435,16 +507,136 @@ class _PaywallScreenState extends State<PaywallScreen> {
         // Go back to previous screen
         Navigator.of(context).pop();
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
-        );
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+
+      // Handle purchase cancellation gracefully
+      if (e.code == PurchasesErrorCode.purchaseCancelledError.toString()) {
+        // User cancelled, no error needed
+        return;
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('subscription.purchase_error', namedArgs: {'error': e.message ?? 'Unknown error'})),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('subscription.purchase_failed')),
+          backgroundColor: AppTheme.error,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isProcessing = false);
       }
     }
+  }
+
+  Future<void> _handleRestore() async {
+    setState(() => _isRestoring = true);
+
+    try {
+      await RevenueCatService.instance.restorePurchases();
+
+      if (!mounted) return;
+
+      // Sync subscription status from RevenueCat
+      await SubscriptionService.syncFromRevenueCat();
+
+      // Update subscription provider
+      final subscriptionProvider = context.read<SubscriptionProvider>();
+      await subscriptionProvider.refreshSubscriptionStatus();
+
+      if (mounted) {
+        final isPremium = await SubscriptionService.isPremium();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isPremium
+                  ? context.tr('subscription.restore_success')
+                  : context.tr('subscription.restore_no_purchases'),
+            ),
+            backgroundColor: isPremium ? AppTheme.success : Colors.orange,
+          ),
+        );
+
+        if (isPremium) {
+          Navigator.of(context).pop();
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('subscription.restore_failed', namedArgs: {'error': e.toString()})),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isRestoring = false);
+      }
+    }
+  }
+
+  /// Get yearly price divided by 12 for monthly comparison
+  String _getYearlyPricePerMonth() {
+    if (_yearlyPackage == null) {
+      return '\$${(AppConstants.subscriptionYearlyPriceUSD / 12).toStringAsFixed(2)}${context.tr('subscription.per_month')}';
+    }
+
+    // For now, just show the full yearly price
+    // TODO: Calculate monthly equivalent if needed
+    return _yearlyPackage!.storeProduct.priceString;
+  }
+
+  /// Get current selected package price
+  String _getCurrentPrice() {
+    if (_isYearly) {
+      return _yearlyPackage?.storeProduct.priceString ??
+          '\$${AppConstants.subscriptionYearlyPriceUSD}${context.tr('subscription.per_year')}';
+    } else {
+      return _monthlyPackage?.storeProduct.priceString ??
+          '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}';
+    }
+  }
+
+  /// Build error state widget
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppTheme.spacing24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: AppTheme.error),
+            const SizedBox(height: AppTheme.spacing16),
+            Text(
+              context.tr('subscription.loading_failed'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppTheme.spacing8),
+            Text(
+              _errorMessage ?? 'Unknown error',
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppTheme.spacing24),
+            ElevatedButton.icon(
+              onPressed: _loadProducts,
+              icon: const Icon(Icons.refresh),
+              label: Text(context.tr('subscription.loading_retry')),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

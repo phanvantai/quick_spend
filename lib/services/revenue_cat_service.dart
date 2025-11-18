@@ -12,10 +12,11 @@ class RevenueCatService {
   /// Singleton instance
   static final RevenueCatService instance = RevenueCatService._();
 
-  /// RevenueCat API Keys (replace with your actual keys)
+  /// RevenueCat API Keys
   /// Get these from: RevenueCat Dashboard → Project Settings → API Keys
-  static const String _appleApiKey = 'YOUR_APPLE_API_KEY_HERE';
-  static const String _googleApiKey = 'YOUR_GOOGLE_API_KEY_HERE';
+  /// Note: These are PUBLIC SDK keys (safe to commit to repository)
+  static const String _appleApiKey = 'appl_uvXTlqDdZAaoRtAEZIIFxiPkloh';
+  static const String _googleApiKey = 'YOUR_GOOGLE_API_KEY_HERE'; // TODO: Add when setting up Google Play
 
   /// Entitlement identifier (must match RevenueCat dashboard)
   static const String premiumEntitlementId = 'premium';
