@@ -273,7 +273,7 @@ class AnalyticsService {
   // ============================================================================
 
   Future<void> logDataExported({
-    required String format, // 'csv' or 'json'
+    required String format, // 'json'
     required int expenseCount,
   }) =>
       logEvent(
@@ -285,7 +285,7 @@ class AnalyticsService {
       );
 
   Future<void> logDataImported({
-    required String format, // 'csv' or 'json'
+    required String format, // 'json'
     required int successCount,
     required int errorCount,
   }) =>

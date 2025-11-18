@@ -96,7 +96,6 @@
     "import_data_subtitle": "นำเข้าการใช้จ่ายจากไฟล์สำรอง",
     "import_data_description": "กู้คืนการใช้จ่าย, หมวดหมู่และการตั้งค่าแอป",
     "export_format": "รูปแบบการส่งออก",
-    "export_csv": "ส่งออกเป็น CSV",
     "export_json": "ส่งออกเป็น JSON",
     "exporting": "กำลังส่งออก...",
     "importing": "กำลังนำเข้า...",

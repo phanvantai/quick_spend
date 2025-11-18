@@ -96,7 +96,6 @@
     "import_data_subtitle": "Importar gastos desde archivo de copia de seguridad",
     "import_data_description": "Restaura gastos, categorías y configuración de la aplicación",
     "export_format": "Formato de exportación",
-    "export_csv": "Exportar como CSV",
     "export_json": "Exportar como JSON",
     "exporting": "Exportando...",
     "importing": "Importando...",
