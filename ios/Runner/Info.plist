@@ -32,6 +32,10 @@
 	<string>Quick Spend needs microphone access to let you record expenses by voice. Just say your expenses naturally.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Quick Spend uses speech recognition to convert your voice into text for quick expense logging. Your voice data is processed on-device and not stored.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Quick Spend needs access to your photo library to let you attach screenshots when sending feedback.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Quick Spend needs camera access to let you take photos when sending feedback.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
