@@ -35,14 +35,6 @@ class ReportProvider extends ChangeNotifier {
   /// Initialize subscription status and calculate stats
   Future<void> _initialize() async {
     _isPremium = await SubscriptionService.isPremium();
-
-    // Set appropriate default period based on subscription tier
-    // Free users: default to thisWeek (available period)
-    // Premium users: keep thisMonth (all periods available)
-    if (!_isPremium && _selectedPeriod == TimePeriod.thisMonth) {
-      _selectedPeriod = TimePeriod.thisWeek;
-    }
-
     await _calculateStats();
   }
 
@@ -93,8 +85,13 @@ class ReportProvider extends ChangeNotifier {
       // Premium: all periods available
       return TimePeriod.values;
     } else {
-      // Free: only today and thisWeek (≤7 days)
-      return [TimePeriod.today, TimePeriod.thisWeek];
+      // Free: all standard periods, custom is locked
+      return [
+        TimePeriod.today,
+        TimePeriod.thisWeek,
+        TimePeriod.thisMonth,
+        TimePeriod.thisYear,
+      ];
     }
   }
 
@@ -112,30 +109,12 @@ class ReportProvider extends ChangeNotifier {
   }
 
   /// Get current date range based on selected period
-  /// Free tier: automatically limited to last 7 days
   DateRange get currentDateRange {
     if (_selectedPeriod == TimePeriod.custom && _customDateRange != null) {
       return _customDateRange!;
     }
 
-    final range = _selectedPeriod.getDateRange();
-
-    // For free tier, limit to last 7 days
-    if (!_isPremium) {
-      final now = DateTime.now();
-      final maxStart = now.subtract(
-        Duration(days: AppConstants.freeTierReportDaysLimit - 1),
-      );
-      if (range.start.isBefore(maxStart)) {
-        // Adjust to last 7 days
-        return DateRange(
-          start: DateTime(maxStart.year, maxStart.month, maxStart.day),
-          end: DateTime(now.year, now.month, now.day, 23, 59, 59),
-        );
-      }
-    }
-
-    return range;
+    return _selectedPeriod.getDateRange();
   }
 
   /// Get trend percentage compared to previous period
@@ -193,12 +172,12 @@ class ReportProvider extends ChangeNotifier {
     final wasPremium = _isPremium;
     _isPremium = await SubscriptionService.isPremium();
 
-    // If downgraded to free and current period is not allowed, switch to thisWeek
-    if (wasPremium && !_isPremium && !isPeriodAllowed(_selectedPeriod)) {
+    // If downgraded to free and on custom period, switch to thisMonth
+    if (wasPremium && !_isPremium && _selectedPeriod == TimePeriod.custom) {
       debugPrint(
-        '⚠️ [ReportProvider] User downgraded - switching from $_selectedPeriod to thisWeek',
+        '⚠️ [ReportProvider] User downgraded - switching from custom to thisMonth',
       );
-      _selectedPeriod = TimePeriod.thisWeek;
+      _selectedPeriod = TimePeriod.thisMonth;
       _customDateRange = null;
       await _calculateStats();
     } else {
