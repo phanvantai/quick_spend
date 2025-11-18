@@ -454,7 +454,7 @@
     "limit_ai_parsing_message": "Bạn đã dùng hết {limit} lần phân tích AI hàng ngày. Nâng cấp lên Premium để theo dõi chi tiêu bằng AI không giới hạn!",
     "limit_recurring_templates": "Đã đạt giới hạn mẫu",
     "limit_recurring_templates_message": "Bạn đã đạt giới hạn {limit} mẫu định kỳ. Nâng cấp lên Premium để có mẫu không giới hạn!",
-    "limit_advanced_reports": "Khoảng thời gian tùy chỉnh bị giới hạn",
-    "limit_advanced_reports_message": "Gói miễn phí giới hạn khoảng thời gian tùy chỉnh {limit} ngày. Nâng cấp lên Premium để có khoảng thời gian tùy chỉnh không giới hạn!"
+    "limit_advanced_reports": "Khoảng thời gian tùy chỉnh dành cho Premium",
+    "limit_advanced_reports_message": "Khoảng thời gian tùy chỉnh là tính năng Premium. Nâng cấp để mở khóa chọn khoảng thời gian tùy chỉnh!"
   }
 }

@@ -100,13 +100,8 @@ class ReportProvider extends ChangeNotifier {
     return availablePeriods.contains(period);
   }
 
-  /// Check if a custom date range is allowed (free tier: max 7 days)
-  bool isDateRangeAllowed(DateTime start, DateTime end) {
-    if (_isPremium) return true;
-
-    final days = end.difference(start).inDays + 1;
-    return days <= AppConstants.freeTierReportDaysLimit;
-  }
+  /// Check if custom date ranges are allowed (premium only)
+  bool get isCustomDateRangeAllowed => _isPremium;
 
   /// Get current date range based on selected period
   DateRange get currentDateRange {
@@ -151,13 +146,11 @@ class ReportProvider extends ChangeNotifier {
   }
 
   /// Set custom date range and recalculate stats
-  /// Returns false if date range exceeds free tier limit (7 days)
+  /// Returns false if custom date ranges are not allowed (free tier)
   bool setCustomDateRange(DateTime start, DateTime end) {
-    // Check if date range is allowed
-    if (!isDateRangeAllowed(start, end)) {
-      debugPrint(
-        '⚠️ [ReportProvider] Date range exceeds free tier limit (${AppConstants.freeTierReportDaysLimit} days)',
-      );
+    // Check if custom date ranges are allowed (premium only)
+    if (!isCustomDateRangeAllowed) {
+      debugPrint('⚠️ [ReportProvider] Custom date ranges require premium');
       return false;
     }
 

@@ -85,14 +85,11 @@ class PeriodFilter extends StatelessWidget {
       child: InkWell(
         onTap: () {
           if (isLocked) {
-            // Show upgrade dialog for locked periods
+            // Show upgrade dialog for locked custom filter
             UpgradePromptDialog.show(
               context,
               title: context.tr('subscription.limit_advanced_reports'),
-              message: context.tr(
-                'subscription.limit_advanced_reports_message',
-                namedArgs: {'limit': '7'},
-              ),
+              message: context.tr('subscription.limit_advanced_reports_message'),
               icon: Icons.analytics,
             );
           } else if (onTap != null) {

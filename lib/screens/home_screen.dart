@@ -282,14 +282,11 @@ class HomeScreen extends StatelessWidget {
           reportProvider.setCustomDateRange(dateRange.start, dateRange.end);
 
       if (!success && context.mounted) {
-        // Date range exceeds free tier limit
+        // Custom date ranges require premium
         UpgradePromptDialog.show(
           context,
           title: context.tr('subscription.limit_advanced_reports'),
-          message: context.tr(
-            'subscription.limit_advanced_reports_message',
-            namedArgs: {'limit': '7'},
-          ),
+          message: context.tr('subscription.limit_advanced_reports_message'),
           icon: Icons.analytics,
         );
       }
