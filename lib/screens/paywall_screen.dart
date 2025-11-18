@@ -175,10 +175,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   _buildFeatureItem(
                     icon: Icons.analytics,
                     title: context.tr('subscription.feature_advanced_reports'),
-                    subtitle: context.tr(
-                      'subscription.feature_advanced_reports_subtitle',
-                      namedArgs: {'free': '7'},
-                    ),
+                    subtitle:
+                        context.tr('subscription.feature_advanced_reports_subtitle'),
                     isPremium: true,
                   ),
                   _buildFeatureItem(

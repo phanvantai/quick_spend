@@ -429,7 +429,7 @@
     "feature_unlimited_recurring": "無制限定期支出",
     "feature_unlimited_recurring_subtitle": "無料: {free}テンプレート → プレミアム: 無制限",
     "feature_advanced_reports": "高度なレポート",
-    "feature_advanced_reports_subtitle": "無料: {free}日間 → プレミアム: 全期間",
+    "feature_advanced_reports_subtitle": "無料: 標準期間 → プレミアム: カスタム日付範囲",
     "feature_custom_categories": "カスタムカテゴリ",
     "feature_custom_categories_subtitle": "無制限のカスタムカテゴリを作成",
     "feature_import_export": "データのインポート/エクスポート",

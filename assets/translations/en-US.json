@@ -440,7 +440,7 @@
     "feature_unlimited_recurring": "Unlimited Recurring Expenses",
     "feature_unlimited_recurring_subtitle": "Free: {free} templates → Premium: Unlimited",
     "feature_advanced_reports": "Advanced Reports",
-    "feature_advanced_reports_subtitle": "Free: {free} days → Premium: All time",
+    "feature_advanced_reports_subtitle": "Free: Standard periods → Premium: Custom date ranges",
     "feature_custom_categories": "Custom Categories",
     "feature_custom_categories_subtitle": "Create unlimited custom categories",
     "feature_import_export": "Data Import/Export",

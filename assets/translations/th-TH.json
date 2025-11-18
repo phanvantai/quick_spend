@@ -429,7 +429,7 @@
     "feature_unlimited_recurring": "การใช้จ่ายเป็นประจำไม่จำกัด",
     "feature_unlimited_recurring_subtitle": "ฟรี: {free} เทมเพลต → พรีเมียม: ไม่จำกัด",
     "feature_advanced_reports": "รายงานขั้นสูง",
-    "feature_advanced_reports_subtitle": "ฟรี: {free} วัน → พรีเมียม: ทุกช่วงเวลา",
+    "feature_advanced_reports_subtitle": "ฟรี: ช่วงเวลามาตรฐาน → พรีเมียม: ช่วงวันที่ที่กำหนดเอง",
     "feature_custom_categories": "หมวดหมู่ที่กำหนดเอง",
     "feature_custom_categories_subtitle": "สร้างหมวดหมู่ที่กำหนดเองได้ไม่จำกัด",
     "feature_import_export": "นำเข้า/ส่งออกข้อมูล",

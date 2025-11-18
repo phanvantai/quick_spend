@@ -429,7 +429,7 @@
     "feature_unlimited_recurring": "무제한 정기 지출",
     "feature_unlimited_recurring_subtitle": "무료: {free}개 템플릿 → 프리미엄: 무제한",
     "feature_advanced_reports": "고급 보고서",
-    "feature_advanced_reports_subtitle": "무료: {free}일 → 프리미엄: 전체 기간",
+    "feature_advanced_reports_subtitle": "무료: 표준 기간 → 프리미엄: 사용자 지정 날짜 범위",
     "feature_custom_categories": "사용자 지정 카테고리",
     "feature_custom_categories_subtitle": "무제한 사용자 지정 카테고리 생성",
     "feature_import_export": "데이터 가져오기/내보내기",
