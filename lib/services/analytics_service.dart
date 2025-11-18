@@ -19,7 +19,23 @@ class AnalyticsService {
   Future<void> init() async {
     _analytics = FirebaseAnalytics.instance;
     _observer = FirebaseAnalyticsObserver(analytics: _analytics);
-    debugPrint('✅ [Analytics] Firebase Analytics initialized');
+
+    // Enable debug mode in debug builds for real-time event viewing in Firebase
+    // Disable analytics collection in debug mode to save quota (optional - comment out to keep enabled)
+    if (kDebugMode) {
+      debugPrint('🔧 [Analytics] Running in DEBUG mode');
+      // Option 1: Disable analytics in debug (recommended to save quota)
+      await _analytics.setAnalyticsCollectionEnabled(false);
+      debugPrint('✅ [Analytics] Analytics DISABLED in debug mode (events logged locally only)');
+
+      // Option 2: Enable analytics with debug mode for real-time viewing (uncomment if needed)
+      // await _analytics.setAnalyticsCollectionEnabled(true);
+      // debugPrint('✅ [Analytics] Analytics enabled with debug mode for real-time viewing');
+    } else {
+      // Production/release mode - enable analytics
+      await _analytics.setAnalyticsCollectionEnabled(true);
+      debugPrint('✅ [Analytics] Firebase Analytics initialized in RELEASE mode');
+    }
   }
 
   /// Log a custom event
