@@ -19,8 +19,8 @@ class ExpenseProvider extends ChangeNotifier {
     this._expenseService, {
     RecurringExpenseService? recurringExpenseService,
     AnalyticsService? analyticsService,
-  })  : _recurringExpenseService = recurringExpenseService,
-        _analyticsService = analyticsService {
+  }) : _recurringExpenseService = recurringExpenseService,
+       _analyticsService = analyticsService {
     _loadExpenses();
   }
 
@@ -147,7 +147,7 @@ class ExpenseProvider extends ChangeNotifier {
       _analyticsService?.logExpenseAdded(
         method: method,
         category: expense.categoryId,
-        amountRange: _analyticsService!.getAmountRange(expense.amount),
+        amountRange: _analyticsService.getAmountRange(expense.amount),
         language: expense.language,
         transactionType: expense.isExpense ? 'expense' : 'income',
       );
@@ -173,7 +173,7 @@ class ExpenseProvider extends ChangeNotifier {
         _analyticsService?.logExpenseAdded(
           method: method,
           category: expense.categoryId,
-          amountRange: _analyticsService!.getAmountRange(expense.amount),
+          amountRange: _analyticsService.getAmountRange(expense.amount),
           language: expense.language,
           transactionType: expense.isExpense ? 'expense' : 'income',
         );
@@ -229,7 +229,7 @@ class ExpenseProvider extends ChangeNotifier {
       // Log analytics event
       _analyticsService?.logExpenseDeleted(
         category: expense.categoryId,
-        ageDays: _analyticsService!.getExpenseAgeDays(expense.date),
+        ageDays: _analyticsService.getExpenseAgeDays(expense.date),
       );
     } catch (e) {
       debugPrint('Error deleting expense: $e');
