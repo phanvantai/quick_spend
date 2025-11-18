@@ -37,21 +37,22 @@ class RevenueCatService {
     try {
       debugPrint('🔄 [RevenueCat] Initializing...');
 
-      // Configure SDK
-      PurchasesConfiguration configuration;
-      if (defaultTargetPlatform == TargetPlatform.iOS) {
-        configuration = PurchasesConfiguration(_appleApiKey);
-      } else if (defaultTargetPlatform == TargetPlatform.android) {
-        configuration = PurchasesConfiguration(_googleApiKey);
-      } else {
+      // Configure SDK with optional user ID
+      final apiKey = defaultTargetPlatform == TargetPlatform.iOS
+          ? _appleApiKey
+          : defaultTargetPlatform == TargetPlatform.android
+              ? _googleApiKey
+              : null;
+
+      if (apiKey == null) {
         debugPrint('⚠️ [RevenueCat] Unsupported platform');
         return;
       }
 
-      // Optional: Set user ID for tracking
-      if (userId != null) {
-        configuration = configuration.copyWith(appUserID: userId);
-      }
+      // Create configuration with user ID if provided
+      final configuration = userId != null
+          ? PurchasesConfiguration(apiKey)..appUserID = userId
+          : PurchasesConfiguration(apiKey);
 
       // Initialize
       await Purchases.configure(configuration);
