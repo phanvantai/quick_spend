@@ -18,26 +18,30 @@ class ExpenseParser {
   /// Parse raw input string into a structured Expense object
   /// Uses Gemini AI if available, falls back to rule-based parser
   /// Returns ParseResult with the expense and metadata
+  /// [language] should be the user's app language (e.g., 'en', 'vi', 'ja', 'ko', 'th', 'es')
   static Future<List<ParseResult>> parse(
     String rawInput,
     String userId,
     List<QuickCategory> categories, {
+    String? language,
     GeminiUsageLimitService? usageLimitService,
     AnalyticsService? analyticsService,
   }) async {
     debugPrint('💸 [ExpenseParser] Starting parse for: "$rawInput"');
 
+    // Use provided language or default to English
+    final effectiveLanguage = language ?? 'en';
+    debugPrint('🌍 [ExpenseParser] Language: $effectiveLanguage');
+
     // Try Gemini parser first if available
     if (GeminiExpenseParser.isAvailable) {
       debugPrint('🤖 [ExpenseParser] Using Gemini AI parser');
       try {
-        // Detect language for Gemini
-        final language = LanguageDetector.detectLanguage(rawInput);
         final geminiResults = await GeminiExpenseParser.parse(
           rawInput,
           userId,
           categories,
-          language,
+          effectiveLanguage,
           usageLimitService,
         );
         if (geminiResults.isNotEmpty) {
@@ -56,7 +60,7 @@ class ExpenseParser {
               analyticsService?.logGeminiParseSuccess(
                 confidence: result.overallConfidence ?? 0.9,
                 expenseCount: geminiResults.length,
-                language: result.language ?? language,
+                language: result.language ?? effectiveLanguage,
               );
             }
           }
@@ -68,39 +72,33 @@ class ExpenseParser {
         // Log fallback due to no results
         analyticsService?.logFallbackParserUsed(
           reason: 'gemini_failed',
-          language: language,
+          language: effectiveLanguage,
         );
       } catch (e) {
         debugPrint('⚠️ [ExpenseParser] Gemini failed: $e, falling back to rule-based');
 
-        // Detect language for analytics
-        final language = LanguageDetector.detectLanguage(rawInput);
-
         // Log fallback due to error
         analyticsService?.logGeminiParseFailed(
           errorReason: e.toString().substring(0, 100), // Limit error message length
-          language: language,
+          language: effectiveLanguage,
         );
         analyticsService?.logFallbackParserUsed(
           reason: 'gemini_failed',
-          language: language,
+          language: effectiveLanguage,
         );
       }
     } else {
       debugPrint('📋 [ExpenseParser] Gemini not available, using rule-based parser');
 
-      // Detect language for analytics
-      final language = LanguageDetector.detectLanguage(rawInput);
-
       // Log fallback due to Gemini unavailable
       analyticsService?.logFallbackParserUsed(
         reason: 'gemini_unavailable',
-        language: language,
+        language: effectiveLanguage,
       );
     }
 
     // Fallback to rule-based parser
-    final result = _parseRuleBased(rawInput, userId, categories);
+    final result = _parseRuleBased(rawInput, userId, categories, effectiveLanguage);
     return [result];
   }
 
@@ -109,6 +107,7 @@ class ExpenseParser {
     String rawInput,
     String userId,
     List<QuickCategory> categories,
+    String language,
   ) {
     debugPrint('💸 [ExpenseParser] Parsing input: "$rawInput"');
 
@@ -124,11 +123,9 @@ class ExpenseParser {
 
     final trimmedInput = rawInput.trim();
 
-    // Step 1: Detect language
-    final language = LanguageDetector.detectLanguage(trimmedInput);
-    final languageConfidence =
-        LanguageDetector.getConfidence(trimmedInput, language);
-    debugPrint('🌍 [ExpenseParser] Language: $language (confidence: ${(languageConfidence * 100).toStringAsFixed(1)}%)');
+    // Step 1: Use provided language (already determined by user's app settings)
+    debugPrint('🌍 [ExpenseParser] Using language: $language');
+    const languageConfidence = 1.0; // User's explicit language choice
 
     // Step 2: Extract amount and description
     final amountResult = AmountParser.extractAmount(trimmedInput);
@@ -235,6 +232,7 @@ class ExpenseParser {
     String userId,
     List<QuickCategory> categories,
     String categoryId, {
+    String? language,
     GeminiUsageLimitService? usageLimitService,
     AnalyticsService? analyticsService,
   }) async {
@@ -242,6 +240,7 @@ class ExpenseParser {
       rawInput,
       userId,
       categories,
+      language: language,
       usageLimitService: usageLimitService,
       analyticsService: analyticsService,
     );

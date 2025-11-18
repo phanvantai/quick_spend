@@ -530,10 +530,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       final categoryProvider = context.read<CategoryProvider>();
       final usageLimitService = context.read<GeminiUsageLimitService>();
       final analyticsService = context.read<AnalyticsService>();
+      final configProvider = context.read<AppConfigProvider>();
       final results = await ExpenseParser.parse(
         input,
         expenseProvider.currentUserId,
         categoryProvider.categories,
+        language: configProvider.language,
         usageLimitService: usageLimitService,
         analyticsService: analyticsService,
       );
