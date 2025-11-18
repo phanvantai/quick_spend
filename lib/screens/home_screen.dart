@@ -12,6 +12,7 @@ import '../widgets/report/category_breakdown_switcher.dart';
 import '../widgets/report/top_expenses_list.dart';
 import '../widgets/report/custom_date_range_picker.dart';
 import '../widgets/common/empty_state.dart';
+import '../widgets/common/upgrade_prompt_dialog.dart';
 import '../models/expense.dart';
 import 'settings_screen.dart';
 import 'expense_form_screen.dart';
@@ -125,8 +126,13 @@ class HomeScreen extends StatelessWidget {
                       ),
                       child: PeriodFilter(
                         selectedPeriod: reportProvider.selectedPeriod,
+                        isPremium: reportProvider.isPremium,
+                        availablePeriods: reportProvider.availablePeriods,
                         onPeriodChanged: (period) {
-                          reportProvider.selectPeriod(period);
+                          final success = reportProvider.selectPeriod(period);
+                          if (!success) {
+                            // Period is locked, dialog already shown by PeriodFilter
+                          }
                         },
                         onCustomTap: () =>
                             _showCustomDatePicker(context, reportProvider),
@@ -190,8 +196,13 @@ class HomeScreen extends StatelessWidget {
                       ),
                       child: PeriodFilter(
                         selectedPeriod: reportProvider.selectedPeriod,
+                        isPremium: reportProvider.isPremium,
+                        availablePeriods: reportProvider.availablePeriods,
                         onPeriodChanged: (period) {
-                          reportProvider.selectPeriod(period);
+                          final success = reportProvider.selectPeriod(period);
+                          if (!success) {
+                            // Period is locked, dialog already shown by PeriodFilter
+                          }
                         },
                         onCustomTap: () =>
                             _showCustomDatePicker(context, reportProvider),
@@ -267,7 +278,21 @@ class HomeScreen extends StatelessWidget {
     );
 
     if (dateRange != null) {
-      reportProvider.setCustomDateRange(dateRange.start, dateRange.end);
+      final success =
+          reportProvider.setCustomDateRange(dateRange.start, dateRange.end);
+
+      if (!success && context.mounted) {
+        // Date range exceeds free tier limit
+        UpgradePromptDialog.show(
+          context,
+          title: context.tr('subscription.limit_advanced_reports'),
+          message: context.tr(
+            'subscription.limit_advanced_reports_message',
+            namedArgs: {'limit': '7'},
+          ),
+          icon: Icons.analytics,
+        );
+      }
     }
   }
 }
