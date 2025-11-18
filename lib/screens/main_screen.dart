@@ -17,6 +17,7 @@ import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/voice_tutorial_overlay.dart';
 import '../widgets/home/editable_expense_dialog.dart';
+import '../widgets/common/upgrade_prompt_dialog.dart';
 import 'home_screen.dart';
 import 'report_screen.dart';
 
@@ -346,6 +347,38 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   DateTime? _recordingStartTime;
+
+  /// Check Gemini limit before starting recording
+  Future<void> _onVoiceButtonTap() async {
+    debugPrint('👆 [MainScreen] Voice button tapped - checking Gemini limit...');
+
+    if (!mounted) return;
+
+    final usageLimitService = context.read<GeminiUsageLimitService>();
+    final hasReachedLimit = await usageLimitService.hasReachedLimit();
+
+    if (hasReachedLimit) {
+      debugPrint('⚠️ [MainScreen] Gemini limit reached - showing upgrade dialog');
+      final limit = await usageLimitService.getDailyLimit();
+      if (!mounted) return;
+
+      // Show upgrade dialog immediately
+      UpgradePromptDialog.show(
+        context,
+        title: context.tr('subscription.limit_ai_parsing'),
+        message: context.tr(
+          'subscription.limit_ai_parsing_message',
+          namedArgs: {'limit': limit.toString()},
+        ),
+        icon: Icons.mic,
+      );
+      return;
+    }
+
+    // Limit not reached, proceed with recording
+    debugPrint('✅ [MainScreen] Gemini limit OK - starting recording');
+    await _startRecording();
+  }
 
   Future<void> _startRecording() async {
     debugPrint('🎤 [MainScreen] Starting recording...');
@@ -1012,12 +1045,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         _stopRecording();
       };
     } else if (_hasRequiredPermissions()) {
-      // Ready: tap to start recording
+      // Ready: tap to check limit and start recording
       buttonIcon = Icons.mic_none;
       buttonGradient = AppTheme.accentGradient;
       onTapAction = () {
         debugPrint('👆 [MainScreen] Tap to start recording');
-        _startRecording();
+        _onVoiceButtonTap();
       };
     } else if (_shouldShowDisabled()) {
       // Permission denied: tap to show dialog
