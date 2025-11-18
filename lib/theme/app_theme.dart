@@ -34,9 +34,13 @@ class AppTheme {
   static const Color neutral50 = Color(0xFFFBFBFD);
 
   // Softer light theme colors
-  static const Color lightBackground = Color(0xFFF5F5F7); // Softer gray background
+  static const Color lightBackground = Color(
+    0xFFF5F5F7,
+  ); // Softer gray background
   static const Color lightSurface = Color(0xFFFFFFFF); // White for cards
-  static const Color lightSurfaceVariant = Color(0xFFFAFAFC); // Very subtle off-white
+  static const Color lightSurfaceVariant = Color(
+    0xFFFAFAFC,
+  ); // Very subtle off-white
 
   // Semantic colors
   static const Color success = Color(0xFF00C896);
@@ -79,7 +83,10 @@ class AppTheme {
   static const LinearGradient summaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF006B5F), Color(0xFF00C896)], // Deep emerald to primary green
+    colors: [
+      Color(0xFF006B5F),
+      Color(0xFF00C896),
+    ], // Deep emerald to primary green
   );
 
   // ============================================
@@ -356,7 +363,7 @@ class AppTheme {
       // Card theme
       cardTheme: CardThemeData(
         elevation: 0,
-        color: lightSurfaceVariant,
+        color: lightSurfaceVariant.withValues(alpha: 0.5),
         shadowColor: neutral900.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(
           borderRadius: borderRadiusMedium,
