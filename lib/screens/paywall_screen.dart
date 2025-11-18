@@ -94,7 +94,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                             onTap: () => setState(() => _isYearly = true),
                           ),
                           Positioned(
-                            top: -8,
+                            top: -12,
                             right: 8,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -175,8 +175,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   _buildFeatureItem(
                     icon: Icons.analytics,
                     title: context.tr('subscription.feature_advanced_reports'),
-                    subtitle:
-                        context.tr('subscription.feature_advanced_reports_subtitle'),
+                    subtitle: context.tr(
+                      'subscription.feature_advanced_reports_subtitle',
+                    ),
                     isPremium: true,
                   ),
                   _buildFeatureItem(
@@ -285,6 +286,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        width: double.maxFinite,
         padding: const EdgeInsets.symmetric(
           horizontal: AppTheme.spacing16,
           vertical: AppTheme.spacing12,

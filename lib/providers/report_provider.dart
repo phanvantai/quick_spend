@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/expense.dart';
 import '../models/period_stats.dart';
-import '../utils/constants.dart';
 import '../utils/date_range_helper.dart';
 import '../services/subscription_service.dart';
 import 'expense_provider.dart';
@@ -117,8 +116,7 @@ class ReportProvider extends ChangeNotifier {
     if (_currentStats == null || _previousStats == null) return null;
     if (_previousStats!.totalAmount == 0) return null;
 
-    final change =
-        _currentStats!.totalAmount - _previousStats!.totalAmount;
+    final change = _currentStats!.totalAmount - _previousStats!.totalAmount;
     return (change / _previousStats!.totalAmount) * 100;
   }
 
@@ -133,7 +131,9 @@ class ReportProvider extends ChangeNotifier {
   bool selectPeriod(TimePeriod period) {
     // Check if period is allowed
     if (!isPeriodAllowed(period)) {
-      debugPrint('⚠️ [ReportProvider] Period $period not allowed for free tier');
+      debugPrint(
+        '⚠️ [ReportProvider] Period $period not allowed for free tier',
+      );
       return false;
     }
 
@@ -202,7 +202,10 @@ class ReportProvider extends ChangeNotifier {
       // Add category breakdown using CategoryProvider
       final language = _appConfigProvider.language;
       final categories = _categoryProvider.categories;
-      _currentStats = currentStatsRaw.withCategoryBreakdown(categories, language);
+      _currentStats = currentStatsRaw.withCategoryBreakdown(
+        categories,
+        language,
+      );
 
       // Calculate top expenses (sorted by amount, descending)
       // Only include expense type transactions, not income
@@ -226,7 +229,10 @@ class ReportProvider extends ChangeNotifier {
         startDate: previousRange.start,
         endDate: previousRange.end,
       );
-      _previousStats = previousStatsRaw.withCategoryBreakdown(categories, language);
+      _previousStats = previousStatsRaw.withCategoryBreakdown(
+        categories,
+        language,
+      );
     } catch (e) {
       debugPrint('❌ [ReportProvider] Error calculating stats: $e');
       _currentStats = null;
