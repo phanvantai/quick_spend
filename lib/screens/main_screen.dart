@@ -511,7 +511,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       if (results.isNotEmpty &&
           results.first.errorMessage == 'GEMINI_LIMIT_REACHED') {
         if (mounted) {
-          final limit = usageLimitService.dailyLimit;
+          final limit = await usageLimitService.getDailyLimit();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
