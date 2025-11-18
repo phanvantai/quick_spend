@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Quick Spend is a Flutter expense tracking mobile app with voice input support and bilingual functionality (English/Vietnamese). The app uses **SQLite for local storage** and features **AI-powered expense parsing** using **Gemini 2.5 Flash via Firebase AI**, with automatic categorization and Vietnamese slang support. The app includes comprehensive statistics and reporting with interactive charts.
+Quick Spend is a Flutter expense tracking mobile app with voice input support and **multilingual functionality** (English, Vietnamese, Japanese, Korean, Thai, Spanish). The app uses **SQLite for local storage** and features **AI-powered expense parsing** using **Gemini 2.5 Flash via Firebase AI**, with automatic categorization, Vietnamese slang support, and full income/expense tracking. The app includes comprehensive statistics and reporting with interactive charts, calendar view, data import/export capabilities, recurring expenses, daily usage limits, and optional opt-in ML training data collection.
 
 ## Development Commands
 
@@ -36,9 +36,11 @@ flutter clean
 ### State Management
 
 - **Provider**: Primary state management solution
-- **AppConfigProvider**: Manages user preferences (language, currency, onboarding status)
+- **AppConfigProvider**: Manages user preferences (language, currency, theme mode, onboarding status, data collection consent)
 - **ExpenseProvider**: Manages expense CRUD operations and state
+- **CategoryProvider**: Manages category CRUD operations, separates system vs user categories
 - **ReportProvider**: Manages statistics calculations and period filtering
+- **RecurringTemplateProvider**: Manages recurring expense template CRUD operations
 - Provider pattern with `ChangeNotifier` for reactive UI updates
 
 ### Core Services Layer
@@ -90,7 +92,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
 
 6. **VoiceService** ([lib/services/voice_service.dart](lib/services/voice_service.dart))
    - Wraps `speech_to_text` package with permission handling
-   - Supports bilingual recognition (en_US, vi_VN)
+   - Supports multilingual recognition (en_US, vi_VN, ja_JP, ko_KR, th_TH, es_ES)
    - Manages recording state and provides sound level feedback
    - Must be initialized before first use; handles permission requests gracefully
 
@@ -102,9 +104,10 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - **Centralized database management for the entire app**
    - Single source of truth for SQLite database instance
    - Manages database initialization, schema creation, and migrations
-   - Current schema version: 2
+   - Current schema version: 3
    - Tables: `expenses`, `categories`, `recurring_templates`
    - Handles onCreate for new installations and onUpgrade for existing users
+   - **Recent migration (v2→v3)**: Categories migrated from bilingual (nameEn/nameVi) to single language based on user preference
    - Provides shared database instance to all services
    - **Services depend on DatabaseManager, not on each other**
 
@@ -132,22 +135,78 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Safety limit: max 100 instances per generation cycle
    - Respects template isActive status and endDate
 
+12. **GeminiUsageLimitService** ([lib/services/gemini_usage_limit_service.dart](lib/services/gemini_usage_limit_service.dart))
+   - **Daily usage limit tracking for Gemini API calls**
+   - Daily limit: 15 parses/day (configurable via AppConstants)
+   - Auto-resets daily based on last reset date
+   - Shows warning at ≤5 remaining, critical warning at ≤3 remaining
+   - Prevents API calls when limit reached (returns specific error, doesn't fallback)
+   - Persists count and reset date in SharedPreferences
+   - Used by ExpenseParser before calling GeminiExpenseParser
+
+13. **DataCollectionService** ([lib/services/data_collection_service.dart](lib/services/data_collection_service.dart))
+   - **Privacy-first opt-in ML training data collection to Firestore**
+   - Collects anonymized expense parsing data for improving categorization
+   - Tracks: raw input, categories, amounts (NO personal data like descriptions or user IDs)
+   - Anonymous UUID-based user IDs (generated per device)
+   - Logs expense parsing accuracy and user corrections (gold data)
+   - Requires explicit user consent (opt-in)
+   - Gracefully handles Firestore not being configured
+   - Data used only for ML training to improve parsing accuracy
+
+14. **ExportService** ([lib/services/export_service.dart](lib/services/export_service.dart))
+   - **Export expenses and categories to CSV/JSON**
+   - CSV export: expenses only (amount, description, category, date, type)
+   - JSON export: expenses + ALL categories + app settings (version 4.0 format)
+   - Export summary statistics (total amount, count, date range)
+   - Platform-native share functionality (iOS/Android compatible)
+   - Pretty-formatted JSON output for readability
+   - Supports full app backup and migration
+
+15. **ImportService** ([lib/services/import_service.dart](lib/services/import_service.dart))
+   - **Import expenses and categories from CSV/JSON**
+   - CSV import: expenses only with validated categories
+   - JSON import: version-aware parsing (v1.0, v2.0, v3.0, v4.0)
+   - Duplicate detection by expense ID
+   - Category validation with fallback to "Other"
+   - Imports app settings (language, currency) from JSON v4.0
+   - Full error tracking and reporting
+   - Supports data migration and backup restoration
+
+16. **AppConstants** ([lib/utils/constants.dart](lib/utils/constants.dart))
+   - **Centralized configuration constants**
+   - API Configuration: Gemini timeout (30s), daily limit (15), warning thresholds (5, 3)
+   - Voice Input: Min length (2), max length (500), stop delay (100ms)
+   - Expense Limits: Max (999,999,999,999), min (0.01), max description (500 chars)
+   - Recurring Expenses: Max instances per generation (100), max years ahead (5)
+   - Date Validation: Max 10 years past, 1 year future
+   - UI/UX: Expenses per page (50), top expenses (5), animation duration (300ms)
+   - Database: Version 3, database name
+   - Debug: 5 taps to enable debug mode within 3 seconds
+
 ### Models
 
-- **Expense** ([lib/models/expense.dart](lib/models/expense.dart)): Core data model with SQLite serialization (NO recurring fields - kept clean)
-- **QuickCategory** ([lib/models/category.dart](lib/models/category.dart)): 7 predefined categories with bilingual keywords/labels
+- **Expense** ([lib/models/expense.dart](lib/models/expense.dart)): Core data model with SQLite and Firestore serialization (NO recurring fields - kept clean), supports TransactionType (income/expense)
+- **QuickCategory** ([lib/models/category.dart](lib/models/category.dart)): **13 default categories** (7 expense + 6 income) with **multilingual** keywords/labels (en, vi, ja, ko, th, es)
+  - **Expense categories**: Food, Transport, Shopping, Bills, Health, Entertainment, Other
+  - **Income categories**: Salary, Freelance, Investment, Gift Received, Refund, Other Income
+  - Supports both system and user-defined categories with `isSystem` flag
+  - Stores icon as codePoint and color as integer for SQLite compatibility
 - **CategoryStats** ([lib/models/category_stats.dart](lib/models/category_stats.dart)): Statistics for individual expense categories
 - **PeriodStats** ([lib/models/period_stats.dart](lib/models/period_stats.dart)): Aggregated statistics for time periods
-- **AppConfig** ([lib/models/app_config.dart](lib/models/app_config.dart)): User preference model
+- **AppConfig** ([lib/models/app_config.dart](lib/models/app_config.dart)): User preference model with language (6 options), currency (6 options), themeMode (light/dark/system), dataCollectionConsent, and helper methods for currency formatting
 - **RecurringExpenseTemplate** ([lib/models/recurring_expense_template.dart](lib/models/recurring_expense_template.dart)): Template configuration for generating recurring expenses (separate from Expense)
 - **RecurrencePattern** ([lib/models/recurrence_pattern.dart](lib/models/recurrence_pattern.dart)): Enum for recurrence types (none, monthly, yearly)
 
 ### Localization
 
 - Uses `easy_localization` package
-- Translation files: [assets/translations/en.json](assets/translations/en.json), [assets/translations/vi.json](assets/translations/vi.json)
+- **6 supported languages**: English (en-US), Vietnamese (vi-VN), Japanese (ja-JP), Korean (ko-KR), Thai (th-TH), Spanish (es-ES)
+- **6 supported currencies**: USD ($), VND (đ), JPY (¥), KRW (₩), THB (฿), EUR (€)
+- Translation files: [assets/translations/](assets/translations/) - en.json, vi.json, ja.json, ko.json, th.json, es.json
 - Access translations with `.tr()` extension: `'key.path'.tr()`
 - Named arguments supported: `'key'.tr(namedArgs: {'param': value})`
+- Category names and keywords fully localized in all 6 languages
 
 ### Database Integration
 
@@ -199,10 +258,12 @@ for (final result in results) {
 ### Onboarding Flow
 
 - First launch shows OnboardingScreen
-- User selects language (en/vi) and currency (USD/VND)
+- User selects language (English, Vietnamese, Japanese, Korean, Thai, Spanish)
+- User selects currency (USD, VND, JPY, KRW, THB, EUR)
 - Settings saved via PreferencesService
 - AppConfigProvider manages onboarding state
 - Subsequent launches go directly to MainScreen with bottom navigation
+- Categories automatically seeded in selected language
 
 ### Navigation Flow
 
@@ -252,6 +313,69 @@ for (final result in results) {
 - This separation ensures expenses remain simple transaction records
 - Templates are managed in Settings, not in expense add/edit flow
 
+### Import/Export Feature
+
+**Complete data portability system** for backing up and migrating data:
+
+**Export Options:**
+- **CSV Export**: Expenses only (amount, description, category, date, type) - universal format
+- **JSON Export**: Complete backup (v4.0 format) includes:
+  - All expenses with full metadata
+  - ALL categories (system + user) with definitions, keywords, icons, colors
+  - App settings (language, currency)
+  - Export timestamp and summary statistics
+
+**Import Options:**
+- **CSV Import**: Expenses only with category validation and fallback
+- **JSON Import**: Full restoration with version-aware parsing (v1.0-v4.0)
+  - Duplicate detection by expense ID
+  - Category validation with automatic fallback to "Other"
+  - App settings restoration (language, currency)
+  - Full error tracking and detailed reporting
+
+**Features:**
+- Platform-native share dialogs (iOS/Android)
+- Pretty-formatted JSON for human readability
+- Summary statistics (total amount, count, date range)
+- Accessible from Settings screen
+
+### Data Collection & Privacy
+
+**Optional ML Training Data Collection:**
+
+The app includes a **privacy-first, opt-in system** for collecting anonymized data to improve AI categorization:
+
+**What is collected (if opted in):**
+- Raw input text (e.g., "50k coffee")
+- Parsed category and amount
+- User corrections (gold data for training)
+- Anonymous device UUID (NOT linked to personal identity)
+
+**What is NOT collected:**
+- Personal descriptions or notes
+- User IDs or personal information
+- Location data
+- Any identifiable information
+
+**Features:**
+- Explicit consent required (opt-in dialog after onboarding)
+- Data stored in Firestore (gracefully handles if not configured)
+- Used exclusively for ML training to improve categorization accuracy
+- Can be disabled anytime in Settings
+
+### Gemini Usage Limits
+
+**Daily API limit tracking** to manage costs and prevent abuse:
+
+- **Daily limit**: 15 Gemini API calls per day (configurable via AppConstants)
+- **Auto-reset**: Resets daily based on last reset date
+- **UI warnings**:
+  - Warning banner when ≤5 parses remaining
+  - Critical warning when ≤3 parses remaining
+- **Limit reached**: Returns specific error (does NOT fallback to rule-based parser)
+- **Persistence**: Count and reset date saved in SharedPreferences
+- **User visibility**: Remaining count shown in MainScreen banner
+
 ## Project Structure
 
 ```bash
@@ -268,6 +392,7 @@ lib/
 │   └── recurrence_pattern.dart # Recurrence pattern enum (monthly/yearly)
 ├── services/                    # Business logic layer
 │   ├── gemini_expense_parser.dart # AI parser (Gemini 2.5 Flash via Firebase)
+│   ├── gemini_usage_limit_service.dart # Daily Gemini usage limit tracking (15/day)
 │   ├── expense_parser.dart     # Main orchestrator (AI + fallback)
 │   ├── amount_parser.dart      # Fallback amount extraction (with slang)
 │   ├── language_detector.dart  # Fallback language detection
@@ -277,10 +402,14 @@ lib/
 │   ├── expense_service.dart    # Expense & category CRUD operations
 │   ├── recurring_template_service.dart # Recurring template CRUD operations
 │   ├── recurring_expense_service.dart  # Generates expenses from templates
+│   ├── data_collection_service.dart # Opt-in ML training data collection
+│   ├── export_service.dart     # Export to CSV/JSON
+│   ├── import_service.dart     # Import from CSV/JSON
 │   └── preferences_service.dart # SharedPreferences wrapper
 ├── providers/                   # State management
 │   ├── app_config_provider.dart # App configuration state
 │   ├── expense_provider.dart   # Expense CRUD state (with recurring generation)
+│   ├── category_provider.dart  # Category CRUD state (system + user categories)
 │   ├── report_provider.dart    # Statistics and reports state
 │   └── recurring_template_provider.dart # Recurring template state
 ├── screens/                     # UI screens
@@ -317,11 +446,17 @@ lib/
 │   │   └── custom_date_range_picker.dart # Date range picker
 │   ├── recurring/              # Recurring expense widgets
 │   │   └── recurring_template_card.dart # Template display card
+│   ├── calendar/               # Calendar view widgets
+│   │   ├── calendar_grid.dart        # Monthly calendar view with daily totals
+│   │   ├── date_section_header.dart  # Date section headers
+│   │   ├── month_navigator.dart      # Month navigation controls
+│   │   └── monthly_summary_card.dart # Monthly summary statistics
 │   ├── voice_input_button.dart     # Voice recording FAB
 │   └── voice_tutorial_overlay.dart # First-time tutorial
 ├── theme/                       # Design system
 │   └── app_theme.dart          # Theme configuration and constants
 └── utils/                       # Utilities
+    ├── constants.dart          # App-wide configuration constants
     └── date_range_helper.dart  # Date range calculations
 ```
 
@@ -413,11 +548,21 @@ This makes voice input more natural and accurate for Vietnamese users.
 
 ### Categories
 
-7 predefined categories with icons, colors, and bilingual keyword lists:
+**13 default system categories** with icons, colors, and multilingual keyword lists:
 
+**Expense Categories (7):**
 - Food, Transport, Shopping, Bills, Health, Entertainment, Other
+
+**Income Categories (6):**
+- Salary, Freelance, Investment, Gift Received, Refund, Other Income
+
+**Features:**
+- Each category has localized names and keywords in all 6 languages (en, vi, ja, ko, th, es)
+- System categories cannot be deleted (isSystem flag)
+- Users can create custom categories with custom icons, colors, and keywords
 - Categorizer matches keywords in description against category keyword lists
 - User can override auto-categorization using `parseWithCategory()`
+- Categories support both income and expense types (TransactionType enum)
 
 ### Design System & Theming
 
@@ -467,6 +612,13 @@ Comprehensive design documentation including:
 - **StatsGrid**: Grid of key metrics (average, highest, trend)
 - **PeriodFilter**: Chip-based period selector (Today/Week/Month/Year/Custom)
 - **CustomDateRangePicker**: Calendar-based custom date range picker
+
+**Calendar Widgets** ([lib/widgets/calendar/](lib/widgets/calendar/)):
+
+- **CalendarGrid**: Monthly calendar view with daily income/expense totals
+- **MonthNavigator**: Month navigation controls (previous/next)
+- **MonthlySummaryCard**: Monthly summary statistics card
+- **DateSectionHeader**: Date section headers for expense lists
 
 ### Statistics & Reporting
 

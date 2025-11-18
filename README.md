@@ -1,28 +1,66 @@
 # Quick Spend - Expense Tracker
 
-A Flutter mobile app for quickly logging expenses with voice input and automatic categorization. Supports both English and Vietnamese languages.
+A Flutter mobile app for quickly logging expenses and income with voice input and automatic categorization. Supports 6 languages (English, Vietnamese, Japanese, Korean, Thai, Spanish) and 6 currencies.
 
 ## Features
 
-- 🎤 **Voice Input**: Speak your expenses naturally in Vietnamese or English
+### Voice & AI
+- 🎤 **Voice Input**: Speak your expenses naturally in 6 languages (en, vi, ja, ko, th, es)
 - 🤖 **AI-Powered Parsing**: Uses Gemini 2.5 Flash via Firebase AI for intelligent expense extraction
-- 🌍 **Bilingual**: Full support for English and Vietnamese
-- 💬 **Vietnamese Slang Support**: Understands "ca" (thousand), "củ/cọc" (million)
+- 💬 **Vietnamese Slang Support**: Understands "ca" (thousand), "củ/cọc" (million), incomplete words
 - ✨ **Multiple Expenses**: Parse several expenses from one input ("50k coffee and 30k parking")
+- 📅 **Date Parsing**: Understands "yesterday", "hôm qua", "last week", "3 days ago"
 - 💰 **Flexible Input Formats**:
   - "50k coffee" → 50,000 VND
   - "1.5m shopping" → 1,500,000 VND
   - "100 nghìn xăng" → 100,000 VND
   - "45 ca tiền cơm" → 45,000 VND (Vietnamese slang!)
   - "1 củ xăng" → 1,000,000 VND (Vietnamese slang!)
-- 📊 **Smart Categorization**: AI categorizes based on context (food, transport, shopping, etc.)
 - 🔄 **Hybrid Architecture**: Gemini AI primary + rule-based fallback for reliability
-- 🔁 **Recurring Expenses**: Set up monthly/yearly recurring expenses (rent, subscriptions, bills)
-- 📈 **Statistics Dashboard**: Visual spending insights with charts and analytics
-- 📱 **Bottom Navigation**: Seamless navigation between Home, Report, and Settings
-- ✏️ **Edit & Delete**: Swipeable cards to edit or delete expenses
-- 🎯 **Period Filtering**: View expenses by Today, Week, Month, Year, or Custom range
-- 📊 **Multiple Charts**: Donut chart, trend chart, category breakdown, and top expenses
+- ⏱️ **Daily Limits**: 15 Gemini parses/day with UI warnings (cost management)
+
+### Multilingual & Categories
+- 🌍 **6 Languages**: English, Vietnamese, Japanese, Korean, Thai, Spanish
+- 💵 **6 Currencies**: USD, VND, JPY, KRW, THB, EUR
+- 📂 **13 Default Categories**: 7 expense + 6 income categories, fully localized
+- ➕ **Custom Categories**: Create your own categories with custom icons, colors, keywords
+- 📊 **Smart Categorization**: AI categorizes based on context and keywords
+
+### Income & Expense Tracking
+- 💰 **Income Support**: Track both income and expenses with dedicated categories
+- 🏷️ **Transaction Types**: Automatic income/expense detection
+- 💚💸 **Color Coding**: Green for income, red/neutral for expenses
+- 🧮 **Net Balance**: Automatic calculation of income - expenses
+
+### Recurring & Automation
+- 🔁 **Recurring Expenses**: Set up monthly/yearly recurring transactions (rent, salary, subscriptions)
+- 🤖 **Auto-Generation**: Automatically generates recurring expenses on app startup
+- ⏸️ **Pause/Resume**: Toggle recurring templates without deletion
+
+### Reports & Analytics
+- 📈 **Statistics Dashboard**: Visual insights with charts and analytics
+- 📊 **Multiple Charts**: Donut chart, trend chart, category breakdown, top expenses
+- 📅 **Calendar View**: Monthly calendar with daily income/expense totals
+- 🎯 **Period Filtering**: Today, Week, Month, Year, or Custom date range
+- 📉 **Trend Analysis**: Compare current vs previous period
+
+### Data Management
+- 📤 **Export Data**: CSV (expenses only) or JSON (full backup with categories & settings)
+- 📥 **Import Data**: Restore from CSV/JSON with duplicate detection and validation
+- 💾 **SQLite Storage**: Local-first architecture, all data stored on device
+- 🔄 **Version Aware**: Supports JSON import from v1.0-v4.0 formats
+
+### UI & UX
+- 📱 **Bottom Navigation**: Seamless navigation between Home and Report tabs
+- ✏️ **Swipeable Cards**: Edit or delete expenses with gestures
+- 🎨 **Dark Mode**: Complete light/dark theme support
+- 🎓 **Interactive Tutorial**: First-time voice input tutorial with animations
+- 🗑️ **Batch Operations**: Manage categories and recurring templates efficiently
+
+### Privacy & Transparency
+- 🔒 **Privacy-First**: All data stored locally, no cloud dependency
+- 🎯 **Opt-in Data Collection**: Optional anonymized ML training data (explicit consent required)
+- 🚫 **No Personal Data**: Never collects descriptions, user IDs, or identifiable info
 
 ## Tech Stack
 
@@ -42,29 +80,33 @@ A Flutter mobile app for quickly logging expenses with voice input and automatic
 ```bash
 lib/
 ├── models/           # Data models
-│   ├── expense.dart         # Expense model with SQLite integration
-│   ├── category.dart        # QuickCategory with bilingual support
+│   ├── expense.dart         # Expense model with SQLite/Firestore integration
+│   ├── category.dart        # QuickCategory with multilingual support (13 default)
 │   ├── category_stats.dart  # Statistics for expense categories
 │   ├── period_stats.dart    # Statistics for time periods
-│   ├── app_config.dart      # App configuration and preferences
+│   ├── app_config.dart      # App config (6 languages, 6 currencies, theme, consent)
 │   ├── recurring_expense_template.dart # Recurring expense templates
 │   └── recurrence_pattern.dart        # Recurrence pattern enum
 ├── services/         # Business logic
 │   ├── gemini_expense_parser.dart # AI-powered parser (Gemini 2.5 Flash)
+│   ├── gemini_usage_limit_service.dart # Daily usage limit tracking (15/day)
 │   ├── expense_parser.dart        # Main parser orchestrator (AI + fallback)
 │   ├── amount_parser.dart         # Fallback amount parser (with slang support)
 │   ├── language_detector.dart     # Fallback language detection
 │   ├── categorizer.dart           # Fallback keyword categorization
-│   ├── voice_service.dart         # Speech-to-text wrapper
-│   ├── database_manager.dart      # Centralized database management
+│   ├── voice_service.dart         # Speech-to-text wrapper (6 languages)
+│   ├── database_manager.dart      # Centralized database management (schema v3)
 │   ├── expense_service.dart       # Expense & category CRUD operations
 │   ├── recurring_template_service.dart # Recurring template CRUD operations
 │   ├── recurring_expense_service.dart  # Generate expenses from templates
+│   ├── data_collection_service.dart # Opt-in ML training data collection
+│   ├── export_service.dart        # Export to CSV/JSON
+│   ├── import_service.dart        # Import from CSV/JSON
 │   └── preferences_service.dart   # SharedPreferences wrapper
 ├── providers/        # State management
 │   ├── app_config_provider.dart # App configuration state
 │   ├── expense_provider.dart    # Expense management state
-│   ├── category_provider.dart   # Category management state
+│   ├── category_provider.dart   # Category management state (system + user)
 │   ├── report_provider.dart     # Statistics and reports state
 │   └── recurring_template_provider.dart # Recurring template state
 ├── screens/          # UI screens
@@ -101,17 +143,27 @@ lib/
 │   │   └── custom_date_range_picker.dart # Custom date picker
 │   ├── recurring/                 # Recurring expense widgets
 │   │   └── recurring_template_card.dart # Recurring template card
+│   ├── calendar/                  # Calendar view widgets
+│   │   ├── calendar_grid.dart        # Monthly calendar with daily totals
+│   │   ├── month_navigator.dart      # Month navigation controls
+│   │   ├── monthly_summary_card.dart # Monthly summary statistics
+│   │   └── date_section_header.dart  # Date section headers
 │   ├── voice_input_button.dart    # Voice recording FAB
 │   └── voice_tutorial_overlay.dart # Voice input tutorial
 ├── theme/            # Design system
 │   └── app_theme.dart # Theme configuration and constants
 └── utils/            # Utilities
-    └── date_range_helper.dart # Date range calculations
+    ├── constants.dart          # App-wide configuration constants
+    └── date_range_helper.dart  # Date range calculations
 
 assets/
-└── translations/     # Localization files
-    ├── en.json       # English translations
-    └── vi.json       # Vietnamese translations
+└── translations/     # Localization files (6 languages)
+    ├── en.json       # English
+    ├── vi.json       # Vietnamese
+    ├── ja.json       # Japanese
+    ├── ko.json       # Korean
+    ├── th.json       # Thai
+    └── es.json       # Spanish
 ```
 
 ## Phase 1 ✅ Complete
@@ -127,9 +179,13 @@ assets/
 
 #### QuickCategory Model ([lib/models/category.dart](lib/models/category.dart))
 
-- 7 categories: Food, Transport, Shopping, Bills, Health, Entertainment, Other
-- Bilingual labels and keywords
-- Material icons and colors
+- **13 default categories**: 7 expense + 6 income categories
+  - **Expense**: Food, Transport, Shopping, Bills, Health, Entertainment, Other
+  - **Income**: Salary, Freelance, Investment, Gift Received, Refund, Other Income
+- **Multilingual**: Labels and keywords in all 6 languages (en, vi, ja, ko, th, es)
+- Material icons and colors for each category
+- System categories (isSystem flag) cannot be deleted
+- Users can create custom categories
 - Comprehensive keyword lists for auto-categorization
 
 ### Services Created
@@ -228,34 +284,39 @@ void main() {
 **[lib/screens/onboarding_screen.dart](lib/screens/onboarding_screen.dart)**
 
 - Beautiful Material Design 3 UI
-- Language selection (English 🇺🇸 / Tiếng Việt 🇻🇳)
-- Currency selection (USD $ / VND đ)
+- **Language selection**: English 🇺🇸, Tiếng Việt 🇻🇳, 日本語 🇯🇵, 한국어 🇰🇷, ไทย 🇹🇭, Español 🇪🇸
+- **Currency selection**: USD $, VND đ, JPY ¥, KRW ₩, THB ฿, EUR €
 - Smooth navigation to home screen
 - Preferences saved automatically
+- Categories automatically seeded in selected language
 
 ### Localization System
 
 **[assets/translations/](assets/translations/)**
 
 - Complete i18n setup with `easy_localization`
-- JSON translation files for English and Vietnamese
+- JSON translation files for **6 languages** (en, vi, ja, ko, th, es)
 - Dynamic locale switching based on user preference
 - Supports named arguments (e.g., `{currency}`)
 
 **Key Features:**
 
-- All UI text is localized
+- All UI text is localized in 6 languages
 - Language changes take effect immediately
 - Fallback to English if translation missing
-- Easy to add new languages
+- Category names and keywords fully localized
 
 ### App Configuration
 
 **[lib/models/app_config.dart](lib/models/app_config.dart)**
 
-- User preferences model (language, currency)
-- Language and currency options with display names
+- User preferences model (language, currency, theme mode, data collection consent)
+- **6 language options** with localized display names
+- **6 currency options** with smart formatting (symbol placement, decimals)
+- **Theme mode**: Light, Dark, System
+- **Data collection consent**: Opt-in for ML training
 - JSON serialization for persistence
+- Helper methods for currency formatting
 
 **[lib/services/preferences_service.dart](lib/services/preferences_service.dart)**
 
@@ -422,10 +483,15 @@ Text('welcome.message'.tr())
 
 **[lib/screens/settings_screen.dart](lib/screens/settings_screen.dart)**
 
-- Language selection (English/Vietnamese)
-- Currency selection (USD/VND)
+- **Language selection**: 6 languages (en, vi, ja, ko, th, es)
+- **Currency selection**: 6 currencies (USD, VND, JPY, KRW, THB, EUR)
+- **Theme selection**: Light, Dark, System
+- **Import/Export**: CSV or JSON with full backup/restore
+- **Recurring Expenses**: Manage recurring templates
+- **Custom Categories**: Add/edit user categories
+- **Data Collection**: Opt-in/out for ML training
 - App information and version
-- Clean, organized UI
+- Clean, organized UI with sections
 
 ### Design System
 
@@ -472,18 +538,69 @@ Text('welcome.message'.tr())
 - **recurring_expenses_screen.dart**: Manage recurring expense templates
 - **recurring_expense_form_screen.dart**: Add/edit recurring templates
 
+## Phase 8 ✅ Complete - Import/Export & Data Collection
+
+### Import/Export Feature
+
+**Complete data portability:**
+
+- **CSV Export**: Expenses only for spreadsheet analysis
+- **JSON Export**: Full backup (v4.0) with expenses, categories, and settings
+- **CSV Import**: Import expenses with validation
+- **JSON Import**: Full restoration with version-aware parsing (v1.0-v4.0)
+- **Features**: Duplicate detection, category validation, error tracking, platform-native share
+
+### Data Collection
+
+**Privacy-first ML training data collection:**
+
+- **Opt-in only**: Explicit consent required
+- **Anonymized**: No personal data, descriptions, or identifiable info
+- **Purpose**: Improve AI categorization accuracy
+- **Control**: Can be disabled anytime in Settings
+- **Transparency**: Clear about what is and isn't collected
+
+## Phase 9 ✅ Complete - Multilingual Expansion
+
+### 6 Languages & Currencies
+
+- **Languages**: English, Vietnamese, Japanese, Korean, Thai, Spanish
+- **Currencies**: USD, VND, JPY, KRW, THB, EUR
+- **Categories**: All 13 categories fully localized with keywords
+- **UI**: Complete translation of all screens and messages
+- **Smart Formatting**: Currency symbol placement and decimal handling per locale
+
+## Phase 10 ✅ Complete - Income Tracking & Calendar View
+
+### Income Support
+
+- **6 income categories**: Salary, Freelance, Investment, Gift Received, Refund, Other Income
+- **Transaction types**: Automatic income/expense detection
+- **Net balance**: Income - expenses calculation
+- **Color coding**: Green for income, red/neutral for expenses
+
+### Calendar View
+
+- **Monthly calendar**: Grid view with daily income/expense totals
+- **Month navigation**: Previous/next month controls
+- **Summary card**: Monthly statistics
+- **Visual indicators**: Color-coded daily amounts
+
 ## Next Steps (Future Enhancements)
 
 ### Potential Features
 
-- [ ] Search and filter expenses
+- [ ] Search and filter expenses by keyword, amount range
 - [ ] Expense tags and notes
 - [ ] Budget tracking and alerts
-- [ ] Data export (CSV, PDF)
-- [ ] Multiple currency support in single session
+- [ ] PDF export with charts and summaries
+- [ ] Multiple currency support in single session (multi-currency expenses)
 - [ ] Cloud backup and sync (Firebase Firestore)
-- [ ] Expense attachments (receipts/photos)
-- [ ] Split expenses with others
+- [ ] Expense attachments (receipts/photos via camera or gallery)
+- [ ] Split expenses with others (expense sharing)
+- [ ] Notifications for recurring expenses and budgets
+- [ ] Widgets for quick expense entry
+- [ ] Biometric authentication for app access
 
 ## Development
 
