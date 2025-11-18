@@ -49,10 +49,13 @@ class RevenueCatService {
         return;
       }
 
-      // Create configuration with user ID if provided
-      final configuration = userId != null
-          ? PurchasesConfiguration(apiKey)..appUserID = userId
-          : PurchasesConfiguration(apiKey);
+      // Create configuration
+      final configuration = PurchasesConfiguration(apiKey);
+
+      // Set user ID if provided
+      if (userId != null) {
+        configuration.appUserID = userId;
+      }
 
       // Initialize
       await Purchases.configure(configuration);
