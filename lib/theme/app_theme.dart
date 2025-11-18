@@ -33,6 +33,15 @@ class AppTheme {
   static const Color neutral100 = Color(0xFFF7F7FB);
   static const Color neutral50 = Color(0xFFFBFBFD);
 
+  // Softer light theme colors
+  static const Color lightBackground = Color(
+    0xFFF5F5F7,
+  ); // Softer gray background
+  static const Color lightSurface = Color(0xFFFFFFFF); // White for cards
+  static const Color lightSurfaceVariant = Color(
+    0xFFFAFAFC,
+  ); // Very subtle off-white
+
   // Semantic colors
   static const Color success = Color(0xFF00C896);
   static const Color warning = Color(0xFFFFC043);
@@ -67,14 +76,17 @@ class AppTheme {
   static const LinearGradient backgroundGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [neutral50, neutral100],
+    colors: [lightSurfaceVariant, lightBackground],
   );
 
   // Professional gradient for financial summary cards (mint theme)
   static const LinearGradient summaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF006B5F), Color(0xFF00C896)], // Deep emerald to primary green
+    colors: [
+      Color(0xFF006B5F),
+      Color(0xFF00C896),
+    ], // Deep emerald to primary green
   );
 
   // ============================================
@@ -314,9 +326,9 @@ class AppTheme {
         errorContainer: error.withValues(alpha: 0.1),
         onErrorContainer: error,
 
-        surface: neutral50,
+        surface: lightBackground,
         onSurface: neutral900,
-        surfaceContainerHighest: neutral100,
+        surfaceContainerHighest: neutral200,
         onSurfaceVariant: neutral700,
 
         outline: neutral300,
@@ -326,7 +338,7 @@ class AppTheme {
         scrim: neutral900.withValues(alpha: 0.5),
 
         inverseSurface: neutral900,
-        onInverseSurface: neutral50,
+        onInverseSurface: lightSurface,
         inversePrimary: primaryMint.withValues(alpha: 0.7),
       ),
 
@@ -338,7 +350,7 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        backgroundColor: neutral50,
+        backgroundColor: lightBackground,
         foregroundColor: neutral900,
         titleTextStyle: lightTextTheme.titleLarge,
         systemOverlayStyle: const SystemUiOverlayStyle(
@@ -351,11 +363,11 @@ class AppTheme {
       // Card theme
       cardTheme: CardThemeData(
         elevation: 0,
-        color: Colors.white,
+        color: lightSurfaceVariant.withValues(alpha: 0.5),
         shadowColor: neutral900.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(
           borderRadius: borderRadiusMedium,
-          side: BorderSide(color: neutral200, width: 1),
+          side: BorderSide(color: neutral300, width: 1),
         ),
         margin: const EdgeInsets.all(0),
       ),
@@ -363,7 +375,7 @@ class AppTheme {
       // Input decoration theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: neutral100,
+        fillColor: lightSurfaceVariant,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: spacing16,
           vertical: spacing16,
@@ -409,7 +421,7 @@ class AppTheme {
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
+          backgroundColor: lightSurface,
           foregroundColor: primaryMint,
           padding: const EdgeInsets.symmetric(
             horizontal: spacing24,
@@ -459,7 +471,7 @@ class AppTheme {
 
       // Bottom navigation bar theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: lightSurface,
         selectedItemColor: primaryMint,
         unselectedItemColor: neutral500,
         elevation: 8,
@@ -470,7 +482,7 @@ class AppTheme {
 
       // Chip theme
       chipTheme: ChipThemeData(
-        backgroundColor: neutral100,
+        backgroundColor: lightSurfaceVariant,
         selectedColor: primaryMint.withValues(alpha: 0.15),
         disabledColor: neutral200,
         labelStyle: lightTextTheme.labelMedium,
@@ -483,7 +495,7 @@ class AppTheme {
 
       // Dialog theme
       dialogTheme: DialogThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: lightSurface,
         elevation: 24,
         shape: RoundedRectangleBorder(borderRadius: borderRadiusLarge),
         titleTextStyle: lightTextTheme.headlineSmall,
