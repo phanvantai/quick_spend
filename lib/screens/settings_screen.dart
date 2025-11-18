@@ -16,6 +16,7 @@ import '../services/data_collection_service.dart';
 import '../theme/app_theme.dart';
 import 'categories_screen.dart';
 import 'recurring_expenses_screen.dart';
+import 'feedback_form_screen.dart';
 
 /// Settings screen for changing app preferences
 class SettingsScreen extends StatefulWidget {
@@ -261,6 +262,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
 
                     _buildDataCollectionTile(context),
+
+                    const Divider(height: 32),
+
+                    // Support & Feedback Section
+                    _buildSectionHeader(context.tr('feedback.section_header')),
+
+                    _buildListTile(
+                      icon: Icons.feedback_outlined,
+                      iconColor: AppTheme.accentOrange,
+                      title: context.tr('feedback.send_feedback'),
+                      subtitle: context.tr('feedback.send_feedback_subtitle'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FeedbackFormScreen(),
+                          ),
+                        );
+                      },
+                    ),
 
                     const Divider(height: 32),
 
