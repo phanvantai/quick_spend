@@ -5,6 +5,7 @@ import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/category_provider.dart';
 import '../services/expense_service.dart';
+import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/gradient_button.dart';
 import 'main_screen.dart';
@@ -23,6 +24,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   late String _selectedLanguage;
   late String _selectedCurrency;
   bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Log screen view
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AnalyticsService>().logOnboardingScreen();
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -67,6 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final configProvider = context.read<AppConfigProvider>();
     final expenseService = context.read<ExpenseService>();
     final categoryProvider = context.read<CategoryProvider>();
+    final analyticsService = context.read<AnalyticsService>();
 
     // Save preferences
     await configProvider.updatePreferences(
@@ -83,6 +94,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     debugPrint(
       '✅ [Onboarding] Categories refreshed: ${categoryProvider.categories.length} categories loaded',
     );
+
+    // Log onboarding completion
+    await analyticsService.logOnboardingCompleted(
+      language: _selectedLanguage,
+      currency: _selectedCurrency,
+    );
+
+    // Set user properties
+    await analyticsService.setLanguageProperty(_selectedLanguage);
+    await analyticsService.setCurrencyProperty(_selectedCurrency);
 
     if (mounted) {
       Navigator.of(context).pushReplacement(

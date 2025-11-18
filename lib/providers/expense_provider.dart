@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 import '../models/expense.dart';
 import '../services/expense_service.dart';
 import '../services/recurring_expense_service.dart';
+import '../services/analytics_service.dart';
 import '../utils/constants.dart';
 
 /// Provider for managing expense state
 class ExpenseProvider extends ChangeNotifier {
   final ExpenseService _expenseService;
   final RecurringExpenseService? _recurringExpenseService;
+  final AnalyticsService? _analyticsService;
   List<Expense> _expenses = [];
   bool _isLoading = true;
   String _currentUserId = AppConstants.defaultUserId;
@@ -16,7 +18,9 @@ class ExpenseProvider extends ChangeNotifier {
   ExpenseProvider(
     this._expenseService, {
     RecurringExpenseService? recurringExpenseService,
-  }) : _recurringExpenseService = recurringExpenseService {
+    AnalyticsService? analyticsService,
+  })  : _recurringExpenseService = recurringExpenseService,
+        _analyticsService = analyticsService {
     _loadExpenses();
   }
 
@@ -131,13 +135,22 @@ class ExpenseProvider extends ChangeNotifier {
   }
 
   /// Add a new expense
-  Future<void> addExpense(Expense expense) async {
+  Future<void> addExpense(Expense expense, {String method = 'manual'}) async {
     try {
       await _expenseService.saveExpense(expense);
       _expenses.insert(0, expense); // Add to beginning (newest first)
       // Provide haptic feedback for successful addition
       HapticFeedback.lightImpact();
       notifyListeners();
+
+      // Log analytics event
+      _analyticsService?.logExpenseAdded(
+        method: method,
+        category: expense.category,
+        amountRange: _analyticsService!.getAmountRange(expense.amount),
+        language: expense.language,
+        transactionType: expense.isExpense ? 'expense' : 'income',
+      );
     } catch (e) {
       debugPrint('Error adding expense: $e');
       rethrow;
@@ -145,13 +158,25 @@ class ExpenseProvider extends ChangeNotifier {
   }
 
   /// Add multiple expenses at once (useful for batch imports)
-  Future<void> addExpenses(List<Expense> expenses) async {
+  Future<void> addExpenses(
+    List<Expense> expenses, {
+    String method = 'manual',
+  }) async {
     try {
       debugPrint(
         '💾 [ExpenseProvider] Saving ${expenses.length} expense(s)...',
       );
       for (final expense in expenses) {
         await _expenseService.saveExpense(expense);
+
+        // Log analytics for each expense
+        _analyticsService?.logExpenseAdded(
+          method: method,
+          category: expense.category,
+          amountRange: _analyticsService!.getAmountRange(expense.amount),
+          language: expense.language,
+          transactionType: expense.isExpense ? 'expense' : 'income',
+        );
       }
       // Reload expenses from database without showing loading state
       _expenses = await _expenseService.getAllExpenses(_currentUserId);
@@ -166,7 +191,10 @@ class ExpenseProvider extends ChangeNotifier {
   }
 
   /// Update an existing expense
-  Future<void> updateExpense(Expense expense) async {
+  Future<void> updateExpense(
+    Expense expense, {
+    List<String>? fieldsChanged,
+  }) async {
     try {
       await _expenseService.updateExpense(expense);
       final index = _expenses.indexWhere((e) => e.id == expense.id);
@@ -174,6 +202,12 @@ class ExpenseProvider extends ChangeNotifier {
         _expenses[index] = expense;
         notifyListeners();
       }
+
+      // Log analytics event
+      _analyticsService?.logExpenseEdited(
+        fieldsChanged: fieldsChanged ?? ['unknown'],
+        category: expense.category,
+      );
     } catch (e) {
       debugPrint('Error updating expense: $e');
       rethrow;
@@ -183,11 +217,20 @@ class ExpenseProvider extends ChangeNotifier {
   /// Delete an expense
   Future<void> deleteExpense(String expenseId) async {
     try {
+      // Find expense before deleting for analytics
+      final expense = _expenses.firstWhere((e) => e.id == expenseId);
+
       await _expenseService.deleteExpense(expenseId);
       _expenses.removeWhere((e) => e.id == expenseId);
       // Provide medium haptic feedback for deletion (destructive action)
       HapticFeedback.mediumImpact();
       notifyListeners();
+
+      // Log analytics event
+      _analyticsService?.logExpenseDeleted(
+        category: expense.category,
+        ageDays: _analyticsService!.getExpenseAgeDays(expense.date),
+      );
     } catch (e) {
       debugPrint('Error deleting expense: $e');
       rethrow;

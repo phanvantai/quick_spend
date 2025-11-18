@@ -16,6 +16,7 @@ import 'services/recurring_expense_service.dart';
 import 'services/gemini_expense_parser.dart';
 import 'services/data_collection_service.dart';
 import 'services/gemini_usage_limit_service.dart';
+import 'services/analytics_service.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_screen.dart';
 import 'theme/app_theme.dart';
@@ -65,6 +66,10 @@ void main() async {
   final geminiUsageLimitService = GeminiUsageLimitService();
   await geminiUsageLimitService.init();
 
+  // Initialize Analytics service
+  final analyticsService = AnalyticsService();
+  await analyticsService.init();
+
   runApp(
     EasyLocalization(
       supportedLocales: const [
@@ -84,6 +89,7 @@ void main() async {
         recurringExpenseService: recurringExpenseService,
         dataCollectionService: dataCollectionService,
         geminiUsageLimitService: geminiUsageLimitService,
+        analyticsService: analyticsService,
       ),
     ),
   );
@@ -96,6 +102,7 @@ class MyApp extends StatelessWidget {
   final RecurringExpenseService recurringExpenseService;
   final DataCollectionService dataCollectionService;
   final GeminiUsageLimitService geminiUsageLimitService;
+  final AnalyticsService analyticsService;
 
   const MyApp({
     super.key,
@@ -105,6 +112,7 @@ class MyApp extends StatelessWidget {
     required this.recurringExpenseService,
     required this.dataCollectionService,
     required this.geminiUsageLimitService,
+    required this.analyticsService,
   });
 
   @override
@@ -114,13 +122,18 @@ class MyApp extends StatelessWidget {
         Provider<DataCollectionService>.value(value: dataCollectionService),
         Provider<ExpenseService>.value(value: expenseService),
         Provider<GeminiUsageLimitService>.value(value: geminiUsageLimitService),
+        Provider<AnalyticsService>.value(value: analyticsService),
         ChangeNotifierProvider(
-          create: (_) => AppConfigProvider(preferencesService),
+          create: (_) => AppConfigProvider(
+            preferencesService,
+            analyticsService: analyticsService,
+          ),
         ),
         ChangeNotifierProvider(
           create: (_) => ExpenseProvider(
             expenseService,
             recurringExpenseService: recurringExpenseService,
+            analyticsService: analyticsService,
           ),
         ),
         ChangeNotifierProvider(create: (_) => CategoryProvider(expenseService)),

@@ -13,6 +13,7 @@ import '../services/expense_parser.dart';
 import '../services/preferences_service.dart';
 import '../services/data_collection_service.dart';
 import '../services/gemini_usage_limit_service.dart';
+import '../services/analytics_service.dart';
 import '../utils/constants.dart';
 import '../theme/app_theme.dart';
 import '../widgets/voice_tutorial_overlay.dart';
@@ -70,6 +71,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<ExpenseProvider>().generateRecurringExpenses();
+        // Log initial screen view (Home tab)
+        context.read<AnalyticsService>().logHomeScreen();
       }
     });
 
@@ -343,6 +346,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
+  DateTime? _recordingStartTime;
+
   Future<void> _startRecording() async {
     debugPrint('🎤 [MainScreen] Starting recording...');
 
@@ -360,6 +365,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       _isRecording = true;
       _recognizedText = '';
     });
+
+    // Track recording start time for analytics
+    _recordingStartTime = DateTime.now();
+
+    // Log voice input started
+    context.read<AnalyticsService>().logVoiceInputStarted(language: language);
 
     _listeningTextController.repeat(reverse: true);
     _swipeTextController.repeat(reverse: true);
@@ -414,6 +425,21 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       _isSwiping = false;
     });
 
+    // Calculate recording duration for analytics
+    final duration = _recordingStartTime != null
+        ? DateTime.now().difference(_recordingStartTime!).inSeconds
+        : 0;
+
+    // Log voice input completion
+    if (mounted) {
+      final language = context.read<AppConfigProvider>().language;
+      context.read<AnalyticsService>().logVoiceInputCompleted(
+            success: _recognizedText.isNotEmpty,
+            durationSeconds: duration,
+            language: language,
+          );
+    }
+
     if (_recognizedText.isNotEmpty) {
       _processExpense(_recognizedText);
     }
@@ -431,6 +457,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       _isSwiping = false;
       _recognizedText = '';
     });
+
+    // Log voice input cancelled
+    if (mounted) {
+      final language = context.read<AppConfigProvider>().language;
+      context.read<AnalyticsService>().logVoiceInputCancelled(language: language);
+    }
   }
 
   Future<void> _processExpense(String input) async {
@@ -463,11 +495,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       final expenseProvider = context.read<ExpenseProvider>();
       final categoryProvider = context.read<CategoryProvider>();
       final usageLimitService = context.read<GeminiUsageLimitService>();
+      final analyticsService = context.read<AnalyticsService>();
       final results = await ExpenseParser.parse(
         input,
         expenseProvider.currentUserId,
         categoryProvider.categories,
         usageLimitService: usageLimitService,
+        analyticsService: analyticsService,
       );
       if (mounted) Navigator.pop(context);
 
@@ -649,6 +683,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     setState(() {
       _currentIndex = index;
     });
+
+    // Log screen view based on tab
+    final analyticsService = context.read<AnalyticsService>();
+    if (index == 0) {
+      analyticsService.logHomeScreen();
+    } else if (index == 1) {
+      analyticsService.logReportScreen();
+    }
   }
 
   @override

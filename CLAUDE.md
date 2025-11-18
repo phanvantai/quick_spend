@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Quick Spend is a Flutter expense tracking mobile app with voice input support and **multilingual functionality** (English, Vietnamese, Japanese, Korean, Thai, Spanish). The app uses **SQLite for local storage** and features **AI-powered expense parsing** using **Gemini 2.5 Flash via Firebase AI**, with automatic categorization, Vietnamese slang support, and full income/expense tracking. The app includes comprehensive statistics and reporting with interactive charts, calendar view, data import/export capabilities, recurring expenses, daily usage limits, and optional opt-in ML training data collection.
+Quick Spend is a Flutter expense tracking mobile app with voice input support and **multilingual functionality** (English, Vietnamese, Japanese, Korean, Thai, Spanish). The app uses **SQLite for local storage** and features **AI-powered expense parsing** using **Gemini 2.5 Flash via Firebase AI**, with automatic categorization, Vietnamese slang support, and full income/expense tracking. The app includes comprehensive statistics and reporting with interactive charts, calendar view, data import/export capabilities, recurring expenses, daily usage limits, optional opt-in ML training data collection, and **Firebase Analytics** for tracking user behavior and app performance.
 
 ## Development Commands
 
@@ -183,6 +183,19 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - UI/UX: Expenses per page (50), top expenses (5), animation duration (300ms)
    - Database: Version 3, database name
    - Debug: 5 taps to enable debug mode within 3 seconds
+
+17. **AnalyticsService** ([lib/services/analytics_service.dart](lib/services/analytics_service.dart))
+   - **Firebase Analytics integration for tracking user behavior and app performance**
+   - Singleton pattern for easy access throughout the app
+   - Privacy-aware: Never logs PII (amounts, descriptions, personal data)
+   - **Screen Tracking**: Automatic screen view logging for all major screens
+   - **User Actions**: Expense CRUD operations, voice input events, category management
+   - **Feature Usage**: Import/export, recurring templates, report period changes
+   - **AI Metrics**: Gemini parse success/failure, fallback parser usage, confidence scores
+   - **Settings Changes**: Language, currency, theme mode changes with before/after values
+   - **User Properties**: Language, currency, theme, data collection consent
+   - Helper methods: `getAmountRange()` for privacy-safe amount bucketing
+   - All events logged with debug output for development visibility
 
 ### Models
 
