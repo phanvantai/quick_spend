@@ -166,9 +166,9 @@ class RevenueCatService {
   Future<CustomerInfo> login(String userId) async {
     try {
       debugPrint('🔄 [RevenueCat] Logging in user: $userId');
-      final customerInfo = await Purchases.logIn(userId);
+      final result = await Purchases.logIn(userId);
       debugPrint('✅ [RevenueCat] User logged in');
-      return customerInfo;
+      return result.customerInfo;
     } catch (e) {
       debugPrint('❌ [RevenueCat] Failed to login: $e');
       rethrow;
