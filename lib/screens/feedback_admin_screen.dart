@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/feedback.dart';
 import '../theme/app_theme.dart';
+import 'feedback_detail_screen.dart';
 
 /// Admin screen to view all submitted feedback
 class FeedbackAdminScreen extends StatefulWidget {
@@ -181,11 +182,21 @@ class _FeedbackCard extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(AppTheme.spacing16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FeedbackDetailScreen(feedback: feedback),
+            ),
+          );
+        },
+        borderRadius: AppTheme.borderRadiusMedium,
+        child: Padding(
+          padding: const EdgeInsets.all(AppTheme.spacing16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Header with type badge and timestamp
             Row(
               children: [
@@ -242,76 +253,23 @@ class _FeedbackCard extends StatelessWidget {
 
             const SizedBox(height: AppTheme.spacing8),
 
-            // Message
+            // Message preview (truncated)
             Text(
-              feedback.message,
-              style: theme.textTheme.bodyMedium,
+              feedback.message.length > 100
+                  ? '${feedback.message.substring(0, 100)}...'
+                  : feedback.message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-
-            // Attachments
-            if (feedback.attachmentUrls.isNotEmpty) ...[
-              const SizedBox(height: AppTheme.spacing16),
-              Text(
-                'Attachments (${feedback.attachmentUrls.length})',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: AppTheme.spacing8),
-              Wrap(
-                spacing: AppTheme.spacing8,
-                runSpacing: AppTheme.spacing8,
-                children: feedback.attachmentUrls.map((url) {
-                  return GestureDetector(
-                    onTap: () => _showFullImage(context, url),
-                    child: ClipRRect(
-                      borderRadius: AppTheme.borderRadiusSmall,
-                      child: Image.network(
-                        url,
-                        width: 100,
-                        height: 100,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            width: 100,
-                            height: 100,
-                            color: colorScheme.surfaceContainerHighest,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 100,
-                            height: 100,
-                            color: colorScheme.surfaceContainerHighest,
-                            child: const Icon(
-                              Icons.broken_image,
-                              color: AppTheme.error,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
 
             const SizedBox(height: AppTheme.spacing12),
             const Divider(),
             const SizedBox(height: AppTheme.spacing8),
 
-            // Metadata
+            // Footer with metadata and attachments count
             Row(
               children: [
                 Icon(
@@ -326,42 +284,44 @@ class _FeedbackCard extends StatelessWidget {
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  'ID: ${feedback.id.substring(0, 8)}...',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    fontFamily: 'monospace',
+                if (feedback.attachmentUrls.isNotEmpty) ...[
+                  const SizedBox(width: AppTheme.spacing8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing8,
+                      vertical: AppTheme.spacing4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.info.withValues(alpha: 0.15),
+                      borderRadius: AppTheme.borderRadiusSmall,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.image,
+                          size: 12,
+                          color: AppTheme.info,
+                        ),
+                        const SizedBox(width: AppTheme.spacing4),
+                        Text(
+                          '${feedback.attachmentUrls.length}',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: AppTheme.info,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                ],
+                const Spacer(),
+                Icon(
+                  Icons.chevron_right,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showFullImage(BuildContext context, String imageUrl) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.black,
-        child: Stack(
-          children: [
-            InteractiveViewer(
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.contain,
-              ),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
             ),
           ],
         ),
