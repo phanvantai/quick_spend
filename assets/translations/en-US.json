@@ -455,6 +455,20 @@
     "limit_recurring_templates": "Template limit reached",
     "limit_recurring_templates_message": "You've reached the limit of {limit} recurring templates. Upgrade to Premium for unlimited templates!",
     "limit_advanced_reports": "Custom date ranges are Premium",
-    "limit_advanced_reports_message": "Custom date ranges are a Premium feature. Upgrade to unlock custom date range selection!"
+    "limit_advanced_reports_message": "Custom date ranges are a Premium feature. Upgrade to unlock custom date range selection!",
+    "loading_products": "Loading subscription options...",
+    "loading_failed": "Failed to load subscription options",
+    "loading_retry": "Retry",
+    "purchase_processing": "Processing purchase...",
+    "purchase_success": "Purchase successful!",
+    "purchase_failed": "Purchase failed",
+    "purchase_cancelled": "Purchase cancelled",
+    "purchase_error": "Error: {error}",
+    "restore_purchases": "Restore Purchases",
+    "restoring": "Restoring purchases...",
+    "restore_success": "Purchases restored successfully!",
+    "restore_no_purchases": "No previous purchases found",
+    "restore_failed": "Failed to restore purchases: {error}",
+    "price_unavailable": "Price unavailable"
   }
 }
