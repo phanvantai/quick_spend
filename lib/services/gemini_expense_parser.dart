@@ -61,7 +61,7 @@ class GeminiExpenseParser {
       final canParse = await usageLimitService.canParse();
       if (!canParse) {
         final usageCount = await usageLimitService.getUsageCount();
-        final limit = usageLimitService.dailyLimit;
+        final limit = await usageLimitService.getDailyLimit();
         debugPrint(
           '⛔ [GeminiParser] Daily limit reached ($usageCount/$limit). User should add manually.',
         );
