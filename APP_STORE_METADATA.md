@@ -72,7 +72,7 @@ RECURRING TRANSACTIONS
 • Pause or resume anytime
 
 DATA MANAGEMENT
-• Export to CSV or JSON (full backup)
+• Export to JSON (complete backup with all data)
 • Import from previous backups
 • Backup includes all categories and settings
 • Version-aware import (supports v1.0-v4.0)
@@ -210,7 +210,7 @@ GIAO DỊCH ĐỊNH KỲ
 • Tạm dừng hoặc tiếp tục bất cứ lúc nào
 
 QUẢN LÝ DỮ LIỆU
-• Xuất sang CSV hoặc JSON (sao lưu đầy đủ)
+• Xuất sang JSON (sao lưu đầy đủ với tất cả dữ liệu)
 • Nhập từ bản sao lưu trước
 • Bản sao lưu bao gồm tất cả danh mục và cài đặt
 • Nhập nhận biết phiên bản (hỗ trợ v1.0-v4.0)
@@ -347,7 +347,7 @@ QuickSpendは音声対応AIで家計管理を革新します。入力不要—6�
 • いつでも一時停止・再開
 
 データ管理
-• CSVまたはJSON形式でエクスポート（完全バックアップ）
+• JSON形式でエクスポート（すべてのデータを含む完全バックアップ）
 • 以前のバックアップからインポート
 • すべてのカテゴリーと設定を含むバックアップ
 • バージョン対応インポート（v1.0-v4.0対応）
@@ -481,7 +481,7 @@ QuickSpend는 음성 기반 AI로 가계 관리를 혁신합니다. 타이핑 �
 • 언제든지 일시 중지 또는 재개
 
 데이터 관리
-• CSV 또는 JSON으로 내보내기 (전체 백업)
+• JSON으로 내보내기 (모든 데이터를 포함한 전체 백업)
 • 이전 백업에서 가져오기
 • 모든 카테고리 및 설정 포함 백업
 • 버전 인식 가져오기 (v1.0-v4.0 지원)
@@ -615,7 +615,7 @@ QuickSpend ปฏิวัติการจัดการเงินด้ว
 • หยุดชั่วคราวหรือดำเนินการต่อได้ทุกเมื่อ
 
 การจัดการข้อมูล
-• ส่งออกเป็น CSV หรือ JSON (สำรองข้อมูลแบบเต็ม)
+• ส่งออกเป็น JSON (สำรองข้อมูลแบบเต็มพร้อมข้อมูลทั้งหมด)
 • นำเข้าจากข้อมูลสำรองก่อนหน้า
 • สำรองข้อมูลรวมหมวดหมู่และการตั้งค่าทั้งหมด
 • การนำเข้าที่รู้เวอร์ชัน (รองรับ v1.0-v4.0)
@@ -749,7 +749,7 @@ TRANSACCIONES RECURRENTES
 • Pausa o reanuda en cualquier momento
 
 GESTIÓN DE DATOS
-• Exporta a CSV o JSON (copia de seguridad completa)
+• Exporta a JSON (copia de seguridad completa con todos los datos)
 • Importa desde copias de seguridad anteriores
 • La copia incluye todas las categorías y configuraciones
 • Importación consciente de versión (compatible con v1.0-v4.0)
@@ -939,7 +939,7 @@ Recommend highlighting these features in App Store screenshots (in order):
 5. **Calendar View** - Show monthly calendar with daily income/expense totals
 6. **Spending Trends** - Show line chart with spending insights over time
 7. **Multilingual Support** - Show 6-language selection screen
-8. **Import/Export** - Show data portability features
+8. **JSON Backup** - Show JSON export/import for complete data backup
 9. **Recurring Expenses** - Show recurring template management
 10. **Dark Mode** - Show dark theme with beautiful mint gradient
 
