@@ -15,7 +15,7 @@ class SubscriptionProvider with ChangeNotifier {
   /// Initialize subscription status
   Future<void> initialize() async {
     _status = await SubscriptionService.getSubscriptionStatus();
-    print('💳 Subscription initialized: ${_status.tier.displayName}');
+    debugPrint('💳 Subscription initialized: ${_status.tier.displayName}');
     notifyListeners();
   }
 
@@ -29,14 +29,14 @@ class SubscriptionProvider with ChangeNotifier {
       platform: platform,
     );
     notifyListeners();
-    print('🎉 Upgraded to premium in provider');
+    debugPrint('🎉 Upgraded to premium in provider');
   }
 
   /// Downgrade to free
   Future<void> downgradeToFree() async {
     _status = await SubscriptionService.downgradeToFree();
     notifyListeners();
-    print('📉 Downgraded to free in provider');
+    debugPrint('📉 Downgraded to free in provider');
   }
 
   /// Check if user can use a feature

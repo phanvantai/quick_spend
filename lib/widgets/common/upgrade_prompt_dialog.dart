@@ -25,20 +25,15 @@ class UpgradePromptDialog extends StatelessWidget {
   }) {
     return showDialog(
       context: context,
-      builder: (context) => UpgradePromptDialog(
-        title: title,
-        message: message,
-        icon: icon,
-      ),
+      builder: (context) =>
+          UpgradePromptDialog(title: title, message: message, icon: icon),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       contentPadding: const EdgeInsets.all(AppTheme.spacing24),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -61,10 +56,7 @@ class UpgradePromptDialog extends StatelessWidget {
           // Title
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppTheme.spacing12),
@@ -92,9 +84,7 @@ class UpgradePromptDialog extends StatelessWidget {
                   ),
                   child: Text(
                     context.tr('subscription.maybe_later'),
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(color: Colors.grey[600]),
                   ),
                 ),
               ),
@@ -110,7 +100,7 @@ class UpgradePromptDialog extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
+                    backgroundColor: AppTheme.primaryDark,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(

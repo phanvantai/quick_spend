@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/subscription_status.dart';
 import '../models/subscription_tier.dart';
@@ -29,7 +30,7 @@ class SubscriptionService {
 
       return status;
     } catch (e) {
-      print('❌ Error loading subscription status: $e');
+      debugPrint('❌ Error loading subscription status: $e');
       return SubscriptionStatus.free();
     }
   }
@@ -39,7 +40,7 @@ class SubscriptionService {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = jsonEncode(status.toJson());
     await prefs.setString(_subscriptionKey, jsonString);
-    print('💾 Subscription status saved: ${status.tier.displayName}');
+    debugPrint('💾 Subscription status saved: ${status.tier.displayName}');
   }
 
   /// Upgrade to premium (mock for now)
@@ -54,7 +55,7 @@ class SubscriptionService {
       purchaseDate: DateTime.now(),
     );
     await saveSubscriptionStatus(status);
-    print('🎉 Upgraded to premium!');
+    debugPrint('🎉 Upgraded to premium!');
     return status;
   }
 
@@ -62,7 +63,7 @@ class SubscriptionService {
   static Future<SubscriptionStatus> downgradeToFree() async {
     final status = SubscriptionStatus.free();
     await saveSubscriptionStatus(status);
-    print('📉 Downgraded to free');
+    debugPrint('📉 Downgraded to free');
     return status;
   }
 
@@ -95,6 +96,6 @@ class SubscriptionService {
   static Future<void> clearSubscription() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_subscriptionKey);
-    print('🗑️ Subscription data cleared');
+    debugPrint('🗑️ Subscription data cleared');
   }
 }

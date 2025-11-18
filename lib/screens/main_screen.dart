@@ -14,7 +14,6 @@ import '../services/preferences_service.dart';
 import '../services/data_collection_service.dart';
 import '../services/gemini_usage_limit_service.dart';
 import '../services/analytics_service.dart';
-import '../utils/constants.dart';
 import '../theme/app_theme.dart';
 import '../widgets/voice_tutorial_overlay.dart';
 import '../widgets/home/editable_expense_dialog.dart';
@@ -512,6 +511,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           results.first.errorMessage == 'GEMINI_LIMIT_REACHED') {
         if (mounted) {
           final limit = await usageLimitService.getDailyLimit();
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(

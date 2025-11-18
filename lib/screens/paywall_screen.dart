@@ -31,9 +31,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppTheme.spacing24),
-              decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
-              ),
+              decoration: BoxDecoration(gradient: AppTheme.primaryGradient),
               child: Column(
                 children: [
                   Icon(
@@ -54,10 +52,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   const SizedBox(height: AppTheme.spacing8),
                   Text(
                     context.tr('subscription.get_unlimited'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
+                    style: const TextStyle(fontSize: 16, color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -68,7 +63,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
             // Pricing toggle
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing24,
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
@@ -79,7 +76,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     Expanded(
                       child: _buildPricingOption(
                         label: context.tr('subscription.monthly'),
-                        price: '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}',
+                        price:
+                            '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}',
                         isSelected: !_isYearly,
                         onTap: () => setState(() => _isYearly = false),
                       ),
@@ -90,7 +88,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         children: [
                           _buildPricingOption(
                             label: context.tr('subscription.yearly'),
-                            price: '\$${(AppConstants.subscriptionYearlyPriceUSD / 12).toStringAsFixed(2)}${context.tr('subscription.per_month')}',
+                            price:
+                                '\$${(AppConstants.subscriptionYearlyPriceUSD / 12).toStringAsFixed(2)}${context.tr('subscription.per_month')}',
                             isSelected: _isYearly,
                             onTap: () => setState(() => _isYearly = true),
                           ),
@@ -107,7 +106,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                context.tr('subscription.save_percent', namedArgs: {'percent': '30'}),
+                                context.tr(
+                                  'subscription.save_percent',
+                                  namedArgs: {'percent': '30'},
+                                ),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
@@ -128,7 +130,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
             // Features comparison
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing24,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -143,37 +147,54 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   _buildFeatureItem(
                     icon: Icons.auto_awesome,
                     title: context.tr('subscription.feature_unlimited_ai'),
-                    subtitle: context.tr('subscription.feature_unlimited_ai_subtitle', namedArgs: {'free': '5'}),
+                    subtitle: context.tr(
+                      'subscription.feature_unlimited_ai_subtitle',
+                      namedArgs: {'free': '5'},
+                    ),
                     isPremium: true,
                   ),
                   _buildFeatureItem(
                     icon: Icons.mic,
                     title: context.tr('subscription.feature_unlimited_voice'),
-                    subtitle: context.tr('subscription.feature_unlimited_voice_subtitle'),
+                    subtitle: context.tr(
+                      'subscription.feature_unlimited_voice_subtitle',
+                    ),
                     isPremium: true,
                   ),
                   _buildFeatureItem(
                     icon: Icons.repeat,
-                    title: context.tr('subscription.feature_unlimited_recurring'),
-                    subtitle: context.tr('subscription.feature_unlimited_recurring_subtitle', namedArgs: {'free': '3'}),
+                    title: context.tr(
+                      'subscription.feature_unlimited_recurring',
+                    ),
+                    subtitle: context.tr(
+                      'subscription.feature_unlimited_recurring_subtitle',
+                      namedArgs: {'free': '3'},
+                    ),
                     isPremium: true,
                   ),
                   _buildFeatureItem(
                     icon: Icons.analytics,
                     title: context.tr('subscription.feature_advanced_reports'),
-                    subtitle: context.tr('subscription.feature_advanced_reports_subtitle', namedArgs: {'free': '7'}),
+                    subtitle: context.tr(
+                      'subscription.feature_advanced_reports_subtitle',
+                      namedArgs: {'free': '7'},
+                    ),
                     isPremium: true,
                   ),
                   _buildFeatureItem(
                     icon: Icons.category,
                     title: context.tr('subscription.feature_custom_categories'),
-                    subtitle: context.tr('subscription.feature_custom_categories_subtitle'),
+                    subtitle: context.tr(
+                      'subscription.feature_custom_categories_subtitle',
+                    ),
                     isPremium: false,
                   ),
                   _buildFeatureItem(
                     icon: Icons.import_export,
                     title: context.tr('subscription.feature_import_export'),
-                    subtitle: context.tr('subscription.feature_import_export_subtitle'),
+                    subtitle: context.tr(
+                      'subscription.feature_import_export_subtitle',
+                    ),
                     isPremium: false,
                   ),
                 ],
@@ -193,7 +214,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     child: ElevatedButton(
                       onPressed: _isProcessing ? null : _handlePurchase,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
+                        backgroundColor: AppTheme.primaryDark,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -228,12 +249,15 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   const SizedBox(height: AppTheme.spacing16),
                   Text(
                     _isYearly
-                        ? context.tr('subscription.billed_yearly', namedArgs: {'amount': '\$${AppConstants.subscriptionYearlyPriceUSD}'})
+                        ? context.tr(
+                            'subscription.billed_yearly',
+                            namedArgs: {
+                              'amount':
+                                  '\$${AppConstants.subscriptionYearlyPriceUSD}',
+                            },
+                          )
                         : context.tr('subscription.billed_monthly'),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: AppTheme.spacing8),
                   Text(
@@ -273,7 +297,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -287,7 +311,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? AppTheme.primaryColor : Colors.grey[600],
+                color: isSelected ? AppTheme.primaryDark : Colors.grey[600],
               ),
             ),
             const SizedBox(height: 4),
@@ -295,7 +319,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               price,
               style: TextStyle(
                 fontSize: 14,
-                color: isSelected ? AppTheme.primaryColor : Colors.grey[600],
+                color: isSelected ? AppTheme.primaryDark : Colors.grey[600],
               ),
             ),
           ],
@@ -319,13 +343,13 @@ class _PaywallScreenState extends State<PaywallScreen> {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: isPremium
-                  ? AppTheme.primaryColor.withOpacity(0.1)
+                  ? AppTheme.primaryDark.withValues(alpha: 0.1)
                   : Colors.grey[200],
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: isPremium ? AppTheme.primaryColor : Colors.grey[600],
+              color: isPremium ? AppTheme.primaryDark : Colors.grey[600],
               size: 24,
             ),
           ),
@@ -352,7 +376,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor,
+                          color: AppTheme.primaryDark,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -369,10 +393,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -388,6 +409,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
     try {
       // Simulate API call
       await Future.delayed(const Duration(seconds: 1));
+
+      if (!mounted) return;
 
       // Mock upgrade to premium
       final subscriptionProvider = context.read<SubscriptionProvider>();
@@ -415,10 +438,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppTheme.error,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
         );
       }
     } finally {
