@@ -85,23 +85,35 @@ class FeedbackService {
         final fileName = 'image_${i + 1}_${DateTime.now().millisecondsSinceEpoch}.jpg';
         final path = '$_storagePath/$feedbackId/$fileName';
 
-        debugPrint('📤 [FeedbackService] Uploading $fileName...');
+        debugPrint('📤 [FeedbackService] Uploading $fileName to $path...');
 
         // Upload file
         final ref = _storage.ref().child(path);
+        debugPrint('🔄 [FeedbackService] Starting upload...');
         final uploadTask = await ref.putFile(file);
+        debugPrint('✅ [FeedbackService] Upload complete, getting download URL...');
 
         // Get download URL
-        final downloadUrl = await uploadTask.ref.getDownloadURL();
-        urls.add(downloadUrl);
+        try {
+          final downloadUrl = await uploadTask.ref.getDownloadURL();
+          urls.add(downloadUrl);
+          debugPrint('✅ [FeedbackService] Got download URL: ${downloadUrl.substring(0, 50)}...');
+        } catch (urlError) {
+          debugPrint('❌ [FeedbackService] Failed to get download URL: $urlError');
+          debugPrint('⚠️ [FeedbackService] Image uploaded but URL not retrieved - check Storage rules!');
+          // Rethrow to indicate failure
+          rethrow;
+        }
 
-        debugPrint('✅ [FeedbackService] Uploaded: $fileName');
+        debugPrint('✅ [FeedbackService] Successfully processed: $fileName');
       } catch (e) {
         debugPrint('❌ [FeedbackService] Error uploading attachment $i: $e');
+        debugPrint('📍 [FeedbackService] Error details: ${e.runtimeType}');
         // Continue with other uploads even if one fails
       }
     }
 
+    debugPrint('📊 [FeedbackService] Upload summary: ${urls.length}/${files.length} attachments successful');
     return urls;
   }
 
