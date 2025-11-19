@@ -52,8 +52,9 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - **NEW**: Now async and returns `List<ParseResult>` (supports multiple expenses from one input)
    - **Primary**: Uses Gemini AI if available (see GeminiExpenseParser below)
    - **Fallback**: Uses rule-based parser if Gemini unavailable or fails
-   - Usage: `await ExpenseParser.parse(input, userId)` - returns list of ParseResult
-   - Category override: `await ExpenseParser.parseWithCategory(input, userId, category)`
+   - Usage: `await ExpenseParser.parse(input, userId, categories, language: userLanguage)` - returns list of ParseResult
+   - Category override: `await ExpenseParser.parseWithCategory(input, userId, categories, categoryId, language: userLanguage)`
+   - **Language handling**: Accepts user's app language from AppConfigProvider (no automatic detection)
 
 2. **GeminiExpenseParser** ([lib/services/gemini_expense_parser.dart](lib/services/gemini_expense_parser.dart))
    - **AI-powered expense parser using Gemini 2.5 Flash via Firebase AI**
@@ -79,28 +80,24 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - **Vietnamese slang support**: "45 ca" = 45,000, "1 củ" = 1,000,000, "2 cọc" = 2,000,000
    - Returns `AmountResult` with parsed amount and remaining description text
 
-4. **LanguageDetector** ([lib/services/language_detector.dart](lib/services/language_detector.dart))
-   - **Used by fallback parser only** (Gemini handles language detection)
-   - Detects English vs Vietnamese based on diacritics and keywords
-   - Returns language code ('en' or 'vi') with confidence score
-
-5. **Categorizer** ([lib/services/categorizer.dart](lib/services/categorizer.dart))
+4. **Categorizer** ([lib/services/categorizer.dart](lib/services/categorizer.dart))
    - **Used by fallback parser only** (Gemini categorizes semantically)
    - Keyword-based expense categorization
    - Language-aware: uses appropriate Vietnamese or English keywords
    - Returns primary category with confidence plus alternative suggestions
 
-6. **VoiceService** ([lib/services/voice_service.dart](lib/services/voice_service.dart))
+5. **VoiceService** ([lib/services/voice_service.dart](lib/services/voice_service.dart))
    - Wraps `speech_to_text` package with permission handling
    - Supports multilingual recognition (en_US, vi_VN, ja_JP, ko_KR, th_TH, es_ES)
    - Manages recording state and provides sound level feedback
    - Must be initialized before first use; handles permission requests gracefully
+   - **Language is passed from user's app settings** (AppConfigProvider) for accurate multilingual support
 
-7. **PreferencesService** ([lib/services/preferences_service.dart](lib/services/preferences_service.dart))
+6. **PreferencesService** ([lib/services/preferences_service.dart](lib/services/preferences_service.dart))
    - Wrapper around SharedPreferences
    - Handles app configuration persistence
 
-8. **DatabaseManager** ([lib/services/database_manager.dart](lib/services/database_manager.dart))
+7. **DatabaseManager** ([lib/services/database_manager.dart](lib/services/database_manager.dart))
    - **Centralized database management for the entire app**
    - Single source of truth for SQLite database instance
    - Manages database initialization, schema creation, and migrations
@@ -111,7 +108,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Provides shared database instance to all services
    - **Services depend on DatabaseManager, not on each other**
 
-9. **ExpenseService** ([lib/services/expense_service.dart](lib/services/expense_service.dart))
+8. **ExpenseService** ([lib/services/expense_service.dart](lib/services/expense_service.dart))
    - SQLite operations for expense and category persistence
    - Uses shared database from DatabaseManager
    - CRUD operations: create, read, update, delete expenses and categories
@@ -119,7 +116,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Seeds system categories on first initialization
    - Local-first architecture (no cloud dependency)
 
-10. **RecurringTemplateService** ([lib/services/recurring_template_service.dart](lib/services/recurring_template_service.dart))
+9. **RecurringTemplateService** ([lib/services/recurring_template_service.dart](lib/services/recurring_template_service.dart))
    - SQLite operations for recurring expense templates
    - Uses shared database from DatabaseManager
    - CRUD operations: create, read, update, delete templates
@@ -127,7 +124,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Stores template configurations separately from actual expenses
    - Database table: `recurring_templates` (added in schema v2)
 
-11. **RecurringExpenseService** ([lib/services/recurring_expense_service.dart](lib/services/recurring_expense_service.dart))
+10. **RecurringExpenseService** ([lib/services/recurring_expense_service.dart](lib/services/recurring_expense_service.dart))
    - Generates normal Expense objects from RecurringExpenseTemplate configurations
    - Automatically called on app startup to generate pending expenses
    - Calculates dates based on recurrence pattern (monthly/yearly)
@@ -135,7 +132,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Safety limit: max 100 instances per generation cycle
    - Respects template isActive status and endDate
 
-12. **GeminiUsageLimitService** ([lib/services/gemini_usage_limit_service.dart](lib/services/gemini_usage_limit_service.dart))
+11. **GeminiUsageLimitService** ([lib/services/gemini_usage_limit_service.dart](lib/services/gemini_usage_limit_service.dart))
    - **Daily usage limit tracking for Gemini API calls**
    - Daily limit: 15 parses/day (configurable via AppConstants)
    - Auto-resets daily based on last reset date
@@ -144,7 +141,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Persists count and reset date in SharedPreferences
    - Used by ExpenseParser before calling GeminiExpenseParser
 
-13. **DataCollectionService** ([lib/services/data_collection_service.dart](lib/services/data_collection_service.dart))
+12. **DataCollectionService** ([lib/services/data_collection_service.dart](lib/services/data_collection_service.dart))
    - **Privacy-first opt-in ML training data collection to Firestore**
    - Collects anonymized expense parsing data for improving categorization
    - Tracks: raw input, categories, amounts (NO personal data like descriptions or user IDs)
@@ -154,7 +151,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Gracefully handles Firestore not being configured
    - Data used only for ML training to improve parsing accuracy
 
-14. **ExportService** ([lib/services/export_service.dart](lib/services/export_service.dart))
+13. **ExportService** ([lib/services/export_service.dart](lib/services/export_service.dart))
    - **Export expenses and categories to JSON**
    - JSON export: expenses + ALL categories + app settings (version 4.0 format)
    - Export summary statistics (total amount, count, date range)
@@ -162,7 +159,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Pretty-formatted JSON output for readability
    - Supports full app backup and migration
 
-15. **ImportService** ([lib/services/import_service.dart](lib/services/import_service.dart))
+14. **ImportService** ([lib/services/import_service.dart](lib/services/import_service.dart))
    - **Import expenses and categories from JSON**
    - JSON import: version-aware parsing (v1.0, v2.0, v3.0, v4.0)
    - Duplicate detection by expense ID
@@ -171,7 +168,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Full error tracking and reporting
    - Supports data migration and backup restoration
 
-16. **AppConstants** ([lib/utils/constants.dart](lib/utils/constants.dart))
+15. **AppConstants** ([lib/utils/constants.dart](lib/utils/constants.dart))
    - **Centralized configuration constants**
    - API Configuration: Gemini timeout (30s), daily limit (15), warning thresholds (5, 3)
    - Voice Input: Min length (2), max length (500), stop delay (100ms)
@@ -182,7 +179,7 @@ The app uses a hybrid AI + rule-based parsing architecture:
    - Database: Version 3, database name
    - Debug: 5 taps to enable debug mode within 3 seconds
 
-17. **AnalyticsService** ([lib/services/analytics_service.dart](lib/services/analytics_service.dart))
+16. **AnalyticsService** ([lib/services/analytics_service.dart](lib/services/analytics_service.dart))
    - **Firebase Analytics integration for tracking user behavior and app performance**
    - Singleton pattern for easy access throughout the app
    - Privacy-aware: Never logs PII (amounts, descriptions, personal data)
@@ -241,7 +238,13 @@ The app uses a hybrid AI + rule-based parsing architecture:
 
 ```dart
 // Input: "50k coffee" or "50k coffee yesterday and 30k parking today"
-final results = await ExpenseParser.parse(input, userId);
+// Language from user's app settings (AppConfigProvider)
+final results = await ExpenseParser.parse(
+  input,
+  userId,
+  categories,
+  language: userLanguage, // e.g., 'en', 'vi', 'ja', 'ko', 'th', 'es'
+);
 
 // Note: Now async and returns List<ParseResult>
 // Can return multiple expenses if Gemini detects them
@@ -254,7 +257,7 @@ for (final result in results) {
     // - description: "coffee"
     // - category: ExpenseCategory.food
     // - date: DateTime (parsed from "yesterday", "hôm qua", etc.)
-    // - language: "en"
+    // - language: "en" (from user settings, not auto-detected)
     // - confidence: 0.95 (higher with Gemini)
     // - rawInput: original text
   }
@@ -264,6 +267,7 @@ for (final result in results) {
 // 1. Try Gemini AI (if configured) - supports dates, complex sentences, slang
 // 2. Fallback to rule-based parser on failure - uses DateTime.now() for date
 // 3. Always returns at least one result (success or error)
+// 4. Language is provided by caller from user's app settings (no auto-detection)
 ```
 
 ### Onboarding Flow
@@ -404,9 +408,9 @@ lib/
 │   ├── gemini_usage_limit_service.dart # Daily Gemini usage limit tracking (15/day)
 │   ├── expense_parser.dart     # Main orchestrator (AI + fallback)
 │   ├── amount_parser.dart      # Fallback amount extraction (with slang)
-│   ├── language_detector.dart  # Fallback language detection
 │   ├── categorizer.dart        # Fallback keyword categorization
 │   ├── voice_service.dart      # Speech-to-text wrapper
+│   ├── analytics_service.dart  # Firebase Analytics integration
 │   ├── database_manager.dart   # Centralized database management
 │   ├── expense_service.dart    # Expense & category CRUD operations
 │   ├── recurring_template_service.dart # Recurring template CRUD operations

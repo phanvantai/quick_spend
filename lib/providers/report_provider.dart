@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/expense.dart';
 import '../models/period_stats.dart';
 import '../utils/date_range_helper.dart';
+import '../services/subscription_service.dart';
 import 'expense_provider.dart';
 import 'category_provider.dart';
 import 'app_config_provider.dart';
@@ -11,6 +12,7 @@ class ReportProvider extends ChangeNotifier {
   final ExpenseProvider _expenseProvider;
   final CategoryProvider _categoryProvider;
   final AppConfigProvider _appConfigProvider;
+  bool _isPremium = false;
 
   TimePeriod _selectedPeriod = TimePeriod.thisMonth;
   DateRange? _customDateRange;
@@ -26,7 +28,13 @@ class ReportProvider extends ChangeNotifier {
   ) {
     _expenseProvider.addListener(_onExpensesChanged);
     _categoryProvider.addListener(_onCategoriesChanged);
-    _calculateStats();
+    _initialize();
+  }
+
+  /// Initialize subscription status and calculate stats
+  Future<void> _initialize() async {
+    _isPremium = await SubscriptionService.isPremium();
+    await _calculateStats();
   }
 
   @override
@@ -67,11 +75,39 @@ class ReportProvider extends ChangeNotifier {
   /// Whether data is loading
   bool get isLoading => _expenseProvider.isLoading || _isCalculating;
 
+  /// Whether user has premium subscription
+  bool get isPremium => _isPremium;
+
+  /// Get available periods based on subscription tier
+  List<TimePeriod> get availablePeriods {
+    if (_isPremium) {
+      // Premium: all periods available
+      return TimePeriod.values;
+    } else {
+      // Free: all standard periods, custom is locked
+      return [
+        TimePeriod.today,
+        TimePeriod.thisWeek,
+        TimePeriod.thisMonth,
+        TimePeriod.thisYear,
+      ];
+    }
+  }
+
+  /// Check if a period is allowed for current subscription tier
+  bool isPeriodAllowed(TimePeriod period) {
+    return availablePeriods.contains(period);
+  }
+
+  /// Check if custom date ranges are allowed (premium only)
+  bool get isCustomDateRangeAllowed => _isPremium;
+
   /// Get current date range based on selected period
   DateRange get currentDateRange {
     if (_selectedPeriod == TimePeriod.custom && _customDateRange != null) {
       return _customDateRange!;
     }
+
     return _selectedPeriod.getDateRange();
   }
 
@@ -80,8 +116,7 @@ class ReportProvider extends ChangeNotifier {
     if (_currentStats == null || _previousStats == null) return null;
     if (_previousStats!.totalAmount == 0) return null;
 
-    final change =
-        _currentStats!.totalAmount - _previousStats!.totalAmount;
+    final change = _currentStats!.totalAmount - _previousStats!.totalAmount;
     return (change / _previousStats!.totalAmount) * 100;
   }
 
@@ -92,19 +127,55 @@ class ReportProvider extends ChangeNotifier {
   }
 
   /// Select a time period and recalculate stats
-  void selectPeriod(TimePeriod period) {
+  /// Returns false if period is not allowed for current subscription tier
+  bool selectPeriod(TimePeriod period) {
+    // Check if period is allowed
+    if (!isPeriodAllowed(period)) {
+      debugPrint(
+        '⚠️ [ReportProvider] Period $period not allowed for free tier',
+      );
+      return false;
+    }
+
     if (_selectedPeriod != period) {
       _selectedPeriod = period;
       _customDateRange = null;
       _calculateStats();
     }
+    return true;
   }
 
   /// Set custom date range and recalculate stats
-  void setCustomDateRange(DateTime start, DateTime end) {
+  /// Returns false if custom date ranges are not allowed (free tier)
+  bool setCustomDateRange(DateTime start, DateTime end) {
+    // Check if custom date ranges are allowed (premium only)
+    if (!isCustomDateRangeAllowed) {
+      debugPrint('⚠️ [ReportProvider] Custom date ranges require premium');
+      return false;
+    }
+
     _selectedPeriod = TimePeriod.custom;
     _customDateRange = DateRange(start: start, end: end);
     _calculateStats();
+    return true;
+  }
+
+  /// Refresh subscription status (call when subscription changes)
+  Future<void> refreshSubscription() async {
+    final wasPremium = _isPremium;
+    _isPremium = await SubscriptionService.isPremium();
+
+    // If downgraded to free and on custom period, switch to thisMonth
+    if (wasPremium && !_isPremium && _selectedPeriod == TimePeriod.custom) {
+      debugPrint(
+        '⚠️ [ReportProvider] User downgraded - switching from custom to thisMonth',
+      );
+      _selectedPeriod = TimePeriod.thisMonth;
+      _customDateRange = null;
+      await _calculateStats();
+    } else {
+      notifyListeners();
+    }
   }
 
   /// Calculate statistics for current and previous periods
@@ -131,7 +202,10 @@ class ReportProvider extends ChangeNotifier {
       // Add category breakdown using CategoryProvider
       final language = _appConfigProvider.language;
       final categories = _categoryProvider.categories;
-      _currentStats = currentStatsRaw.withCategoryBreakdown(categories, language);
+      _currentStats = currentStatsRaw.withCategoryBreakdown(
+        categories,
+        language,
+      );
 
       // Calculate top expenses (sorted by amount, descending)
       // Only include expense type transactions, not income
@@ -155,7 +229,10 @@ class ReportProvider extends ChangeNotifier {
         startDate: previousRange.start,
         endDate: previousRange.end,
       );
-      _previousStats = previousStatsRaw.withCategoryBreakdown(categories, language);
+      _previousStats = previousStatsRaw.withCategoryBreakdown(
+        categories,
+        language,
+      );
     } catch (e) {
       debugPrint('❌ [ReportProvider] Error calculating stats: $e');
       _currentStats = null;

@@ -8,6 +8,7 @@ import 'providers/expense_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/report_provider.dart';
 import 'providers/recurring_template_provider.dart';
+import 'providers/subscription_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/database_manager.dart';
 import 'services/expense_service.dart';
@@ -17,6 +18,7 @@ import 'services/gemini_expense_parser.dart';
 import 'services/data_collection_service.dart';
 import 'services/gemini_usage_limit_service.dart';
 import 'services/analytics_service.dart';
+import 'services/revenue_cat_service.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_screen.dart';
 import 'theme/app_theme.dart';
@@ -27,6 +29,15 @@ void main() async {
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   debugPrint('✅ [Main] Firebase initialized');
+
+  // Initialize RevenueCat
+  try {
+    await RevenueCatService.instance.initialize();
+    debugPrint('✅ [Main] RevenueCat initialized');
+  } catch (e) {
+    debugPrint('⚠️ [Main] RevenueCat initialization failed: $e');
+    // Continue app launch even if RevenueCat fails
+  }
 
   // Initialize EasyLocalization
   await EasyLocalization.ensureInitialized();
@@ -137,6 +148,9 @@ class MyApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(create: (_) => CategoryProvider(expenseService)),
+        ChangeNotifierProvider(
+          create: (_) => SubscriptionProvider()..initialize(),
+        ),
         ChangeNotifierProvider(
           create: (_) => RecurringTemplateProvider(recurringTemplateService),
         ),

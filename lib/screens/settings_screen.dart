@@ -10,15 +10,18 @@ import '../models/app_config.dart';
 import '../providers/app_config_provider.dart';
 import '../providers/expense_provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../services/export_service.dart';
 import '../services/import_service.dart';
 import '../services/data_collection_service.dart';
 import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/common/subscription_badge.dart';
 import 'categories_screen.dart';
 import 'recurring_expenses_screen.dart';
 import 'feedback_form_screen.dart';
 import 'feedback_admin_screen.dart';
+import 'paywall_screen.dart';
 
 /// Settings screen for changing app preferences
 class SettingsScreen extends StatefulWidget {
@@ -183,8 +186,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Consumer<AppConfigProvider>(
-      builder: (context, configProvider, _) {
+    return Consumer2<AppConfigProvider, SubscriptionProvider>(
+      builder: (context, configProvider, subscriptionProvider, _) {
         return Scaffold(
           backgroundColor: colorScheme.surface,
           appBar: AppBar(title: Text(context.tr('settings.title'))),
@@ -192,6 +195,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ? const Center(child: CircularProgressIndicator())
               : ListView(
                   children: [
+                    // Subscription Section
+                    _buildSectionHeader(context.tr('subscription.title')),
+                    _buildSubscriptionCard(context, subscriptionProvider),
+
+                    const Divider(height: 32),
+
                     // Preferences Section
                     _buildSectionHeader(context.tr('settings.preferences')),
 
@@ -1193,5 +1202,113 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       },
     );
+  }
+
+  /// Build subscription card showing current tier and upgrade option
+  Widget _buildSubscriptionCard(
+    BuildContext context,
+    SubscriptionProvider subscriptionProvider,
+  ) {
+    final isPremium = subscriptionProvider.isPremium;
+    final status = subscriptionProvider.status;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing16,
+        vertical: AppTheme.spacing8,
+      ),
+      child: InkWell(
+        onTap: isPremium
+            ? null
+            : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PaywallScreen(),
+                  ),
+                );
+              },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(AppTheme.spacing16),
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: isPremium
+                      ? AppTheme.primaryGradient
+                      : null,
+                  color: isPremium ? null : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.workspace_premium_rounded,
+                  color: isPremium ? Colors.white : Colors.grey[600],
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: AppTheme.spacing16),
+
+              // Text content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          isPremium
+                              ? context.tr('subscription.premium')
+                              : context.tr('subscription.free_plan'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (isPremium)
+                          const SubscriptionBadge(
+                            isPremium: true,
+                            fontSize: 10,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      isPremium
+                          ? status.expiryDate != null
+                              ? context.tr('subscription.expires_on',
+                                  namedArgs: {
+                                      'date': _formatDate(status.expiryDate!)
+                                    })
+                              : context.tr('subscription.active_subscription')
+                          : context.tr('subscription.upgrade_to_unlock'),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Action
+              if (!isPremium)
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Colors.grey[400],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

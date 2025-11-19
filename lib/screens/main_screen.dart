@@ -14,10 +14,10 @@ import '../services/preferences_service.dart';
 import '../services/data_collection_service.dart';
 import '../services/gemini_usage_limit_service.dart';
 import '../services/analytics_service.dart';
-import '../utils/constants.dart';
 import '../theme/app_theme.dart';
 import '../widgets/voice_tutorial_overlay.dart';
 import '../widgets/home/editable_expense_dialog.dart';
+import '../widgets/common/upgrade_prompt_dialog.dart';
 import 'home_screen.dart';
 import 'report_screen.dart';
 
@@ -348,6 +348,38 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   DateTime? _recordingStartTime;
 
+  /// Check Gemini limit before starting recording
+  Future<void> _onVoiceButtonTap() async {
+    debugPrint('👆 [MainScreen] Voice button tapped - checking Gemini limit...');
+
+    if (!mounted) return;
+
+    final usageLimitService = context.read<GeminiUsageLimitService>();
+    final hasReachedLimit = await usageLimitService.hasReachedLimit();
+
+    if (hasReachedLimit) {
+      debugPrint('⚠️ [MainScreen] Gemini limit reached - showing upgrade dialog');
+      final limit = await usageLimitService.getDailyLimit();
+      if (!mounted) return;
+
+      // Show upgrade dialog immediately
+      UpgradePromptDialog.show(
+        context,
+        title: context.tr('subscription.limit_ai_parsing'),
+        message: context.tr(
+          'subscription.limit_ai_parsing_message',
+          namedArgs: {'limit': limit.toString()},
+        ),
+        icon: Icons.mic,
+      );
+      return;
+    }
+
+    // Limit not reached, proceed with recording
+    debugPrint('✅ [MainScreen] Gemini limit OK - starting recording');
+    await _startRecording();
+  }
+
   Future<void> _startRecording() async {
     debugPrint('🎤 [MainScreen] Starting recording...');
 
@@ -498,10 +530,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       final categoryProvider = context.read<CategoryProvider>();
       final usageLimitService = context.read<GeminiUsageLimitService>();
       final analyticsService = context.read<AnalyticsService>();
+      final configProvider = context.read<AppConfigProvider>();
       final results = await ExpenseParser.parse(
         input,
         expenseProvider.currentUserId,
         categoryProvider.categories,
+        language: configProvider.language,
         usageLimitService: usageLimitService,
         analyticsService: analyticsService,
       );
@@ -511,7 +545,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       if (results.isNotEmpty &&
           results.first.errorMessage == 'GEMINI_LIMIT_REACHED') {
         if (mounted) {
-          final limit = usageLimitService.dailyLimit;
+          final limit = await usageLimitService.getDailyLimit();
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -698,7 +733,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final usageLimitService = context.watch<GeminiUsageLimitService>();
 
     return Stack(
       children: [
@@ -707,88 +741,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           extendBody: true,
           body: SafeArea(
             bottom: false, // Let bottom nav handle its own safe area
-            child: Column(
-              children: [
-                // Gemini usage limit banner
-                FutureBuilder<int>(
-                  future: usageLimitService.getRemainingCount(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return const SizedBox.shrink();
-
-                    final remaining = snapshot.data!;
-                    final limit = usageLimitService.dailyLimit;
-
-                    // Don't show banner if plenty remaining
-                    if (remaining > AppConstants.geminiWarningThreshold) {
-                      return const SizedBox.shrink();
-                    }
-
-                    // Determine color and icon based on remaining count
-                    Color bannerColor;
-                    IconData bannerIcon;
-                    if (remaining == 0) {
-                      bannerColor = AppTheme.error;
-                      bannerIcon = Icons.block;
-                    } else if (remaining <=
-                        AppConstants.geminiCriticalThreshold) {
-                      bannerColor = AppTheme.warning;
-                      bannerIcon = Icons.warning_amber;
-                    } else {
-                      bannerColor = AppTheme.info;
-                      bannerIcon = Icons.info_outline;
-                    }
-
-                    return Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing16,
-                        vertical: AppTheme.spacing12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: bannerColor.withValues(alpha: 0.15),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: bannerColor.withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(bannerIcon, color: bannerColor, size: 20),
-                          const SizedBox(width: AppTheme.spacing8),
-                          Expanded(
-                            child: Text(
-                              remaining == 0
-                                  ? context.tr(
-                                      'voice.gemini_limit_reached',
-                                      namedArgs: {'limit': limit.toString()},
-                                    )
-                                  : context.tr(
-                                      'voice.gemini_limit_warning',
-                                      namedArgs: {
-                                        'remaining': remaining.toString(),
-                                        'limit': limit.toString(),
-                                      },
-                                    ),
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: bannerColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                // Main content
-                Expanded(
-                  child: IndexedStack(index: _currentIndex, children: _screens),
-                ),
-              ],
-            ),
+            child: IndexedStack(index: _currentIndex, children: _screens),
           ), // SafeArea
           // Notched BottomAppBar with navigation items
           bottomNavigationBar: BottomAppBar(
@@ -1094,12 +1047,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         _stopRecording();
       };
     } else if (_hasRequiredPermissions()) {
-      // Ready: tap to start recording
+      // Ready: tap to check limit and start recording
       buttonIcon = Icons.mic_none;
       buttonGradient = AppTheme.accentGradient;
       onTapAction = () {
         debugPrint('👆 [MainScreen] Tap to start recording');
-        _startRecording();
+        _onVoiceButtonTap();
       };
     } else if (_shouldShowDisabled()) {
       // Permission denied: tap to show dialog
