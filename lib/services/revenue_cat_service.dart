@@ -16,7 +16,8 @@ class RevenueCatService {
   /// Get these from: RevenueCat Dashboard → Project Settings → API Keys
   /// Note: These are PUBLIC SDK keys (safe to commit to repository)
   static const String _appleApiKey = 'appl_uvXTlqDdZAaoRtAEZIIFxiPkloh';
-  static const String _googleApiKey = 'YOUR_GOOGLE_API_KEY_HERE'; // TODO: Add when setting up Google Play
+  static const String _googleApiKey =
+      'YOUR_GOOGLE_API_KEY_HERE'; // TODO: Add when setting up Google Play
 
   /// Entitlement identifier (must match RevenueCat dashboard)
   static const String premiumEntitlementId = 'premium';
@@ -41,8 +42,8 @@ class RevenueCatService {
       final apiKey = defaultTargetPlatform == TargetPlatform.iOS
           ? _appleApiKey
           : defaultTargetPlatform == TargetPlatform.android
-              ? _googleApiKey
-              : null;
+          ? _googleApiKey
+          : null;
 
       if (apiKey == null) {
         debugPrint('⚠️ [RevenueCat] Unsupported platform');
@@ -83,7 +84,9 @@ class RevenueCatService {
       final offerings = await Purchases.getOfferings();
 
       if (offerings.current != null) {
-        debugPrint('✅ [RevenueCat] Found ${offerings.current!.availablePackages.length} packages');
+        debugPrint(
+          '✅ [RevenueCat] Found ${offerings.current!.availablePackages.length} packages',
+        );
         for (final package in offerings.current!.availablePackages) {
           debugPrint('  📦 Package: ${package.identifier}');
           debugPrint('     Product: ${package.storeProduct.identifier}');
@@ -105,11 +108,12 @@ class RevenueCatService {
   ///
   /// Returns the updated CustomerInfo if successful.
   /// Throws PlatformException if purchase fails or is cancelled.
-  Future<CustomerInfo> purchasePackage(Package package) async {
+  Future<PurchaseResult> purchasePackage(Package package) async {
     try {
       debugPrint('🔄 [RevenueCat] Purchasing package: ${package.identifier}');
-      final purchaserInfo = await Purchases.purchasePackage(package);
-      debugPrint('✅ [RevenueCat] Purchase successful');
+      final purchaseParams = PurchaseParams.package(package);
+      final purchaserInfo = await Purchases.purchase(purchaseParams);
+      debugPrint('✅ [RevenueCat] Purchase successful $purchaserInfo');
       return purchaserInfo;
     } catch (e) {
       debugPrint('❌ [RevenueCat] Purchase failed: $e');
@@ -123,7 +127,9 @@ class RevenueCatService {
   Future<bool> isPremium() async {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
-      final isPremium = customerInfo.entitlements.all[premiumEntitlementId]?.isActive ?? false;
+      final isPremium =
+          customerInfo.entitlements.all[premiumEntitlementId]?.isActive ??
+          false;
       debugPrint('🔍 [RevenueCat] Premium status: $isPremium');
       return isPremium;
     } catch (e) {

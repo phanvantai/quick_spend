@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -88,256 +89,280 @@ class _PaywallScreenState extends State<PaywallScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? _buildErrorState()
-              : SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header section
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppTheme.spacing24),
-              decoration: BoxDecoration(gradient: AppTheme.primaryGradient),
+          ? _buildErrorState()
+          : SingleChildScrollView(
               child: Column(
                 children: [
-                  Icon(
-                    Icons.workspace_premium_rounded,
-                    size: 64,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: AppTheme.spacing16),
-                  Text(
-                    context.tr('subscription.unlock_features'),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  // Header section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppTheme.spacing24),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppTheme.spacing8),
-                  Text(
-                    context.tr('subscription.get_unlimited'),
-                    style: const TextStyle(fontSize: 16, color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppTheme.spacing24),
-
-            // Pricing toggle
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacing24,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildPricingOption(
-                        label: context.tr('subscription.monthly'),
-                        price: _monthlyPackage?.storeProduct.priceString ??
-                            '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}',
-                        isSelected: !_isYearly,
-                        onTap: () => setState(() => _isYearly = false),
-                      ),
-                    ),
-                    Expanded(
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          _buildPricingOption(
-                            label: context.tr('subscription.yearly'),
-                            price: _getYearlyPricePerMonth(),
-                            isSelected: _isYearly,
-                            onTap: () => setState(() => _isYearly = true),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.workspace_premium_rounded,
+                          size: 64,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        Text(
+                          context.tr('subscription.unlock_features'),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                          Positioned(
-                            top: -12,
-                            right: 8,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.error,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                context.tr(
-                                  'subscription.save_percent',
-                                  namedArgs: {'percent': '30'},
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppTheme.spacing8),
+                        Text(
+                          context.tr('subscription.get_unlimited'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white70,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: AppTheme.spacing24),
+
+                  // Pricing toggle
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing24,
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildPricingOption(
+                              label: context.tr('subscription.monthly'),
+                              price:
+                                  _monthlyPackage?.storeProduct.priceString ??
+                                  '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}',
+                              isSelected: !_isYearly,
+                              onTap: () => setState(() => _isYearly = false),
+                            ),
+                          ),
+                          Expanded(
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                _buildPricingOption(
+                                  label: context.tr('subscription.yearly'),
+                                  price: _getYearlyPricePerMonth(),
+                                  isSelected: _isYearly,
+                                  onTap: () => setState(() => _isYearly = true),
                                 ),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                Positioned(
+                                  top: -12,
+                                  right: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.error,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      context.tr(
+                                        'subscription.save_percent',
+                                        namedArgs: {'percent': '30'},
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
 
-            const SizedBox(height: AppTheme.spacing32),
+                  const SizedBox(height: AppTheme.spacing32),
 
-            // Features comparison
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacing24,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.tr('subscription.premium_features'),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  // Features comparison
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing24,
                     ),
-                  ),
-                  const SizedBox(height: AppTheme.spacing16),
-                  _buildFeatureItem(
-                    icon: Icons.auto_awesome,
-                    title: context.tr('subscription.feature_unlimited_ai'),
-                    subtitle: context.tr(
-                      'subscription.feature_unlimited_ai_subtitle',
-                      namedArgs: {'free': '5'},
-                    ),
-                    isPremium: true,
-                  ),
-                  _buildFeatureItem(
-                    icon: Icons.mic,
-                    title: context.tr('subscription.feature_unlimited_voice'),
-                    subtitle: context.tr(
-                      'subscription.feature_unlimited_voice_subtitle',
-                    ),
-                    isPremium: true,
-                  ),
-                  _buildFeatureItem(
-                    icon: Icons.repeat,
-                    title: context.tr(
-                      'subscription.feature_unlimited_recurring',
-                    ),
-                    subtitle: context.tr(
-                      'subscription.feature_unlimited_recurring_subtitle',
-                      namedArgs: {'free': '3'},
-                    ),
-                    isPremium: true,
-                  ),
-                  _buildFeatureItem(
-                    icon: Icons.analytics,
-                    title: context.tr('subscription.feature_advanced_reports'),
-                    subtitle: context.tr(
-                      'subscription.feature_advanced_reports_subtitle',
-                    ),
-                    isPremium: true,
-                  ),
-                  _buildFeatureItem(
-                    icon: Icons.category,
-                    title: context.tr('subscription.feature_custom_categories'),
-                    subtitle: context.tr(
-                      'subscription.feature_custom_categories_subtitle',
-                    ),
-                    isPremium: false,
-                  ),
-                  _buildFeatureItem(
-                    icon: Icons.import_export,
-                    title: context.tr('subscription.feature_import_export'),
-                    subtitle: context.tr(
-                      'subscription.feature_import_export_subtitle',
-                    ),
-                    isPremium: false,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppTheme.spacing32),
-
-            // Purchase button
-            Padding(
-              padding: const EdgeInsets.all(AppTheme.spacing24),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _isProcessing ? null : _handlePurchase,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryDark,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          context.tr('subscription.premium_features'),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        elevation: 2,
-                      ),
-                      child: _isProcessing
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              context.tr(
-                                'subscription.start_for_price',
-                                namedArgs: {
-                                  'price': _getCurrentPrice(),
-                                },
-                              ),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        _buildFeatureItem(
+                          icon: Icons.auto_awesome,
+                          title: context.tr(
+                            'subscription.feature_unlimited_ai',
+                          ),
+                          subtitle: context.tr(
+                            'subscription.feature_unlimited_ai_subtitle',
+                            namedArgs: {'free': '5'},
+                          ),
+                          isPremium: true,
+                        ),
+                        _buildFeatureItem(
+                          icon: Icons.mic,
+                          title: context.tr(
+                            'subscription.feature_unlimited_voice',
+                          ),
+                          subtitle: context.tr(
+                            'subscription.feature_unlimited_voice_subtitle',
+                          ),
+                          isPremium: true,
+                        ),
+                        _buildFeatureItem(
+                          icon: Icons.repeat,
+                          title: context.tr(
+                            'subscription.feature_unlimited_recurring',
+                          ),
+                          subtitle: context.tr(
+                            'subscription.feature_unlimited_recurring_subtitle',
+                            namedArgs: {'free': '3'},
+                          ),
+                          isPremium: true,
+                        ),
+                        _buildFeatureItem(
+                          icon: Icons.analytics,
+                          title: context.tr(
+                            'subscription.feature_advanced_reports',
+                          ),
+                          subtitle: context.tr(
+                            'subscription.feature_advanced_reports_subtitle',
+                          ),
+                          isPremium: true,
+                        ),
+                        _buildFeatureItem(
+                          icon: Icons.category,
+                          title: context.tr(
+                            'subscription.feature_custom_categories',
+                          ),
+                          subtitle: context.tr(
+                            'subscription.feature_custom_categories_subtitle',
+                          ),
+                          isPremium: false,
+                        ),
+                        _buildFeatureItem(
+                          icon: Icons.import_export,
+                          title: context.tr(
+                            'subscription.feature_import_export',
+                          ),
+                          subtitle: context.tr(
+                            'subscription.feature_import_export_subtitle',
+                          ),
+                          isPremium: false,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: AppTheme.spacing16),
-                  Text(
-                    _isYearly
-                        ? context.tr(
-                            'subscription.billed_yearly',
-                            namedArgs: {
-                              'amount': _yearlyPackage?.storeProduct.priceString ??
-                                  '\$${AppConstants.subscriptionYearlyPriceUSD}',
-                            },
-                          )
-                        : context.tr('subscription.billed_monthly'),
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: AppTheme.spacing16),
-                  // Restore purchases button
-                  TextButton(
-                    onPressed: _isRestoring ? null : _handleRestore,
-                    child: _isRestoring
-                        ? const SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(context.tr('subscription.restore_purchases')),
+
+                  const SizedBox(height: AppTheme.spacing32),
+
+                  // Purchase button
+                  Padding(
+                    padding: const EdgeInsets.all(AppTheme.spacing24),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _isProcessing ? null : _handlePurchase,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryDark,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 2,
+                            ),
+                            child: _isProcessing
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    context.tr(
+                                      'subscription.start_for_price',
+                                      namedArgs: {'price': _getCurrentPrice()},
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        Text(
+                          _isYearly
+                              ? context.tr(
+                                  'subscription.billed_yearly',
+                                  namedArgs: {
+                                    'amount':
+                                        _yearlyPackage
+                                            ?.storeProduct
+                                            .priceString ??
+                                        '\$${AppConstants.subscriptionYearlyPriceUSD}',
+                                  },
+                                )
+                              : context.tr('subscription.billed_monthly'),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        // Restore purchases button
+                        TextButton(
+                          onPressed: _isRestoring ? null : _handleRestore,
+                          child: _isRestoring
+                              ? const SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  context.tr('subscription.restore_purchases'),
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -486,10 +511,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
       // Purchase via RevenueCat
       await RevenueCatService.instance.purchasePackage(package);
 
-      if (!mounted) return;
-
       // Sync subscription status from RevenueCat
       await SubscriptionService.syncFromRevenueCat();
+
+      if (!mounted) return;
 
       // Update subscription provider
       final subscriptionProvider = context.read<SubscriptionProvider>();
@@ -518,7 +543,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.tr('subscription.purchase_error', namedArgs: {'error': e.message ?? 'Unknown error'})),
+          content: Text(
+            context.tr(
+              'subscription.purchase_error',
+              namedArgs: {'error': e.message ?? 'Unknown error'},
+            ),
+          ),
           backgroundColor: AppTheme.error,
         ),
       );
@@ -543,18 +573,16 @@ class _PaywallScreenState extends State<PaywallScreen> {
     try {
       await RevenueCatService.instance.restorePurchases();
 
-      if (!mounted) return;
-
       // Sync subscription status from RevenueCat
       await SubscriptionService.syncFromRevenueCat();
+
+      if (!mounted) return;
 
       // Update subscription provider
       final subscriptionProvider = context.read<SubscriptionProvider>();
       await subscriptionProvider.refresh();
-
+      final isPremium = await SubscriptionService.isPremium();
       if (mounted) {
-        final isPremium = await SubscriptionService.isPremium();
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -574,7 +602,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.tr('subscription.restore_failed', namedArgs: {'error': e.toString()})),
+          content: Text(
+            context.tr(
+              'subscription.restore_failed',
+              namedArgs: {'error': e.toString()},
+            ),
+          ),
           backgroundColor: AppTheme.error,
         ),
       );
@@ -590,9 +623,6 @@ class _PaywallScreenState extends State<PaywallScreen> {
     if (_yearlyPackage == null) {
       return '\$${(AppConstants.subscriptionYearlyPriceUSD / 12).toStringAsFixed(2)}${context.tr('subscription.per_month')}';
     }
-
-    // For now, just show the full yearly price
-    // TODO: Calculate monthly equivalent if needed
     return _yearlyPackage!.storeProduct.priceString;
   }
 
