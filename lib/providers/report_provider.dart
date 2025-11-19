@@ -102,6 +102,17 @@ class ReportProvider extends ChangeNotifier {
   /// Check if custom date ranges are allowed (premium only)
   bool get isCustomDateRangeAllowed => _isPremium;
 
+  /// Refresh premium status (call after subscription changes)
+  Future<void> refreshPremiumStatus() async {
+    final wasPremium = _isPremium;
+    _isPremium = await SubscriptionService.isPremium();
+
+    if (wasPremium != _isPremium) {
+      debugPrint('🔄 [ReportProvider] Premium status changed: $wasPremium → $_isPremium');
+      notifyListeners();
+    }
+  }
+
   /// Get current date range based on selected period
   DateRange get currentDateRange {
     if (_selectedPeriod == TimePeriod.custom && _customDateRange != null) {
