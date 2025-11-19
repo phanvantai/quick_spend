@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../providers/subscription_provider.dart';
+import '../providers/report_provider.dart';
+import '../providers/recurring_template_provider.dart';
 import '../services/revenue_cat_service.dart';
 import '../services/subscription_service.dart';
 import '../utils/constants.dart';
@@ -516,9 +518,16 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
       if (!mounted) return;
 
-      // Update subscription provider
+      // Update all providers that depend on premium status
       final subscriptionProvider = context.read<SubscriptionProvider>();
+      final reportProvider = context.read<ReportProvider>();
+      final recurringProvider = context.read<RecurringTemplateProvider>();
+
       await subscriptionProvider.refresh();
+      await reportProvider.refreshPremiumStatus();
+      await recurringProvider.refreshSubscription();
+
+      debugPrint('✅ [PaywallScreen] All providers refreshed after purchase');
 
       if (mounted) {
         // Show success message
@@ -578,10 +587,18 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
       if (!mounted) return;
 
-      // Update subscription provider
+      // Update all providers that depend on premium status
       final subscriptionProvider = context.read<SubscriptionProvider>();
+      final reportProvider = context.read<ReportProvider>();
+      final recurringProvider = context.read<RecurringTemplateProvider>();
+
       await subscriptionProvider.refresh();
+      await reportProvider.refreshPremiumStatus();
+      await recurringProvider.refreshSubscription();
+
       final isPremium = await SubscriptionService.isPremium();
+      debugPrint('✅ [PaywallScreen] All providers refreshed after restore (isPremium: $isPremium)');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
