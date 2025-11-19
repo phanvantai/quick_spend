@@ -469,6 +469,9 @@
     "restore_success": "Purchases restored successfully!",
     "restore_no_purchases": "No previous purchases found",
     "restore_failed": "Failed to restore purchases: {error}",
-    "price_unavailable": "Price unavailable"
+    "price_unavailable": "Price unavailable",
+    "terms_of_use": "Terms of Use",
+    "privacy_policy": "Privacy Policy",
+    "auto_renew_notice": "Subscription automatically renews unless auto-renew is turned off at least 24-hours before the end of the current period. Your account will be charged for renewal within 24-hours prior to the end of the current period."
   }
 }

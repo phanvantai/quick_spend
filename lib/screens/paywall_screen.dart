@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/report_provider.dart';
 import '../providers/recurring_template_provider.dart';
@@ -359,6 +360,55 @@ class _PaywallScreenState extends State<PaywallScreen> {
                                   context.tr('subscription.restore_purchases'),
                                 ),
                         ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        // Legal links - Required for App Store
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextButton(
+                              onPressed: () => _launchUrl(AppConstants.termsOfUseUrl),
+                              child: Text(
+                                context.tr('subscription.terms_of_use'),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                            Text(
+                              ' | ',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => _launchUrl(AppConstants.privacyPolicyUrl),
+                              child: Text(
+                                context.tr('subscription.privacy_policy'),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppTheme.spacing8),
+                        // Auto-renewable subscription info
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacing16,
+                          ),
+                          child: Text(
+                            context.tr('subscription.auto_renew_notice'),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey[500],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -651,6 +701,21 @@ class _PaywallScreenState extends State<PaywallScreen> {
     } else {
       return _monthlyPackage?.storeProduct.priceString ??
           '\$${AppConstants.subscriptionMonthlyPriceUSD}${context.tr('subscription.per_month')}';
+    }
+  }
+
+  /// Launch URL in browser
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open link'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
     }
   }
 
