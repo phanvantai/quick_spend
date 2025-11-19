@@ -444,6 +444,20 @@
     "limit_recurring_templates": "Límite de plantillas alcanzado",
     "limit_recurring_templates_message": "Ha alcanzado el límite de {limit} plantillas recurrentes. ¡Actualice a Premium para plantillas ilimitadas!",
     "limit_advanced_reports": "Rangos de fechas personalizados son Premium",
-    "limit_advanced_reports_message": "Los rangos de fechas personalizados son una función Premium. ¡Actualice para desbloquear la selección de rangos de fechas personalizados!"
+    "limit_advanced_reports_message": "Los rangos de fechas personalizados son una función Premium. ¡Actualice para desbloquear la selección de rangos de fechas personalizados!",
+    "loading_products": "Cargando opciones de suscripción...",
+    "loading_failed": "Error al cargar opciones de suscripción",
+    "loading_retry": "Reintentar",
+    "purchase_processing": "Procesando compra...",
+    "purchase_success": "¡Compra exitosa!",
+    "purchase_failed": "Compra fallida",
+    "purchase_cancelled": "Compra cancelada",
+    "purchase_error": "Error: {error}",
+    "restore_purchases": "Restaurar Compras",
+    "restoring": "Restaurando...",
+    "restore_success": "¡Compras restauradas exitosamente!",
+    "restore_no_purchases": "No se encontraron compras anteriores",
+    "restore_failed": "Error al restaurar: {error}",
+    "price_unavailable": "Precio no disponible"
   }
 }

@@ -444,6 +444,20 @@
     "limit_recurring_templates": "テンプレートの上限に達しました",
     "limit_recurring_templates_message": "{limit}個の定期テンプレートの上限に達しました。プレミアムにアップグレードして無制限のテンプレートをご利用ください！",
     "limit_advanced_reports": "カスタム日付範囲はプレミアム機能",
-    "limit_advanced_reports_message": "カスタム日付範囲はプレミアム機能です。アップグレードしてカスタム日付範囲選択をご利用ください！"
+    "limit_advanced_reports_message": "カスタム日付範囲はプレミアム機能です。アップグレードしてカスタム日付範囲選択をご利用ください！",
+    "loading_products": "サブスクリプションオプションを読み込み中...",
+    "loading_failed": "サブスクリプションオプションの読み込みに失敗しました",
+    "loading_retry": "再試行",
+    "purchase_processing": "購入処理中...",
+    "purchase_success": "購入が完了しました！",
+    "purchase_failed": "購入に失敗しました",
+    "purchase_cancelled": "購入がキャンセルされました",
+    "purchase_error": "エラー: {error}",
+    "restore_purchases": "購入を復元",
+    "restoring": "復元中...",
+    "restore_success": "購入の復元が完了しました！",
+    "restore_no_purchases": "以前の購入が見つかりませんでした",
+    "restore_failed": "復元に失敗しました: {error}",
+    "price_unavailable": "価格が利用できません"
   }
 }

@@ -455,6 +455,20 @@
     "limit_recurring_templates": "Đã đạt giới hạn mẫu",
     "limit_recurring_templates_message": "Bạn đã đạt giới hạn {limit} mẫu định kỳ. Nâng cấp lên Premium để có mẫu không giới hạn!",
     "limit_advanced_reports": "Khoảng thời gian tùy chỉnh dành cho Premium",
-    "limit_advanced_reports_message": "Khoảng thời gian tùy chỉnh là tính năng Premium. Nâng cấp để mở khóa chọn khoảng thời gian tùy chỉnh!"
+    "limit_advanced_reports_message": "Khoảng thời gian tùy chỉnh là tính năng Premium. Nâng cấp để mở khóa chọn khoảng thời gian tùy chỉnh!",
+    "loading_products": "Đang tải tùy chọn đăng ký...",
+    "loading_failed": "Không thể tải tùy chọn đăng ký",
+    "loading_retry": "Thử Lại",
+    "purchase_processing": "Đang xử lý thanh toán...",
+    "purchase_success": "Thanh toán thành công!",
+    "purchase_failed": "Thanh toán thất bại",
+    "purchase_cancelled": "Đã hủy thanh toán",
+    "purchase_error": "Lỗi: {error}",
+    "restore_purchases": "Khôi Phục Gói Đã Mua",
+    "restoring": "Đang khôi phục...",
+    "restore_success": "Đã khôi phục gói mua thành công!",
+    "restore_no_purchases": "Không tìm thấy gói đã mua trước đó",
+    "restore_failed": "Không thể khôi phục: {error}",
+    "price_unavailable": "Giá không khả dụng"
   }
 }

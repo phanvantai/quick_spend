@@ -444,6 +444,20 @@
     "limit_recurring_templates": "ถึงขีดจำกัดเทมเพลตแล้ว",
     "limit_recurring_templates_message": "คุณถึงขีดจำกัด {limit} เทมเพลตเป็นประจำแล้ว อัปเกรดเป็นพรีเมียมเพื่อรับเทมเพลตไม่จำกัด!",
     "limit_advanced_reports": "ช่วงวันที่ที่กำหนดเองเป็นฟีเจอร์พรีเมียม",
-    "limit_advanced_reports_message": "ช่วงวันที่ที่กำหนดเองเป็นฟีเจอร์พรีเมียม อัปเกรดเพื่อปลดล็อกการเลือกช่วงวันที่ที่กำหนดเอง!"
+    "limit_advanced_reports_message": "ช่วงวันที่ที่กำหนดเองเป็นฟีเจอร์พรีเมียม อัปเกรดเพื่อปลดล็อกการเลือกช่วงวันที่ที่กำหนดเอง!",
+    "loading_products": "กำลังโหลดตัวเลือกการสมัครสมาชิก...",
+    "loading_failed": "โหลดตัวเลือกการสมัครสมาชิกไม่สำเร็จ",
+    "loading_retry": "ลองอีกครั้ง",
+    "purchase_processing": "กำลังดำเนินการซื้อ...",
+    "purchase_success": "ซื้อสำเร็จ!",
+    "purchase_failed": "การซื้อล้มเหลว",
+    "purchase_cancelled": "ยกเลิกการซื้อแล้ว",
+    "purchase_error": "ข้อผิดพลาด: {error}",
+    "restore_purchases": "กู้คืนการซื้อ",
+    "restoring": "กำลังกู้คืน...",
+    "restore_success": "กู้คืนการซื้อสำเร็จแล้ว!",
+    "restore_no_purchases": "ไม่พบการซื้อก่อนหน้า",
+    "restore_failed": "กู้คืนล้มเหลว: {error}",
+    "price_unavailable": "ราคาไม่พร้อมใช้งาน"
   }
 }

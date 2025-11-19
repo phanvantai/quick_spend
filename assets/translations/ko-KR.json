@@ -444,6 +444,20 @@
     "limit_recurring_templates": "템플릿 한도 도달",
     "limit_recurring_templates_message": "{limit}개의 정기 템플릿 한도에 도달했습니다. 프리미엄으로 업그레이드하여 무제한 템플릿을 이용하세요!",
     "limit_advanced_reports": "사용자 지정 날짜 범위는 프리미엄 기능",
-    "limit_advanced_reports_message": "사용자 지정 날짜 범위는 프리미엄 기능입니다. 업그레이드하여 사용자 지정 날짜 범위 선택을 이용하세요!"
+    "limit_advanced_reports_message": "사용자 지정 날짜 범위는 프리미엄 기능입니다. 업그레이드하여 사용자 지정 날짜 범위 선택을 이용하세요!",
+    "loading_products": "구독 옵션 로드 중...",
+    "loading_failed": "구독 옵션 로드 실패",
+    "loading_retry": "다시 시도",
+    "purchase_processing": "구매 처리 중...",
+    "purchase_success": "구매 성공!",
+    "purchase_failed": "구매 실패",
+    "purchase_cancelled": "구매 취소됨",
+    "purchase_error": "오류: {error}",
+    "restore_purchases": "구매 복원",
+    "restoring": "복원 중...",
+    "restore_success": "구매를 성공적으로 복원했습니다!",
+    "restore_no_purchases": "이전 구매를 찾을 수 없음",
+    "restore_failed": "복원 실패: {error}",
+    "price_unavailable": "가격을 사용할 수 없음"
   }
 }
