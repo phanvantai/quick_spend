@@ -37,6 +37,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   final VoiceService _voiceService = VoiceService();
   bool _isRecording = false;
   bool _isSwiping = false; // Track if user is swiping to cancel
+  bool _isProcessing = false; // Track if we're already processing to prevent multiple calls
   double _soundLevel = 0.0;
   String _recognizedText = '';
   PermissionStatus? _micPermissionStatus;
@@ -443,7 +444,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _stopRecording() async {
+    // Prevent multiple simultaneous calls
+    if (_isProcessing) {
+      debugPrint('⚠️ [MainScreen] Already processing, ignoring stop request');
+      return;
+    }
+
     debugPrint('🛑 [MainScreen] Stopping recording...');
+
+    setState(() {
+      _isProcessing = true;
+    });
+
     await _voiceService.stopListening();
 
     // Provide haptic feedback when stopping recording
@@ -473,7 +485,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     if (_recognizedText.isNotEmpty) {
-      _processExpense(_recognizedText);
+      await _processExpense(_recognizedText);
+    }
+
+    // Reset processing flag after everything is done
+    if (mounted) {
+      setState(() {
+        _isProcessing = false;
+      });
     }
   }
 

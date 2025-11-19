@@ -204,7 +204,7 @@ class AnalyticsService {
       logEvent(
         name: 'voice_input_completed',
         parameters: {
-          'success': success,
+          'success': success ? 1 : 0, // Firebase Analytics requires num, not bool
           'duration_seconds': durationSeconds,
           'language': language,
         },
@@ -431,7 +431,7 @@ class AnalyticsService {
 
   Future<void> logDataCollectionToggled({required bool enabled}) => logEvent(
         name: 'data_collection_toggled',
-        parameters: {'enabled': enabled},
+        parameters: {'enabled': enabled ? 1 : 0}, // Firebase Analytics requires num, not bool
       );
 
   Future<void> logOnboardingCompleted({

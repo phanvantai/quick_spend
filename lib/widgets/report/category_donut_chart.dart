@@ -48,11 +48,16 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
         LayoutBuilder(
           builder: (context, constraints) {
             // Use the available width to determine chart size
-            final chartSize = constraints.maxWidth * 0.65; // 65% for chart
+            // Limit max chart size to prevent overflow on large screens (iPad)
+            final maxChartSize = constraints.maxWidth > 600 ? 250.0 : 200.0;
+            final calculatedChartSize = constraints.maxWidth * 0.65;
+            final chartSize = calculatedChartSize < maxChartSize
+                ? calculatedChartSize
+                : maxChartSize;
             final legendWidth = constraints.maxWidth * 0.30; // 30% for legend
 
             return SizedBox(
-              height: 200,
+              height: chartSize, // Match height to chartSize to prevent overflow
               child: Row(
                 children: [
                   // Donut Chart
