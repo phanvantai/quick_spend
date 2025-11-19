@@ -184,7 +184,7 @@
   "common": {
     "ok": "OK",
     "cancel": "Cancel",
-    "allow": "Allow",
+    "continue_action": "Continue",
     "save": "Save",
     "close": "Close",
     "delete": "Delete",

@@ -173,7 +173,7 @@
   "common": {
     "ok": "OK",
     "cancel": "キャンセル",
-    "allow": "許可",
+    "continue_action": "次へ",
     "save": "保存",
     "close": "閉じる",
     "delete": "削除",

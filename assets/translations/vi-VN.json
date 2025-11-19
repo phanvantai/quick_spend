@@ -184,7 +184,7 @@
   "common": {
     "ok": "OK",
     "cancel": "Hủy",
-    "allow": "Cho Phép",
+    "continue_action": "Tiếp Tục",
     "save": "Lưu",
     "close": "Đóng",
     "delete": "Xóa",

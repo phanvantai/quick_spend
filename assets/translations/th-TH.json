@@ -173,7 +173,7 @@
   "common": {
     "ok": "ตกลง",
     "cancel": "ยกเลิก",
-    "allow": "อนุญาต",
+    "continue_action": "ต่อไป",
     "save": "บันทึก",
     "close": "ปิด",
     "delete": "ลบ",

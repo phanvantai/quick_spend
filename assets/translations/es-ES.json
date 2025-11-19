@@ -173,7 +173,7 @@
   "common": {
     "ok": "Aceptar",
     "cancel": "Cancelar",
-    "allow": "Permitir",
+    "continue_action": "Continuar",
     "save": "Guardar",
     "close": "Cerrar",
     "delete": "Eliminar",
