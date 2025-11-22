@@ -173,7 +173,7 @@
   "common": {
     "ok": "확인",
     "cancel": "취소",
-    "allow": "허가",
+    "continue_action": "계속",
     "save": "저장",
     "close": "닫기",
     "delete": "삭제",
@@ -458,6 +458,9 @@
     "restore_success": "구매를 성공적으로 복원했습니다!",
     "restore_no_purchases": "이전 구매를 찾을 수 없음",
     "restore_failed": "복원 실패: {error}",
-    "price_unavailable": "가격을 사용할 수 없음"
+    "price_unavailable": "가격을 사용할 수 없음",
+    "terms_of_use": "이용 약관",
+    "privacy_policy": "개인정보 처리방침",
+    "auto_renew_notice": "현재 기간 종료 최소 24시간 전에 자동 갱신을 끄지 않으면 구독이 자동으로 갱신됩니다. 현재 기간 종료 전 24시간 이내에 갱신 요금이 계정에 청구됩니다."
   }
 }

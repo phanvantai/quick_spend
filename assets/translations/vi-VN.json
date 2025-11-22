@@ -184,7 +184,7 @@
   "common": {
     "ok": "OK",
     "cancel": "Hủy",
-    "allow": "Cho Phép",
+    "continue_action": "Tiếp Tục",
     "save": "Lưu",
     "close": "Đóng",
     "delete": "Xóa",
@@ -469,6 +469,9 @@
     "restore_success": "Đã khôi phục gói mua thành công!",
     "restore_no_purchases": "Không tìm thấy gói đã mua trước đó",
     "restore_failed": "Không thể khôi phục: {error}",
-    "price_unavailable": "Giá không khả dụng"
+    "price_unavailable": "Giá không khả dụng",
+    "terms_of_use": "Điều khoản sử dụng",
+    "privacy_policy": "Chính sách bảo mật",
+    "auto_renew_notice": "Đăng ký tự động gia hạn trừ khi tự động gia hạn được tắt ít nhất 24 giờ trước khi kết thúc kỳ hiện tại. Tài khoản của bạn sẽ bị tính phí gia hạn trong vòng 24 giờ trước khi kết thúc kỳ hiện tại."
   }
 }

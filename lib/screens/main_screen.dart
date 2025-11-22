@@ -653,7 +653,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(context.tr('common.allow')),
+            child: Text(context.tr('common.continue_action')),
           ),
         ],
       ),

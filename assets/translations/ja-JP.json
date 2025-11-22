@@ -173,7 +173,7 @@
   "common": {
     "ok": "OK",
     "cancel": "キャンセル",
-    "allow": "許可",
+    "continue_action": "次へ",
     "save": "保存",
     "close": "閉じる",
     "delete": "削除",
@@ -458,6 +458,9 @@
     "restore_success": "購入の復元が完了しました！",
     "restore_no_purchases": "以前の購入が見つかりませんでした",
     "restore_failed": "復元に失敗しました: {error}",
-    "price_unavailable": "価格が利用できません"
+    "price_unavailable": "価格が利用できません",
+    "terms_of_use": "利用規約",
+    "privacy_policy": "プライバシーポリシー",
+    "auto_renew_notice": "サブスクリプションは、現在の期間の終了の少なくとも24時間前に自動更新をオフにしない限り、自動的に更新されます。現在の期間の終了前24時間以内に、アカウントに更新料金が請求されます。"
   }
 }
