@@ -26,11 +26,11 @@ class AppConstants {
   /// Yearly subscription price in USD
   static const double subscriptionYearlyPriceUSD = 24.99;
 
-  /// Terms of Use URL - IMPORTANT: Replace with your actual Terms of Use URL
-  static const String termsOfUseUrl = 'https://quickspend.app/terms';
+  /// Terms of Use URL - Apple's Standard EULA
+  static const String termsOfUseUrl = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
-  /// Privacy Policy URL - IMPORTANT: Replace with your actual Privacy Policy URL
-  static const String privacyPolicyUrl = 'https://quickspend.app/privacy';
+  /// Privacy Policy URL
+  static const String privacyPolicyUrl = 'https://portfolio.taiphanvan.dev/quickspend/privacy';
 
   /// Free tier: Maximum Gemini AI parses per day
   static const int freeTierGeminiLimit = 5;
