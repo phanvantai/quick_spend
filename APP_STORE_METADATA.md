@@ -81,6 +81,12 @@ Features:
 • All data stored locally and securely
 • No ads or tracking
 
+SUBSCRIPTION INFORMATION
+QuickSpend Premium offers monthly ($2.99/month) and yearly ($24.99/year) auto-renewable subscriptions. Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period.
+
+Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Privacy Policy: https://portfolio.taiphanvan.dev/quickspend/privacy
+
 Try QuickSpend today and experience the fastest way to track your money!
 ```
 
@@ -162,6 +168,12 @@ Tính năng:
 • 6 ngôn ngữ và 6 đơn vị tiền tệ
 • Tất cả dữ liệu lưu cục bộ và an toàn
 • Không quảng cáo hay theo dõi
+
+THÔNG TIN ĐĂNG KÝ
+QuickSpend Premium cung cấp gói đăng ký tự động gia hạn theo tháng ($2.99/tháng) và năm ($24.99/năm). Thanh toán sẽ được tính vào tài khoản Apple ID của bạn khi xác nhận mua. Đăng ký tự động gia hạn trừ khi tự động gia hạn được tắt ít nhất 24 giờ trước khi kết thúc kỳ hiện tại. Tài khoản của bạn sẽ bị tính phí gia hạn trong vòng 24 giờ trước khi kết thúc kỳ hiện tại.
+
+Điều khoản sử dụng: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Chính sách bảo mật: https://portfolio.taiphanvan.dev/quickspend/privacy
 
 Hãy dùng thử QuickSpend ngay hôm nay và trải nghiệm cách nhanh nhất để quản lý tiền!
 ```
@@ -245,6 +257,12 @@ QuickSpend: Instant Tracker
 • すべてのデータをローカルに安全保存
 • 広告・トラッキングなし
 
+サブスクリプション情報
+QuickSpend Premiumは、月額（$2.99/月）および年額（$24.99/年）の自動更新サブスクリプションを提供しています。購入確認時にApple IDアカウントに課金されます。サブスクリプションは、現在の期間の終了の少なくとも24時間前に自動更新をオフにしない限り、自動的に更新されます。現在の期間の終了前24時間以内に、アカウントに更新料金が請求されます。
+
+利用規約: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+プライバシーポリシー: https://portfolio.taiphanvan.dev/quickspend/privacy
+
 今すぐQuickSpendを試して、最速の家計管理を体験しましょう！
 ```
 
@@ -326,6 +344,12 @@ QuickSpend: Instant Tracker
 • 6개 언어 및 6개 통화
 • 모든 데이터를 로컬에 안전하게 저장
 • 광고 또는 추적 없음
+
+구독 정보
+QuickSpend Premium은 월간($2.99/월) 및 연간($24.99/년) 자동 갱신 구독을 제공합니다. 구매 확인 시 Apple ID 계정으로 결제됩니다. 현재 기간 종료 최소 24시간 전에 자동 갱신을 끄지 않으면 구독이 자동으로 갱신됩니다. 현재 기간 종료 전 24시간 이내에 갱신 요금이 계정에 청구됩니다.
+
+이용 약관: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+개인정보 처리방침: https://portfolio.taiphanvan.dev/quickspend/privacy
 
 지금 QuickSpend를 사용해보고 가장 빠른 가계 관리를 경험하세요!
 ```
@@ -409,6 +433,12 @@ QuickSpend: Instant Tracker
 • จัดเก็บข้อมูลทั้งหมดในเครื่องอย่างปลอดภัย
 • ไม่มีโฆษณาหรือการติดตาม
 
+ข้อมูลการสมัครสมาชิก
+QuickSpend Premium เสนอการสมัครสมาชิกแบบต่ออายุอัตโนมัติรายเดือน ($2.99/เดือน) และรายปี ($24.99/ปี) การชำระเงินจะถูกเรียกเก็บจากบัญชี Apple ID ของคุณเมื่อยืนยันการซื้อ การสมัครสมาชิกจะต่ออายุโดยอัตโนมัติ ยกเว้นการต่ออายุอัตโนมัติถูกปิดอย่างน้อย 24 ชั่วโมงก่อนสิ้นสุดระยะเวลาปัจจุบัน บัญชีของคุณจะถูกเรียกเก็บเงินสำหรับการต่ออายุภายใน 24 ชั่วโมงก่อนสิ้นสุดระยะเวลาปัจจุบัน
+
+ข้อกำหนดการใช้งาน: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+นโยบายความเป็นส่วนตัว: https://portfolio.taiphanvan.dev/quickspend/privacy
+
 ลอง QuickSpend วันนี้และสัมผัสวิธีที่เร็วที่สุดในการติดตามเงินของคุณ!
 ```
 
@@ -490,6 +520,12 @@ Características:
 • 6 idiomas y 6 monedas
 • Todos los datos almacenados localmente y de forma segura
 • Sin anuncios ni seguimiento
+
+INFORMACIÓN DE SUSCRIPCIÓN
+QuickSpend Premium ofrece suscripciones de renovación automática mensual ($2.99/mes) y anual ($24.99/año). El pago se cargará a su cuenta de Apple ID en el momento de la confirmación de la compra. La suscripción se renueva automáticamente a menos que la renovación automática se desactive al menos 24 horas antes del final del período actual. Se cobrará a su cuenta la renovación dentro de las 24 horas anteriores al final del período actual.
+
+Términos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Política de privacidad: https://portfolio.taiphanvan.dev/quickspend/privacy
 
 ¡Prueba QuickSpend hoy y experimenta la forma más rápida de rastrear tu dinero!
 ```
@@ -600,9 +636,9 @@ Recommend highlighting these features in App Store screenshots (in order):
 
 ## Support Information
 
-**Support URL:** (Add your support URL here)
-**Marketing URL:** (Add your marketing URL here)
-**Privacy Policy URL:** (Add your privacy policy URL here)
+**Support URL:** https://portfolio.taiphanvan.dev/quickspend
+**Marketing URL:** https://portfolio.taiphanvan.dev/quickspend
+**Privacy Policy URL:** https://portfolio.taiphanvan.dev/quickspend/privacy
 
 ---
 
