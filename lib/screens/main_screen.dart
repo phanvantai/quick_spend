@@ -627,6 +627,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Future<bool> _showPermissionRationale() async {
     final result = await showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
@@ -647,10 +648,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               : context.tr('voice.permission_rationale_android'),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.tr('common.cancel')),
-          ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(context.tr('common.continue_action')),
