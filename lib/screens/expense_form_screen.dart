@@ -37,9 +37,12 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       text: widget.expense?.description ?? '',
     );
 
-    // Initialize amount controller (will format after first build)
+    // Initialize amount controller with raw number (no pre-formatting)
+    // CurrencyInputFormatter will handle formatting automatically
     _amountController = TextEditingController(
-      text: widget.expense?.amount.toString() ?? '',
+      text: widget.expense != null
+          ? _formatInitialAmount(widget.expense!.amount)
+          : '',
     );
 
     _selectedType = widget.expense?.type ?? TransactionType.expense;
@@ -52,24 +55,19 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       final now = DateTime.now();
       _selectedDate = DateTime(now.year, now.month, now.day, 12, 0);
     }
+  }
 
-    // Format amount after first build when we have access to language and currency
-    if (widget.expense != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          final appConfig = context.read<AppConfigProvider>();
-          final language = appConfig.language;
-          final currency = appConfig.currency;
-          final formattedAmount = toCurrencyString(
-            widget.expense!.amount.toString(),
-            mantissaLength: currency == 'VND' ? 0 : 2,
-            thousandSeparator: language.startsWith('vi')
-                ? ThousandSeparator.Period
-                : ThousandSeparator.Comma,
-          );
-          _amountController.text = formattedAmount;
-        }
-      });
+  /// Format initial amount as raw number string (no thousand separators)
+  /// CurrencyInputFormatter expects unformatted input and will add separators
+  String _formatInitialAmount(double amount) {
+    // Return clean number without thousand separators
+    // Example: 1000.0 → "1000" (not "1.000")
+    if (amount == amount.truncateToDouble()) {
+      // No decimal part, return as integer string
+      return amount.toStringAsFixed(0);
+    } else {
+      // Has decimal part, return as-is
+      return amount.toString();
     }
   }
 

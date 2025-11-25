@@ -62,52 +62,50 @@ class _RecurringExpenseFormScreenState
     if (widget.template != null) {
       final template = widget.template!;
       _descriptionController.text = template.description;
-      // Initialize amount controller (will format after first build)
-      _amountController.text = template.amount.toString();
+      // Initialize amount controller with raw number (no pre-formatting)
+      // CurrencyInputFormatter will handle formatting automatically
+      _amountController.text = _formatInitialAmount(template.amount);
       _type = template.type;
       _categoryId = template.categoryId;
       _pattern = template.pattern;
       _startDate = template.startDate;
       _endDate = template.endDate;
       _hasEndDate = template.endDate != null;
-
-      // Format amount after first build when we have access to language and currency
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          final appConfig = context.read<AppConfigProvider>().config;
-          final language = appConfig.language;
-          final currency = appConfig.currency;
-          final formattedAmount = toCurrencyString(
-            template.amount.toString(),
-            mantissaLength: currency == 'VND' ? 0 : 2,
-            thousandSeparator: language.startsWith('vi')
-                ? ThousandSeparator.Period
-                : ThousandSeparator.Comma,
-          );
-          _amountController.text = formattedAmount;
-        }
-      });
     } else {
       _type = TransactionType.expense;
       _pattern = RecurrencePattern.monthly;
       _startDate = DateTime.now();
       _endDate = null;
       _hasEndDate = false;
+    }
 
-      // Set default category for expense type
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          final categoryProvider = context.read<CategoryProvider>();
-          final categories = categoryProvider.categories
-              .where((cat) => cat.type == _type)
-              .toList();
-          if (categories.isNotEmpty && _categoryId == null) {
-            setState(() {
-              _categoryId = categories.first.id;
-            });
-          }
+    // Set default category for the transaction type
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final categoryProvider = context.read<CategoryProvider>();
+        final categories = categoryProvider.categories
+            .where((cat) => cat.type == _type)
+            .toList();
+        if (categories.isNotEmpty && _categoryId == null) {
+          setState(() {
+            _categoryId = categories.first.id;
+          });
         }
-      });
+      }
+    });
+  }
+
+  /// Format initial amount as raw number string (no thousand separators)
+  /// CurrencyInputFormatter expects unformatted input and will add separators
+  String _formatInitialAmount(double amount) {
+    // Return clean number without thousand separators
+    // Example: 1000.0 → "1000" (not "1.000")
+    if (amount == amount.truncateToDouble()) {
+      // No decimal part, return as integer string
+      return amount.toStringAsFixed(0);
+    } else {
+      // Has decimal part, return as-is
+      return amount.toString();
     }
   }
 
