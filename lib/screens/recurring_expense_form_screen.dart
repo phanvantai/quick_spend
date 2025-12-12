@@ -62,8 +62,7 @@ class _RecurringExpenseFormScreenState
     if (widget.template != null) {
       final template = widget.template!;
       _descriptionController.text = template.description;
-      // Initialize amount controller (will format after first build)
-      _amountController.text = template.amount.toString();
+      // Amount will be set in post-frame callback to avoid double-formatting
       _type = template.type;
       _categoryId = template.categoryId;
       _pattern = template.pattern;
@@ -71,20 +70,24 @@ class _RecurringExpenseFormScreenState
       _endDate = template.endDate;
       _hasEndDate = template.endDate != null;
 
-      // Format amount after first build when we have access to language and currency
+      // Set formatted amount after first build to avoid double-formatting issues
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           final appConfig = context.read<AppConfigProvider>().config;
-          final language = appConfig.language;
-          final currency = appConfig.currency;
-          final formattedAmount = toCurrencyString(
+          // Format using toCurrencyString (same as CurrencyInputFormatter uses)
+          final formatted = toCurrencyString(
             template.amount.toString(),
-            mantissaLength: currency == 'VND' ? 0 : 2,
-            thousandSeparator: language.startsWith('vi')
+            mantissaLength: appConfig.currency == 'VND' ||
+                    appConfig.currency == 'JPY' ||
+                    appConfig.currency == 'KRW'
+                ? 0
+                : 2,
+            thousandSeparator: appConfig.language.startsWith('vi') ||
+                    appConfig.language == 'es'
                 ? ThousandSeparator.Period
                 : ThousandSeparator.Comma,
           );
-          _amountController.text = formattedAmount;
+          _amountController.text = formatted;
         }
       });
     } else {
@@ -93,22 +96,22 @@ class _RecurringExpenseFormScreenState
       _startDate = DateTime.now();
       _endDate = null;
       _hasEndDate = false;
-
-      // Set default category for expense type
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          final categoryProvider = context.read<CategoryProvider>();
-          final categories = categoryProvider.categories
-              .where((cat) => cat.type == _type)
-              .toList();
-          if (categories.isNotEmpty && _categoryId == null) {
-            setState(() {
-              _categoryId = categories.first.id;
-            });
-          }
-        }
-      });
     }
+
+    // Set default category for the transaction type
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final categoryProvider = context.read<CategoryProvider>();
+        final categories = categoryProvider.categories
+            .where((cat) => cat.type == _type)
+            .toList();
+        if (categories.isNotEmpty && _categoryId == null) {
+          setState(() {
+            _categoryId = categories.first.id;
+          });
+        }
+      }
+    });
   }
 
   @override

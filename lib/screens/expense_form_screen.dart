@@ -37,10 +37,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       text: widget.expense?.description ?? '',
     );
 
-    // Initialize amount controller (will format after first build)
-    _amountController = TextEditingController(
-      text: widget.expense?.amount.toString() ?? '',
-    );
+    // Initialize amount controller - will be empty initially
+    _amountController = TextEditingController();
 
     _selectedType = widget.expense?.type ?? TransactionType.expense;
     _selectedCategoryId = widget.expense?.categoryId ?? 'other';
@@ -53,21 +51,25 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       _selectedDate = DateTime(now.year, now.month, now.day, 12, 0);
     }
 
-    // Format amount after first build when we have access to language and currency
+    // Set formatted amount after first build to avoid double-formatting issues
     if (widget.expense != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           final appConfig = context.read<AppConfigProvider>();
-          final language = appConfig.language;
-          final currency = appConfig.currency;
-          final formattedAmount = toCurrencyString(
+          // Format using toCurrencyString (same as CurrencyInputFormatter uses)
+          final formatted = toCurrencyString(
             widget.expense!.amount.toString(),
-            mantissaLength: currency == 'VND' ? 0 : 2,
-            thousandSeparator: language.startsWith('vi')
+            mantissaLength: appConfig.currency == 'VND' ||
+                    appConfig.currency == 'JPY' ||
+                    appConfig.currency == 'KRW'
+                ? 0
+                : 2,
+            thousandSeparator: appConfig.language.startsWith('vi') ||
+                    appConfig.language == 'es'
                 ? ThousandSeparator.Period
                 : ThousandSeparator.Comma,
           );
-          _amountController.text = formattedAmount;
+          _amountController.text = formatted;
         }
       });
     }

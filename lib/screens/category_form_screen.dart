@@ -422,7 +422,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Preview',
+              context.tr('categories.preview'),
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -443,7 +443,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                 Expanded(
                   child: Text(
                     _nameController.text.isEmpty
-                        ? 'Category Name'
+                        ? context.tr('categories.category_name_placeholder')
                         : _nameController.text,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,

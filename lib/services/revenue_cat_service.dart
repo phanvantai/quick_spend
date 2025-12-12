@@ -25,30 +25,33 @@ class RevenueCatService {
   /// Whether RevenueCat has been initialized
   bool _isInitialized = false;
 
+  /// Whether the current platform is supported (iOS only for now)
+  bool get isSupported =>
+      defaultTargetPlatform == TargetPlatform.iOS;
+
   /// Initialize RevenueCat SDK
   ///
   /// Call this once at app startup before using any other RevenueCat features.
-  /// Uses different API keys for iOS and Android.
+  /// Currently only supports iOS. Android support can be added when Google Play is configured.
   Future<void> initialize({String? userId}) async {
     if (_isInitialized) {
       debugPrint('✅ [RevenueCat] Already initialized');
       return;
     }
 
+    // Check if platform is supported
+    if (!isSupported) {
+      debugPrint('⚠️ [RevenueCat] Platform not supported: ${defaultTargetPlatform.name}');
+      return;
+    }
+
     try {
       debugPrint('🔄 [RevenueCat] Initializing...');
 
-      // Configure SDK with optional user ID
+      // Get API key for current platform
       final apiKey = defaultTargetPlatform == TargetPlatform.iOS
           ? _appleApiKey
-          : defaultTargetPlatform == TargetPlatform.android
-          ? _googleApiKey
-          : null;
-
-      if (apiKey == null) {
-        debugPrint('⚠️ [RevenueCat] Unsupported platform');
-        return;
-      }
+          : _googleApiKey;
 
       // Create configuration
       final configuration = PurchasesConfiguration(apiKey);
@@ -76,9 +79,14 @@ class RevenueCatService {
 
   /// Get available subscription offerings
   ///
-  /// Returns null if no offerings are available or if there's an error.
+  /// Returns null if no offerings are available, platform unsupported, or if there's an error.
   /// The "default" offering contains your configured subscription packages.
   Future<Offerings?> getOfferings() async {
+    if (!isSupported || !_isInitialized) {
+      debugPrint('⚠️ [RevenueCat] Not available on this platform');
+      return null;
+    }
+
     try {
       debugPrint('🔄 [RevenueCat] Fetching offerings...');
       final offerings = await Purchases.getOfferings();
@@ -107,8 +115,12 @@ class RevenueCatService {
   /// Purchase a subscription package
   ///
   /// Returns the updated CustomerInfo if successful.
-  /// Throws PlatformException if purchase fails or is cancelled.
+  /// Throws Exception if platform unsupported or purchase fails.
   Future<PurchaseResult> purchasePackage(Package package) async {
+    if (!isSupported || !_isInitialized) {
+      throw Exception('RevenueCat not available on this platform');
+    }
+
     try {
       debugPrint('🔄 [RevenueCat] Purchasing package: ${package.identifier}');
       final purchaseParams = PurchaseParams.package(package);
@@ -123,8 +135,13 @@ class RevenueCatService {
 
   /// Check if user has active premium subscription
   ///
-  /// Returns true if the 'premium' entitlement is active.
+  /// Returns false if platform unsupported or 'premium' entitlement is not active.
   Future<bool> isPremium() async {
+    if (!isSupported || !_isInitialized) {
+      debugPrint('⚠️ [RevenueCat] Not available on this platform');
+      return false;
+    }
+
     try {
       final customerInfo = await Purchases.getCustomerInfo();
       final isPremium =
@@ -139,7 +156,14 @@ class RevenueCatService {
   }
 
   /// Get customer info (subscription status, entitlements, etc.)
+  ///
+  /// Returns null if platform unsupported or error occurs.
   Future<CustomerInfo?> getCustomerInfo() async {
+    if (!isSupported || !_isInitialized) {
+      debugPrint('⚠️ [RevenueCat] Not available on this platform');
+      return null;
+    }
+
     try {
       final customerInfo = await Purchases.getCustomerInfo();
       debugPrint('✅ [RevenueCat] Got customer info');
@@ -153,8 +177,12 @@ class RevenueCatService {
   /// Restore previous purchases
   ///
   /// Call this when user taps "Restore Purchases" button.
-  /// Returns the updated CustomerInfo.
+  /// Throws Exception if platform unsupported or restoration fails.
   Future<CustomerInfo> restorePurchases() async {
+    if (!isSupported || !_isInitialized) {
+      throw Exception('RevenueCat not available on this platform');
+    }
+
     try {
       debugPrint('🔄 [RevenueCat] Restoring purchases...');
       final customerInfo = await Purchases.restorePurchases();
