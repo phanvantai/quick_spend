@@ -37,13 +37,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       text: widget.expense?.description ?? '',
     );
 
-    // Initialize amount controller with raw number (no pre-formatting)
-    // CurrencyInputFormatter will handle formatting automatically
-    _amountController = TextEditingController(
-      text: widget.expense != null
-          ? _formatInitialAmount(widget.expense!.amount)
-          : '',
-    );
+    // Initialize amount controller - will be empty initially
+    _amountController = TextEditingController();
 
     _selectedType = widget.expense?.type ?? TransactionType.expense;
     _selectedCategoryId = widget.expense?.categoryId ?? 'other';
@@ -55,19 +50,28 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       final now = DateTime.now();
       _selectedDate = DateTime(now.year, now.month, now.day, 12, 0);
     }
-  }
 
-  /// Format initial amount as raw number string (no thousand separators)
-  /// CurrencyInputFormatter expects unformatted input and will add separators
-  String _formatInitialAmount(double amount) {
-    // Return clean number without thousand separators
-    // Example: 1000.0 → "1000" (not "1.000")
-    if (amount == amount.truncateToDouble()) {
-      // No decimal part, return as integer string
-      return amount.toStringAsFixed(0);
-    } else {
-      // Has decimal part, return as-is
-      return amount.toString();
+    // Set formatted amount after first build to avoid double-formatting issues
+    if (widget.expense != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final appConfig = context.read<AppConfigProvider>();
+          // Format using toCurrencyString (same as CurrencyInputFormatter uses)
+          final formatted = toCurrencyString(
+            widget.expense!.amount.toString(),
+            mantissaLength: appConfig.currency == 'VND' ||
+                    appConfig.currency == 'JPY' ||
+                    appConfig.currency == 'KRW'
+                ? 0
+                : 2,
+            thousandSeparator: appConfig.language.startsWith('vi') ||
+                    appConfig.language == 'es'
+                ? ThousandSeparator.Period
+                : ThousandSeparator.Comma,
+          );
+          _amountController.text = formatted;
+        }
+      });
     }
   }
 

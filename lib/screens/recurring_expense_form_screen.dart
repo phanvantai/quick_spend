@@ -62,15 +62,34 @@ class _RecurringExpenseFormScreenState
     if (widget.template != null) {
       final template = widget.template!;
       _descriptionController.text = template.description;
-      // Initialize amount controller with raw number (no pre-formatting)
-      // CurrencyInputFormatter will handle formatting automatically
-      _amountController.text = _formatInitialAmount(template.amount);
+      // Amount will be set in post-frame callback to avoid double-formatting
       _type = template.type;
       _categoryId = template.categoryId;
       _pattern = template.pattern;
       _startDate = template.startDate;
       _endDate = template.endDate;
       _hasEndDate = template.endDate != null;
+
+      // Set formatted amount after first build to avoid double-formatting issues
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final appConfig = context.read<AppConfigProvider>().config;
+          // Format using toCurrencyString (same as CurrencyInputFormatter uses)
+          final formatted = toCurrencyString(
+            template.amount.toString(),
+            mantissaLength: appConfig.currency == 'VND' ||
+                    appConfig.currency == 'JPY' ||
+                    appConfig.currency == 'KRW'
+                ? 0
+                : 2,
+            thousandSeparator: appConfig.language.startsWith('vi') ||
+                    appConfig.language == 'es'
+                ? ThousandSeparator.Period
+                : ThousandSeparator.Comma,
+          );
+          _amountController.text = formatted;
+        }
+      });
     } else {
       _type = TransactionType.expense;
       _pattern = RecurrencePattern.monthly;
@@ -93,20 +112,6 @@ class _RecurringExpenseFormScreenState
         }
       }
     });
-  }
-
-  /// Format initial amount as raw number string (no thousand separators)
-  /// CurrencyInputFormatter expects unformatted input and will add separators
-  String _formatInitialAmount(double amount) {
-    // Return clean number without thousand separators
-    // Example: 1000.0 → "1000" (not "1.000")
-    if (amount == amount.truncateToDouble()) {
-      // No decimal part, return as integer string
-      return amount.toStringAsFixed(0);
-    } else {
-      // Has decimal part, return as-is
-      return amount.toString();
-    }
   }
 
   @override
