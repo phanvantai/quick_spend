@@ -22,6 +22,10 @@
     "title": "Quick Spend",
     "hello": "Hello",
     "welcome": "Welcome to Quick Spend!",
+    "welcome_message": "Use voice input to track expenses effortlessly",
+    "daily_overview": "Daily Overview",
+    "monthly_comparison": "Monthly Comparison",
+    "no_data_this_month": "No transactions this month",
     "language_label": "Language: English",
     "currency_label": "Currency: {currency}",
     "coming_soon": "Main interface coming soon!",
@@ -179,6 +183,7 @@
     "home": "Home",
     "report": "Report",
     "transactions": "Transactions",
+    "analytics": "Analytics",
     "settings": "Settings"
   },
   "common": {

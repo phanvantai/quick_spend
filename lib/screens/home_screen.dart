@@ -1,25 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../providers/report_provider.dart';
-import '../providers/app_config_provider.dart';
-import '../providers/expense_provider.dart';
 import '../theme/app_theme.dart';
-import '../widgets/report/period_filter.dart';
-import '../widgets/report/summary_card.dart';
-import '../widgets/report/stats_grid.dart';
-import '../widgets/report/category_breakdown_switcher.dart';
-import '../widgets/report/top_expenses_list.dart';
-import '../widgets/report/custom_date_range_picker.dart';
-import '../widgets/common/empty_state.dart';
-import '../widgets/common/upgrade_prompt_dialog.dart';
+import '../providers/expense_provider.dart';
+import '../providers/app_config_provider.dart';
 import '../models/expense.dart';
+import '../widgets/calendar/month_navigator.dart';
+import '../widgets/calendar/monthly_summary_card.dart';
+import '../widgets/home/monthly_bar_chart.dart';
 import 'settings_screen.dart';
+import 'analytics_screen.dart';
 import 'expense_form_screen.dart';
 
-/// Home screen showing analytics dashboard with statistics and charts
-class HomeScreen extends StatelessWidget {
+/// Home screen with simple, clean UI
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late DateTime _selectedMonth;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _selectedMonth = DateTime(now.year, now.month);
+  }
 
   Future<void> _addExpense(BuildContext context) async {
     final newExpense = await Navigator.push<Expense>(
@@ -57,6 +66,30 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
+  void _onMonthChanged(DateTime newMonth) {
+    setState(() {
+      _selectedMonth = newMonth;
+    });
+  }
+
+  Map<String, double> _calculateMonthlyTotals(List<Expense> expenses) {
+    double income = 0;
+    double expense = 0;
+
+    for (final exp in expenses) {
+      if (exp.date.year == _selectedMonth.year &&
+          exp.date.month == _selectedMonth.month) {
+        if (exp.type == TransactionType.income) {
+          income += exp.amount;
+        } else {
+          expense += exp.amount;
+        }
+      }
+    }
+
+    return {'income': income, 'expense': expense};
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -64,232 +97,87 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: Consumer2<ReportProvider, AppConfigProvider>(
-        builder: (context, reportProvider, configProvider, _) {
-          if (reportProvider.isLoading) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: AppTheme.spacing16),
-                  Text(
-                    context.tr('report.loading'),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+      body: Consumer2<ExpenseProvider, AppConfigProvider>(
+        builder: (context, expenseProvider, configProvider, _) {
+          final expenses = expenseProvider.expenses;
+          final totals = _calculateMonthlyTotals(expenses);
+
+          return CustomScrollView(
+            slivers: [
+              // App bar with greeting and actions
+              SliverAppBar(
+                title: Text(context.tr('home.hello')),
+                pinned: true,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    onPressed: () => _addExpense(context),
+                    tooltip: context.tr('home.add_expense_tooltip'),
+                    style: IconButton.styleFrom(
+                      foregroundColor: AppTheme.primaryMint,
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.analytics_outlined),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AnalyticsScreen(),
+                        ),
+                      );
+                    },
+                    tooltip: context.tr('navigation.analytics'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                    tooltip: context.tr('navigation.settings'),
                   ),
                 ],
               ),
-            );
-          }
 
-          final stats = reportProvider.currentStats;
-
-          // Empty state - no expenses at all
-          if (stats == null || stats.transactionCount == 0) {
-            return CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  title: Text(context.tr('home.hello')),
-                  pinned: true,
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.add_circle_outline),
-                      onPressed: () => _addExpense(context),
-                      tooltip: context.tr('home.add_expense_tooltip'),
-                      style: IconButton.styleFrom(
-                        foregroundColor: AppTheme.primaryMint,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.settings_outlined),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SettingsScreen(),
-                          ),
-                        );
-                      },
-                      tooltip: context.tr('navigation.settings'),
-                    ),
-                  ],
-                  bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(60),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppTheme.spacing16,
-                        0,
-                        AppTheme.spacing16,
-                        AppTheme.spacing16,
-                      ),
-                      child: PeriodFilter(
-                        selectedPeriod: reportProvider.selectedPeriod,
-                        isPremium: reportProvider.isPremium,
-                        availablePeriods: reportProvider.availablePeriods,
-                        onPeriodChanged: (period) {
-                          final success = reportProvider.selectPeriod(period);
-                          if (!success) {
-                            // Period is locked, dialog already shown by PeriodFilter
-                          }
-                        },
-                        onCustomTap: () =>
-                            _showCustomDatePicker(context, reportProvider),
-                      ),
-                    ),
-                  ),
+              // Month navigator
+              SliverToBoxAdapter(
+                child: MonthNavigator(
+                  selectedMonth: _selectedMonth,
+                  onMonthChanged: _onMonthChanged,
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacing16),
-                    child: EmptyState(
-                      icon: Icons.bar_chart_outlined,
-                      title: context.tr('report.empty_title'),
-                      message: context.tr('report.empty_message'),
-                    ),
-                  ),
+              ),
+
+              // Monthly summary card
+              SliverToBoxAdapter(
+                child: MonthlySummaryCard(
+                  income: totals['income']!,
+                  expense: totals['expense']!,
+                  appConfig: configProvider.config,
                 ),
-              ],
-            );
-          }
+              ),
 
-          // Main dashboard view with data
-          return RefreshIndicator(
-            onRefresh: () => reportProvider.refresh(),
-            child: CustomScrollView(
-              slivers: [
-                // SliverAppBar with greeting title
-                SliverAppBar(
-                  title: Text(context.tr('home.hello')),
-                  pinned: true,
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.add_circle_outline),
-                      onPressed: () => _addExpense(context),
-                      tooltip: context.tr('home.add_expense_tooltip'),
-                      style: IconButton.styleFrom(
-                        foregroundColor: AppTheme.primaryMint,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.settings_outlined),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SettingsScreen(),
-                          ),
-                        );
-                      },
-                      tooltip: context.tr('navigation.settings'),
-                    ),
-                  ],
-                  bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(60),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppTheme.spacing16,
-                        0,
-                        AppTheme.spacing16,
-                        AppTheme.spacing8,
-                      ),
-                      child: PeriodFilter(
-                        selectedPeriod: reportProvider.selectedPeriod,
-                        isPremium: reportProvider.isPremium,
-                        availablePeriods: reportProvider.availablePeriods,
-                        onPeriodChanged: (period) {
-                          final success = reportProvider.selectPeriod(period);
-                          if (!success) {
-                            // Period is locked, dialog already shown by PeriodFilter
-                          }
-                        },
-                        onCustomTap: () =>
-                            _showCustomDatePicker(context, reportProvider),
-                      ),
-                    ),
-                  ),
+              // Monthly bar chart
+              SliverToBoxAdapter(
+                child: MonthlyBarChart(
+                  selectedMonth: _selectedMonth,
+                  expenses: expenses,
+                  appConfig: configProvider.config,
                 ),
+              ),
 
-                // Content
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppTheme.spacing16,
-                    0,
-                    AppTheme.spacing16,
-                    AppTheme.spacing24,
-                  ),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Summary card
-                      SummaryCard(
-                        stats: stats,
-                        trendPercentage: reportProvider.trendPercentage,
-                        isTrendPositive: reportProvider.isTrendPositive,
-                        appConfig: configProvider.config,
-                      ),
-                      const SizedBox(height: AppTheme.spacing16),
-
-                      // Stats grid (avg/day, highest expense)
-                      StatsGrid(
-                        stats: stats,
-                        appConfig: configProvider.config,
-                      ),
-                      const SizedBox(height: AppTheme.spacing16),
-
-                      // Category breakdown with expense/income switcher
-                      if (stats.expenseCategoryBreakdown.isNotEmpty ||
-                          stats.incomeCategoryBreakdown.isNotEmpty)
-                        CategoryBreakdownSwitcher(
-                          expenseCategoryStats: stats.expenseCategoryBreakdown,
-                          incomeCategoryStats: stats.incomeCategoryBreakdown,
-                          appConfig: configProvider.config,
-                        ),
-                      const SizedBox(height: AppTheme.spacing16),
-
-                      // Top expenses list
-                      if (reportProvider.topExpenses.isNotEmpty)
-                        TopExpensesList(
-                          expenses: reportProvider.topExpenses,
-                          currency: configProvider.currency,
-                          language: context.locale.languageCode,
-                          limit: 5,
-                        ),
-                    ]),
-                  ),
-                ),
-              ],
-            ),
+              // Bottom spacing
+              const SliverToBoxAdapter(
+                child: SizedBox(height: AppTheme.spacing24),
+              ),
+            ],
           );
         },
       ),
     );
-  }
-
-  /// Show custom date range picker dialog
-  Future<void> _showCustomDatePicker(
-    BuildContext context,
-    ReportProvider reportProvider,
-  ) async {
-    final dateRange = await CustomDateRangePicker.show(
-      context,
-      initialStartDate: reportProvider.customDateRange?.start,
-      initialEndDate: reportProvider.customDateRange?.end,
-    );
-
-    if (dateRange != null) {
-      final success =
-          reportProvider.setCustomDateRange(dateRange.start, dateRange.end);
-
-      if (!success && context.mounted) {
-        // Custom date ranges require premium
-        UpgradePromptDialog.show(
-          context,
-          title: context.tr('subscription.limit_advanced_reports'),
-          message: context.tr('subscription.limit_advanced_reports_message'),
-          icon: Icons.analytics,
-        );
-      }
-    }
   }
 }

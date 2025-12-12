@@ -22,6 +22,10 @@
     "title": "Quick Spend",
     "hello": "Xin chào",
     "welcome": "Chào mừng đến Quick Spend!",
+    "welcome_message": "Sử dụng giọng nói để theo dõi chi tiêu dễ dàng",
+    "daily_overview": "Tổng Quan Hàng Ngày",
+    "monthly_comparison": "So Sánh Tháng",
+    "no_data_this_month": "Không có giao dịch trong tháng này",
     "language_label": "Ngôn ngữ: Tiếng Việt",
     "currency_label": "Tiền tệ: {currency}",
     "coming_soon": "Giao diện chính sẽ có sớm!",
@@ -179,6 +183,7 @@
     "home": "Trang chính",
     "report": "Báo Cáo",
     "transactions": "Giao Dịch",
+    "analytics": "Phân Tích",
     "settings": "Cài Đặt"
   },
   "common": {

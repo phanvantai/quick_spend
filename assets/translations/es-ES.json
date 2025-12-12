@@ -22,6 +22,10 @@
     "title": "Quick Spend",
     "hello": "Hola",
     "welcome": "¡Bienvenido a Quick Spend!",
+    "welcome_message": "Usa entrada de voz para rastrear gastos fácilmente",
+    "daily_overview": "Resumen Diario",
+    "monthly_comparison": "Comparación Mensual",
+    "no_data_this_month": "No hay transacciones este mes",
     "language_label": "Idioma: Español",
     "currency_label": "Moneda: {currency}",
     "add_expense": "Añadir gasto",
@@ -168,6 +172,7 @@
     "home": "Inicio",
     "report": "Informe",
     "transactions": "Transacciones",
+    "analytics": "Analítica",
     "settings": "Configuración"
   },
   "common": {

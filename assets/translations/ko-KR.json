@@ -22,6 +22,10 @@
     "title": "Quick Spend",
     "hello": "안녕하세요",
     "welcome": "Quick Spend에 오신 것을 환영합니다!",
+    "welcome_message": "음성 입력으로 지출을 간편하게 기록",
+    "daily_overview": "일일 개요",
+    "monthly_comparison": "월별 비교",
+    "no_data_this_month": "이번 달 거래가 없습니다",
     "language_label": "언어: 한국어",
     "currency_label": "통화: {currency}",
     "add_expense": "지출 추가",
@@ -168,6 +172,7 @@
     "home": "홈",
     "report": "보고서",
     "transactions": "거래",
+    "analytics": "분석",
     "settings": "설정"
   },
   "common": {

@@ -22,6 +22,10 @@
     "title": "Quick Spend",
     "hello": "こんにちは",
     "welcome": "Quick Spendへようこそ！",
+    "welcome_message": "音声入力で簡単に支出を記録",
+    "daily_overview": "日次概要",
+    "monthly_comparison": "月次比較",
+    "no_data_this_month": "今月の取引はありません",
     "language_label": "言語: 日本語",
     "currency_label": "通貨: {currency}",
     "add_expense": "支出を追加",
@@ -168,6 +172,7 @@
     "home": "ホーム",
     "report": "レポート",
     "transactions": "取引",
+    "analytics": "分析",
     "settings": "設定"
   },
   "common": {

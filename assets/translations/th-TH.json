@@ -22,6 +22,10 @@
     "title": "Quick Spend",
     "hello": "สวัสดี",
     "welcome": "ยินดีต้อนรับสู่ Quick Spend!",
+    "welcome_message": "ใช้เสียงเพื่อบันทึกค่าใช้จ่ายได้ง่ายๆ",
+    "daily_overview": "ภาพรวมรายวัน",
+    "monthly_comparison": "เปรียบเทียบรายเดือน",
+    "no_data_this_month": "ไม่มีธุรกรรมในเดือนนี้",
     "language_label": "ภาษา: ไทย",
     "currency_label": "สกุลเงิน: {currency}",
     "add_expense": "เพิ่มการใช้จ่าย",
@@ -168,6 +172,7 @@
     "home": "หน้าแรก",
     "report": "รายงาน",
     "transactions": "ธุรกรรม",
+    "analytics": "วิเคราะห์",
     "settings": "การตั้งค่า"
   },
   "common": {
