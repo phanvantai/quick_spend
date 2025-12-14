@@ -24,6 +24,12 @@ flutter precache --ios
 # Install Flutter dependencies.
 flutter pub get
 
+# Clean Flutter build to avoid improperly formatted define flags
+flutter clean
+
+# Build Flutter framework to generate proper xcconfig files
+flutter build ios --release --no-codesign
+
 # Install CocoaPods using Homebrew.
 HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
 brew install cocoapods
