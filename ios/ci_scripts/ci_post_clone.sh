@@ -10,10 +10,10 @@ ulimit -n 4096
 git clone https://github.com/flutter/flutter.git --depth 1 -b stable $HOME/flutter
 export PATH="$PATH:$HOME/flutter/bin"
 
-# Checkout a specific version 3.35.3
+# Checkout a specific version 3.38.0
 cd $HOME/flutter
 git fetch --tags
-git checkout 3.35.3
+git checkout 3.38.0
 
 # Return to project root
 cd $CI_PRIMARY_REPOSITORY_PATH
