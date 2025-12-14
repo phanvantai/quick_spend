@@ -24,13 +24,6 @@ flutter precache --ios
 # Install Flutter dependencies.
 flutter pub get
 
-# Clean Flutter build to avoid improperly formatted define flags
-flutter clean
-
-# Build Flutter framework to generate proper xcconfig files
-# Disable tree-shake-icons to avoid IconData non-const issues
-flutter build ios --release --no-codesign --no-tree-shake-icons
-
 # Install CocoaPods using Homebrew.
 HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
 brew install cocoapods
@@ -38,19 +31,30 @@ brew install cocoapods
 # Move to the iOS directory
 cd ios
 
-# Ensure CocoaPods is using the latest repo updates
-pod repo update
+# Clean any existing pods to start fresh
+echo "🧹 Cleaning existing CocoaPods installation..."
+rm -rf Podfile.lock Pods/ .symlinks/
 
-# Try pod install first, if it fails, reset dependencies and retry
-if ! pod install --repo-update; then
-    echo "⚠️ Pod install failed. Cleaning dependencies..."
-    
-    # Remove existing Podfile.lock and cached Pods to avoid conflicts
-    pod deintegrate
-    rm -rf Podfile.lock Pods/
+# Return to project root for Flutter build
+cd $CI_PRIMARY_REPOSITORY_PATH
 
-    # Reinstall dependencies
-    pod install
+# Clean Flutter build to avoid improperly formatted define flags
+flutter clean
+
+# Build Flutter framework to generate proper xcconfig files and install pods
+# Disable tree-shake-icons to avoid IconData non-const issues
+echo "🔨 Building Flutter framework with CocoaPods..."
+flutter build ios --release --no-codesign --no-tree-shake-icons
+
+# Verify pods are properly installed
+cd ios
+if [ ! -d "Pods" ]; then
+    echo "⚠️ Pods directory not found after Flutter build. Running pod install manually..."
+    pod install --repo-update
 fi
+
+# Ensure Flutter framework is properly linked
+ls -la Flutter/
+echo "✅ CocoaPods setup complete"
 
 exit 0
