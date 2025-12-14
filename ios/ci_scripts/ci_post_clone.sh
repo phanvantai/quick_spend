@@ -28,7 +28,8 @@ flutter pub get
 flutter clean
 
 # Build Flutter framework to generate proper xcconfig files
-flutter build ios --release --no-codesign
+# Disable tree-shake-icons to avoid IconData non-const issues
+flutter build ios --release --no-codesign --no-tree-shake-icons
 
 # Install CocoaPods using Homebrew.
 HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
