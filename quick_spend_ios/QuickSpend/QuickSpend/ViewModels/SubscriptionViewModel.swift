@@ -7,6 +7,12 @@ final class SubscriptionViewModel {
     private(set) var isPro: Bool = false
     private(set) var isLoading: Bool = false
 
+    /// RevenueCat API key (public SDK key, safe to commit)
+    private static let appleApiKey = "appl_uvXTlqDdZAaoRtAEZIIFxiPkloh"
+
+    /// Entitlement identifier (must match RevenueCat dashboard)
+    private static let premiumEntitlementId = "premium"
+
     /// Feature gating
     var geminiDailyLimit: Int {
         isPro ? 999 : AppConstants.freeTierGeminiLimit
@@ -81,17 +87,20 @@ import RevenueCat
 
 extension SubscriptionViewModel {
     func _initializeRevenueCat() {
-        // Configure RevenueCat - API key should be set in app configuration
-        // Purchases.configure(withAPIKey: "your_api_key")
-        print("[Subscription] RevenueCat initialized")
+        Purchases.logLevel = .error
+        #if DEBUG
+        Purchases.logLevel = .debug
+        #endif
+        Purchases.configure(withAPIKey: SubscriptionViewModel.appleApiKey)
+        print("[Subscription] RevenueCat configured")
         Task { await _refreshCustomerInfo() }
     }
 
     func _refreshCustomerInfo() async {
         do {
             let customerInfo = try await Purchases.shared.customerInfo()
-            isPro = customerInfo.entitlements["pro"]?.isActive == true
-            print("[Subscription] Pro status: \(isPro)")
+            isPro = customerInfo.entitlements[SubscriptionViewModel.premiumEntitlementId]?.isActive == true
+            print("[Subscription] Premium status: \(isPro)")
         } catch {
             print("[Subscription] Error checking status: \(error)")
         }
@@ -102,7 +111,7 @@ extension SubscriptionViewModel {
         defer { isLoading = false }
         do {
             let customerInfo = try await Purchases.shared.restorePurchases()
-            isPro = customerInfo.entitlements["pro"]?.isActive == true
+            isPro = customerInfo.entitlements[SubscriptionViewModel.premiumEntitlementId]?.isActive == true
         } catch {
             print("[Subscription] Restore error: \(error)")
         }
@@ -118,7 +127,7 @@ extension SubscriptionViewModel {
                 return false
             }
             let result = try await Purchases.shared.purchase(package: package)
-            isPro = result.customerInfo.entitlements["pro"]?.isActive == true
+            isPro = result.customerInfo.entitlements[SubscriptionViewModel.premiumEntitlementId]?.isActive == true
             return isPro
         } catch {
             print("[Subscription] Purchase error: \(error)")

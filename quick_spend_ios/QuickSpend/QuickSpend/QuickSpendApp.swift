@@ -1,5 +1,8 @@
 import SwiftUI
 import SwiftData
+#if canImport(FirebaseCore)
+import FirebaseCore
+#endif
 
 @main
 struct QuickSpendApp: App {
@@ -7,8 +10,12 @@ struct QuickSpendApp: App {
     @State private var subscription = SubscriptionViewModel()
 
     init() {
+        #if canImport(FirebaseCore)
+        FirebaseApp.configure()
+        #endif
         AnalyticsService.initialize()
         GeminiParserService.initialize()
+        subscription.initialize()
     }
 
     var body: some Scene {
