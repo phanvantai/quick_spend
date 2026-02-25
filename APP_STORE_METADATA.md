@@ -636,9 +636,9 @@ Recommend highlighting these features in App Store screenshots (in order):
 
 ## Support Information
 
-**Support URL:** https://portfolio.taiphanvan.dev/quickspend
-**Marketing URL:** https://portfolio.taiphanvan.dev/quickspend
-**Privacy Policy URL:** https://portfolio.taiphanvan.dev/quickspend/privacy
+**Support URL:** <https://portfolio.taiphanvan.dev/quickspend>
+**Marketing URL:** <https://portfolio.taiphanvan.dev/quickspend>
+**Privacy Policy URL:** <https://portfolio.taiphanvan.dev/quickspend/privacy>
 
 ---
 
