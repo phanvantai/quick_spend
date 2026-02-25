@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// Home screen with month navigator, summary card, bar chart, and voice input
+/// Home dashboard with overview, report, and trends sections
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
@@ -9,18 +9,9 @@ struct HomeView: View {
     @Query(sort: \QuickCategory.name) private var categories: [QuickCategory]
 
     @State private var selectedMonth = Date()
-    @State private var showingAddExpense = false
 
-    // Voice input state
-    @State private var voiceService = VoiceService()
-    @State private var usageLimitService = UsageLimitService()
-    @State private var showVoiceOverlay = false
-    @State private var showEditDialog = false
-    @State private var parsedExpenses: [ParsedExpense] = []
-    @State private var showPermissionAlert = false
-    @State private var isParsingVoice = false
+    // MARK: - Current Month Stats
 
-    /// Expenses filtered to the selected month
     private var monthExpenses: [Expense] {
         let calendar = Calendar.current
         return allExpenses.filter {
@@ -28,216 +19,119 @@ struct HomeView: View {
         }
     }
 
-    private var monthlyIncome: Double {
-        monthExpenses.filter(\.isIncome).reduce(0) { $0 + $1.amount }
+    private var currentStats: PeriodStats {
+        let calendar = Calendar.current
+        let start = calendar.date(from: calendar.dateComponents([.year, .month], from: selectedMonth))!
+        let end = calendar.date(byAdding: .month, value: 1, to: start)!
+        return PeriodStats.fromExpenses(monthExpenses, startDate: start, endDate: end)
+            .withCategoryBreakdown(categories: categories)
     }
 
-    private var monthlyExpense: Double {
-        monthExpenses.filter(\.isExpense).reduce(0) { $0 + $1.amount }
+    // MARK: - Previous Month Stats (for % change)
+
+    private var previousMonthExpenses: [Expense] {
+        let calendar = Calendar.current
+        guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: selectedMonth) else { return [] }
+        return allExpenses.filter {
+            calendar.isDate($0.date, equalTo: prevMonth, toGranularity: .month)
+        }
     }
+
+    private var previousStats: PeriodStats {
+        let calendar = Calendar.current
+        guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: selectedMonth) else {
+            return .empty(startDate: selectedMonth, endDate: selectedMonth)
+        }
+        let start = calendar.date(from: calendar.dateComponents([.year, .month], from: prevMonth))!
+        let end = calendar.date(byAdding: .month, value: 1, to: start)!
+        return PeriodStats.fromExpenses(previousMonthExpenses, startDate: start, endDate: end)
+    }
+
+    private var expenseChangePercent: Double {
+        computePercentChange(current: currentStats.totalExpenses, previous: previousStats.totalExpenses)
+    }
+
+    private var incomeChangePercent: Double {
+        computePercentChange(current: currentStats.totalIncome, previous: previousStats.totalIncome)
+    }
+
+    // MARK: - Trend Data (12 months)
+
+    private var trendData: [MonthlyTrend] {
+        let calendar = Calendar.current
+        return (0..<12).map { offset -> MonthlyTrend in
+            let month = calendar.date(byAdding: .month, value: -(11 - offset), to: Date())!
+            let expenses = allExpenses.filter {
+                calendar.isDate($0.date, equalTo: month, toGranularity: .month)
+            }
+            let income = expenses.filter(\.isIncome).reduce(0) { $0 + $1.amount }
+            let expense = expenses.filter(\.isExpense).reduce(0) { $0 + $1.amount }
+
+            let monthNum = calendar.component(.month, from: month)
+            let showYear = monthNum == 1 || offset == 0
+            let label = HomeStrings.monthAbbreviation(for: month, language: appConfig.language, showYear: showYear)
+
+            return MonthlyTrend(
+                month: month,
+                monthLabel: label,
+                totalExpenses: expense,
+                totalIncome: income
+            )
+        }
+    }
+
+    // MARK: - Body
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                ScrollView {
-                    VStack(spacing: AppTheme.spacing16) {
-                        MonthNavigator(selectedMonth: $selectedMonth)
-
-                        MonthlySummaryCard(
-                            income: monthlyIncome,
-                            expense: monthlyExpense,
-                            config: appConfig.config
-                        )
-
-                        MonthlyBarChart(
-                            selectedMonth: selectedMonth,
-                            expenses: allExpenses,
-                            config: appConfig.config
-                        )
-
-                        // Recent expenses for this month
-                        if !monthExpenses.isEmpty {
-                            recentExpensesSection
-                        }
-                    }
-                    .padding(.horizontal, AppTheme.spacing16)
-                    .padding(.bottom, AppTheme.spacing24)
-                }
-                .navigationTitle("Home")
-                .toolbar {
-                    ToolbarItemGroup(placement: .primaryAction) {
-                        Button {
-                            startVoiceInput()
-                        } label: {
-                            Image(systemName: "mic.fill")
-                        }
-
-                        Button {
-                            showingAddExpense = true
-                        } label: {
-                            Image(systemName: "plus")
-                        }
-                    }
-                }
-
-                // Voice overlay
-                if showVoiceOverlay {
-                    VoiceOverlay(
-                        voiceService: voiceService,
-                        onComplete: { text in
-                            showVoiceOverlay = false
-                            handleVoiceResult(text)
-                        },
-                        onCancel: {
-                            voiceService.cancelListening()
-                            showVoiceOverlay = false
-                        }
+            ScrollView {
+                VStack(spacing: AppTheme.spacing20) {
+                    HomeAppBar(
+                        selectedMonth: $selectedMonth,
+                        language: appConfig.language,
+                        currency: appConfig.config.currency
                     )
-                    .transition(.opacity)
-                }
 
-                // Parsing indicator
-                if isParsingVoice {
-                    parsingOverlay
+                    OverviewSection(
+                        totalExpenses: currentStats.totalExpenses,
+                        totalIncome: currentStats.totalIncome,
+                        netBalance: currentStats.netBalance,
+                        expenseChangePercent: expenseChangePercent,
+                        incomeChangePercent: incomeChangePercent,
+                        language: appConfig.language,
+                        currency: appConfig.config.currency
+                    )
+
+                    ReportSection(
+                        expenseBreakdown: currentStats.expenseCategoryBreakdown,
+                        incomeBreakdown: currentStats.incomeCategoryBreakdown,
+                        totalExpenses: currentStats.totalExpenses,
+                        totalIncome: currentStats.totalIncome,
+                        expenseChangePercent: expenseChangePercent,
+                        incomeChangePercent: incomeChangePercent,
+                        language: appConfig.language,
+                        currency: appConfig.config.currency
+                    )
+
+                    TrendsSection(
+                        trendData: trendData,
+                        language: appConfig.language,
+                        currency: appConfig.config.currency
+                    )
                 }
+                .padding(.horizontal, AppTheme.spacing16)
+                .padding(.vertical, AppTheme.spacing12)
             }
-            .animation(.easeInOut(duration: 0.2), value: showVoiceOverlay)
-            .sheet(isPresented: $showingAddExpense) {
-                ExpenseFormView(categories: categories) { expense in
-                    modelContext.insert(expense)
-                }
-            }
-            .sheet(isPresented: $showEditDialog) {
-                EditableExpenseDialog(
-                    parsedExpenses: parsedExpenses,
-                    categories: categories
-                ) { expenses in
-                    for expense in expenses {
-                        modelContext.insert(expense)
-                    }
-                }
-            }
-            .alert("Microphone Permission Required", isPresented: $showPermissionAlert) {
-                Button("Open Settings") {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Voice input requires microphone and speech recognition access. Please enable them in Settings.")
-            }
+            .toolbar(.hidden, for: .navigationBar)
+            .background(Color(.systemGroupedBackground))
         }
     }
 
-    // MARK: - Parsing Overlay
+    // MARK: - Helpers
 
-    private var parsingOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.5)
-                .ignoresSafeArea()
-            VStack(spacing: AppTheme.spacing16) {
-                ProgressView()
-                    .scaleEffect(1.5)
-                    .tint(.white)
-                Text("Parsing with AI...")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-            }
-        }
-    }
-
-    // MARK: - Recent Expenses
-
-    private var recentExpensesSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-            HStack {
-                Text("Recent")
-                    .font(.headline)
-                Spacer()
-                Text("\(monthExpenses.count) transactions")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            ForEach(monthExpenses.prefix(10), id: \.id) { expense in
-                expenseRow(expense)
-            }
-        }
-        .padding(.top, AppTheme.spacing8)
-    }
-
-    private func expenseRow(_ expense: Expense) -> some View {
-        HStack(spacing: AppTheme.spacing12) {
-            let category = categories.first { $0.id == expense.categoryId }
-            Image(systemName: category?.iconName ?? "questionmark.circle")
-                .foregroundStyle(category?.color ?? .secondary)
-                .frame(width: 28)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(expense.descriptionText)
-                    .font(.body)
-                    .lineLimit(1)
-                Text(expense.date, style: .date)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Text(appConfig.formatCurrency(expense.amount))
-                .font(.body.monospacedDigit())
-                .foregroundStyle(expense.isIncome ? AppTheme.incomeColor : AppTheme.expenseColor)
-        }
-        .padding(.vertical, AppTheme.spacing4)
-    }
-
-    // MARK: - Voice Input Logic
-
-    private func startVoiceInput() {
-        Task {
-            if !voiceService.isAuthorized {
-                let granted = await voiceService.requestPermissions()
-                if !granted {
-                    showPermissionAlert = true
-                    return
-                }
-            }
-
-            do {
-                try voiceService.startListening(language: appConfig.language)
-                showVoiceOverlay = true
-            } catch {
-                print("[HomeView] Failed to start voice: \(error)")
-            }
-        }
-    }
-
-    private func handleVoiceResult(_ text: String) {
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-
-        if GeminiParserService.isAvailable && usageLimitService.canParse {
-            isParsingVoice = true
-            Task {
-                let results = await GeminiParserService.parse(
-                    input: text,
-                    categories: categories,
-                    language: appConfig.language,
-                    usageLimitService: usageLimitService
-                )
-
-                isParsingVoice = false
-
-                if results.isEmpty {
-                    showingAddExpense = true
-                } else {
-                    parsedExpenses = results
-                    showEditDialog = true
-                }
-            }
-        } else {
-            showingAddExpense = true
-        }
+    private func computePercentChange(current: Double, previous: Double) -> Double {
+        guard previous > 0 else { return current > 0 ? 100.0 : 0.0 }
+        return ((current - previous) / previous) * 100.0
     }
 }
 
