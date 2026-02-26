@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Expense row card showing category icon, description, amount
+/// Expense card showing category icon, name, description, and amount in a rounded card
 struct ExpenseCard: View {
     let expense: Expense
     let category: QuickCategory?
@@ -8,33 +8,27 @@ struct ExpenseCard: View {
 
     var body: some View {
         HStack(spacing: AppTheme.spacing12) {
-            // Category icon
-            RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
+            // Circular category icon
+            Circle()
                 .fill((category?.color ?? .secondary).opacity(0.15))
-                .frame(width: 44, height: 44)
+                .frame(width: 48, height: 48)
                 .overlay {
                     Image(systemName: category?.iconName ?? "questionmark.circle")
+                        .font(.title3)
                         .foregroundStyle(category?.color ?? .secondary)
                 }
 
-            // Description and category
-            VStack(alignment: .leading, spacing: 2) {
-                Text(expense.descriptionText)
-                    .font(.body)
+            // Category name and description
+            VStack(alignment: .leading, spacing: 3) {
+                Text(category?.name ?? "Other")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
 
-                HStack(spacing: AppTheme.spacing4) {
-                    Text(category?.name ?? "Other")
-                        .font(.caption)
-                        .foregroundStyle(category?.color ?? .secondary)
-
-                    Text("·")
-                        .foregroundStyle(.tertiary)
-
-                    Text(expense.date, format: .dateTime.hour().minute())
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
+                Text(expense.descriptionText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
 
             Spacer()
@@ -57,6 +51,10 @@ struct ExpenseCard: View {
                 }
             }
         }
-        .padding(.vertical, AppTheme.spacing4)
+        .padding(AppTheme.spacing16)
+        .background {
+            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
+                .fill(Color(.secondarySystemGroupedBackground))
+        }
     }
 }

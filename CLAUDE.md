@@ -4,89 +4,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-QuickSpend is a native iOS expense tracking app built with SwiftUI. It uses voice input and AI (Google Gemini) to convert speech to structured expenses. The app is monetized via RevenueCat subscriptions.
-
-**Tech Stack**: SwiftUI + SwiftData + Firebase (Analytics + Gemini AI) + RevenueCat
+QuickSpend is a native iOS expense tracking app built with SwiftUI and SwiftData. Recently migrated from Flutter to SwiftUI. Targets iOS 17+ using modern Swift concurrency and the `@Observable` macro.
 
 ## Build & Run
 
-Open the project in Xcode:
-
 ```bash
+# Open in Xcode
 open QuickSpend.xcodeproj
+
+# Build from command line
+xcodebuild -scheme QuickSpend -destination 'platform=iOS Simulator,name=iPhone 16' build
+
+# Run on simulator
+xcodebuild -scheme QuickSpend -destination 'platform=iOS Simulator,name=iPhone 16' run
 ```
 
-Build from CLI:
-
-```bash
-xcodebuild -project QuickSpend.xcodeproj -scheme QuickSpend -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16'
-```
-
-**No CocoaPods or SPM CLI setup needed** — dependencies (Firebase, RevenueCat) are managed through Xcode's Swift Package Manager integration and are already configured in the `.xcodeproj`.
+Dependencies are managed via Swift Package Manager (resolved in the Xcode project, no standalone Package.swift). Key dependencies: Firebase SDK v12.9.0 (Analytics, Firestore, FirebaseAI/Gemini, Cloud Messaging) and RevenueCat (subscriptions).
 
 ## Architecture
 
-### MVVM + Service-Oriented
+**Pattern:** MVVM with service layer
 
-- **Models/** — SwiftData `@Model` classes: `Expense`, `QuickCategory`, `RecurringTemplate`. `AppConfig` is a plain `Codable` struct (not persisted in SwiftData).
-- **ViewModels/** — `@Observable` classes: `AppConfigViewModel` (language/currency/theme), `SubscriptionViewModel` (RevenueCat/premium state).
-- **Services/** — Domain-specific logic classes/enums injected or called directly from ViewModels and Views.
-- **Views/** — Feature-based folders. Tab navigation is in `Views/Main/MainTabView.swift`. Root routing (onboarding vs main app) is in `ContentView.swift`.
+- **Models/** — SwiftData `@Model` classes: `Expense`, `QuickCategory`, `RecurringTemplate`, plus supporting value types (`TransactionType`, `RecurrencePattern`, `MonthlyTrend`, `CategoryStats`, `PeriodStats`)
+- **ViewModels/** — `@Observable` view models: `AppConfigViewModel` (app settings state), `SubscriptionViewModel` (RevenueCat subscription state)
+- **Services/** — Business logic isolated from views. Key services:
+  - `GeminiParserService` — AI-powered natural language expense parsing via Firebase AI (Gemini)
+  - `VoiceService` — Voice input processing
+  - `RecurringService` — Generates expenses from recurring templates
+  - `CategoryService` — Seeds and manages expense categories
+  - `UsageLimitService` — Enforces free-tier feature limits
+  - `PreferencesService` — UserDefaults-backed config storage
+  - `AnalyticsService` — Privacy-aware Firebase Analytics (no PII, amount ranges only)
+- **Views/** — SwiftUI views organized by feature: Main, Home, Transactions, Settings, Categories, Recurring, ExpenseForm, Voice, Onboarding, Paywall
+- **Theme/** — Design system in `AppTheme.swift` (dark forest green primary, 4px spacing base) and `ColorPalette.swift`
+- **Utilities/** — `CurrencyFormatter`, `AmountAbbreviator`, `DateRangeHelper`, `AppConstants`, `HomeStrings`
 
-### Key Data Flow
+**Entry point:** `QuickSpendApp.swift` → `ContentView.swift` (onboarding gate) → `MainTabView.swift` (3-tab bottom nav: Home, Transactions, Settings)
 
-1. `QuickSpendApp.swift` sets up the SwiftData `ModelContainer` with all three models and injects `AppConfigViewModel` and `SubscriptionViewModel` into the environment.
-2. `ContentView.swift` reads `appConfig.isOnboardingComplete` to route to `OnboardingView` or `MainTabView`.
-3. Views access `modelContext` via `@Environment(\.modelContext)` for SwiftData queries.
-4. `AppConfigViewModel` and `SubscriptionViewModel` are accessed via `@Environment` throughout.
+## Key Conventions
 
-### AI Expense Parsing
-
-`GeminiParserService` builds a context-aware prompt (categories, current date, language) and calls Firebase Gemini 2.5 Flash. It parses shorthand amounts (e.g., "50k" → 50000, Vietnamese "1m5" → 1,500,000). The service is gated: free tier gets 5 parses/day (tracked in `UsageLimitService`), pro tier gets unlimited.
-
-### Feature Gating
-
-`SubscriptionViewModel.isPremium` controls access. Limits are defined in `Utilities/AppConstants.swift`:
-
-- Free: 5 Gemini parses/day, 3 recurring templates, 7-day report history
-- Premium: 999 (effectively unlimited)
-
-### Conditional Compilation
-
-Firebase and RevenueCat imports are wrapped in `#if canImport(...)` guards throughout the codebase so the app builds and runs without these SDKs (with degraded functionality).
-
-## Localization
-
-The app supports 6 languages (EN, VI, JA, KO, TH, ES) and 6 currencies (USD, VND, JPY, KRW, THB, EUR). Language/currency selection is stored in `AppConfig` via `PreferencesService` (UserDefaults). System category names are seeded per-language in `CategoryService`.
-
-## Theme & Design System
-
-Design tokens live in `Theme/AppTheme.swift`. Dark mode is supported via `themeMode` in `AppConfig`.
-
-**Color Palette:**
-
-- **Primary brand**: Dark forest green `#1B4332` (tab tint, FAB, selected segments, income bars)
-- **Primary light/dark**: `#2D6A4F` / `#143D29`
-- **Expense semantic**: Red `#C0392B` (transaction amounts), Gold/amber `#B8860B` (chart bars/lines)
-- **Income semantic**: Green `#27AE60` (transaction amounts), Dark green `#1B4332` (chart bars/lines)
-- **Accents**: Teal `#00897B`, Coral `#E57373`, Amber `#FFB74D` (settings/onboarding icons)
-- **Background**: Light mint gradient `#E8F5E9` → white at top of screens
-
-**Layout Patterns:**
-
-- 4px-based spacing system (4, 8, 12, 16, 20, 24, 32, 40, 48, 64)
-- Border radii: small 8, medium 12, large 16, xlarge 24
-- Cards: white background, `radiusLarge` corners, on `systemGroupedBackground`
-- Segmented controls: capsule-shaped with `primaryMint` fill for selected state
-- Category icons: circular pastel background + saturated icon (colors from `QuickCategory.colorHex`)
-
-**Home Dashboard Sections:**
-
-1. App bar: month navigation capsule + currency badge
-2. Overview: side-by-side income/expense comparison bars with % change badges
-3. Report: donut chart (SectorMark) with category breakdown, segmented expense/income picker
-4. Trends: 12-month line chart (always from current month, not selected month)
-
-## No Tests
-
-There are no unit or UI tests in the project.
+- Firebase and RevenueCat are optional dependencies — use `#if canImport()` for graceful degradation
+- Localization supports 6 languages: English, Vietnamese, Japanese, Korean, Thai, Spanish. Translations are currently hardcoded in models (e.g., `QuickCategory` has localized names/keywords) and `HomeStrings.swift`
+- Multi-currency support: USD, VND, JPY, KRW, THB, EUR with locale-specific formatting in `CurrencyFormatter`
+- Subscription gating: free tier has daily limits (5 AI parses, 3 recurring templates, 7-day reports); pro tier is unlimited. Limits defined in `AppConstants.swift`
+- SwiftData models use `@Attribute(.unique)` for IDs and enum raw values for storage
+- Private implementation methods use `_` prefix (e.g., `_initializeRevenueCat()`)

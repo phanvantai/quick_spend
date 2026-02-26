@@ -1,7 +1,44 @@
 import SwiftUI
 import SwiftData
 
-/// Calendar-based transactions view with grouped expense list
+/// Transaction filter options
+enum TransactionFilter: CaseIterable {
+    case all, income, expense
+
+    func label(language: String) -> String {
+        switch self {
+        case .all:
+            switch language {
+            case "vi": return "Tất cả"
+            case "ja": return "すべて"
+            case "ko": return "전체"
+            case "th": return "ทั้งหมด"
+            case "es": return "Todos"
+            default: return "All"
+            }
+        case .income:
+            switch language {
+            case "vi": return "Tiền vào"
+            case "ja": return "収入"
+            case "ko": return "수입"
+            case "th": return "รายรับ"
+            case "es": return "Ingresos"
+            default: return "Income"
+            }
+        case .expense:
+            switch language {
+            case "vi": return "Tiền ra"
+            case "ja": return "支出"
+            case "ko": return "지출"
+            case "th": return "รายจ่าย"
+            case "es": return "Gastos"
+            default: return "Expense"
+            }
+        }
+    }
+}
+
+/// Transaction list view with month navigation and filter tabs
 struct TransactionsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
@@ -9,7 +46,7 @@ struct TransactionsView: View {
     @Query(sort: \QuickCategory.name) private var categories: [QuickCategory]
 
     @State private var selectedMonth = Date()
-    @State private var selectedDate: Date?
+    @State private var selectedFilter: TransactionFilter = .all
     @State private var editingExpense: Expense?
     @State private var showingAddExpense = false
 
@@ -21,31 +58,23 @@ struct TransactionsView: View {
         }
     }
 
-    /// Expenses for the selected date, or all month expenses if no date selected
-    private var displayedExpenses: [Expense] {
-        guard let selectedDate else { return monthExpenses }
-        let calendar = Calendar.current
-        return monthExpenses.filter {
-            calendar.isDate($0.date, equalTo: selectedDate, toGranularity: .day)
+    /// Expenses filtered by selected tab
+    private var filteredExpenses: [Expense] {
+        switch selectedFilter {
+        case .all: return monthExpenses
+        case .income: return monthExpenses.filter(\.isIncome)
+        case .expense: return monthExpenses.filter(\.isExpense)
         }
     }
 
     /// Group expenses by day
     private var groupedExpenses: [(date: Date, expenses: [Expense])] {
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: displayedExpenses) { expense in
+        let grouped = Dictionary(grouping: filteredExpenses) { expense in
             calendar.startOfDay(for: expense.date)
         }
         return grouped.sorted { $0.key > $1.key }
             .map { (date: $0.key, expenses: $0.value.sorted { $0.date > $1.date }) }
-    }
-
-    private var monthlyIncome: Double {
-        monthExpenses.filter(\.isIncome).reduce(0) { $0 + $1.amount }
-    }
-
-    private var monthlyExpense: Double {
-        monthExpenses.filter(\.isExpense).reduce(0) { $0 + $1.amount }
     }
 
     var body: some View {
@@ -54,40 +83,8 @@ struct TransactionsView: View {
                 VStack(spacing: AppTheme.spacing16) {
                     MonthNavigator(selectedMonth: $selectedMonth)
 
-                    MonthlySummaryCard(
-                        income: monthlyIncome,
-                        expense: monthlyExpense,
-                        config: appConfig.config
-                    )
+                    filterTabs
 
-                    CalendarGrid(
-                        selectedMonth: selectedMonth,
-                        expenses: allExpenses,
-                        currency: appConfig.config.currency,
-                        selectedDate: $selectedDate
-                    )
-
-                    // Selected date chip
-                    if let selectedDate {
-                        HStack {
-                            Text(selectedDate.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
-                                .font(.subheadline.bold())
-                            Spacer()
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    self.selectedDate = nil
-                                }
-                            } label: {
-                                Label("Clear", systemImage: "xmark.circle.fill")
-                                    .font(.caption)
-                            }
-                            .buttonStyle(.plain)
-                            .foregroundStyle(.secondary)
-                        }
-                        .padding(.horizontal, AppTheme.spacing4)
-                    }
-
-                    // Expense list
                     expenseListSection
                 }
                 .padding(.horizontal, AppTheme.spacing16)
@@ -118,8 +115,31 @@ struct TransactionsView: View {
                     expense.typeRawValue = updated.typeRawValue
                 }
             }
-            .onChange(of: selectedMonth) {
-                selectedDate = nil
+        }
+    }
+
+    // MARK: - Filter Tabs
+
+    private var filterTabs: some View {
+        HStack(spacing: 0) {
+            ForEach(TransactionFilter.allCases, id: \.self) { filter in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        selectedFilter = filter
+                    }
+                } label: {
+                    VStack(spacing: AppTheme.spacing8) {
+                        Text(filter.label(language: appConfig.config.language))
+                            .font(.subheadline.weight(selectedFilter == filter ? .semibold : .regular))
+                            .foregroundStyle(selectedFilter == filter ? .primary : .secondary)
+
+                        Rectangle()
+                            .fill(selectedFilter == filter ? AppTheme.dashboardExpenseLine : .clear)
+                            .frame(height: 2)
+                    }
+                }
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
             }
         }
     }
@@ -130,17 +150,17 @@ struct TransactionsView: View {
     private var expenseListSection: some View {
         if groupedExpenses.isEmpty {
             ContentUnavailableView(
-                selectedDate != nil ? "No Transactions" : "No Transactions This Month",
+                "No Transactions",
                 systemImage: "tray",
-                description: Text(selectedDate != nil
-                    ? "No transactions on this date."
-                    : "Add your first transaction to get started.")
+                description: Text("No transactions this month.")
             )
             .padding(.top, AppTheme.spacing24)
         } else {
-            LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
+            LazyVStack(spacing: AppTheme.spacing20, pinnedViews: []) {
                 ForEach(groupedExpenses, id: \.date) { group in
-                    Section {
+                    VStack(alignment: .leading, spacing: AppTheme.spacing12) {
+                        dateSectionHeader(for: group.date)
+
                         ForEach(group.expenses, id: \.id) { expense in
                             let category = categories.first { $0.id == expense.categoryId }
                             ExpenseCard(
@@ -163,14 +183,7 @@ struct TransactionsView: View {
                                 }
                                 .tint(AppTheme.primaryMint)
                             }
-
-                            if expense.id != group.expenses.last?.id {
-                                Divider()
-                                    .padding(.leading, 56)
-                            }
                         }
-                    } header: {
-                        dateSectionHeader(for: group.date, expenses: group.expenses)
                     }
                 }
             }
@@ -179,31 +192,11 @@ struct TransactionsView: View {
 
     // MARK: - Date Section Header
 
-    private func dateSectionHeader(for date: Date, expenses: [Expense]) -> some View {
-        let dayIncome = expenses.filter(\.isIncome).reduce(0) { $0 + $1.amount }
-        let dayExpense = expenses.filter(\.isExpense).reduce(0) { $0 + $1.amount }
-
-        return HStack {
-            Text(date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
-                .font(.subheadline.bold())
-                .foregroundStyle(.primary)
-
-            Spacer()
-
-            if dayIncome > 0 {
-                Text("+\(appConfig.formatCurrency(dayIncome))")
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(AppTheme.incomeColor)
-            }
-            if dayExpense > 0 {
-                Text("-\(appConfig.formatCurrency(dayExpense))")
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(AppTheme.expenseColor)
-            }
-        }
-        .padding(.vertical, AppTheme.spacing8)
-        .padding(.horizontal, AppTheme.spacing4)
-        .background(.regularMaterial)
+    private func dateSectionHeader(for date: Date) -> some View {
+        Text(date.formatted(.dateTime.day(.twoDigits).month(.twoDigits).year()))
+            .font(.subheadline.bold())
+            .foregroundStyle(.primary)
+            .padding(.leading, AppTheme.spacing4)
     }
 
     // MARK: - Actions
