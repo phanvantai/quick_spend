@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D17BC02A2F50A7370035359E /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = D17BC0292F50A7370035359E /* RevenueCat */; };
+		D17BC02C2F50A7370035359E /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = D17BC02B2F50A7370035359E /* RevenueCatUI */; };
 		E568064B2F3DE1D100FAA8A9 /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = E568064A2F3DE1D100FAA8A9 /* FirebaseAI */; };
 		E568064D2F3DE1D100FAA8A9 /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = E568064C2F3DE1D100FAA8A9 /* FirebaseAILogic */; };
 		E568064F2F3DE1D100FAA8A9 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E568064E2F3DE1D100FAA8A9 /* FirebaseAnalytics */; };
@@ -33,6 +35,8 @@
 			files = (
 				E568064D2F3DE1D100FAA8A9 /* FirebaseAILogic in Frameworks */,
 				E568064B2F3DE1D100FAA8A9 /* FirebaseAI in Frameworks */,
+				D17BC02C2F50A7370035359E /* RevenueCatUI in Frameworks */,
+				D17BC02A2F50A7370035359E /* RevenueCat in Frameworks */,
 				E56806512F3DE1D100FAA8A9 /* FirebaseCore in Frameworks */,
 				E56806532F3DE1D100FAA8A9 /* FirebaseFirestore in Frameworks */,
 				E568064F2F3DE1D100FAA8A9 /* FirebaseAnalytics in Frameworks */,
@@ -83,6 +87,8 @@
 				E568064E2F3DE1D100FAA8A9 /* FirebaseAnalytics */,
 				E56806502F3DE1D100FAA8A9 /* FirebaseCore */,
 				E56806522F3DE1D100FAA8A9 /* FirebaseFirestore */,
+				D17BC0292F50A7370035359E /* RevenueCat */,
+				D17BC02B2F50A7370035359E /* RevenueCatUI */,
 			);
 			productName = QuickSpend;
 			productReference = E5DD73A82F3B0A8D00D37A05 /* QuickSpend.app */;
@@ -114,6 +120,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				E56806492F3DE1D100FAA8A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				D17BC0282F50A7370035359E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E5DD73A92F3B0A8D00D37A05 /* Products */;
@@ -361,6 +368,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		D17BC0282F50A7370035359E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.60.0;
+			};
+		};
 		E56806492F3DE1D100FAA8A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -372,6 +387,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		D17BC0292F50A7370035359E /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D17BC0282F50A7370035359E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		D17BC02B2F50A7370035359E /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D17BC0282F50A7370035359E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
+		};
 		E568064A2F3DE1D100FAA8A9 /* FirebaseAI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E56806492F3DE1D100FAA8A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
