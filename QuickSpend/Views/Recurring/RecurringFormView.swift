@@ -5,11 +5,11 @@ struct RecurringFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppConfigViewModel.self) private var appConfig
 
-    let categories: [QuickCategory]
+    let categories: [Category]
     let existingTemplate: RecurringTemplate?
     let onSave: (RecurringTemplate) -> Void
 
-    @State private var descriptionText: String
+    @State private var noteText: String
     @State private var amountText: String
     @State private var selectedCategoryId: String
     @State private var selectedType: TransactionType
@@ -22,12 +22,12 @@ struct RecurringFormView: View {
 
     private var isEditMode: Bool { existingTemplate != nil }
 
-    private var filteredCategories: [QuickCategory] {
+    private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType }
     }
 
     init(
-        categories: [QuickCategory],
+        categories: [Category],
         existingTemplate: RecurringTemplate? = nil,
         onSave: @escaping (RecurringTemplate) -> Void
     ) {
@@ -35,9 +35,9 @@ struct RecurringFormView: View {
         self.existingTemplate = existingTemplate
         self.onSave = onSave
 
-        _descriptionText = State(initialValue: existingTemplate?.descriptionText ?? "")
+        _noteText = State(initialValue: existingTemplate?.note ?? "")
         _amountText = State(initialValue: existingTemplate.map { String(format: "%.2f", $0.amount) } ?? "")
-        _selectedCategoryId = State(initialValue: existingTemplate?.categoryId ?? "other")
+        _selectedCategoryId = State(initialValue: existingTemplate?.categoryId ?? "other_expense")
         _selectedType = State(initialValue: existingTemplate?.type ?? .expense)
         _selectedPattern = State(initialValue: existingTemplate?.pattern ?? .monthly)
         _startDate = State(initialValue: existingTemplate?.startDate ?? .now)
@@ -62,7 +62,7 @@ struct RecurringFormView: View {
 
                 // Description
                 Section("Description") {
-                    TextField("e.g. Monthly rent, Netflix", text: $descriptionText)
+                    TextField("e.g. Monthly rent, Netflix", text: $noteText)
                         .textInputAutocapitalization(.sentences)
                 }
 
@@ -98,6 +98,8 @@ struct RecurringFormView: View {
                 // Recurrence pattern
                 Section("Recurrence") {
                     Picker("Pattern", selection: $selectedPattern) {
+                        Text("Daily").tag(RecurrencePattern.daily)
+                        Text("Weekly").tag(RecurrencePattern.weekly)
                         Text("Monthly").tag(RecurrencePattern.monthly)
                         Text("Yearly").tag(RecurrencePattern.yearly)
                     }
@@ -133,12 +135,12 @@ struct RecurringFormView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
                         .bold()
-                        .disabled(descriptionText.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .disabled(noteText.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
             .onChange(of: selectedType) {
                 if !filteredCategories.contains(where: { $0.id == selectedCategoryId }) {
-                    selectedCategoryId = filteredCategories.first?.id ?? "other"
+                    selectedCategoryId = filteredCategories.first?.id ?? "other_expense"
                 }
             }
         }
@@ -146,7 +148,7 @@ struct RecurringFormView: View {
 
     // MARK: - Category Chip
 
-    private func categoryChip(_ category: QuickCategory) -> some View {
+    private func categoryChip(_ category: Category) -> some View {
         let isSelected = category.id == selectedCategoryId
         return Button {
             selectedCategoryId = category.id
@@ -189,10 +191,8 @@ struct RecurringFormView: View {
         let template = RecurringTemplate(
             id: existingTemplate?.id ?? UUID().uuidString,
             amount: amount,
-            descriptionText: descriptionText.trimmingCharacters(in: .whitespaces),
+            note: noteText.trimmingCharacters(in: .whitespaces),
             categoryId: selectedCategoryId,
-            language: appConfig.language,
-            userId: AppConstants.defaultUserId,
             type: selectedType,
             pattern: selectedPattern,
             startDate: startDate,
@@ -208,9 +208,9 @@ struct RecurringFormView: View {
 
 #Preview {
     RecurringFormView(
-        categories: QuickCategory.defaultSystemCategories(language: "en")
+        categories: CategoryService.defaultCategories(language: "en")
     ) { template in
-        print("Saved: \(template.descriptionText)")
+        print("Saved: \(template.note)")
     }
     .environment(AppConfigViewModel())
 }

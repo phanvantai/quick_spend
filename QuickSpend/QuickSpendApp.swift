@@ -10,6 +10,7 @@ struct QuickSpendApp: App {
     @State private var subscription = SubscriptionViewModel()
 
     init() {
+        Self._resetStoreIfNeeded()
         #if canImport(FirebaseCore)
         FirebaseApp.configure()
         #endif
@@ -26,9 +27,27 @@ struct QuickSpendApp: App {
                 .preferredColorScheme(appConfig.colorScheme)
         }
         .modelContainer(for: [
-            Expense.self,
-            QuickCategory.self,
+            Transaction.self,
+            Category.self,
             RecurringTemplate.self,
         ])
+    }
+
+    /// Reset SwiftData store when upgrading from v1 to v2 (clean start migration)
+    private static func _resetStoreIfNeeded() {
+        let key = "hasCompletedV2Migration"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+
+        let appSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first!
+        let storeURL = appSupport.appendingPathComponent("default.store")
+        try? FileManager.default.removeItem(at: storeURL)
+
+        // Reset onboarding so categories get re-seeded
+        PreferencesService.shared.resetOnboarding()
+        UserDefaults.standard.set(true, forKey: key)
+        print("[QuickSpendApp] V2 migration: reset SwiftData store")
     }
 }

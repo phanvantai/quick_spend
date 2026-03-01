@@ -184,7 +184,7 @@ struct SettingsView: View {
                 Button {
                     appConfig.setLanguage(option.code)
                     // Re-seed categories in new language
-                    CategoryService.updateSystemCategoryNames(
+                    CategoryService.updateCategoryNames(
                         language: option.code,
                         modelContext: modelContext
                     )
@@ -321,7 +321,7 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
-        .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(AppConfigViewModel())
         .environment(SubscriptionViewModel())
 }

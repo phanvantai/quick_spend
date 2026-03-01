@@ -6,7 +6,7 @@ struct RecurringListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
     @Query(sort: \RecurringTemplate.startDate, order: .reverse) private var templates: [RecurringTemplate]
-    @Query(sort: \QuickCategory.name) private var categories: [QuickCategory]
+    @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var showingAddForm = false
     @State private var editingTemplate: RecurringTemplate?
@@ -60,12 +60,13 @@ struct RecurringListView: View {
         .sheet(item: $editingTemplate) { template in
             RecurringFormView(categories: categories, existingTemplate: template) { updated in
                 template.amount = updated.amount
-                template.descriptionText = updated.descriptionText
+                template.note = updated.note
                 template.categoryId = updated.categoryId
-                template.typeRawValue = updated.typeRawValue
-                template.patternRawValue = updated.patternRawValue
+                template.type = updated.type
+                template.pattern = updated.pattern
                 template.startDate = updated.startDate
                 template.endDate = updated.endDate
+                template.updatedAt = .now
             }
         }
         .alert("Delete Template", isPresented: .init(
@@ -81,7 +82,7 @@ struct RecurringListView: View {
             }
         } message: {
             if let template = deletingTemplate {
-                Text("Delete \"\(template.descriptionText)\"? Previously generated expenses will not be removed.")
+                Text("Delete \"\(template.note)\"? Previously generated transactions will not be removed.")
             }
         }
     }
@@ -103,7 +104,7 @@ struct RecurringListView: View {
 
             // Info
             VStack(alignment: .leading, spacing: 2) {
-                Text(template.descriptionText)
+                Text(template.note)
                     .font(.body)
                     .lineLimit(1)
 
@@ -144,9 +145,10 @@ struct RecurringListView: View {
 
     private func patternLabel(_ pattern: RecurrencePattern) -> String {
         switch pattern {
+        case .daily: return "Daily"
+        case .weekly: return "Weekly"
         case .monthly: return "Monthly"
         case .yearly: return "Yearly"
-        case .none: return "None"
         }
     }
 }
@@ -155,6 +157,6 @@ struct RecurringListView: View {
     NavigationStack {
         RecurringListView()
     }
-    .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+    .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
     .environment(AppConfigViewModel())
 }

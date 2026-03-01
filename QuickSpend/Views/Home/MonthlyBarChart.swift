@@ -4,7 +4,7 @@ import Charts
 /// Bar chart showing daily income vs expense for the selected month
 struct MonthlyBarChart: View {
     let selectedMonth: Date
-    let expenses: [Expense]
+    let expenses: [Transaction]
     let config: AppConfig
 
     private var dailyData: [DailyTotal] {

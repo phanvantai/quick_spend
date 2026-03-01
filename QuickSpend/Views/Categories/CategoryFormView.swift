@@ -4,8 +4,8 @@ import SwiftUI
 struct CategoryFormView: View {
     @Environment(\.dismiss) private var dismiss
 
-    let existingCategory: QuickCategory?
-    let onSave: (QuickCategory) -> Void
+    let existingCategory: Category?
+    let onSave: (Category) -> Void
 
     @State private var name: String
     @State private var keywordsText: String
@@ -18,9 +18,9 @@ struct CategoryFormView: View {
     private var isEditMode: Bool { existingCategory != nil }
 
     init(
-        existingCategory: QuickCategory? = nil,
+        existingCategory: Category? = nil,
         defaultType: TransactionType = .expense,
-        onSave: @escaping (QuickCategory) -> Void
+        onSave: @escaping (Category) -> Void
     ) {
         self.existingCategory = existingCategory
         self.onSave = onSave
@@ -182,15 +182,13 @@ struct CategoryFormView: View {
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
 
-        let category = QuickCategory(
+        let category = Category(
             id: existingCategory?.id ?? trimmedName.lowercased().replacingOccurrences(of: " ", with: "_"),
             name: trimmedName,
-            keywords: keywords,
             iconName: selectedIcon,
             colorHex: selectedColorHex,
-            isSystem: existingCategory?.isSystem ?? false,
-            userId: existingCategory?.userId ?? AppConstants.defaultUserId,
-            type: selectedType
+            type: selectedType,
+            keywords: keywords
         )
 
         onSave(category)

@@ -1,22 +1,22 @@
 import Foundation
 import SwiftData
 
-/// Recurring transaction template configuration
-/// Generates normal transactions on schedule
+/// Core transaction model for both expenses and income
 @Model
-final class RecurringTemplate {
+final class Transaction {
     @Attribute(.unique) var id: String
     var amount: Double
     var note: String
     var categoryId: String
     var type: TransactionType
-    var pattern: RecurrencePattern
-    var startDate: Date
-    var endDate: Date?
-    var lastGeneratedDate: Date?
-    var isActive: Bool
+    var date: Date
+    var rawInput: String?
+    var confidence: Double?
     var createdAt: Date
     var updatedAt: Date
+
+    var isIncome: Bool { type == .income }
+    var isExpense: Bool { type == .expense }
 
     init(
         id: String = UUID().uuidString,
@@ -24,11 +24,9 @@ final class RecurringTemplate {
         note: String,
         categoryId: String,
         type: TransactionType = .expense,
-        pattern: RecurrencePattern = .monthly,
-        startDate: Date = .now,
-        endDate: Date? = nil,
-        lastGeneratedDate: Date? = nil,
-        isActive: Bool = true,
+        date: Date = .now,
+        rawInput: String? = nil,
+        confidence: Double? = nil,
         createdAt: Date = .now,
         updatedAt: Date = .now
     ) {
@@ -37,11 +35,9 @@ final class RecurringTemplate {
         self.note = note
         self.categoryId = categoryId
         self.type = type
-        self.pattern = pattern
-        self.startDate = startDate
-        self.endDate = endDate
-        self.lastGeneratedDate = lastGeneratedDate
-        self.isActive = isActive
+        self.date = date
+        self.rawInput = rawInput
+        self.confidence = confidence
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

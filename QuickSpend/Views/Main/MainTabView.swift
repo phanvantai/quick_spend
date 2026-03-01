@@ -5,14 +5,14 @@ import SwiftData
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
-    @Query(sort: \QuickCategory.name) private var categories: [QuickCategory]
+    @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedTab = 0
     @State private var voiceService = VoiceService()
     @State private var usageLimitService = UsageLimitService()
     @State private var showVoiceOverlay = false
-    @State private var parsedExpenses: [ParsedExpense] = []
-    @State private var showExpenseReview = false
+    @State private var parsedTransactions: [ParsedTransaction] = []
+    @State private var showTransactionReview = false
     @State private var showPermissionAlert = false
     @State private var isProcessingVoice = false
     // Fallback: manual entry with pre-filled transcription
@@ -74,23 +74,23 @@ struct MainTabView: View {
                 }
             )
         }
-        .sheet(isPresented: $showExpenseReview) {
+        .sheet(isPresented: $showTransactionReview) {
             EditableExpenseDialog(
-                parsedExpenses: parsedExpenses,
+                parsedExpenses: parsedTransactions,
                 categories: categories,
-                onSave: { expenses in
-                    for expense in expenses {
-                        modelContext.insert(expense)
+                onSave: { transactions in
+                    for transaction in transactions {
+                        modelContext.insert(transaction)
                     }
-                    parsedExpenses = []
+                    parsedTransactions = []
                 }
             )
         }
         .sheet(isPresented: $showManualFallback) {
             ExpenseFormView(
                 categories: categories
-            ) { expense in
-                modelContext.insert(expense)
+            ) { transaction in
+                modelContext.insert(transaction)
             }
         }
         .alert("Microphone Access Required", isPresented: $showPermissionAlert) {
@@ -152,8 +152,8 @@ struct MainTabView: View {
                     fallbackTranscription = text
                     showManualFallback = true
                 } else {
-                    parsedExpenses = results
-                    showExpenseReview = true
+                    parsedTransactions = results
+                    showTransactionReview = true
                 }
             }
         }
@@ -162,7 +162,7 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
-        .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(AppConfigViewModel())
         .environment(SubscriptionViewModel())
 }

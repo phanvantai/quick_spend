@@ -242,7 +242,7 @@ struct OnboardingView: View {
         )
 
         // Seed categories
-        CategoryService.seedSystemCategoriesIfNeeded(
+        CategoryService.seedCategoriesIfNeeded(
             language: selectedLanguage,
             modelContext: modelContext
         )
@@ -300,6 +300,6 @@ struct OptionCard: View {
 
 #Preview {
     OnboardingView(onComplete: {})
-        .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(AppConfigViewModel())
 }

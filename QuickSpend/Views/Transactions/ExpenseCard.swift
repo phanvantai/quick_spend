@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Expense card showing category icon, name, description, and amount in a rounded card
+/// Transaction card showing category icon, name, note, and amount in a rounded card
 struct ExpenseCard: View {
-    let expense: Expense
-    let category: QuickCategory?
+    let transaction: Transaction
+    let category: Category?
     let config: AppConfig
 
     var body: some View {
@@ -25,7 +25,7 @@ struct ExpenseCard: View {
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
-                Text(expense.descriptionText)
+                Text(transaction.note)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -35,11 +35,11 @@ struct ExpenseCard: View {
 
             // Amount
             VStack(alignment: .trailing, spacing: 2) {
-                Text("\(expense.isIncome ? "+" : "-")\(config.formatCurrency(expense.amount))")
+                Text("\(transaction.isIncome ? "+" : "-")\(config.formatCurrency(transaction.amount))")
                     .font(.body.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(expense.isIncome ? AppTheme.incomeColor : AppTheme.expenseColor)
+                    .foregroundStyle(transaction.isIncome ? AppTheme.incomeColor : AppTheme.expenseColor)
 
-                if expense.confidence < AppConstants.confidenceWarningThreshold {
+                if let confidence = transaction.confidence, confidence < AppConstants.confidenceWarningThreshold {
                     Text("Low confidence")
                         .font(.system(size: 9))
                         .foregroundStyle(AppTheme.warning)

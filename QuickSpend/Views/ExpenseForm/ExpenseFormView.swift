@@ -1,16 +1,16 @@
 import SwiftUI
 import SwiftData
 
-/// Full-screen form for adding or editing an expense
+/// Full-screen form for adding or editing a transaction
 struct ExpenseFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppConfigViewModel.self) private var appConfig
 
-    let categories: [QuickCategory]
-    let existingExpense: Expense?
-    let onSave: (Expense) -> Void
+    let categories: [Category]
+    let existingExpense: Transaction?
+    let onSave: (Transaction) -> Void
 
-    @State private var descriptionText: String
+    @State private var noteText: String
     @State private var amountText: String
     @State private var selectedCategoryId: String
     @State private var selectedDate: Date
@@ -20,22 +20,22 @@ struct ExpenseFormView: View {
 
     private var isEditMode: Bool { existingExpense != nil }
 
-    private var filteredCategories: [QuickCategory] {
+    private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType }
     }
 
     init(
-        categories: [QuickCategory],
-        expense: Expense? = nil,
-        onSave: @escaping (Expense) -> Void
+        categories: [Category],
+        expense: Transaction? = nil,
+        onSave: @escaping (Transaction) -> Void
     ) {
         self.categories = categories
         self.existingExpense = expense
         self.onSave = onSave
 
-        _descriptionText = State(initialValue: expense?.descriptionText ?? "")
+        _noteText = State(initialValue: expense?.note ?? "")
         _amountText = State(initialValue: expense.map { String(format: "%.2f", $0.amount) } ?? "")
-        _selectedCategoryId = State(initialValue: expense?.categoryId ?? "other")
+        _selectedCategoryId = State(initialValue: expense?.categoryId ?? "other_expense")
         _selectedDate = State(initialValue: expense?.date ?? {
             let now = Date.now
             return Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: now) ?? now
@@ -58,9 +58,9 @@ struct ExpenseFormView: View {
                     .padding(.vertical, AppTheme.spacing4)
                 }
 
-                // Description
+                // Note
                 Section("Description") {
-                    TextField("What did you spend on?", text: $descriptionText)
+                    TextField("What did you spend on?", text: $noteText)
                         .textInputAutocapitalization(.sentences)
                 }
 
@@ -113,13 +113,13 @@ struct ExpenseFormView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
                         .bold()
-                        .disabled(descriptionText.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .disabled(noteText.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
             .onChange(of: selectedType) {
                 // Reset category when type changes if current doesn't match
                 if !filteredCategories.contains(where: { $0.id == selectedCategoryId }) {
-                    selectedCategoryId = filteredCategories.first?.id ?? "other"
+                    selectedCategoryId = filteredCategories.first?.id ?? "other_expense"
                 }
             }
         }
@@ -127,7 +127,7 @@ struct ExpenseFormView: View {
 
     // MARK: - Category Chip
 
-    private func categoryChip(_ category: QuickCategory) -> some View {
+    private func categoryChip(_ category: Category) -> some View {
         let isSelected = category.id == selectedCategoryId
         return Button {
             selectedCategoryId = category.id
@@ -168,29 +168,27 @@ struct ExpenseFormView: View {
         }
         showAmountError = false
 
-        let expense = Expense(
+        let transaction = Transaction(
             id: existingExpense?.id ?? UUID().uuidString,
             amount: amount,
-            descriptionText: descriptionText.trimmingCharacters(in: .whitespaces),
+            note: noteText.trimmingCharacters(in: .whitespaces),
             categoryId: selectedCategoryId,
-            language: appConfig.language,
+            type: selectedType,
             date: selectedDate,
-            userId: AppConstants.defaultUserId,
-            rawInput: existingExpense?.rawInput ?? "",
-            confidence: existingExpense?.confidence ?? 1.0,
-            type: selectedType
+            rawInput: existingExpense?.rawInput,
+            confidence: existingExpense?.confidence
         )
 
-        onSave(expense)
+        onSave(transaction)
         dismiss()
     }
 }
 
 #Preview {
     ExpenseFormView(
-        categories: QuickCategory.defaultSystemCategories(language: "en")
-    ) { expense in
-        print("Saved: \(expense.descriptionText) - \(expense.amount)")
+        categories: CategoryService.defaultCategories(language: "en")
+    ) { transaction in
+        print("Saved: \(transaction.note) - \(transaction.amount)")
     }
     .environment(AppConfigViewModel())
 }

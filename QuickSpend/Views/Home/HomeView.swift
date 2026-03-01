@@ -5,16 +5,16 @@ import SwiftData
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
-    @Query(sort: \Expense.date, order: .reverse) private var allExpenses: [Expense]
-    @Query(sort: \QuickCategory.name) private var categories: [QuickCategory]
+    @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
+    @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedMonth = Date()
 
     // MARK: - Current Month Stats
 
-    private var monthExpenses: [Expense] {
+    private var monthTransactions: [Transaction] {
         let calendar = Calendar.current
-        return allExpenses.filter {
+        return allTransactions.filter {
             calendar.isDate($0.date, equalTo: selectedMonth, toGranularity: .month)
         }
     }
@@ -23,16 +23,16 @@ struct HomeView: View {
         let calendar = Calendar.current
         let start = calendar.date(from: calendar.dateComponents([.year, .month], from: selectedMonth))!
         let end = calendar.date(byAdding: .month, value: 1, to: start)!
-        return PeriodStats.fromExpenses(monthExpenses, startDate: start, endDate: end)
+        return PeriodStats.fromTransactions(monthTransactions, startDate: start, endDate: end)
             .withCategoryBreakdown(categories: categories)
     }
 
     // MARK: - Previous Month Stats (for % change)
 
-    private var previousMonthExpenses: [Expense] {
+    private var previousMonthTransactions: [Transaction] {
         let calendar = Calendar.current
         guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: selectedMonth) else { return [] }
-        return allExpenses.filter {
+        return allTransactions.filter {
             calendar.isDate($0.date, equalTo: prevMonth, toGranularity: .month)
         }
     }
@@ -44,7 +44,7 @@ struct HomeView: View {
         }
         let start = calendar.date(from: calendar.dateComponents([.year, .month], from: prevMonth))!
         let end = calendar.date(byAdding: .month, value: 1, to: start)!
-        return PeriodStats.fromExpenses(previousMonthExpenses, startDate: start, endDate: end)
+        return PeriodStats.fromTransactions(previousMonthTransactions, startDate: start, endDate: end)
     }
 
     private var expenseChangePercent: Double {
@@ -61,11 +61,11 @@ struct HomeView: View {
         let calendar = Calendar.current
         return (0..<12).map { offset -> MonthlyTrend in
             let month = calendar.date(byAdding: .month, value: -(11 - offset), to: Date())!
-            let expenses = allExpenses.filter {
+            let transactions = allTransactions.filter {
                 calendar.isDate($0.date, equalTo: month, toGranularity: .month)
             }
-            let income = expenses.filter(\.isIncome).reduce(0) { $0 + $1.amount }
-            let expense = expenses.filter(\.isExpense).reduce(0) { $0 + $1.amount }
+            let income = transactions.filter(\.isIncome).reduce(0) { $0 + $1.amount }
+            let expense = transactions.filter(\.isExpense).reduce(0) { $0 + $1.amount }
 
             let monthNum = calendar.component(.month, from: month)
             let showYear = monthNum == 1 || offset == 0
@@ -137,6 +137,6 @@ struct HomeView: View {
 
 #Preview {
     HomeView()
-        .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(AppConfigViewModel())
 }

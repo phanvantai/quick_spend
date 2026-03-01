@@ -1,27 +1,19 @@
 import SwiftUI
 import SwiftData
 
-/// Category management screen with system and user categories
+/// Category management screen
 struct CategoriesView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
-    @Query(sort: \QuickCategory.name) private var allCategories: [QuickCategory]
+    @Query(sort: \Category.sortOrder) private var allCategories: [Category]
 
     @State private var showIncome = false
     @State private var showingAddCategory = false
-    @State private var editingCategory: QuickCategory?
-    @State private var deletingCategory: QuickCategory?
+    @State private var editingCategory: Category?
+    @State private var deletingCategory: Category?
 
-    private var filteredCategories: [QuickCategory] {
-        allCategories.filter { showIncome ? $0.isIncomeCategory : $0.isExpenseCategory }
-    }
-
-    private var systemCategories: [QuickCategory] {
-        filteredCategories.filter(\.isSystem)
-    }
-
-    private var userCategories: [QuickCategory] {
-        filteredCategories.filter { !$0.isSystem }
+    private var filteredCategories: [Category] {
+        allCategories.filter { !$0.isHidden && (showIncome ? $0.isIncomeCategory : $0.isExpenseCategory) }
     }
 
     var body: some View {
@@ -38,28 +30,17 @@ struct CategoriesView: View {
                 .padding(.vertical, AppTheme.spacing4)
             }
 
-            // System categories
+            // Categories
             Section {
-                ForEach(systemCategories, id: \.id) { category in
-                    categoryRow(category, isSystem: true)
-                }
-            } header: {
-                Text("System Categories")
-            } footer: {
-                Text("System categories can be edited but not deleted.")
-            }
-
-            // User categories
-            Section {
-                if userCategories.isEmpty {
+                if filteredCategories.isEmpty {
                     ContentUnavailableView(
-                        "No Custom Categories",
+                        "No Categories",
                         systemImage: "square.grid.2x2",
-                        description: Text("Tap + to create a custom category.")
+                        description: Text("Tap + to create a category.")
                     )
                 } else {
-                    ForEach(userCategories, id: \.id) { category in
-                        categoryRow(category, isSystem: false)
+                    ForEach(filteredCategories, id: \.id) { category in
+                        categoryRow(category)
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
                                     deletingCategory = category
@@ -77,8 +58,6 @@ struct CategoriesView: View {
                             }
                     }
                 }
-            } header: {
-                Text("Custom Categories")
             }
         }
         .navigationTitle("Categories")
@@ -103,7 +82,8 @@ struct CategoriesView: View {
                 category.keywords = updated.keywords
                 category.iconName = updated.iconName
                 category.colorHex = updated.colorHex
-                category.typeRawValue = updated.typeRawValue
+                category.type = updated.type
+                category.updatedAt = .now
             }
         }
         .alert("Delete Category", isPresented: .init(
@@ -118,15 +98,15 @@ struct CategoriesView: View {
             }
         } message: {
             if let category = deletingCategory {
-                Text("Delete \"\(category.name)\"? Expenses using this category will be reassigned to \"Other\".")
+                Text("Delete \"\(category.name)\"? Transactions using this category will be reassigned to \"Other\".")
             }
         }
     }
 
     // MARK: - Category Row
 
-    private func categoryRow(_ category: QuickCategory, isSystem: Bool) -> some View {
-        let isFallback = category.id == "other" || category.id == "other_income"
+    private func categoryRow(_ category: Category) -> some View {
+        let isFallback = category.id == "other_expense" || category.id == "other_income"
 
         return HStack(spacing: AppTheme.spacing12) {
             RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
@@ -158,14 +138,6 @@ struct CategoriesView: View {
                 Image(systemName: "lock.fill")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
-            } else if isSystem {
-                Button {
-                    editingCategory = category
-                } label: {
-                    Image(systemName: "pencil.circle")
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
             }
         }
         .padding(.vertical, 2)
@@ -173,10 +145,10 @@ struct CategoriesView: View {
 
     // MARK: - Actions
 
-    private func deleteCategory(_ category: QuickCategory) {
-        // Reassign expenses to "other" or "other_income"
-        let fallbackId = category.isIncomeCategory ? "other_income" : "other"
-        CategoryService.reassignExpenses(
+    private func deleteCategory(_ category: Category) {
+        // Reassign transactions to "other_expense" or "other_income"
+        let fallbackId = category.isIncomeCategory ? "other_income" : "other_expense"
+        CategoryService.reassignTransactions(
             from: category.id,
             to: fallbackId,
             modelContext: modelContext
@@ -190,6 +162,6 @@ struct CategoriesView: View {
     NavigationStack {
         CategoriesView()
     }
-    .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+    .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
     .environment(AppConfigViewModel())
 }

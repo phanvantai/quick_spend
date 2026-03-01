@@ -1,22 +1,22 @@
 import SwiftUI
 
-/// Dialog for reviewing and editing AI-parsed expenses before saving
+/// Dialog for reviewing and editing AI-parsed transactions before saving
 struct EditableExpenseDialog: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppConfigViewModel.self) private var appConfig
 
-    let parsedExpenses: [ParsedExpense]
-    let categories: [QuickCategory]
-    let onSave: ([Expense]) -> Void
+    let parsedTransactions: [ParsedTransaction]
+    let categories: [Category]
+    let onSave: ([Transaction]) -> Void
 
     @State private var editableExpenses: [EditableExpenseData]
 
     init(
-        parsedExpenses: [ParsedExpense],
-        categories: [QuickCategory],
-        onSave: @escaping ([Expense]) -> Void
+        parsedExpenses: [ParsedTransaction],
+        categories: [Category],
+        onSave: @escaping ([Transaction]) -> Void
     ) {
-        self.parsedExpenses = parsedExpenses
+        self.parsedTransactions = parsedExpenses
         self.categories = categories
         self.onSave = onSave
         _editableExpenses = State(initialValue: parsedExpenses.map { EditableExpenseData(from: $0) })
@@ -64,12 +64,12 @@ struct EditableExpenseDialog: View {
             // Reset category when type changes
             let filtered = categories.filter { $0.type == editableExpenses[index].type }
             if !filtered.contains(where: { $0.id == editableExpenses[index].categoryId }) {
-                editableExpenses[index].categoryId = filtered.first?.id ?? "other"
+                editableExpenses[index].categoryId = filtered.first?.id ?? "other_expense"
             }
         }
 
-        // Description
-        TextField("Description", text: $editableExpenses[index].descriptionText)
+        // Note
+        TextField("Description", text: $editableExpenses[index].note)
             .textInputAutocapitalization(.sentences)
 
         // Amount
@@ -118,28 +118,26 @@ struct EditableExpenseDialog: View {
     // MARK: - Save
 
     private func save() {
-        let expenses = editableExpenses.compactMap { data -> Expense? in
+        let transactions = editableExpenses.compactMap { data -> Transaction? in
             let cleanedAmount = data.amountText
                 .replacingOccurrences(of: ",", with: "")
                 .replacingOccurrences(of: " ", with: "")
             guard let amount = Double(cleanedAmount), amount > 0 else { return nil }
-            guard !data.descriptionText.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+            guard !data.note.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
 
-            return Expense(
+            return Transaction(
                 amount: amount,
-                descriptionText: data.descriptionText.trimmingCharacters(in: .whitespaces),
+                note: data.note.trimmingCharacters(in: .whitespaces),
                 categoryId: data.categoryId,
-                language: appConfig.language,
+                type: data.type,
                 date: data.date,
-                userId: AppConstants.defaultUserId,
                 rawInput: data.rawInput,
-                confidence: data.confidence,
-                type: data.type
+                confidence: data.confidence
             )
         }
 
-        guard !expenses.isEmpty else { return }
-        onSave(expenses)
+        guard !transactions.isEmpty else { return }
+        onSave(transactions)
         dismiss()
     }
 }
@@ -147,7 +145,7 @@ struct EditableExpenseDialog: View {
 // MARK: - Editable Data
 
 struct EditableExpenseData {
-    var descriptionText: String
+    var note: String
     var amountText: String
     var categoryId: String
     var type: TransactionType
@@ -155,13 +153,13 @@ struct EditableExpenseData {
     var confidence: Double
     var rawInput: String
 
-    init(from parsed: ParsedExpense) {
-        self.descriptionText = parsed.descriptionText
+    init(from parsed: ParsedTransaction) {
+        self.note = parsed.note
         self.amountText = String(format: parsed.amount == floor(parsed.amount) ? "%.0f" : "%.2f", parsed.amount)
         self.categoryId = parsed.categoryId
         self.type = parsed.type
         self.date = parsed.date
         self.confidence = parsed.confidence
-        self.rawInput = parsed.descriptionText
+        self.rawInput = parsed.note
     }
 }
