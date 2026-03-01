@@ -48,3 +48,4 @@ Runner/GeneratedPluginRegistrant.*
 !default.perspectivev3
 
 xcshareddata/
+!xcshareddata/swiftpm/Package.resolved
