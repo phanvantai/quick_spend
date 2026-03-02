@@ -8,7 +8,6 @@ struct AppConfig: Codable, Equatable {
     var currency: String = "USD"
     var themeMode: String = "system"   // "light", "dark", "system"
     var isOnboardingComplete: Bool = false
-    var dataCollectionConsent: Bool = false
 
     // MARK: - Currency
 
@@ -34,9 +33,9 @@ struct AppConfig: Codable, Equatable {
         currency == "VND" || currency == "THB"
     }
 
-    /// Whether to use period as thousand separator (vi, es)
+    /// Whether to use period as thousand separator
     var usesPeriodForThousands: Bool {
-        language == "vi" || language == "es"
+        language == "vi"
     }
 
     /// Format a currency amount with proper symbol placement and number formatting
@@ -69,10 +68,6 @@ struct AppConfig: Codable, Equatable {
         switch language {
         case "vi": return "Tiếng Việt"
         case "en": return "English"
-        case "ja": return "日本語"
-        case "ko": return "한국어"
-        case "th": return "ไทย"
-        case "es": return "Español"
         default: return language
         }
     }
@@ -102,10 +97,6 @@ struct LanguageOption: Identifiable {
     static let options: [LanguageOption] = [
         LanguageOption(code: "en", countryCode: "US", displayName: "English", flag: "🇺🇸", defaultCurrency: "USD"),
         LanguageOption(code: "vi", countryCode: "VN", displayName: "Tiếng Việt", flag: "🇻🇳", defaultCurrency: "VND"),
-        LanguageOption(code: "ja", countryCode: "JP", displayName: "日本語", flag: "🇯🇵", defaultCurrency: "JPY"),
-        LanguageOption(code: "ko", countryCode: "KR", displayName: "한국어", flag: "🇰🇷", defaultCurrency: "KRW"),
-        LanguageOption(code: "th", countryCode: "TH", displayName: "ไทย", flag: "🇹🇭", defaultCurrency: "THB"),
-        LanguageOption(code: "es", countryCode: "ES", displayName: "Español", flag: "🇪🇸", defaultCurrency: "EUR"),
     ]
 
     static func defaultCurrency(for languageCode: String) -> String {

@@ -220,10 +220,11 @@ struct AppConfig: Codable {
 - [x] Update all views (~15 files) to use new models (Transaction, Category)
 - [x] Delete old model files (`Expense.swift`, `QuickCategory.swift`)
 - [x] Update `CLAUDE.md` with new database schema documentation
-- [ ] Implement simplified `AppConfig` and `PreferencesService`
-- [ ] Implement single-screen `OnboardingView`
-- [ ] Write model unit tests
-- [ ] Verify SwiftData persistence works correctly
+- [x] Simplify `AppConfig` — remove `dataCollectionConsent`, reduce to 2 languages (EN/VI)
+- [x] Simplify `PreferencesService` and `AppConfigViewModel` — remove data collection methods
+- [x] Implement single-screen `OnboardingView` (language + currency on one page)
+- [x] Write model unit tests (`QuickSpendTests/`: Transaction, Category, RecurringTemplate, Enums, AppConfig, CategoryService, SwiftData persistence)
+- [x] Verify SwiftData persistence works correctly (in-memory container tests)
 
 **Implementation decisions made:**
 - **Migration:** Clean Start (delete old SwiftData store on upgrade)
@@ -574,8 +575,8 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 ## Current Status
 
 - [x] **V1 completed** (Flutter → SwiftUI migration done)
-- [~] **Phase 1** — Database redesign done, onboarding & unit tests remaining ← WE ARE HERE
-- [ ] **Phase 2** — Not started
+- [x] **Phase 1** — Foundation & Database Design complete
+- [ ] **Phase 2** — Core UI & Manual Input ← NEXT
 - [ ] **Phase 3** — Not started
 - [ ] **Phase 4** — Not started
 - [ ] **Phase 5** — Not started

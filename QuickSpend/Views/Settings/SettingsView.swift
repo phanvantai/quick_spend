@@ -101,26 +101,6 @@ struct SettingsView: View {
                     }
                 }
 
-                // Privacy
-                Section("Privacy") {
-                    Toggle(isOn: Binding(
-                        get: { appConfig.config.dataCollectionConsent },
-                        set: { newValue in
-                            appConfig.setDataCollectionConsent(newValue)
-                            AnalyticsService.logDataCollectionToggled(enabled: newValue)
-                            AnalyticsService.setDataCollectionConsentProperty(newValue)
-                        }
-                    )) {
-                        settingsRow(
-                            icon: "chart.bar.doc.horizontal",
-                            iconColor: AppTheme.accentTeal,
-                            title: "Help Improve AI",
-                            subtitle: "Share anonymized data to improve parsing"
-                        )
-                    }
-                    .tint(AppTheme.primaryMint)
-                }
-
                 // About
                 Section("About") {
                     aboutCard

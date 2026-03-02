@@ -50,12 +50,6 @@ final class PreferencesService {
         saveConfig(config)
     }
 
-    func setDataCollectionConsent(_ consent: Bool) {
-        var config = getConfig()
-        config.dataCollectionConsent = consent
-        saveConfig(config)
-    }
-
     // MARK: - Voice Tutorial
 
     var hasShownVoiceTutorial: Bool {
