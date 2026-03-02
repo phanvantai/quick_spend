@@ -11,6 +11,8 @@ struct EditableExpenseDialog: View {
 
     @State private var editableExpenses: [EditableExpenseData]
 
+    private var isVi: Bool { appConfig.language == "vi" }
+
     init(
         parsedExpenses: [ParsedTransaction],
         categories: [Category],
@@ -26,25 +28,40 @@ struct EditableExpenseDialog: View {
         NavigationStack {
             Form {
                 ForEach(editableExpenses.indices, id: \.self) { index in
-                    Section(editableExpenses.count > 1 ? "Expense \(index + 1)" : "Parsed Expense") {
+                    Section(sectionTitle(index: index)) {
                         expenseForm(at: index)
                     }
                 }
             }
-            .navigationTitle(editableExpenses.count > 1
-                ? "\(editableExpenses.count) Expenses Parsed"
-                : "Confirm Expense")
+            .navigationTitle(navTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Discard") { dismiss() }
+                    Button(isVi ? "Hủy" : "Discard") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button(isVi ? "Lưu" : "Save") { save() }
                         .bold()
                 }
             }
         }
+    }
+
+    // MARK: - Titles
+
+    private var navTitle: String {
+        if editableExpenses.count > 1 {
+            let count = editableExpenses.count
+            return isVi ? "\(count) giao dịch" : "\(count) Transactions Parsed"
+        }
+        return isVi ? "Xác nhận giao dịch" : "Confirm Transaction"
+    }
+
+    private func sectionTitle(index: Int) -> String {
+        guard editableExpenses.count > 1 else {
+            return isVi ? "Giao dịch" : "Transaction"
+        }
+        return isVi ? "Giao dịch \(index + 1)" : "Transaction \(index + 1)"
     }
 
     // MARK: - Expense Form
@@ -55,9 +72,9 @@ struct EditableExpenseDialog: View {
         let filteredCategories = categories.filter { $0.type == data.type }
 
         // Type
-        Picker("Type", selection: $editableExpenses[index].type) {
-            Text("Expense").tag(TransactionType.expense)
-            Text("Income").tag(TransactionType.income)
+        Picker(isVi ? "Loại" : "Type", selection: $editableExpenses[index].type) {
+            Text(isVi ? "Chi tiêu" : "Expense").tag(TransactionType.expense)
+            Text(isVi ? "Thu nhập" : "Income").tag(TransactionType.income)
         }
         .pickerStyle(.segmented)
         .onChange(of: editableExpenses[index].type) {
@@ -69,7 +86,7 @@ struct EditableExpenseDialog: View {
         }
 
         // Note
-        TextField("Description", text: $editableExpenses[index].note)
+        TextField(isVi ? "Mô tả" : "Description", text: $editableExpenses[index].note)
             .textInputAutocapitalization(.sentences)
 
         // Amount
@@ -77,13 +94,13 @@ struct EditableExpenseDialog: View {
             Text(appConfig.config.currencySymbol)
                 .font(.body.bold())
                 .foregroundStyle(.secondary)
-            TextField("Amount", text: $editableExpenses[index].amountText)
+            TextField(isVi ? "Số tiền" : "Amount", text: $editableExpenses[index].amountText)
                 .keyboardType(.decimalPad)
                 .font(.body.monospacedDigit())
         }
 
         // Category
-        Picker("Category", selection: $editableExpenses[index].categoryId) {
+        Picker(isVi ? "Danh mục" : "Category", selection: $editableExpenses[index].categoryId) {
             ForEach(filteredCategories, id: \.id) { category in
                 HStack {
                     Image(systemName: category.iconName)
@@ -95,7 +112,7 @@ struct EditableExpenseDialog: View {
 
         // Date
         DatePicker(
-            "Date",
+            isVi ? "Ngày" : "Date",
             selection: $editableExpenses[index].date,
             in: ...Date(),
             displayedComponents: [.date]
@@ -107,7 +124,7 @@ struct EditableExpenseDialog: View {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(AppTheme.warning)
                     .font(.caption)
-                Text("Low confidence - please verify")
+                Text(isVi ? "Độ chính xác thấp - vui lòng kiểm tra" : "Low confidence - please verify")
                     .font(.caption)
                     .foregroundStyle(AppTheme.warning)
             }

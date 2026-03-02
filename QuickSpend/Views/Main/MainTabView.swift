@@ -42,7 +42,7 @@ struct MainTabView: View {
                     HStack(spacing: AppTheme.spacing8) {
                         ProgressView()
                             .tint(.white)
-                        Text("Processing...")
+                        Text(appConfig.language == "vi" ? "Đang xử lý..." : "Processing...")
                             .font(.subheadline)
                             .foregroundStyle(.white)
                     }
@@ -90,15 +90,20 @@ struct MainTabView: View {
                 modelContext.insert(transaction)
             }
         }
-        .alert("Microphone Access Required", isPresented: $showPermissionAlert) {
-            Button("Open Settings") {
+        .alert(
+            appConfig.language == "vi" ? "Cần quyền truy cập micro" : "Microphone Access Required",
+            isPresented: $showPermissionAlert
+        ) {
+            Button(appConfig.language == "vi" ? "Mở Cài đặt" : "Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
-            Button("Cancel", role: .cancel) { }
+            Button(appConfig.language == "vi" ? "Hủy" : "Cancel", role: .cancel) { }
         } message: {
-            Text("Please grant microphone and speech recognition access in Settings to use voice input.")
+            Text(appConfig.language == "vi"
+                 ? "Vui lòng cấp quyền micro và nhận dạng giọng nói trong Cài đặt để sử dụng nhập liệu bằng giọng nói."
+                 : "Please grant microphone and speech recognition access in Settings to use voice input.")
         }
     }
 

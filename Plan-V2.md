@@ -377,13 +377,13 @@ User taps mic FAB
 
 ### 3.4 Deliverables — Phase 3
 
-- [ ] `VoiceService` — speech recognition with real-time transcription
-- [ ] `GeminiParserService` — natural language → structured transactions
-- [ ] Voice overlay UI (listening state, transcription display)
-- [ ] Parsed results review dialog (confirm, edit, save)
-- [ ] Fallback to manual entry on parse failure
-- [ ] Vietnamese slang/abbreviation support
-- [ ] Usage limit tracking (free tier: 5 parses/day)
+- [x] `VoiceService` — SFSpeechRecognizer + AVAudioEngine, real-time transcription, sound level visualization
+- [x] `GeminiParserService` — Gemini 2.5 Flash via Firebase AI, structured prompt with categories/keywords/date context
+- [x] Voice overlay UI — `VoiceOverlay` with mic animation, live transcription, Cancel/Done buttons, swipe-to-cancel gesture (EN/VI localized)
+- [x] Parsed results review dialog — `EditableExpenseDialog` with type/note/amount/category/date editing, low-confidence warnings (EN/VI localized)
+- [x] Fallback to manual entry on parse failure — `ExpenseFormView` shown when Gemini unavailable or returns empty
+- [x] Vietnamese slang/abbreviation support — "ca"=thousand, "củ/cọc"=million, voice error correction
+- [x] Usage limit tracking — `UsageLimitService` (free tier: 5 parses/day, daily auto-reset)
 
 ---
 
@@ -578,8 +578,8 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 - [x] **V1 completed** (Flutter → SwiftUI migration done)
 - [x] **Phase 1** — Foundation & Database Design complete
 - [x] **Phase 2** — Core UI & Manual Input complete
-- [ ] **Phase 3** — Not started
-- [ ] **Phase 4** — Not started
+- [x] **Phase 3** — Voice Input & AI Parsing complete
+- [ ] **Phase 4** — Not started ← NEXT (can parallel with Phase 5)
 - [ ] **Phase 5** — Not started
 - [ ] **Phase 6** — Not started
 - [ ] **Phase 7** — Not started
