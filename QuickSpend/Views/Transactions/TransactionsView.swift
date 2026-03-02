@@ -8,32 +8,11 @@ enum TransactionFilter: CaseIterable {
     func label(language: String) -> String {
         switch self {
         case .all:
-            switch language {
-            case "vi": return "Tất cả"
-            case "ja": return "すべて"
-            case "ko": return "전체"
-            case "th": return "ทั้งหมด"
-            case "es": return "Todos"
-            default: return "All"
-            }
+            return language == "vi" ? "Tất cả" : "All"
         case .income:
-            switch language {
-            case "vi": return "Tiền vào"
-            case "ja": return "収入"
-            case "ko": return "수입"
-            case "th": return "รายรับ"
-            case "es": return "Ingresos"
-            default: return "Income"
-            }
+            return language == "vi" ? "Tiền vào" : "Income"
         case .expense:
-            switch language {
-            case "vi": return "Tiền ra"
-            case "ja": return "支出"
-            case "ko": return "지출"
-            case "th": return "รายจ่าย"
-            case "es": return "Gastos"
-            default: return "Expense"
-            }
+            return language == "vi" ? "Tiền ra" : "Expense"
         }
     }
 }

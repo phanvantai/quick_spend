@@ -57,17 +57,21 @@ struct CategoriesView: View {
                                 .tint(AppTheme.primaryMint)
                             }
                     }
+                    .onMove(perform: moveCategories)
                 }
             }
         }
         .navigationTitle("Categories")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showingAddCategory = true
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title3)
+                HStack(spacing: AppTheme.spacing12) {
+                    EditButton()
+                    Button {
+                        showingAddCategory = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                    }
                 }
             }
         }
@@ -141,6 +145,16 @@ struct CategoriesView: View {
             }
         }
         .padding(.vertical, 2)
+    }
+
+    // MARK: - Reorder
+
+    private func moveCategories(from source: IndexSet, to destination: Int) {
+        var ordered = filteredCategories
+        ordered.move(fromOffsets: source, toOffset: destination)
+        for (index, category) in ordered.enumerated() {
+            category.sortOrder = index
+        }
     }
 
     // MARK: - Actions

@@ -134,13 +134,6 @@ final class VoiceService {
     // MARK: - Locale Mapping
 
     private func localeIdentifier(for language: String) -> String {
-        switch language {
-        case "vi": return "vi-VN"
-        case "ja": return "ja-JP"
-        case "ko": return "ko-KR"
-        case "th": return "th-TH"
-        case "es": return "es-ES"
-        default:   return "en-US"
-        }
+        language == "vi" ? "vi-VN" : "en-US"
     }
 }

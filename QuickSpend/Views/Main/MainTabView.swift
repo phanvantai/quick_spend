@@ -25,10 +25,7 @@ struct MainTabView: View {
                 Tab("Home", systemImage: "house.fill", value: 0) {
                     HomeView()
                 }
-                Tab("Transactions", systemImage: "calendar", value: 1) {
-                    TransactionsView()
-                }
-                Tab("Settings", systemImage: "gearshape.fill", value: 2) {
+                Tab("Settings", systemImage: "gearshape.fill", value: 1) {
                     SettingsView()
                 }
             }

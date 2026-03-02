@@ -312,16 +312,17 @@ struct AppConfig: Codable {
 
 ### 2.6 Deliverables — Phase 2
 
-- [ ] `MainTabView` with 2 tabs + center FAB
-- [ ] `HomeView` — monthly summary + transaction list
-- [ ] `TransactionFormView` — add/edit transaction
-- [ ] `CategoryPickerView` — icon grid for selecting category
-- [ ] `CategoriesView` — list, add, edit, delete, reorder
-- [ ] `CategoryFormView` — create/edit category
-- [ ] `SettingsView` — language, currency, theme, categories link
-- [ ] Navigation flow between all screens
-- [ ] Swipe-to-delete on transactions
-- [ ] Month navigation on Home
+- [x] `MainTabView` with 2 tabs (Home, Settings) + center voice FAB
+- [x] `HomeView` — monthly summary card + transaction list grouped by date (merged from TransactionsView)
+- [x] `TransactionFormView` (`ExpenseFormView`) — add/edit transaction
+- [x] `CategoryPickerView` — icon grid embedded in ExpenseFormView
+- [x] `CategoriesView` — list, add, edit, delete, drag-to-reorder
+- [x] `CategoryFormView` — create/edit category
+- [x] `SettingsView` — language, currency, theme, categories link
+- [x] Navigation flow between all screens
+- [x] Swipe-to-delete + tap-to-edit on transactions
+- [x] Month navigation on Home
+- [x] Simplified all localization to EN/VI only (HomeStrings, TransactionFilter, VoiceService)
 
 ---
 
@@ -576,7 +577,7 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 
 - [x] **V1 completed** (Flutter → SwiftUI migration done)
 - [x] **Phase 1** — Foundation & Database Design complete
-- [ ] **Phase 2** — Core UI & Manual Input ← NEXT
+- [x] **Phase 2** — Core UI & Manual Input complete
 - [ ] **Phase 3** — Not started
 - [ ] **Phase 4** — Not started
 - [ ] **Phase 5** — Not started
