@@ -2,7 +2,7 @@
 
 > Rebuild from scratch. Simple, fast, voice-first expense tracking.
 
-**Last updated:** 2026-02-26
+**Last updated:** 2026-03-02
 **Platform:** iOS 17+ (SwiftUI + SwiftData)
 **Languages:** English, Vietnamese (only 2 languages in v2)
 
@@ -210,15 +210,26 @@ struct AppConfig: Codable {
 
 ### 1.5 Deliverables — Phase 1
 
-- [ ] Finalize category list (review with real users if possible)
-- [ ] Create SwiftData models: `Category`, `Transaction`, `RecurringTemplate`
-- [ ] Create `TransactionType` and `RecurrencePattern` enums
-- [ ] Create `CategoryGroup` enum
-- [ ] Implement `CategoryService` — seed default categories, CRUD operations
+- [x] Finalize category list (18 expense + 8 income categories)
+- [x] Create SwiftData models: `Category`, `Transaction`, `RecurringTemplate`
+- [x] Create `TransactionType` and `RecurrencePattern` enums (Codable, stored directly by SwiftData)
+- [x] Create `CategoryGroup` enum
+- [x] Implement `CategoryService` — seed 26 default categories, EN/VI localized, CRUD operations
+- [x] Implement v1→v2 migration strategy (clean start via `_resetStoreIfNeeded()`)
+- [x] Update all services: `RecurringService`, `GeminiParserService` (ParsedTransaction)
+- [x] Update all views (~15 files) to use new models (Transaction, Category)
+- [x] Delete old model files (`Expense.swift`, `QuickCategory.swift`)
+- [x] Update `CLAUDE.md` with new database schema documentation
 - [ ] Implement simplified `AppConfig` and `PreferencesService`
 - [ ] Implement single-screen `OnboardingView`
 - [ ] Write model unit tests
 - [ ] Verify SwiftData persistence works correctly
+
+**Implementation decisions made:**
+- **Migration:** Clean Start (delete old SwiftData store on upgrade)
+- **Relationships:** String-based `categoryId` (no `@Relationship`)
+- **Enum storage:** Codable enums stored directly by SwiftData (no raw value wrappers)
+- **Queries:** `@Query` + `#Predicate` for views, `FetchDescriptor` for services
 
 ---
 
@@ -563,7 +574,7 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 ## Current Status
 
 - [x] **V1 completed** (Flutter → SwiftUI migration done)
-- [ ] **Phase 1** — In planning ← WE ARE HERE
+- [~] **Phase 1** — Database redesign done, onboarding & unit tests remaining ← WE ARE HERE
 - [ ] **Phase 2** — Not started
 - [ ] **Phase 3** — Not started
 - [ ] **Phase 4** — Not started
