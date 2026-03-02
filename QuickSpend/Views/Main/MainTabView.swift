@@ -5,6 +5,7 @@ import SwiftData
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
+    @Environment(SubscriptionViewModel.self) private var subscription
     @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedTab = 0
@@ -14,10 +15,14 @@ struct MainTabView: View {
     @State private var parsedTransactions: [ParsedTransaction] = []
     @State private var showTransactionReview = false
     @State private var showPermissionAlert = false
+    @State private var showLimitReachedAlert = false
+    @State private var showPaywall = false
     @State private var isProcessingVoice = false
     // Fallback: manual entry with pre-filled transcription
     @State private var fallbackTranscription = ""
     @State private var showManualFallback = false
+
+    private var isVi: Bool { appConfig.language == "vi" }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -42,7 +47,7 @@ struct MainTabView: View {
                     HStack(spacing: AppTheme.spacing8) {
                         ProgressView()
                             .tint(.white)
-                        Text(appConfig.language == "vi" ? "Đang xử lý..." : "Processing...")
+                        Text(isVi ? "Đang xử lý..." : "Processing...")
                             .font(.subheadline)
                             .foregroundStyle(.white)
                     }
@@ -58,6 +63,12 @@ struct MainTabView: View {
             }
         }
         .animation(.easeInOut, value: isProcessingVoice)
+        .onChange(of: subscription.isPro) {
+            usageLimitService.isPro = subscription.isPro
+        }
+        .onAppear {
+            usageLimitService.isPro = subscription.isPro
+        }
         .fullScreenCover(isPresented: $showVoiceOverlay) {
             VoiceOverlay(
                 voiceService: voiceService,
@@ -90,26 +101,51 @@ struct MainTabView: View {
                 modelContext.insert(transaction)
             }
         }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
         .alert(
-            appConfig.language == "vi" ? "Cần quyền truy cập micro" : "Microphone Access Required",
+            isVi ? "Cần quyền truy cập micro" : "Microphone Access Required",
             isPresented: $showPermissionAlert
         ) {
-            Button(appConfig.language == "vi" ? "Mở Cài đặt" : "Open Settings") {
+            Button(isVi ? "Mở Cài đặt" : "Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
-            Button(appConfig.language == "vi" ? "Hủy" : "Cancel", role: .cancel) { }
+            Button(isVi ? "Hủy" : "Cancel", role: .cancel) { }
         } message: {
-            Text(appConfig.language == "vi"
+            Text(isVi
                  ? "Vui lòng cấp quyền micro và nhận dạng giọng nói trong Cài đặt để sử dụng nhập liệu bằng giọng nói."
                  : "Please grant microphone and speech recognition access in Settings to use voice input.")
+        }
+        .alert(
+            isVi ? "Đã hết lượt phân tích" : "Daily Limit Reached",
+            isPresented: $showLimitReachedAlert
+        ) {
+            Button(isVi ? "Nâng cấp Pro" : "Upgrade to Pro") {
+                showPaywall = true
+            }
+            Button(isVi ? "Nhập thủ công" : "Enter Manually") {
+                showManualFallback = true
+            }
+            Button(isVi ? "Hủy" : "Cancel", role: .cancel) { }
+        } message: {
+            Text(isVi
+                 ? "Bạn đã sử dụng hết \(AppConstants.freeTierGeminiLimit) lượt phân tích AI miễn phí hôm nay. Nâng cấp Pro để không giới hạn."
+                 : "You've used all \(AppConstants.freeTierGeminiLimit) free AI parses for today. Upgrade to Pro for unlimited.")
         }
     }
 
     // MARK: - Voice Flow
 
     private func handleVoiceButtonTap() {
+        // Check AI parse limit before starting voice input
+        if !subscription.isPro && usageLimitService.hasReachedLimit {
+            showLimitReachedAlert = true
+            return
+        }
+
         Task {
             var authorized = voiceService.isAuthorized
             if !authorized {
@@ -135,6 +171,13 @@ struct MainTabView: View {
         guard GeminiParserService.isAvailable else {
             fallbackTranscription = text
             showManualFallback = true
+            return
+        }
+
+        // Check limit before parsing
+        if !subscription.isPro && usageLimitService.hasReachedLimit {
+            fallbackTranscription = text
+            showLimitReachedAlert = true
             return
         }
 

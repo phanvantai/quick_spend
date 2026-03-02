@@ -1,7 +1,7 @@
 import Foundation
 
 /// Tracks daily Gemini API usage with limits
-/// Resets automatically each new day
+/// Resets automatically each new day. Subscription-aware: Pro users get unlimited parses.
 @Observable
 final class UsageLimitService {
     private let usageCountKey = "gemini_daily_usage_count"
@@ -10,14 +10,19 @@ final class UsageLimitService {
 
     private(set) var usageCount: Int = 0
 
-    var dailyLimit: Int { AppConstants.freeTierGeminiLimit }
+    /// Set to true when user has Pro subscription — bypasses daily limit
+    var isPro: Bool = false
+
+    var dailyLimit: Int {
+        isPro ? 999 : AppConstants.freeTierGeminiLimit
+    }
 
     var remainingCount: Int {
-        max(dailyLimit - usageCount, 0)
+        isPro ? 999 : max(dailyLimit - usageCount, 0)
     }
 
     var hasReachedLimit: Bool {
-        usageCount >= dailyLimit
+        isPro ? false : usageCount >= dailyLimit
     }
 
     var canParse: Bool {

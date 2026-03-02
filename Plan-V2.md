@@ -476,12 +476,12 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 
 ### 6.2 Deliverables — Phase 6
 
-- [ ] RevenueCat integration
-- [ ] `SubscriptionViewModel` — manage subscription state
-- [ ] `PaywallView` — purchase screen
-- [ ] Feature gating throughout the app
-- [ ] Restore purchases
-- [ ] Receipt validation
+- [x] RevenueCat integration (`#if canImport(RevenueCat)` for graceful degradation)
+- [x] `SubscriptionViewModel` — manage subscription state, feature limit properties
+- [x] `PaywallView` — purchase screen, EN/VI localized
+- [x] Feature gating throughout the app (AI parse limit, recurring template limit, report history limit)
+- [x] Restore purchases (in PaywallView toolbar)
+- [x] Receipt validation (handled by RevenueCat SDK)
 
 ---
 
@@ -583,6 +583,6 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 - [x] **Phase 3** — Voice Input & AI Parsing complete
 - [x] **Phase 4** — Reports & Insights complete
 - [x] **Phase 5** — Recurring Transactions complete
-- [ ] **Phase 6** — Subscription & Monetization ← NEXT
-- [ ] **Phase 7** — Not started
+- [x] **Phase 6** — Subscription & Monetization complete
+- [ ] **Phase 7** — Polish & Quality ← NEXT
 - [ ] **Phase 8** — Post-launch backlog

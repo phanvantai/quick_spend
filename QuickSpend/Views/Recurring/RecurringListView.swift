@@ -5,12 +5,15 @@ import SwiftData
 struct RecurringListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
+    @Environment(SubscriptionViewModel.self) private var subscription
     @Query(sort: \RecurringTemplate.startDate, order: .reverse) private var templates: [RecurringTemplate]
     @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var showingAddForm = false
     @State private var editingTemplate: RecurringTemplate?
     @State private var deletingTemplate: RecurringTemplate?
+    @State private var showLimitAlert = false
+    @State private var showPaywall = false
 
     private var isVi: Bool { appConfig.language == "vi" }
 
@@ -49,7 +52,11 @@ struct RecurringListView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    showingAddForm = true
+                    if subscription.canAddRecurringTemplate(currentCount: templates.count) {
+                        showingAddForm = true
+                    } else {
+                        showLimitAlert = true
+                    }
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.title3)
@@ -93,6 +100,22 @@ struct RecurringListView: View {
                      ? "Xóa \"\(template.note)\"? Các giao dịch đã tạo trước đó sẽ không bị xóa."
                      : "Delete \"\(template.note)\"? Previously generated transactions will not be removed.")
             }
+        }
+        .alert(
+            isVi ? "Đã đạt giới hạn" : "Limit Reached",
+            isPresented: $showLimitAlert
+        ) {
+            Button(isVi ? "Nâng cấp Pro" : "Upgrade to Pro") {
+                showPaywall = true
+            }
+            Button(isVi ? "Hủy" : "Cancel", role: .cancel) { }
+        } message: {
+            Text(isVi
+                 ? "Gói miễn phí giới hạn \(AppConstants.freeTierRecurringTemplatesLimit) mẫu định kỳ. Nâng cấp Pro để không giới hạn."
+                 : "Free plan allows \(AppConstants.freeTierRecurringTemplatesLimit) recurring templates. Upgrade to Pro for unlimited.")
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
     }
 
@@ -176,4 +199,5 @@ struct RecurringListView: View {
     }
     .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
     .environment(AppConfigViewModel())
+    .environment(SubscriptionViewModel())
 }

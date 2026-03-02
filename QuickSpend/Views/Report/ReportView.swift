@@ -14,6 +14,14 @@ enum ReportPeriod: CaseIterable {
         }
     }
 
+    /// Whether this period requires Pro subscription
+    var requiresPro: Bool {
+        switch self {
+        case .thisMonth: return false
+        case .lastMonth, .last3Months: return true
+        }
+    }
+
     func dateRange() -> (start: Date, end: Date) {
         let calendar = Calendar.current
         let now = Date()
@@ -37,10 +45,12 @@ enum ReportPeriod: CaseIterable {
 /// Dedicated monthly report screen — donut chart, stats, top expenses, trends
 struct ReportView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
+    @Environment(SubscriptionViewModel.self) private var subscription
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedPeriod: ReportPeriod = .thisMonth
+    @State private var showPaywall = false
 
     private var isVi: Bool { appConfig.language == "vi" }
 
@@ -130,6 +140,15 @@ struct ReportView: View {
         .navigationTitle(isVi ? "Báo cáo" : "Report")
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemGroupedBackground))
+        .onChange(of: selectedPeriod) { _, newPeriod in
+            if newPeriod.requiresPro && !subscription.isPro {
+                selectedPeriod = .thisMonth
+                showPaywall = true
+            }
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
     }
 
     // MARK: - Period Picker
@@ -137,7 +156,11 @@ struct ReportView: View {
     private var periodPicker: some View {
         Picker("Period", selection: $selectedPeriod) {
             ForEach(ReportPeriod.allCases, id: \.self) { period in
-                Text(period.label(language: appConfig.language)).tag(period)
+                if period.requiresPro && !subscription.isPro {
+                    Text("\(period.label(language: appConfig.language)) 🔒").tag(period)
+                } else {
+                    Text(period.label(language: appConfig.language)).tag(period)
+                }
             }
         }
         .pickerStyle(.segmented)
@@ -284,4 +307,5 @@ struct ReportView: View {
     }
     .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
     .environment(AppConfigViewModel())
+    .environment(SubscriptionViewModel())
 }
