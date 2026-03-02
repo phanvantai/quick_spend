@@ -425,13 +425,14 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 
 ### 4.3 Deliverables — Phase 4
 
-- [ ] `ReportView` — monthly report screen
-- [ ] `PeriodStats` computation service
-- [ ] Category breakdown donut/pie chart (Swift Charts)
-- [ ] Monthly trend bar chart (Swift Charts)
-- [ ] Top expenses list
-- [ ] Daily average / savings rate calculations
-- [ ] Date range selection (this month, last month, custom)
+- [x] `ReportView` — dedicated report screen with period picker, summary, donut chart, top expenses, trends
+- [x] `PeriodStats` computation service — already existed with full stats (savings rate, daily average, category breakdown)
+- [x] Category breakdown donut/pie chart (`ReportSection`, Swift Charts `SectorMark`)
+- [x] Monthly trend line chart (`TrendsSection`, Swift Charts `LineMark` + `AreaMark`, 12-month rolling)
+- [x] Top expenses list — top 5 with numbered ranking, category icon, amount
+- [x] Daily average / savings rate — computed from `PeriodStats`, displayed in summary card
+- [x] Date range selection — `ReportPeriod` enum: This Month, Last Month, 3 Months
+- [x] "View Report" navigation from Home screen
 
 ---
 
@@ -449,12 +450,13 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 
 ### 5.2 Deliverables — Phase 5
 
-- [ ] `RecurringService` — auto-generate transactions from templates
-- [ ] `RecurringListView` — list all templates
-- [ ] `RecurringFormView` — create/edit template
-- [ ] Auto-generation on app launch
-- [ ] Toggle active/inactive
-- [ ] End date support
+- [x] `RecurringService` — auto-generate transactions from templates (daily/weekly/monthly/yearly, safety limit, dedup)
+- [x] `RecurringListView` — list all templates with category icon, pattern label, amount, active toggle (EN/VI localized)
+- [x] `RecurringFormView` — create/edit template with type/note/amount/category/pattern/schedule (EN/VI localized)
+- [x] Auto-generation on app launch — `RecurringService.generatePendingTransactions()` in ContentView
+- [x] Toggle active/inactive — inline Toggle in list row
+- [x] End date support — optional end date with date picker
+- [x] Full EN/VI localization for all views (SettingsView, ExpenseFormView, CategoriesView)
 
 ---
 
@@ -579,8 +581,8 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 - [x] **Phase 1** — Foundation & Database Design complete
 - [x] **Phase 2** — Core UI & Manual Input complete
 - [x] **Phase 3** — Voice Input & AI Parsing complete
-- [ ] **Phase 4** — Not started ← NEXT (can parallel with Phase 5)
-- [ ] **Phase 5** — Not started
-- [ ] **Phase 6** — Not started
+- [x] **Phase 4** — Reports & Insights complete
+- [x] **Phase 5** — Recurring Transactions complete
+- [ ] **Phase 6** — Subscription & Monetization ← NEXT
 - [ ] **Phase 7** — Not started
 - [ ] **Phase 8** — Post-launch backlog

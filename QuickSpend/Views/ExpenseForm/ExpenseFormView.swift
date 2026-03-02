@@ -19,6 +19,7 @@ struct ExpenseFormView: View {
     @State private var showAmountError = false
 
     private var isEditMode: Bool { existingExpense != nil }
+    private var isVi: Bool { appConfig.language == "vi" }
 
     private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType }
@@ -48,9 +49,9 @@ struct ExpenseFormView: View {
             Form {
                 // Transaction type
                 Section {
-                    Picker("Type", selection: $selectedType) {
-                        Text("Expense").tag(TransactionType.expense)
-                        Text("Income").tag(TransactionType.income)
+                    Picker(isVi ? "Loại" : "Type", selection: $selectedType) {
+                        Text(isVi ? "Chi tiêu" : "Expense").tag(TransactionType.expense)
+                        Text(isVi ? "Thu nhập" : "Income").tag(TransactionType.income)
                     }
                     .pickerStyle(.segmented)
                     .listRowBackground(Color.clear)
@@ -59,13 +60,13 @@ struct ExpenseFormView: View {
                 }
 
                 // Note
-                Section("Description") {
-                    TextField("What did you spend on?", text: $noteText)
+                Section(isVi ? "Mô tả" : "Description") {
+                    TextField(isVi ? "Bạn chi gì?" : "What did you spend on?", text: $noteText)
                         .textInputAutocapitalization(.sentences)
                 }
 
                 // Amount
-                Section("Amount") {
+                Section(isVi ? "Số tiền" : "Amount") {
                     HStack {
                         Text(appConfig.config.currencySymbol)
                             .font(.title3.bold())
@@ -75,14 +76,14 @@ struct ExpenseFormView: View {
                             .font(.title3.monospacedDigit())
                     }
                     if showAmountError {
-                        Text("Please enter a valid amount")
+                        Text(isVi ? "Vui lòng nhập số tiền hợp lệ" : "Please enter a valid amount")
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
                 }
 
                 // Category
-                Section("Category") {
+                Section(isVi ? "Danh mục" : "Category") {
                     LazyVGrid(columns: [
                         GridItem(.adaptive(minimum: 90), spacing: AppTheme.spacing8)
                     ], spacing: AppTheme.spacing8) {
@@ -94,9 +95,9 @@ struct ExpenseFormView: View {
                 }
 
                 // Date
-                Section("Date") {
+                Section(isVi ? "Ngày" : "Date") {
                     DatePicker(
-                        "Date",
+                        isVi ? "Ngày" : "Date",
                         selection: $selectedDate,
                         in: ...Date(),
                         displayedComponents: [.date]
@@ -104,14 +105,16 @@ struct ExpenseFormView: View {
                     .datePickerStyle(.graphical)
                 }
             }
-            .navigationTitle(isEditMode ? "Edit Transaction" : "Add Transaction")
+            .navigationTitle(isEditMode
+                ? (isVi ? "Sửa giao dịch" : "Edit Transaction")
+                : (isVi ? "Thêm giao dịch" : "Add Transaction"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(isVi ? "Hủy" : "Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button(isVi ? "Lưu" : "Save") { save() }
                         .bold()
                         .disabled(noteText.trimmingCharacters(in: .whitespaces).isEmpty)
                 }

@@ -12,13 +12,17 @@ struct RecurringListView: View {
     @State private var editingTemplate: RecurringTemplate?
     @State private var deletingTemplate: RecurringTemplate?
 
+    private var isVi: Bool { appConfig.language == "vi" }
+
     var body: some View {
         List {
             if templates.isEmpty {
                 ContentUnavailableView(
-                    "No Recurring Templates",
+                    isVi ? "Chưa có mẫu định kỳ" : "No Recurring Templates",
                     systemImage: "repeat",
-                    description: Text("Create a template to automatically generate expenses on a schedule.")
+                    description: Text(isVi
+                        ? "Tạo mẫu để tự động sinh giao dịch theo lịch."
+                        : "Create a template to automatically generate transactions on a schedule.")
                 )
             } else {
                 ForEach(templates, id: \.id) { template in
@@ -27,21 +31,21 @@ struct RecurringListView: View {
                             Button(role: .destructive) {
                                 deletingTemplate = template
                             } label: {
-                                Label("Delete", systemImage: "trash")
+                                Label(isVi ? "Xóa" : "Delete", systemImage: "trash")
                             }
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
                             Button {
                                 editingTemplate = template
                             } label: {
-                                Label("Edit", systemImage: "pencil")
+                                Label(isVi ? "Sửa" : "Edit", systemImage: "pencil")
                             }
                             .tint(AppTheme.primaryMint)
                         }
                 }
             }
         }
-        .navigationTitle("Recurring")
+        .navigationTitle(isVi ? "Định kỳ" : "Recurring")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -69,12 +73,15 @@ struct RecurringListView: View {
                 template.updatedAt = .now
             }
         }
-        .alert("Delete Template", isPresented: .init(
-            get: { deletingTemplate != nil },
-            set: { if !$0 { deletingTemplate = nil } }
-        )) {
-            Button("Cancel", role: .cancel) { deletingTemplate = nil }
-            Button("Delete", role: .destructive) {
+        .alert(
+            isVi ? "Xóa mẫu" : "Delete Template",
+            isPresented: .init(
+                get: { deletingTemplate != nil },
+                set: { if !$0 { deletingTemplate = nil } }
+            )
+        ) {
+            Button(isVi ? "Hủy" : "Cancel", role: .cancel) { deletingTemplate = nil }
+            Button(isVi ? "Xóa" : "Delete", role: .destructive) {
                 if let template = deletingTemplate {
                     modelContext.delete(template)
                     deletingTemplate = nil
@@ -82,7 +89,9 @@ struct RecurringListView: View {
             }
         } message: {
             if let template = deletingTemplate {
-                Text("Delete \"\(template.note)\"? Previously generated transactions will not be removed.")
+                Text(isVi
+                     ? "Xóa \"\(template.note)\"? Các giao dịch đã tạo trước đó sẽ không bị xóa."
+                     : "Delete \"\(template.note)\"? Previously generated transactions will not be removed.")
             }
         }
     }
@@ -144,6 +153,14 @@ struct RecurringListView: View {
     }
 
     private func patternLabel(_ pattern: RecurrencePattern) -> String {
+        if isVi {
+            switch pattern {
+            case .daily: return "Hàng ngày"
+            case .weekly: return "Hàng tuần"
+            case .monthly: return "Hàng tháng"
+            case .yearly: return "Hàng năm"
+            }
+        }
         switch pattern {
         case .daily: return "Daily"
         case .weekly: return "Weekly"

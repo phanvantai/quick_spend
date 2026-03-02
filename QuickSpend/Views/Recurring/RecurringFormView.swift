@@ -21,6 +21,7 @@ struct RecurringFormView: View {
     @State private var showAmountError = false
 
     private var isEditMode: Bool { existingTemplate != nil }
+    private var isVi: Bool { appConfig.language == "vi" }
 
     private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType }
@@ -50,9 +51,9 @@ struct RecurringFormView: View {
             Form {
                 // Transaction type
                 Section {
-                    Picker("Type", selection: $selectedType) {
-                        Text("Expense").tag(TransactionType.expense)
-                        Text("Income").tag(TransactionType.income)
+                    Picker(isVi ? "Loại" : "Type", selection: $selectedType) {
+                        Text(isVi ? "Chi tiêu" : "Expense").tag(TransactionType.expense)
+                        Text(isVi ? "Thu nhập" : "Income").tag(TransactionType.income)
                     }
                     .pickerStyle(.segmented)
                     .listRowBackground(Color.clear)
@@ -61,13 +62,13 @@ struct RecurringFormView: View {
                 }
 
                 // Description
-                Section("Description") {
-                    TextField("e.g. Monthly rent, Netflix", text: $noteText)
+                Section(isVi ? "Mô tả" : "Description") {
+                    TextField(isVi ? "VD: Tiền nhà, Netflix" : "e.g. Monthly rent, Netflix", text: $noteText)
                         .textInputAutocapitalization(.sentences)
                 }
 
                 // Amount
-                Section("Amount") {
+                Section(isVi ? "Số tiền" : "Amount") {
                     HStack {
                         Text(appConfig.config.currencySymbol)
                             .font(.title3.bold())
@@ -77,14 +78,14 @@ struct RecurringFormView: View {
                             .font(.title3.monospacedDigit())
                     }
                     if showAmountError {
-                        Text("Please enter a valid amount")
+                        Text(isVi ? "Vui lòng nhập số tiền hợp lệ" : "Please enter a valid amount")
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
                 }
 
                 // Category
-                Section("Category") {
+                Section(isVi ? "Danh mục" : "Category") {
                     LazyVGrid(columns: [
                         GridItem(.adaptive(minimum: 90), spacing: AppTheme.spacing8)
                     ], spacing: AppTheme.spacing8) {
@@ -96,29 +97,29 @@ struct RecurringFormView: View {
                 }
 
                 // Recurrence pattern
-                Section("Recurrence") {
-                    Picker("Pattern", selection: $selectedPattern) {
-                        Text("Daily").tag(RecurrencePattern.daily)
-                        Text("Weekly").tag(RecurrencePattern.weekly)
-                        Text("Monthly").tag(RecurrencePattern.monthly)
-                        Text("Yearly").tag(RecurrencePattern.yearly)
+                Section(isVi ? "Tần suất" : "Recurrence") {
+                    Picker(isVi ? "Chu kỳ" : "Pattern", selection: $selectedPattern) {
+                        Text(isVi ? "Ngày" : "Daily").tag(RecurrencePattern.daily)
+                        Text(isVi ? "Tuần" : "Weekly").tag(RecurrencePattern.weekly)
+                        Text(isVi ? "Tháng" : "Monthly").tag(RecurrencePattern.monthly)
+                        Text(isVi ? "Năm" : "Yearly").tag(RecurrencePattern.yearly)
                     }
                     .pickerStyle(.segmented)
                 }
 
                 // Dates
-                Section("Schedule") {
+                Section(isVi ? "Lịch trình" : "Schedule") {
                     DatePicker(
-                        "Start Date",
+                        isVi ? "Ngày bắt đầu" : "Start Date",
                         selection: $startDate,
                         displayedComponents: [.date]
                     )
 
-                    Toggle("Has End Date", isOn: $hasEndDate)
+                    Toggle(isVi ? "Có ngày kết thúc" : "Has End Date", isOn: $hasEndDate)
 
                     if hasEndDate {
                         DatePicker(
-                            "End Date",
+                            isVi ? "Ngày kết thúc" : "End Date",
                             selection: $endDate,
                             in: startDate...,
                             displayedComponents: [.date]
@@ -126,14 +127,16 @@ struct RecurringFormView: View {
                     }
                 }
             }
-            .navigationTitle(isEditMode ? "Edit Recurring" : "Add Recurring")
+            .navigationTitle(isEditMode
+                ? (isVi ? "Sửa định kỳ" : "Edit Recurring")
+                : (isVi ? "Thêm định kỳ" : "Add Recurring"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(isVi ? "Hủy" : "Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button(isVi ? "Lưu" : "Save") { save() }
                         .bold()
                         .disabled(noteText.trimmingCharacters(in: .whitespaces).isEmpty)
                 }

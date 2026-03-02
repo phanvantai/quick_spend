@@ -65,6 +65,25 @@ struct HomeView: View {
 
                     summaryCard
 
+                    // View Report button
+                    NavigationLink {
+                        ReportView()
+                    } label: {
+                        HStack {
+                            Text(appConfig.language == "vi" ? "Xem báo cáo" : "View Report")
+                                .font(.subheadline.weight(.medium))
+                            Image(systemName: "arrow.right")
+                                .font(.subheadline)
+                        }
+                        .foregroundStyle(AppTheme.primaryDark)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, AppTheme.spacing12)
+                        .background {
+                            RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
+                                .stroke(AppTheme.primaryDark, lineWidth: 1)
+                        }
+                    }
+
                     filterTabs
 
                     transactionListSection
