@@ -3,9 +3,10 @@ import SwiftUI
 /// Form for adding or editing a category with icon and color pickers
 struct CategoryFormView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppConfigViewModel.self) private var appConfig
 
-    let existingCategory: QuickCategory?
-    let onSave: (QuickCategory) -> Void
+    let existingCategory: Category?
+    let onSave: (Category) -> Void
 
     @State private var name: String
     @State private var keywordsText: String
@@ -18,9 +19,9 @@ struct CategoryFormView: View {
     private var isEditMode: Bool { existingCategory != nil }
 
     init(
-        existingCategory: QuickCategory? = nil,
+        existingCategory: Category? = nil,
         defaultType: TransactionType = .expense,
-        onSave: @escaping (QuickCategory) -> Void
+        onSave: @escaping (Category) -> Void
     ) {
         self.existingCategory = existingCategory
         self.onSave = onSave
@@ -41,9 +42,9 @@ struct CategoryFormView: View {
 
                 // Type
                 Section {
-                    Picker("Type", selection: $selectedType) {
-                        Text("Expense").tag(TransactionType.expense)
-                        Text("Income").tag(TransactionType.income)
+                    Picker(L10n.tr("common.type", appConfig.language), selection: $selectedType) {
+                        Text(L10n.tr("common.expense", appConfig.language)).tag(TransactionType.expense)
+                        Text(L10n.tr("common.income", appConfig.language)).tag(TransactionType.income)
                     }
                     .pickerStyle(.segmented)
                     .listRowBackground(Color.clear)
@@ -52,37 +53,39 @@ struct CategoryFormView: View {
                 }
 
                 // Name & Keywords
-                Section("Details") {
-                    TextField("Category name", text: $name)
+                Section(L10n.tr("category_form.details", appConfig.language)) {
+                    TextField(L10n.tr("category_form.name_placeholder", appConfig.language), text: $name)
                         .textInputAutocapitalization(.words)
                     if showNameError {
-                        Text("Name is required")
+                        Text(L10n.tr("category_form.name_required", appConfig.language))
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
-                    TextField("Keywords (comma separated)", text: $keywordsText)
+                    TextField(L10n.tr("category_form.keywords", appConfig.language), text: $keywordsText)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
 
                 // Icon Picker
-                Section("Icon") {
+                Section(L10n.tr("category_form.icon", appConfig.language)) {
                     iconPicker
                 }
 
                 // Color Picker
-                Section("Color") {
+                Section(L10n.tr("category_form.color", appConfig.language)) {
                     colorPicker
                 }
             }
-            .navigationTitle(isEditMode ? "Edit Category" : "Add Category")
+            .navigationTitle(isEditMode
+                ? L10n.tr("category_form.edit_title", appConfig.language)
+                : L10n.tr("category_form.add_title", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel", appConfig.language)) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button(L10n.tr("common.save", appConfig.language)) { save() }
                         .bold()
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
@@ -103,7 +106,7 @@ struct CategoryFormView: View {
                         .foregroundStyle(Color(hex: selectedColorHex))
                 }
 
-            Text(name.isEmpty ? "Category Name" : name)
+            Text(name.isEmpty ? L10n.tr("category_form.preview_name", appConfig.language) : name)
                 .font(.headline)
                 .foregroundStyle(name.isEmpty ? .tertiary : .primary)
         }
@@ -182,15 +185,13 @@ struct CategoryFormView: View {
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
 
-        let category = QuickCategory(
+        let category = Category(
             id: existingCategory?.id ?? trimmedName.lowercased().replacingOccurrences(of: " ", with: "_"),
             name: trimmedName,
-            keywords: keywords,
             iconName: selectedIcon,
             colorHex: selectedColorHex,
-            isSystem: existingCategory?.isSystem ?? false,
-            userId: existingCategory?.userId ?? AppConstants.defaultUserId,
-            type: selectedType
+            type: selectedType,
+            keywords: keywords
         )
 
         onSave(category)
@@ -270,4 +271,5 @@ struct CategoryFormView: View {
     CategoryFormView { category in
         print("Saved: \(category.name)")
     }
+    .environment(AppConfigViewModel())
 }

@@ -25,13 +25,13 @@ Dependencies are managed via Swift Package Manager (resolved in the Xcode projec
 
 **Pattern:** MVVM with service layer
 
-- **Models/** — SwiftData `@Model` classes: `Expense`, `QuickCategory`, `RecurringTemplate`, plus supporting value types (`TransactionType`, `RecurrencePattern`, `MonthlyTrend`, `CategoryStats`, `PeriodStats`)
+- **Models/** — SwiftData `@Model` classes: `Transaction`, `Category`, `RecurringTemplate`, plus supporting value types (`TransactionType`, `RecurrencePattern`, `CategoryGroup`, `MonthlyTrend`, `CategoryStats`, `PeriodStats`)
 - **ViewModels/** — `@Observable` view models: `AppConfigViewModel` (app settings state), `SubscriptionViewModel` (RevenueCat subscription state)
 - **Services/** — Business logic isolated from views. Key services:
-  - `GeminiParserService` — AI-powered natural language expense parsing via Firebase AI (Gemini)
+  - `GeminiParserService` — AI-powered natural language transaction parsing via Firebase AI (Gemini). Returns `ParsedTransaction` structs
   - `VoiceService` — Voice input processing
-  - `RecurringService` — Generates expenses from recurring templates
-  - `CategoryService` — Seeds and manages expense categories
+  - `RecurringService` — Generates transactions from recurring templates (supports daily/weekly/monthly/yearly patterns)
+  - `CategoryService` — Seeds and manages categories (26 default: 18 expense + 8 income, EN/VI localized)
   - `UsageLimitService` — Enforces free-tier feature limits
   - `PreferencesService` — UserDefaults-backed config storage
   - `AnalyticsService` — Privacy-aware Firebase Analytics (no PII, amount ranges only)
@@ -41,11 +41,38 @@ Dependencies are managed via Swift Package Manager (resolved in the Xcode projec
 
 **Entry point:** `QuickSpendApp.swift` → `ContentView.swift` (onboarding gate) → `MainTabView.swift` (3-tab bottom nav: Home, Transactions, Settings)
 
+## Database Models (v2)
+
+### Transaction (`@Model`)
+- `id: String` (unique), `amount: Double`, `note: String`, `categoryId: String`, `type: TransactionType` (Codable enum, auto-encoded), `date: Date`, `rawInput: String?`, `confidence: Double?`, `createdAt: Date`, `updatedAt: Date`
+- Computed: `isIncome`, `isExpense`
+- Replaces old `Expense` model (v1)
+
+### Category (`@Model`)
+- `id: String` (unique, e.g. `"food_drink"`), `name: String`, `iconName: String`, `colorHex: String`, `type: TransactionType`, `group: CategoryGroup?`, `keywords: [String]`, `sortOrder: Int`, `isHidden: Bool`, `createdAt: Date`, `updatedAt: Date`
+- Computed: `color: Color` (from hex), `isIncomeCategory`, `isExpenseCategory`
+- Replaces old `QuickCategory` model (v1). No more `isSystem` distinction
+- Relationship to Transaction via string-based `categoryId` (no `@Relationship`)
+
+### RecurringTemplate (`@Model`)
+- `id: String`, `amount: Double`, `note: String`, `categoryId: String`, `type: TransactionType`, `pattern: RecurrencePattern` (daily/weekly/monthly/yearly), `startDate: Date`, `endDate: Date?`, `isActive: Bool`, `lastGeneratedDate: Date?`, `createdAt: Date`, `updatedAt: Date`
+
+### Enums
+- `TransactionType`: `.income`, `.expense` — Codable, stored directly by SwiftData
+- `RecurrencePattern`: `.daily`, `.weekly`, `.monthly`, `.yearly` — Codable
+- `CategoryGroup`: `.dailyLiving`, `.personal`, `.social`, `.financial`, `.earned`, `.passive`, `.received`, `.other`
+
+### Migration Strategy
+- **Clean Start**: v1→v2 deletes old SwiftData store via `_resetStoreIfNeeded()` in `QuickSpendApp.swift`
+- Uses `UserDefaults` flag `hasCompletedV2Migration`
+- Categories re-seeded on fresh start via `CategoryService.seedCategoriesIfNeeded()`
+
 ## Key Conventions
 
 - Firebase and RevenueCat are optional dependencies — use `#if canImport()` for graceful degradation
-- Localization supports 6 languages: English, Vietnamese, Japanese, Korean, Thai, Spanish. Translations are currently hardcoded in models (e.g., `QuickCategory` has localized names/keywords) and `HomeStrings.swift`
+- Localization supports 2 languages: English (en) and Vietnamese (vi). Category names/keywords defined in `CategoryService.swift`, UI strings in `HomeStrings.swift`
 - Multi-currency support: USD, VND, JPY, KRW, THB, EUR with locale-specific formatting in `CurrencyFormatter`
 - Subscription gating: free tier has daily limits (5 AI parses, 3 recurring templates, 7-day reports); pro tier is unlimited. Limits defined in `AppConstants.swift`
-- SwiftData models use `@Attribute(.unique)` for IDs and enum raw values for storage
-- Private implementation methods use `_` prefix (e.g., `_initializeRevenueCat()`)
+- SwiftData models use `@Attribute(.unique)` for IDs and Codable enums stored directly (no raw value wrappers)
+- Private implementation methods use `_` prefix (e.g., `_initializeRevenueCat()`, `_resetStoreIfNeeded()`)
+- Default category IDs follow snake_case pattern: `food_drink`, `other_expense`, `salary`, `investment_income`, etc.

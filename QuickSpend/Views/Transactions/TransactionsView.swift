@@ -8,32 +8,11 @@ enum TransactionFilter: CaseIterable {
     func label(language: String) -> String {
         switch self {
         case .all:
-            switch language {
-            case "vi": return "Tất cả"
-            case "ja": return "すべて"
-            case "ko": return "전체"
-            case "th": return "ทั้งหมด"
-            case "es": return "Todos"
-            default: return "All"
-            }
+            return L10n.tr("transactions.all", language)
         case .income:
-            switch language {
-            case "vi": return "Tiền vào"
-            case "ja": return "収入"
-            case "ko": return "수입"
-            case "th": return "รายรับ"
-            case "es": return "Ingresos"
-            default: return "Income"
-            }
+            return L10n.tr("transactions.filter_income", language)
         case .expense:
-            switch language {
-            case "vi": return "Tiền ra"
-            case "ja": return "支出"
-            case "ko": return "지출"
-            case "th": return "รายจ่าย"
-            case "es": return "Gastos"
-            default: return "Expense"
-            }
+            return L10n.tr("transactions.filter_expense", language)
         }
     }
 }
@@ -42,39 +21,39 @@ enum TransactionFilter: CaseIterable {
 struct TransactionsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
-    @Query(sort: \Expense.date, order: .reverse) private var allExpenses: [Expense]
-    @Query(sort: \QuickCategory.name) private var categories: [QuickCategory]
+    @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
+    @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedMonth = Date()
     @State private var selectedFilter: TransactionFilter = .all
-    @State private var editingExpense: Expense?
-    @State private var showingAddExpense = false
+    @State private var editingTransaction: Transaction?
+    @State private var showingAddTransaction = false
 
-    /// Expenses filtered to the selected month
-    private var monthExpenses: [Expense] {
+    /// Transactions filtered to the selected month
+    private var monthTransactions: [Transaction] {
         let calendar = Calendar.current
-        return allExpenses.filter {
+        return allTransactions.filter {
             calendar.isDate($0.date, equalTo: selectedMonth, toGranularity: .month)
         }
     }
 
-    /// Expenses filtered by selected tab
-    private var filteredExpenses: [Expense] {
+    /// Transactions filtered by selected tab
+    private var filteredTransactions: [Transaction] {
         switch selectedFilter {
-        case .all: return monthExpenses
-        case .income: return monthExpenses.filter(\.isIncome)
-        case .expense: return monthExpenses.filter(\.isExpense)
+        case .all: return monthTransactions
+        case .income: return monthTransactions.filter(\.isIncome)
+        case .expense: return monthTransactions.filter(\.isExpense)
         }
     }
 
-    /// Group expenses by day
-    private var groupedExpenses: [(date: Date, expenses: [Expense])] {
+    /// Group transactions by day
+    private var groupedTransactions: [(date: Date, transactions: [Transaction])] {
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: filteredExpenses) { expense in
-            calendar.startOfDay(for: expense.date)
+        let grouped = Dictionary(grouping: filteredTransactions) { transaction in
+            calendar.startOfDay(for: transaction.date)
         }
         return grouped.sorted { $0.key > $1.key }
-            .map { (date: $0.key, expenses: $0.value.sorted { $0.date > $1.date }) }
+            .map { (date: $0.key, transactions: $0.value.sorted { $0.date > $1.date }) }
     }
 
     var body: some View {
@@ -85,34 +64,35 @@ struct TransactionsView: View {
 
                     filterTabs
 
-                    expenseListSection
+                    transactionListSection
                 }
                 .padding(.horizontal, AppTheme.spacing16)
                 .padding(.bottom, AppTheme.spacing16)
             }
-            .navigationTitle("Transactions")
+            .navigationTitle(L10n.tr("transactions.title", appConfig.language))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        showingAddExpense = true
+                        showingAddTransaction = true
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title3)
                     }
                 }
             }
-            .sheet(isPresented: $showingAddExpense) {
-                ExpenseFormView(categories: categories) { expense in
-                    modelContext.insert(expense)
+            .sheet(isPresented: $showingAddTransaction) {
+                ExpenseFormView(categories: categories) { transaction in
+                    modelContext.insert(transaction)
                 }
             }
-            .sheet(item: $editingExpense) { expense in
-                ExpenseFormView(categories: categories, expense: expense) { updated in
-                    expense.amount = updated.amount
-                    expense.descriptionText = updated.descriptionText
-                    expense.categoryId = updated.categoryId
-                    expense.date = updated.date
-                    expense.typeRawValue = updated.typeRawValue
+            .sheet(item: $editingTransaction) { transaction in
+                ExpenseFormView(categories: categories, expense: transaction) { updated in
+                    transaction.amount = updated.amount
+                    transaction.note = updated.note
+                    transaction.categoryId = updated.categoryId
+                    transaction.date = updated.date
+                    transaction.type = updated.type
+                    transaction.updatedAt = .now
                 }
             }
         }
@@ -147,37 +127,37 @@ struct TransactionsView: View {
     // MARK: - Expense List
 
     @ViewBuilder
-    private var expenseListSection: some View {
-        if groupedExpenses.isEmpty {
+    private var transactionListSection: some View {
+        if groupedTransactions.isEmpty {
             ContentUnavailableView(
-                "No Transactions",
+                L10n.tr("home.no_transactions", appConfig.language),
                 systemImage: "tray",
-                description: Text("No transactions this month.")
+                description: Text(L10n.tr("home.no_transactions_month", appConfig.language))
             )
             .padding(.top, AppTheme.spacing24)
         } else {
             LazyVStack(spacing: AppTheme.spacing20, pinnedViews: []) {
-                ForEach(groupedExpenses, id: \.date) { group in
+                ForEach(groupedTransactions, id: \.date) { group in
                     VStack(alignment: .leading, spacing: AppTheme.spacing12) {
                         dateSectionHeader(for: group.date)
 
-                        ForEach(group.expenses, id: \.id) { expense in
-                            let category = categories.first { $0.id == expense.categoryId }
+                        ForEach(group.transactions, id: \.id) { transaction in
+                            let category = categories.first { $0.id == transaction.categoryId }
                             ExpenseCard(
-                                expense: expense,
+                                transaction: transaction,
                                 category: category,
                                 config: appConfig.config
                             )
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
-                                    deleteExpense(expense)
+                                    deleteTransaction(transaction)
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
                             }
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                 Button {
-                                    editingExpense = expense
+                                    editingTransaction = transaction
                                 } label: {
                                     Label("Edit", systemImage: "pencil")
                                 }
@@ -201,15 +181,15 @@ struct TransactionsView: View {
 
     // MARK: - Actions
 
-    private func deleteExpense(_ expense: Expense) {
+    private func deleteTransaction(_ transaction: Transaction) {
         withAnimation {
-            modelContext.delete(expense)
+            modelContext.delete(transaction)
         }
     }
 }
 
 #Preview {
     TransactionsView()
-        .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(AppConfigViewModel())
 }

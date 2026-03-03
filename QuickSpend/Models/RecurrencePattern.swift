@@ -1,13 +1,9 @@
 import Foundation
 
-/// Recurrence pattern for recurring expenses
+/// Recurrence pattern for recurring transactions
 enum RecurrencePattern: String, Codable, CaseIterable {
-    case none
+    case daily
+    case weekly
     case monthly
     case yearly
-
-    /// Whether this represents a recurring pattern
-    var isRecurring: Bool {
-        self != .none
-    }
 }

@@ -7,7 +7,6 @@ struct VoiceOverlay: View {
     let onComplete: (String) -> Void
     let onCancel: () -> Void
 
-    @State private var pulseScale: CGFloat = 1.0
     @State private var dragOffset: CGFloat = 0
 
     private var isCancelling: Bool {
@@ -24,6 +23,13 @@ struct VoiceOverlay: View {
             VStack(spacing: AppTheme.spacing24) {
                 Spacer()
 
+                // Status label
+                if voiceService.transcription.isEmpty {
+                    Text(L10n.tr("voice.listening", appConfig.language))
+                        .font(.title3)
+                        .foregroundStyle(.white.opacity(0.6))
+                }
+
                 // Transcription
                 if !voiceService.transcription.isEmpty {
                     Text(voiceService.transcription)
@@ -32,24 +38,16 @@ struct VoiceOverlay: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, AppTheme.spacing32)
                         .transition(.opacity)
-                } else {
-                    Text("Listening...")
-                        .font(.title3)
-                        .foregroundStyle(.white.opacity(0.6))
                 }
 
                 Spacer()
 
-                // Cancel hint
+                // Cancel hint (on drag)
                 if isCancelling {
-                    Text("Release to cancel")
+                    Text(L10n.tr("voice.release_cancel", appConfig.language))
                         .font(.caption)
                         .foregroundStyle(AppTheme.error)
                         .transition(.opacity)
-                } else {
-                    Text("Swipe up to cancel")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.4))
                 }
 
                 // Mic button
@@ -68,8 +66,41 @@ struct VoiceOverlay: View {
                             }
                     )
 
+                // Action buttons
+                HStack(spacing: AppTheme.spacing48) {
+                    Button {
+                        onCancel()
+                    } label: {
+                        Text(L10n.tr("common.cancel", appConfig.language))
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .padding(.horizontal, AppTheme.spacing24)
+                            .padding(.vertical, AppTheme.spacing12)
+                    }
+
+                    Button {
+                        let text = voiceService.stopListening()
+                        if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            onComplete(text)
+                        } else {
+                            onCancel()
+                        }
+                    } label: {
+                        Text(L10n.tr("common.done", appConfig.language))
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, AppTheme.spacing24)
+                            .padding(.vertical, AppTheme.spacing12)
+                            .background {
+                                Capsule()
+                                    .fill(AppTheme.primaryMint)
+                            }
+                    }
+                }
+                .padding(.top, AppTheme.spacing8)
+
                 Spacer()
-                    .frame(height: AppTheme.spacing48)
+                    .frame(height: AppTheme.spacing32)
             }
         }
         .animation(.easeInOut(duration: 0.2), value: voiceService.transcription)
@@ -94,23 +125,14 @@ struct VoiceOverlay: View {
                 .animation(.easeOut(duration: 0.1), value: voiceService.soundLevel)
 
             // Main button
-            Button {
-                let text = voiceService.stopListening()
-                if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    onComplete(text)
-                } else {
-                    onCancel()
+            Circle()
+                .fill(isCancelling ? AppTheme.error : AppTheme.primaryMint)
+                .frame(width: 72, height: 72)
+                .overlay {
+                    Image(systemName: isCancelling ? "xmark" : "mic.fill")
+                        .font(.title)
+                        .foregroundStyle(.white)
                 }
-            } label: {
-                Circle()
-                    .fill(isCancelling ? AppTheme.error : AppTheme.primaryMint)
-                    .frame(width: 72, height: 72)
-                    .overlay {
-                        Image(systemName: isCancelling ? "xmark" : "mic.fill")
-                            .font(.title)
-                            .foregroundStyle(.white)
-                    }
-            }
         }
     }
 }

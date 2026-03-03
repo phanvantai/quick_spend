@@ -10,12 +10,12 @@ struct ContentView: View {
         if appConfig.isOnboardingComplete {
             MainTabView()
                 .onAppear {
-                    CategoryService.seedSystemCategoriesIfNeeded(
+                    CategoryService.seedCategoriesIfNeeded(
                         language: appConfig.language,
                         modelContext: modelContext
                     )
-                    // Generate pending recurring expenses on each launch
-                    let _ = RecurringService.generatePendingExpenses(modelContext: modelContext)
+                    // Generate pending recurring transactions on each launch
+                    let _ = RecurringService.generatePendingTransactions(modelContext: modelContext)
                 }
         } else {
             OnboardingView {
@@ -29,14 +29,14 @@ struct ContentView: View {
     let config = AppConfigViewModel()
     config.completeOnboarding()
     return ContentView()
-        .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(config)
         .environment(SubscriptionViewModel())
 }
 
 #Preview("Onboarding") {
     ContentView()
-        .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(AppConfigViewModel())
         .environment(SubscriptionViewModel())
 }

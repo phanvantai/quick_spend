@@ -1,22 +1,22 @@
 import SwiftUI
 
-/// Dialog for reviewing and editing AI-parsed expenses before saving
+/// Dialog for reviewing and editing AI-parsed transactions before saving
 struct EditableExpenseDialog: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppConfigViewModel.self) private var appConfig
 
-    let parsedExpenses: [ParsedExpense]
-    let categories: [QuickCategory]
-    let onSave: ([Expense]) -> Void
+    let parsedTransactions: [ParsedTransaction]
+    let categories: [Category]
+    let onSave: ([Transaction]) -> Void
 
     @State private var editableExpenses: [EditableExpenseData]
 
     init(
-        parsedExpenses: [ParsedExpense],
-        categories: [QuickCategory],
-        onSave: @escaping ([Expense]) -> Void
+        parsedExpenses: [ParsedTransaction],
+        categories: [Category],
+        onSave: @escaping ([Transaction]) -> Void
     ) {
-        self.parsedExpenses = parsedExpenses
+        self.parsedTransactions = parsedExpenses
         self.categories = categories
         self.onSave = onSave
         _editableExpenses = State(initialValue: parsedExpenses.map { EditableExpenseData(from: $0) })
@@ -26,25 +26,40 @@ struct EditableExpenseDialog: View {
         NavigationStack {
             Form {
                 ForEach(editableExpenses.indices, id: \.self) { index in
-                    Section(editableExpenses.count > 1 ? "Expense \(index + 1)" : "Parsed Expense") {
+                    Section(sectionTitle(index: index)) {
                         expenseForm(at: index)
                     }
                 }
             }
-            .navigationTitle(editableExpenses.count > 1
-                ? "\(editableExpenses.count) Expenses Parsed"
-                : "Confirm Expense")
+            .navigationTitle(navTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Discard") { dismiss() }
+                    Button(L10n.tr("common.discard", appConfig.language)) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button(L10n.tr("common.save", appConfig.language)) { save() }
                         .bold()
                 }
             }
         }
+    }
+
+    // MARK: - Titles
+
+    private var navTitle: String {
+        if editableExpenses.count > 1 {
+            let count = editableExpenses.count
+            return L10n.tr("voice_review.transactions_parsed", appConfig.language, count)
+        }
+        return L10n.tr("voice_review.confirm_title", appConfig.language)
+    }
+
+    private func sectionTitle(index: Int) -> String {
+        guard editableExpenses.count > 1 else {
+            return L10n.tr("voice_review.transaction", appConfig.language)
+        }
+        return L10n.tr("voice_review.transaction_n", appConfig.language, index + 1)
     }
 
     // MARK: - Expense Form
@@ -55,21 +70,21 @@ struct EditableExpenseDialog: View {
         let filteredCategories = categories.filter { $0.type == data.type }
 
         // Type
-        Picker("Type", selection: $editableExpenses[index].type) {
-            Text("Expense").tag(TransactionType.expense)
-            Text("Income").tag(TransactionType.income)
+        Picker(L10n.tr("common.type", appConfig.language), selection: $editableExpenses[index].type) {
+            Text(L10n.tr("common.expense", appConfig.language)).tag(TransactionType.expense)
+            Text(L10n.tr("common.income", appConfig.language)).tag(TransactionType.income)
         }
         .pickerStyle(.segmented)
         .onChange(of: editableExpenses[index].type) {
             // Reset category when type changes
             let filtered = categories.filter { $0.type == editableExpenses[index].type }
             if !filtered.contains(where: { $0.id == editableExpenses[index].categoryId }) {
-                editableExpenses[index].categoryId = filtered.first?.id ?? "other"
+                editableExpenses[index].categoryId = filtered.first?.id ?? "other_expense"
             }
         }
 
-        // Description
-        TextField("Description", text: $editableExpenses[index].descriptionText)
+        // Note
+        TextField(L10n.tr("common.description", appConfig.language), text: $editableExpenses[index].note)
             .textInputAutocapitalization(.sentences)
 
         // Amount
@@ -77,13 +92,13 @@ struct EditableExpenseDialog: View {
             Text(appConfig.config.currencySymbol)
                 .font(.body.bold())
                 .foregroundStyle(.secondary)
-            TextField("Amount", text: $editableExpenses[index].amountText)
+            TextField(L10n.tr("common.amount", appConfig.language), text: $editableExpenses[index].amountText)
                 .keyboardType(.decimalPad)
                 .font(.body.monospacedDigit())
         }
 
         // Category
-        Picker("Category", selection: $editableExpenses[index].categoryId) {
+        Picker(L10n.tr("common.category", appConfig.language), selection: $editableExpenses[index].categoryId) {
             ForEach(filteredCategories, id: \.id) { category in
                 HStack {
                     Image(systemName: category.iconName)
@@ -95,7 +110,7 @@ struct EditableExpenseDialog: View {
 
         // Date
         DatePicker(
-            "Date",
+            L10n.tr("common.date", appConfig.language),
             selection: $editableExpenses[index].date,
             in: ...Date(),
             displayedComponents: [.date]
@@ -107,7 +122,7 @@ struct EditableExpenseDialog: View {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(AppTheme.warning)
                     .font(.caption)
-                Text("Low confidence - please verify")
+                Text(L10n.tr("voice_review.low_confidence", appConfig.language))
                     .font(.caption)
                     .foregroundStyle(AppTheme.warning)
             }
@@ -118,28 +133,26 @@ struct EditableExpenseDialog: View {
     // MARK: - Save
 
     private func save() {
-        let expenses = editableExpenses.compactMap { data -> Expense? in
+        let transactions = editableExpenses.compactMap { data -> Transaction? in
             let cleanedAmount = data.amountText
                 .replacingOccurrences(of: ",", with: "")
                 .replacingOccurrences(of: " ", with: "")
             guard let amount = Double(cleanedAmount), amount > 0 else { return nil }
-            guard !data.descriptionText.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+            guard !data.note.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
 
-            return Expense(
+            return Transaction(
                 amount: amount,
-                descriptionText: data.descriptionText.trimmingCharacters(in: .whitespaces),
+                note: data.note.trimmingCharacters(in: .whitespaces),
                 categoryId: data.categoryId,
-                language: appConfig.language,
+                type: data.type,
                 date: data.date,
-                userId: AppConstants.defaultUserId,
                 rawInput: data.rawInput,
-                confidence: data.confidence,
-                type: data.type
+                confidence: data.confidence
             )
         }
 
-        guard !expenses.isEmpty else { return }
-        onSave(expenses)
+        guard !transactions.isEmpty else { return }
+        onSave(transactions)
         dismiss()
     }
 }
@@ -147,7 +160,7 @@ struct EditableExpenseDialog: View {
 // MARK: - Editable Data
 
 struct EditableExpenseData {
-    var descriptionText: String
+    var note: String
     var amountText: String
     var categoryId: String
     var type: TransactionType
@@ -155,13 +168,13 @@ struct EditableExpenseData {
     var confidence: Double
     var rawInput: String
 
-    init(from parsed: ParsedExpense) {
-        self.descriptionText = parsed.descriptionText
+    init(from parsed: ParsedTransaction) {
+        self.note = parsed.note
         self.amountText = String(format: parsed.amount == floor(parsed.amount) ? "%.0f" : "%.2f", parsed.amount)
         self.categoryId = parsed.categoryId
         self.type = parsed.type
         self.date = parsed.date
         self.confidence = parsed.confidence
-        self.rawInput = parsed.descriptionText
+        self.rawInput = parsed.note
     }
 }

@@ -5,11 +5,11 @@ struct RecurringFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppConfigViewModel.self) private var appConfig
 
-    let categories: [QuickCategory]
+    let categories: [Category]
     let existingTemplate: RecurringTemplate?
     let onSave: (RecurringTemplate) -> Void
 
-    @State private var descriptionText: String
+    @State private var noteText: String
     @State private var amountText: String
     @State private var selectedCategoryId: String
     @State private var selectedType: TransactionType
@@ -22,12 +22,12 @@ struct RecurringFormView: View {
 
     private var isEditMode: Bool { existingTemplate != nil }
 
-    private var filteredCategories: [QuickCategory] {
+    private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType }
     }
 
     init(
-        categories: [QuickCategory],
+        categories: [Category],
         existingTemplate: RecurringTemplate? = nil,
         onSave: @escaping (RecurringTemplate) -> Void
     ) {
@@ -35,9 +35,9 @@ struct RecurringFormView: View {
         self.existingTemplate = existingTemplate
         self.onSave = onSave
 
-        _descriptionText = State(initialValue: existingTemplate?.descriptionText ?? "")
+        _noteText = State(initialValue: existingTemplate?.note ?? "")
         _amountText = State(initialValue: existingTemplate.map { String(format: "%.2f", $0.amount) } ?? "")
-        _selectedCategoryId = State(initialValue: existingTemplate?.categoryId ?? "other")
+        _selectedCategoryId = State(initialValue: existingTemplate?.categoryId ?? "other_expense")
         _selectedType = State(initialValue: existingTemplate?.type ?? .expense)
         _selectedPattern = State(initialValue: existingTemplate?.pattern ?? .monthly)
         _startDate = State(initialValue: existingTemplate?.startDate ?? .now)
@@ -50,9 +50,9 @@ struct RecurringFormView: View {
             Form {
                 // Transaction type
                 Section {
-                    Picker("Type", selection: $selectedType) {
-                        Text("Expense").tag(TransactionType.expense)
-                        Text("Income").tag(TransactionType.income)
+                    Picker(L10n.tr("common.type", appConfig.language), selection: $selectedType) {
+                        Text(L10n.tr("common.expense", appConfig.language)).tag(TransactionType.expense)
+                        Text(L10n.tr("common.income", appConfig.language)).tag(TransactionType.income)
                     }
                     .pickerStyle(.segmented)
                     .listRowBackground(Color.clear)
@@ -61,13 +61,13 @@ struct RecurringFormView: View {
                 }
 
                 // Description
-                Section("Description") {
-                    TextField("e.g. Monthly rent, Netflix", text: $descriptionText)
+                Section(L10n.tr("common.description", appConfig.language)) {
+                    TextField(L10n.tr("recurring_form.placeholder", appConfig.language), text: $noteText)
                         .textInputAutocapitalization(.sentences)
                 }
 
                 // Amount
-                Section("Amount") {
+                Section(L10n.tr("common.amount", appConfig.language)) {
                     HStack {
                         Text(appConfig.config.currencySymbol)
                             .font(.title3.bold())
@@ -77,14 +77,14 @@ struct RecurringFormView: View {
                             .font(.title3.monospacedDigit())
                     }
                     if showAmountError {
-                        Text("Please enter a valid amount")
+                        Text(L10n.tr("expense_form.invalid_amount", appConfig.language))
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
                 }
 
                 // Category
-                Section("Category") {
+                Section(L10n.tr("common.category", appConfig.language)) {
                     LazyVGrid(columns: [
                         GridItem(.adaptive(minimum: 90), spacing: AppTheme.spacing8)
                     ], spacing: AppTheme.spacing8) {
@@ -96,27 +96,29 @@ struct RecurringFormView: View {
                 }
 
                 // Recurrence pattern
-                Section("Recurrence") {
-                    Picker("Pattern", selection: $selectedPattern) {
-                        Text("Monthly").tag(RecurrencePattern.monthly)
-                        Text("Yearly").tag(RecurrencePattern.yearly)
+                Section(L10n.tr("recurring_form.recurrence", appConfig.language)) {
+                    Picker(L10n.tr("recurring_form.pattern", appConfig.language), selection: $selectedPattern) {
+                        Text(L10n.tr("recurring_form.pattern_daily", appConfig.language)).tag(RecurrencePattern.daily)
+                        Text(L10n.tr("recurring_form.pattern_weekly", appConfig.language)).tag(RecurrencePattern.weekly)
+                        Text(L10n.tr("recurring_form.pattern_monthly", appConfig.language)).tag(RecurrencePattern.monthly)
+                        Text(L10n.tr("recurring_form.pattern_yearly", appConfig.language)).tag(RecurrencePattern.yearly)
                     }
                     .pickerStyle(.segmented)
                 }
 
                 // Dates
-                Section("Schedule") {
+                Section(L10n.tr("recurring_form.schedule", appConfig.language)) {
                     DatePicker(
-                        "Start Date",
+                        L10n.tr("recurring_form.start_date", appConfig.language),
                         selection: $startDate,
                         displayedComponents: [.date]
                     )
 
-                    Toggle("Has End Date", isOn: $hasEndDate)
+                    Toggle(L10n.tr("recurring_form.has_end_date", appConfig.language), isOn: $hasEndDate)
 
                     if hasEndDate {
                         DatePicker(
-                            "End Date",
+                            L10n.tr("recurring_form.end_date", appConfig.language),
                             selection: $endDate,
                             in: startDate...,
                             displayedComponents: [.date]
@@ -124,21 +126,23 @@ struct RecurringFormView: View {
                     }
                 }
             }
-            .navigationTitle(isEditMode ? "Edit Recurring" : "Add Recurring")
+            .navigationTitle(isEditMode
+                ? L10n.tr("recurring_form.edit_title", appConfig.language)
+                : L10n.tr("recurring_form.add_title", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel", appConfig.language)) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button(L10n.tr("common.save", appConfig.language)) { save() }
                         .bold()
-                        .disabled(descriptionText.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .disabled(noteText.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
             .onChange(of: selectedType) {
                 if !filteredCategories.contains(where: { $0.id == selectedCategoryId }) {
-                    selectedCategoryId = filteredCategories.first?.id ?? "other"
+                    selectedCategoryId = filteredCategories.first?.id ?? "other_expense"
                 }
             }
         }
@@ -146,7 +150,7 @@ struct RecurringFormView: View {
 
     // MARK: - Category Chip
 
-    private func categoryChip(_ category: QuickCategory) -> some View {
+    private func categoryChip(_ category: Category) -> some View {
         let isSelected = category.id == selectedCategoryId
         return Button {
             selectedCategoryId = category.id
@@ -189,10 +193,8 @@ struct RecurringFormView: View {
         let template = RecurringTemplate(
             id: existingTemplate?.id ?? UUID().uuidString,
             amount: amount,
-            descriptionText: descriptionText.trimmingCharacters(in: .whitespaces),
+            note: noteText.trimmingCharacters(in: .whitespaces),
             categoryId: selectedCategoryId,
-            language: appConfig.language,
-            userId: AppConstants.defaultUserId,
             type: selectedType,
             pattern: selectedPattern,
             startDate: startDate,
@@ -208,9 +210,9 @@ struct RecurringFormView: View {
 
 #Preview {
     RecurringFormView(
-        categories: QuickCategory.defaultSystemCategories(language: "en")
+        categories: CategoryService.defaultCategories(language: "en")
     ) { template in
-        print("Saved: \(template.descriptionText)")
+        print("Saved: \(template.note)")
     }
     .environment(AppConfigViewModel())
 }

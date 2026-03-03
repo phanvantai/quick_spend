@@ -53,24 +53,6 @@ struct ReportSection: View {
                     categoryLegend
                 }
 
-                // View detailed report button
-                Button {
-                    // TODO: Navigate to detailed report
-                } label: {
-                    HStack {
-                        Text(HomeStrings.viewDetailedReport(language))
-                            .font(.subheadline.weight(.medium))
-                        Image(systemName: "arrow.right")
-                            .font(.subheadline)
-                    }
-                    .foregroundStyle(AppTheme.primaryDark)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, AppTheme.spacing12)
-                    .background {
-                        RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                            .stroke(AppTheme.primaryDark, lineWidth: 1)
-                    }
-                }
             }
             .padding(AppTheme.spacing16)
             .background {
@@ -161,7 +143,7 @@ struct ReportSection: View {
             Image(systemName: "chart.pie")
                 .font(.largeTitle)
                 .foregroundStyle(.tertiary)
-            Text("No data")
+            Text(L10n.tr("common.no_data", language))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }

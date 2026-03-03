@@ -50,9 +50,9 @@ final class PreferencesService {
         saveConfig(config)
     }
 
-    func setDataCollectionConsent(_ consent: Bool) {
+    func resetOnboarding() {
         var config = getConfig()
-        config.dataCollectionConsent = consent
+        config.isOnboardingComplete = false
         saveConfig(config)
     }
 

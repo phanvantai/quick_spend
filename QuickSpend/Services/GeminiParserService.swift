@@ -1,15 +1,14 @@
 import Foundation
 
-/// Parsed expense result from Gemini AI
-struct ParsedExpense: Identifiable {
+/// Parsed transaction result from Gemini AI
+struct ParsedTransaction: Identifiable {
     let id = UUID().uuidString
     var amount: Double
-    var descriptionText: String
+    var note: String
     var categoryId: String
     var type: TransactionType
     var date: Date
     var confidence: Double
-    var language: String
 }
 
 /// AI-powered expense parser using Firebase AI (Gemini)
@@ -37,13 +36,13 @@ enum GeminiParserService {
         #endif
     }
 
-    /// Parse expense from text input using Gemini AI
+    /// Parse transaction from text input using Gemini AI
     static func parse(
         input: String,
-        categories: [QuickCategory],
+        categories: [Category],
         language: String,
         usageLimitService: UsageLimitService
-    ) async -> [ParsedExpense] {
+    ) async -> [ParsedTransaction] {
         // Validate input
         guard isValidInput(input) else {
             print("[GeminiParser] Input validation failed")
@@ -108,7 +107,7 @@ enum GeminiParserService {
 
     // MARK: - Prompt Building
 
-    static func buildPrompt(input: String, categories: [QuickCategory], language: String) -> String {
+    static func buildPrompt(input: String, categories: [Category], language: String) -> String {
         let now = Date.now
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -192,11 +191,10 @@ enum GeminiParserService {
 
     // MARK: - Response Parsing
 
-    static func parseResponse(jsonData: [String: Any], language: String) -> [ParsedExpense] {
+    static func parseResponse(jsonData: [String: Any], language: String) -> [ParsedTransaction] {
         guard let expenses = jsonData["expenses"] as? [[String: Any]] else { return [] }
-        let lang = jsonData["language"] as? String ?? language
 
-        var results: [ParsedExpense] = []
+        var results: [ParsedTransaction] = []
         for expenseData in expenses {
             guard let amount = (expenseData["amount"] as? NSNumber)?.doubleValue, amount > 0 else { continue }
 
@@ -211,14 +209,13 @@ enum GeminiParserService {
             let correctedType = typeFromCategory(categoryId)
             let date = parseDate(dateStr)
 
-            results.append(ParsedExpense(
+            results.append(ParsedTransaction(
                 amount: amount,
-                descriptionText: description.isEmpty ? (correctedType == .income ? "Income" : "Expense") : description,
+                note: description.isEmpty ? (correctedType == .income ? "Income" : "Expense") : description,
                 categoryId: categoryId,
                 type: correctedType,
                 date: date,
-                confidence: confidence,
-                language: lang
+                confidence: confidence
             ))
         }
         return results
@@ -227,18 +224,18 @@ enum GeminiParserService {
     // MARK: - Helpers
 
     private static func normalizeCategoryId(_ categoryStr: String, type: TransactionType) -> String {
-        let incomeCategories: Set<String> = ["salary", "freelance", "investment", "gift_received", "refund", "other_income"]
-        let expenseCategories: Set<String> = ["food", "transport", "shopping", "bills", "health", "entertainment", "other"]
+        let incomeCategories: Set<String> = ["salary", "freelance", "bonus", "investment_income", "interest", "gift_received", "refund", "other_income"]
+        let expenseCategories: Set<String> = ["food_drink", "groceries", "transport", "housing", "bills_utilities", "shopping", "health", "education", "entertainment", "personal_care", "gifts", "family", "insurance", "savings_invest", "debt_payment", "pets", "travel", "other_expense"]
 
         if type == .income {
             return incomeCategories.contains(categoryStr) ? categoryStr : "other_income"
         } else {
-            return expenseCategories.contains(categoryStr) ? categoryStr : "other"
+            return expenseCategories.contains(categoryStr) ? categoryStr : "other_expense"
         }
     }
 
     private static func typeFromCategory(_ categoryId: String) -> TransactionType {
-        let incomeCategories: Set<String> = ["salary", "freelance", "investment", "gift_received", "refund", "other_income"]
+        let incomeCategories: Set<String> = ["salary", "freelance", "bonus", "investment_income", "interest", "gift_received", "refund", "other_income"]
         return incomeCategories.contains(categoryId) ? .income : .expense
     }
 
@@ -295,10 +292,10 @@ extension GeminiParserService {
 
     static func _parseWithFirebase(
         input: String,
-        categories: [QuickCategory],
+        categories: [Category],
         language: String,
         usageLimitService: UsageLimitService
-    ) async -> [ParsedExpense] {
+    ) async -> [ParsedTransaction] {
         guard let model = _model else { return [] }
 
         let prompt = buildPrompt(input: input, categories: categories, language: language)

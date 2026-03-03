@@ -1,13 +1,13 @@
 import Foundation
 import SwiftData
 
-/// Service for generating expenses from recurring templates
+/// Service for generating transactions from recurring templates
 struct RecurringService {
 
-    /// Generate all pending recurring expenses
+    /// Generate all pending recurring transactions
     /// Should be called on app startup
     @MainActor
-    static func generatePendingExpenses(modelContext: ModelContext) -> Int {
+    static func generatePendingTransactions(modelContext: ModelContext) -> Int {
         let descriptor = FetchDescriptor<RecurringTemplate>(
             predicate: #Predicate { $0.isActive == true }
         )
@@ -15,22 +15,21 @@ struct RecurringService {
 
         var totalGenerated = 0
         for template in templates {
-            totalGenerated += generateExpenses(for: template, modelContext: modelContext)
+            totalGenerated += generateTransactions(for: template, modelContext: modelContext)
         }
 
         if totalGenerated > 0 {
-            print("[RecurringService] Generated \(totalGenerated) recurring expense(s)")
+            print("[RecurringService] Generated \(totalGenerated) recurring transaction(s)")
         }
         return totalGenerated
     }
 
-    /// Generate expenses for a single template
+    /// Generate transactions for a single template
     @MainActor
-    private static func generateExpenses(
+    private static func generateTransactions(
         for template: RecurringTemplate,
         modelContext: ModelContext
     ) -> Int {
-        guard template.pattern != .none else { return 0 }
         guard template.isActive else { return 0 }
 
         let now = Date.now
@@ -62,18 +61,15 @@ struct RecurringService {
 
         var lastGenerated: Date?
         for date in dates {
-            let expense = Expense(
+            let transaction = Transaction(
                 amount: template.amount,
-                descriptionText: template.descriptionText,
+                note: template.note,
                 categoryId: template.categoryId,
-                language: template.language,
+                type: template.type,
                 date: date,
-                userId: template.userId,
-                rawInput: "Recurring: \(template.descriptionText)",
-                confidence: 1.0,
-                type: template.type
+                rawInput: "Recurring: \(template.note)"
             )
-            modelContext.insert(expense)
+            modelContext.insert(transaction)
             lastGenerated = date
         }
 
@@ -116,12 +112,14 @@ struct RecurringService {
         calendar: Calendar
     ) -> Date {
         switch pattern {
+        case .daily:
+            return calendar.date(byAdding: .day, value: 1, to: date) ?? date
+        case .weekly:
+            return calendar.date(byAdding: .weekOfYear, value: 1, to: date) ?? date
         case .monthly:
             return calendar.date(byAdding: .month, value: 1, to: date) ?? date
         case .yearly:
             return calendar.date(byAdding: .year, value: 1, to: date) ?? date
-        case .none:
-            return date
         }
     }
 }

@@ -5,20 +5,23 @@ import SwiftData
 struct RecurringListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
+    @Environment(SubscriptionViewModel.self) private var subscription
     @Query(sort: \RecurringTemplate.startDate, order: .reverse) private var templates: [RecurringTemplate]
-    @Query(sort: \QuickCategory.name) private var categories: [QuickCategory]
+    @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var showingAddForm = false
     @State private var editingTemplate: RecurringTemplate?
     @State private var deletingTemplate: RecurringTemplate?
+    @State private var showLimitAlert = false
+    @State private var showPaywall = false
 
     var body: some View {
         List {
             if templates.isEmpty {
                 ContentUnavailableView(
-                    "No Recurring Templates",
+                    L10n.tr("recurring.no_templates", appConfig.language),
                     systemImage: "repeat",
-                    description: Text("Create a template to automatically generate expenses on a schedule.")
+                    description: Text(L10n.tr("recurring.no_templates_desc", appConfig.language))
                 )
             } else {
                 ForEach(templates, id: \.id) { template in
@@ -27,25 +30,29 @@ struct RecurringListView: View {
                             Button(role: .destructive) {
                                 deletingTemplate = template
                             } label: {
-                                Label("Delete", systemImage: "trash")
+                                Label(L10n.tr("common.delete", appConfig.language), systemImage: "trash")
                             }
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
                             Button {
                                 editingTemplate = template
                             } label: {
-                                Label("Edit", systemImage: "pencil")
+                                Label(L10n.tr("common.edit", appConfig.language), systemImage: "pencil")
                             }
                             .tint(AppTheme.primaryMint)
                         }
                 }
             }
         }
-        .navigationTitle("Recurring")
+        .navigationTitle(L10n.tr("recurring.title", appConfig.language))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    showingAddForm = true
+                    if subscription.canAddRecurringTemplate(currentCount: templates.count) {
+                        showingAddForm = true
+                    } else {
+                        showLimitAlert = true
+                    }
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.title3)
@@ -60,20 +67,24 @@ struct RecurringListView: View {
         .sheet(item: $editingTemplate) { template in
             RecurringFormView(categories: categories, existingTemplate: template) { updated in
                 template.amount = updated.amount
-                template.descriptionText = updated.descriptionText
+                template.note = updated.note
                 template.categoryId = updated.categoryId
-                template.typeRawValue = updated.typeRawValue
-                template.patternRawValue = updated.patternRawValue
+                template.type = updated.type
+                template.pattern = updated.pattern
                 template.startDate = updated.startDate
                 template.endDate = updated.endDate
+                template.updatedAt = .now
             }
         }
-        .alert("Delete Template", isPresented: .init(
-            get: { deletingTemplate != nil },
-            set: { if !$0 { deletingTemplate = nil } }
-        )) {
-            Button("Cancel", role: .cancel) { deletingTemplate = nil }
-            Button("Delete", role: .destructive) {
+        .alert(
+            L10n.tr("recurring.delete_title", appConfig.language),
+            isPresented: .init(
+                get: { deletingTemplate != nil },
+                set: { if !$0 { deletingTemplate = nil } }
+            )
+        ) {
+            Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { deletingTemplate = nil }
+            Button(L10n.tr("common.delete", appConfig.language), role: .destructive) {
                 if let template = deletingTemplate {
                     modelContext.delete(template)
                     deletingTemplate = nil
@@ -81,8 +92,22 @@ struct RecurringListView: View {
             }
         } message: {
             if let template = deletingTemplate {
-                Text("Delete \"\(template.descriptionText)\"? Previously generated expenses will not be removed.")
+                Text(L10n.tr("recurring.delete_message", appConfig.language, template.note))
             }
+        }
+        .alert(
+            L10n.tr("recurring.limit_title", appConfig.language),
+            isPresented: $showLimitAlert
+        ) {
+            Button(L10n.tr("common.upgrade_pro", appConfig.language)) {
+                showPaywall = true
+            }
+            Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { }
+        } message: {
+            Text(L10n.tr("recurring.limit_message", appConfig.language, AppConstants.freeTierRecurringTemplatesLimit))
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
     }
 
@@ -103,7 +128,7 @@ struct RecurringListView: View {
 
             // Info
             VStack(alignment: .leading, spacing: 2) {
-                Text(template.descriptionText)
+                Text(template.note)
                     .font(.body)
                     .lineLimit(1)
 
@@ -144,9 +169,10 @@ struct RecurringListView: View {
 
     private func patternLabel(_ pattern: RecurrencePattern) -> String {
         switch pattern {
-        case .monthly: return "Monthly"
-        case .yearly: return "Yearly"
-        case .none: return "None"
+        case .daily: return L10n.tr("recurring.daily", appConfig.language)
+        case .weekly: return L10n.tr("recurring.weekly", appConfig.language)
+        case .monthly: return L10n.tr("recurring.monthly", appConfig.language)
+        case .yearly: return L10n.tr("recurring.yearly", appConfig.language)
         }
     }
 }
@@ -155,6 +181,7 @@ struct RecurringListView: View {
     NavigationStack {
         RecurringListView()
     }
-    .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+    .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
     .environment(AppConfigViewModel())
+    .environment(SubscriptionViewModel())
 }

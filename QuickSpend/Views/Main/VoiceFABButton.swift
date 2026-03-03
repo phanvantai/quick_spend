@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Raised circular microphone button that sits centered above the tab bar
 struct VoiceFABButton: View {
+    let language: String
     let action: () -> Void
 
     var body: some View {
@@ -23,7 +24,7 @@ struct VoiceFABButton: View {
             }
         }
         .offset(y: -28)
-        .accessibilityLabel("Voice input")
-        .accessibilityHint("Double tap to add an expense using your voice")
+        .accessibilityLabel(L10n.tr("voice.input", language))
+        .accessibilityHint(L10n.tr("voice.hint", language))
     }
 }

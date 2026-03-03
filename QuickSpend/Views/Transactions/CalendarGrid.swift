@@ -3,7 +3,7 @@ import SwiftUI
 /// Monthly calendar grid showing daily income/expense totals
 struct CalendarGrid: View {
     let selectedMonth: Date
-    let expenses: [Expense]
+    let expenses: [Transaction]
     let currency: String
     @Binding var selectedDate: Date?
 

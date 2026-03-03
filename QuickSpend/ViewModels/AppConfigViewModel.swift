@@ -46,11 +46,6 @@ final class AppConfigViewModel {
         preferences.saveConfig(config)
     }
 
-    func setDataCollectionConsent(_ consent: Bool) {
-        config.dataCollectionConsent = consent
-        preferences.saveConfig(config)
-    }
-
     /// Format an amount using current config
     func formatCurrency(_ amount: Double) -> String {
         config.formatCurrency(amount)

@@ -2,7 +2,7 @@
 
 > Rebuild from scratch. Simple, fast, voice-first expense tracking.
 
-**Last updated:** 2026-02-26
+**Last updated:** 2026-03-02
 **Platform:** iOS 17+ (SwiftUI + SwiftData)
 **Languages:** English, Vietnamese (only 2 languages in v2)
 
@@ -210,15 +210,27 @@ struct AppConfig: Codable {
 
 ### 1.5 Deliverables — Phase 1
 
-- [ ] Finalize category list (review with real users if possible)
-- [ ] Create SwiftData models: `Category`, `Transaction`, `RecurringTemplate`
-- [ ] Create `TransactionType` and `RecurrencePattern` enums
-- [ ] Create `CategoryGroup` enum
-- [ ] Implement `CategoryService` — seed default categories, CRUD operations
-- [ ] Implement simplified `AppConfig` and `PreferencesService`
-- [ ] Implement single-screen `OnboardingView`
-- [ ] Write model unit tests
-- [ ] Verify SwiftData persistence works correctly
+- [x] Finalize category list (18 expense + 8 income categories)
+- [x] Create SwiftData models: `Category`, `Transaction`, `RecurringTemplate`
+- [x] Create `TransactionType` and `RecurrencePattern` enums (Codable, stored directly by SwiftData)
+- [x] Create `CategoryGroup` enum
+- [x] Implement `CategoryService` — seed 26 default categories, EN/VI localized, CRUD operations
+- [x] Implement v1→v2 migration strategy (clean start via `_resetStoreIfNeeded()`)
+- [x] Update all services: `RecurringService`, `GeminiParserService` (ParsedTransaction)
+- [x] Update all views (~15 files) to use new models (Transaction, Category)
+- [x] Delete old model files (`Expense.swift`, `QuickCategory.swift`)
+- [x] Update `CLAUDE.md` with new database schema documentation
+- [x] Simplify `AppConfig` — remove `dataCollectionConsent`, reduce to 2 languages (EN/VI)
+- [x] Simplify `PreferencesService` and `AppConfigViewModel` — remove data collection methods
+- [x] Implement single-screen `OnboardingView` (language + currency on one page)
+- [x] Write model unit tests (`QuickSpendTests/`: Transaction, Category, RecurringTemplate, Enums, AppConfig, CategoryService, SwiftData persistence)
+- [x] Verify SwiftData persistence works correctly (in-memory container tests)
+
+**Implementation decisions made:**
+- **Migration:** Clean Start (delete old SwiftData store on upgrade)
+- **Relationships:** String-based `categoryId` (no `@Relationship`)
+- **Enum storage:** Codable enums stored directly by SwiftData (no raw value wrappers)
+- **Queries:** `@Query` + `#Predicate` for views, `FetchDescriptor` for services
 
 ---
 
@@ -300,16 +312,17 @@ struct AppConfig: Codable {
 
 ### 2.6 Deliverables — Phase 2
 
-- [ ] `MainTabView` with 2 tabs + center FAB
-- [ ] `HomeView` — monthly summary + transaction list
-- [ ] `TransactionFormView` — add/edit transaction
-- [ ] `CategoryPickerView` — icon grid for selecting category
-- [ ] `CategoriesView` — list, add, edit, delete, reorder
-- [ ] `CategoryFormView` — create/edit category
-- [ ] `SettingsView` — language, currency, theme, categories link
-- [ ] Navigation flow between all screens
-- [ ] Swipe-to-delete on transactions
-- [ ] Month navigation on Home
+- [x] `MainTabView` with 2 tabs (Home, Settings) + center voice FAB
+- [x] `HomeView` — monthly summary card + transaction list grouped by date (merged from TransactionsView)
+- [x] `TransactionFormView` (`ExpenseFormView`) — add/edit transaction
+- [x] `CategoryPickerView` — icon grid embedded in ExpenseFormView
+- [x] `CategoriesView` — list, add, edit, delete, drag-to-reorder
+- [x] `CategoryFormView` — create/edit category
+- [x] `SettingsView` — language, currency, theme, categories link
+- [x] Navigation flow between all screens
+- [x] Swipe-to-delete + tap-to-edit on transactions
+- [x] Month navigation on Home
+- [x] Simplified all localization to EN/VI only (HomeStrings, TransactionFilter, VoiceService)
 
 ---
 
@@ -364,13 +377,13 @@ User taps mic FAB
 
 ### 3.4 Deliverables — Phase 3
 
-- [ ] `VoiceService` — speech recognition with real-time transcription
-- [ ] `GeminiParserService` — natural language → structured transactions
-- [ ] Voice overlay UI (listening state, transcription display)
-- [ ] Parsed results review dialog (confirm, edit, save)
-- [ ] Fallback to manual entry on parse failure
-- [ ] Vietnamese slang/abbreviation support
-- [ ] Usage limit tracking (free tier: 5 parses/day)
+- [x] `VoiceService` — SFSpeechRecognizer + AVAudioEngine, real-time transcription, sound level visualization
+- [x] `GeminiParserService` — Gemini 2.5 Flash via Firebase AI, structured prompt with categories/keywords/date context
+- [x] Voice overlay UI — `VoiceOverlay` with mic animation, live transcription, Cancel/Done buttons, swipe-to-cancel gesture (EN/VI localized)
+- [x] Parsed results review dialog — `EditableExpenseDialog` with type/note/amount/category/date editing, low-confidence warnings (EN/VI localized)
+- [x] Fallback to manual entry on parse failure — `ExpenseFormView` shown when Gemini unavailable or returns empty
+- [x] Vietnamese slang/abbreviation support — "ca"=thousand, "củ/cọc"=million, voice error correction
+- [x] Usage limit tracking — `UsageLimitService` (free tier: 5 parses/day, daily auto-reset)
 
 ---
 
@@ -412,13 +425,14 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 
 ### 4.3 Deliverables — Phase 4
 
-- [ ] `ReportView` — monthly report screen
-- [ ] `PeriodStats` computation service
-- [ ] Category breakdown donut/pie chart (Swift Charts)
-- [ ] Monthly trend bar chart (Swift Charts)
-- [ ] Top expenses list
-- [ ] Daily average / savings rate calculations
-- [ ] Date range selection (this month, last month, custom)
+- [x] `ReportView` — dedicated report screen with period picker, summary, donut chart, top expenses, trends
+- [x] `PeriodStats` computation service — already existed with full stats (savings rate, daily average, category breakdown)
+- [x] Category breakdown donut/pie chart (`ReportSection`, Swift Charts `SectorMark`)
+- [x] Monthly trend line chart (`TrendsSection`, Swift Charts `LineMark` + `AreaMark`, 12-month rolling)
+- [x] Top expenses list — top 5 with numbered ranking, category icon, amount
+- [x] Daily average / savings rate — computed from `PeriodStats`, displayed in summary card
+- [x] Date range selection — `ReportPeriod` enum: This Month, Last Month, 3 Months
+- [x] "View Report" navigation from Home screen
 
 ---
 
@@ -436,12 +450,13 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 
 ### 5.2 Deliverables — Phase 5
 
-- [ ] `RecurringService` — auto-generate transactions from templates
-- [ ] `RecurringListView` — list all templates
-- [ ] `RecurringFormView` — create/edit template
-- [ ] Auto-generation on app launch
-- [ ] Toggle active/inactive
-- [ ] End date support
+- [x] `RecurringService` — auto-generate transactions from templates (daily/weekly/monthly/yearly, safety limit, dedup)
+- [x] `RecurringListView` — list all templates with category icon, pattern label, amount, active toggle (EN/VI localized)
+- [x] `RecurringFormView` — create/edit template with type/note/amount/category/pattern/schedule (EN/VI localized)
+- [x] Auto-generation on app launch — `RecurringService.generatePendingTransactions()` in ContentView
+- [x] Toggle active/inactive — inline Toggle in list row
+- [x] End date support — optional end date with date picker
+- [x] Full EN/VI localization for all views (SettingsView, ExpenseFormView, CategoriesView)
 
 ---
 
@@ -461,12 +476,12 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 
 ### 6.2 Deliverables — Phase 6
 
-- [ ] RevenueCat integration
-- [ ] `SubscriptionViewModel` — manage subscription state
-- [ ] `PaywallView` — purchase screen
-- [ ] Feature gating throughout the app
-- [ ] Restore purchases
-- [ ] Receipt validation
+- [x] RevenueCat integration (`#if canImport(RevenueCat)` for graceful degradation)
+- [x] `SubscriptionViewModel` — manage subscription state, feature limit properties
+- [x] `PaywallView` — purchase screen, EN/VI localized
+- [x] Feature gating throughout the app (AI parse limit, recurring template limit, report history limit)
+- [x] Restore purchases (in PaywallView toolbar)
+- [x] Receipt validation (handled by RevenueCat SDK)
 
 ---
 
@@ -563,11 +578,11 @@ Accessible from Home screen (e.g., "View Report" button or swipe up).
 ## Current Status
 
 - [x] **V1 completed** (Flutter → SwiftUI migration done)
-- [ ] **Phase 1** — In planning ← WE ARE HERE
-- [ ] **Phase 2** — Not started
-- [ ] **Phase 3** — Not started
-- [ ] **Phase 4** — Not started
-- [ ] **Phase 5** — Not started
-- [ ] **Phase 6** — Not started
-- [ ] **Phase 7** — Not started
+- [x] **Phase 1** — Foundation & Database Design complete
+- [x] **Phase 2** — Core UI & Manual Input complete
+- [x] **Phase 3** — Voice Input & AI Parsing complete
+- [x] **Phase 4** — Reports & Insights complete
+- [x] **Phase 5** — Recurring Transactions complete
+- [x] **Phase 6** — Subscription & Monetization complete
+- [ ] **Phase 7** — Polish & Quality ← NEXT
 - [ ] **Phase 8** — Post-launch backlog

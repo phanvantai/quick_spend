@@ -5,15 +5,18 @@ import SwiftData
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
-    @Query(sort: \QuickCategory.name) private var categories: [QuickCategory]
+    @Environment(SubscriptionViewModel.self) private var subscription
+    @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedTab = 0
     @State private var voiceService = VoiceService()
     @State private var usageLimitService = UsageLimitService()
     @State private var showVoiceOverlay = false
-    @State private var parsedExpenses: [ParsedExpense] = []
-    @State private var showExpenseReview = false
+    @State private var parsedTransactions: [ParsedTransaction] = []
+    @State private var showTransactionReview = false
     @State private var showPermissionAlert = false
+    @State private var showLimitReachedAlert = false
+    @State private var showPaywall = false
     @State private var isProcessingVoice = false
     // Fallback: manual entry with pre-filled transcription
     @State private var fallbackTranscription = ""
@@ -22,19 +25,16 @@ struct MainTabView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                Tab("Home", systemImage: "house.fill", value: 0) {
+                Tab(L10n.tr("home.title", appConfig.language), systemImage: "house.fill", value: 0) {
                     HomeView()
                 }
-                Tab("Transactions", systemImage: "calendar", value: 1) {
-                    TransactionsView()
-                }
-                Tab("Settings", systemImage: "gearshape.fill", value: 2) {
+                Tab(L10n.tr("settings.title", appConfig.language), systemImage: "gearshape.fill", value: 1) {
                     SettingsView()
                 }
             }
             .tint(AppTheme.primaryMint)
 
-            VoiceFABButton {
+            VoiceFABButton(language: appConfig.language) {
                 handleVoiceButtonTap()
             }
 
@@ -45,7 +45,7 @@ struct MainTabView: View {
                     HStack(spacing: AppTheme.spacing8) {
                         ProgressView()
                             .tint(.white)
-                        Text("Processing...")
+                        Text(L10n.tr("common.processing", appConfig.language))
                             .font(.subheadline)
                             .foregroundStyle(.white)
                     }
@@ -61,6 +61,12 @@ struct MainTabView: View {
             }
         }
         .animation(.easeInOut, value: isProcessingVoice)
+        .onChange(of: subscription.isPro) {
+            usageLimitService.isPro = subscription.isPro
+        }
+        .onAppear {
+            usageLimitService.isPro = subscription.isPro
+        }
         .fullScreenCover(isPresented: $showVoiceOverlay) {
             VoiceOverlay(
                 voiceService: voiceService,
@@ -74,40 +80,66 @@ struct MainTabView: View {
                 }
             )
         }
-        .sheet(isPresented: $showExpenseReview) {
+        .sheet(isPresented: $showTransactionReview) {
             EditableExpenseDialog(
-                parsedExpenses: parsedExpenses,
+                parsedExpenses: parsedTransactions,
                 categories: categories,
-                onSave: { expenses in
-                    for expense in expenses {
-                        modelContext.insert(expense)
+                onSave: { transactions in
+                    for transaction in transactions {
+                        modelContext.insert(transaction)
                     }
-                    parsedExpenses = []
+                    parsedTransactions = []
                 }
             )
         }
         .sheet(isPresented: $showManualFallback) {
             ExpenseFormView(
                 categories: categories
-            ) { expense in
-                modelContext.insert(expense)
+            ) { transaction in
+                modelContext.insert(transaction)
             }
         }
-        .alert("Microphone Access Required", isPresented: $showPermissionAlert) {
-            Button("Open Settings") {
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
+        .alert(
+            L10n.tr("alert.mic_required", appConfig.language),
+            isPresented: $showPermissionAlert
+        ) {
+            Button(L10n.tr("alert.open_settings", appConfig.language)) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
-            Button("Cancel", role: .cancel) { }
+            Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { }
         } message: {
-            Text("Please grant microphone and speech recognition access in Settings to use voice input.")
+            Text(L10n.tr("alert.mic_message", appConfig.language))
+        }
+        .alert(
+            L10n.tr("alert.daily_limit", appConfig.language),
+            isPresented: $showLimitReachedAlert
+        ) {
+            Button(L10n.tr("common.upgrade_pro", appConfig.language)) {
+                showPaywall = true
+            }
+            Button(L10n.tr("alert.enter_manually", appConfig.language)) {
+                showManualFallback = true
+            }
+            Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { }
+        } message: {
+            Text(L10n.tr("alert.daily_limit_message", appConfig.language, AppConstants.freeTierGeminiLimit))
         }
     }
 
     // MARK: - Voice Flow
 
     private func handleVoiceButtonTap() {
+        // Check AI parse limit before starting voice input
+        if !subscription.isPro && usageLimitService.hasReachedLimit {
+            showLimitReachedAlert = true
+            return
+        }
+
         Task {
             var authorized = voiceService.isAuthorized
             if !authorized {
@@ -136,6 +168,13 @@ struct MainTabView: View {
             return
         }
 
+        // Check limit before parsing
+        if !subscription.isPro && usageLimitService.hasReachedLimit {
+            fallbackTranscription = text
+            showLimitReachedAlert = true
+            return
+        }
+
         isProcessingVoice = true
         Task {
             let results = await GeminiParserService.parse(
@@ -152,8 +191,8 @@ struct MainTabView: View {
                     fallbackTranscription = text
                     showManualFallback = true
                 } else {
-                    parsedExpenses = results
-                    showExpenseReview = true
+                    parsedTransactions = results
+                    showTransactionReview = true
                 }
             }
         }
@@ -162,7 +201,7 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
-        .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(AppConfigViewModel())
         .environment(SubscriptionViewModel())
 }

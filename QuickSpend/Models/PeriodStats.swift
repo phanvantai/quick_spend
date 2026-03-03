@@ -12,10 +12,10 @@ struct PeriodStats {
     let expenseCount: Int
     let averagePerDay: Double
     let averagePerTransaction: Double
-    let highestExpense: Expense?
-    let lowestExpense: Expense?
-    let highestIncome: Expense?
-    let lowestIncome: Expense?
+    let highestExpense: Transaction?
+    let lowestExpense: Transaction?
+    let highestIncome: Transaction?
+    let lowestIncome: Transaction?
     let categoryBreakdown: [CategoryStats]
     let dailySpending: [Date: Double]
     let dailyIncome: [Date: Double]
@@ -41,17 +41,17 @@ struct PeriodStats {
         )
     }
 
-    /// Calculate statistics from a list of expenses
-    static func fromExpenses(_ expenses: [Expense], startDate: Date, endDate: Date) -> PeriodStats {
-        guard !expenses.isEmpty else {
+    /// Calculate statistics from a list of transactions
+    static func fromTransactions(_ transactions: [Transaction], startDate: Date, endDate: Date) -> PeriodStats {
+        guard !transactions.isEmpty else {
             return .empty(startDate: startDate, endDate: endDate)
         }
 
-        let incomeTransactions = expenses.filter(\.isIncome)
-        let expenseTransactions = expenses.filter(\.isExpense)
+        let incomeItems = transactions.filter(\.isIncome)
+        let expenseItems = transactions.filter(\.isExpense)
 
-        let totalIncome = incomeTransactions.reduce(0.0) { $0 + $1.amount }
-        let totalExpenses = expenseTransactions.reduce(0.0) { $0 + $1.amount }
+        let totalIncome = incomeItems.reduce(0.0) { $0 + $1.amount }
+        let totalExpenses = expenseItems.reduce(0.0) { $0 + $1.amount }
         let totalAmount = totalIncome + totalExpenses
         let netBalance = totalIncome - totalExpenses
         let savingsRate = totalIncome > 0 ? (netBalance / totalIncome) * 100 : 0.0
@@ -59,30 +59,30 @@ struct PeriodStats {
         let calendar = Calendar.current
         let daysDifference = max(calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 1, 1)
         let averagePerDay = totalExpenses / Double(daysDifference)
-        let averagePerTransaction = expenses.isEmpty ? 0 : totalAmount / Double(expenses.count)
+        let averagePerTransaction = transactions.isEmpty ? 0 : totalAmount / Double(transactions.count)
 
         // Highest/lowest
-        let sortedExpenses = expenseTransactions.sorted { $0.amount > $1.amount }
-        let sortedIncome = incomeTransactions.sorted { $0.amount > $1.amount }
+        let sortedExpenses = expenseItems.sorted { $0.amount > $1.amount }
+        let sortedIncome = incomeItems.sorted { $0.amount > $1.amount }
 
         // Category breakdown
         var categoryTotals: [String: Double] = [:]
         var categoryCounts: [String: Int] = [:]
-        for expense in expenses {
-            categoryTotals[expense.categoryId, default: 0] += expense.amount
-            categoryCounts[expense.categoryId, default: 0] += 1
+        for transaction in transactions {
+            categoryTotals[transaction.categoryId, default: 0] += transaction.amount
+            categoryCounts[transaction.categoryId, default: 0] += 1
         }
 
         // Daily aggregations
         var dailySpending: [Date: Double] = [:]
         var dailyIncomeMap: [Date: Double] = [:]
-        for expense in expenseTransactions {
-            let day = calendar.startOfDay(for: expense.date)
-            dailySpending[day, default: 0] += expense.amount
+        for item in expenseItems {
+            let day = calendar.startOfDay(for: item.date)
+            dailySpending[day, default: 0] += item.amount
         }
-        for income in incomeTransactions {
-            let day = calendar.startOfDay(for: income.date)
-            dailyIncomeMap[day, default: 0] += income.amount
+        for item in incomeItems {
+            let day = calendar.startOfDay(for: item.date)
+            dailyIncomeMap[day, default: 0] += item.amount
         }
         var dailyNet: [Date: Double] = [:]
         let allDates = Set(dailySpending.keys).union(dailyIncomeMap.keys)
@@ -96,9 +96,9 @@ struct PeriodStats {
             totalExpenses: totalExpenses,
             netBalance: netBalance,
             savingsRate: savingsRate,
-            transactionCount: expenses.count,
-            incomeCount: incomeTransactions.count,
-            expenseCount: expenseTransactions.count,
+            transactionCount: transactions.count,
+            incomeCount: incomeItems.count,
+            expenseCount: expenseItems.count,
             averagePerDay: averagePerDay,
             averagePerTransaction: averagePerTransaction,
             highestExpense: sortedExpenses.first,
@@ -117,11 +117,11 @@ struct PeriodStats {
     }
 
     /// Create a copy with calculated category breakdown
-    func withCategoryBreakdown(categories: [QuickCategory]) -> PeriodStats {
+    func withCategoryBreakdown(categories: [Category]) -> PeriodStats {
         var breakdown: [CategoryStats] = []
         for (categoryId, total) in categoryTotals {
             guard let category = categories.first(where: { $0.id == categoryId })
-                    ?? categories.first(where: { $0.id == "other" }) else { continue }
+                    ?? categories.first(where: { $0.id == "other_expense" }) else { continue }
             let grandTotal = category.type == .expense ? totalExpenses : totalIncome
             breakdown.append(CategoryStats(
                 categoryId: category.id,

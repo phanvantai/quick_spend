@@ -17,15 +17,15 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 // Preferences
-                Section("Preferences") {
+                Section(L10n.tr("settings.preferences", appConfig.language)) {
                     NavigationLink {
                         CategoriesView()
                     } label: {
                         settingsRow(
                             icon: "square.grid.2x2.fill",
                             iconColor: AppTheme.accentTeal,
-                            title: "Categories",
-                            subtitle: "Manage categories"
+                            title: L10n.tr("settings.categories", appConfig.language),
+                            subtitle: L10n.tr("settings.categories_subtitle", appConfig.language)
                         )
                     }
 
@@ -35,8 +35,8 @@ struct SettingsView: View {
                         settingsRow(
                             icon: "repeat",
                             iconColor: AppTheme.accentPink,
-                            title: "Recurring",
-                            subtitle: "Manage recurring expenses"
+                            title: L10n.tr("settings.recurring", appConfig.language),
+                            subtitle: L10n.tr("settings.recurring_subtitle", appConfig.language)
                         )
                     }
 
@@ -46,7 +46,7 @@ struct SettingsView: View {
                         settingsRow(
                             icon: "globe",
                             iconColor: AppTheme.primaryMint,
-                            title: "Language",
+                            title: L10n.tr("settings.language", appConfig.language),
                             subtitle: appConfig.config.languageDisplayName
                         )
                     }
@@ -58,7 +58,7 @@ struct SettingsView: View {
                         settingsRow(
                             icon: "dollarsign.circle.fill",
                             iconColor: AppTheme.accentOrange,
-                            title: "Currency",
+                            title: L10n.tr("settings.currency", appConfig.language),
                             subtitle: "\(appConfig.config.currencySymbol) \(appConfig.currency)"
                         )
                     }
@@ -70,7 +70,7 @@ struct SettingsView: View {
                         settingsRow(
                             icon: "paintpalette.fill",
                             iconColor: AppTheme.accentPink,
-                            title: "Theme",
+                            title: L10n.tr("settings.theme", appConfig.language),
                             subtitle: themeDisplayName
                         )
                     }
@@ -78,13 +78,13 @@ struct SettingsView: View {
                 }
 
                 // Subscription
-                Section("Subscription") {
+                Section(L10n.tr("settings.subscription", appConfig.language)) {
                     if subscription.isPro {
                         settingsRow(
                             icon: "star.fill",
                             iconColor: AppTheme.accentOrange,
                             title: "Quick Spend Pro",
-                            subtitle: "Active"
+                            subtitle: L10n.tr("settings.pro_active", appConfig.language)
                         )
                     } else {
                         Button {
@@ -93,40 +93,20 @@ struct SettingsView: View {
                             settingsRow(
                                 icon: "star.fill",
                                 iconColor: AppTheme.accentOrange,
-                                title: "Upgrade to Pro",
-                                subtitle: "Unlock unlimited features"
+                                title: L10n.tr("common.upgrade_pro", appConfig.language),
+                                subtitle: L10n.tr("settings.unlock_features", appConfig.language)
                             )
                         }
                         .tint(.primary)
                     }
                 }
 
-                // Privacy
-                Section("Privacy") {
-                    Toggle(isOn: Binding(
-                        get: { appConfig.config.dataCollectionConsent },
-                        set: { newValue in
-                            appConfig.setDataCollectionConsent(newValue)
-                            AnalyticsService.logDataCollectionToggled(enabled: newValue)
-                            AnalyticsService.setDataCollectionConsentProperty(newValue)
-                        }
-                    )) {
-                        settingsRow(
-                            icon: "chart.bar.doc.horizontal",
-                            iconColor: AppTheme.accentTeal,
-                            title: "Help Improve AI",
-                            subtitle: "Share anonymized data to improve parsing"
-                        )
-                    }
-                    .tint(AppTheme.primaryMint)
-                }
-
                 // About
-                Section("About") {
+                Section(L10n.tr("settings.about", appConfig.language)) {
                     aboutCard
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle(L10n.tr("settings.title", appConfig.language))
             .sheet(isPresented: $showLanguagePicker) {
                 languagePickerSheet
             }
@@ -170,9 +150,9 @@ struct SettingsView: View {
 
     private var themeDisplayName: String {
         switch appConfig.themeMode {
-        case "light": return "Light"
-        case "dark": return "Dark"
-        default: return "System"
+        case "light": return L10n.tr("settings.theme_light", appConfig.language)
+        case "dark": return L10n.tr("settings.theme_dark", appConfig.language)
+        default: return L10n.tr("settings.theme_system", appConfig.language)
         }
     }
 
@@ -184,7 +164,7 @@ struct SettingsView: View {
                 Button {
                     appConfig.setLanguage(option.code)
                     // Re-seed categories in new language
-                    CategoryService.updateSystemCategoryNames(
+                    CategoryService.updateCategoryNames(
                         language: option.code,
                         modelContext: modelContext
                     )
@@ -204,11 +184,11 @@ struct SettingsView: View {
                 }
                 .tint(.primary)
             }
-            .navigationTitle("Language")
+            .navigationTitle(L10n.tr("settings.language", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { showLanguagePicker = false }
+                    Button(L10n.tr("common.done", appConfig.language)) { showLanguagePicker = false }
                 }
             }
         }
@@ -239,11 +219,11 @@ struct SettingsView: View {
                 }
                 .tint(.primary)
             }
-            .navigationTitle("Currency")
+            .navigationTitle(L10n.tr("settings.currency", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { showCurrencyPicker = false }
+                    Button(L10n.tr("common.done", appConfig.language)) { showCurrencyPicker = false }
                 }
             }
         }
@@ -255,15 +235,15 @@ struct SettingsView: View {
     private var themePickerSheet: some View {
         NavigationStack {
             List {
-                themeOption(code: "system", icon: "circle.lefthalf.filled", title: "System")
-                themeOption(code: "light", icon: "sun.max.fill", title: "Light")
-                themeOption(code: "dark", icon: "moon.fill", title: "Dark")
+                themeOption(code: "system", icon: "circle.lefthalf.filled", title: L10n.tr("settings.theme_system", appConfig.language))
+                themeOption(code: "light", icon: "sun.max.fill", title: L10n.tr("settings.theme_light", appConfig.language))
+                themeOption(code: "dark", icon: "moon.fill", title: L10n.tr("settings.theme_dark", appConfig.language))
             }
-            .navigationTitle("Theme")
+            .navigationTitle(L10n.tr("settings.theme", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { showThemePicker = false }
+                    Button(L10n.tr("common.done", appConfig.language)) { showThemePicker = false }
                 }
             }
         }
@@ -310,7 +290,7 @@ struct SettingsView: View {
                 Text("v1.0.0")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text("Track expenses easily")
+                Text(L10n.tr("settings.track_easily", appConfig.language))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -321,7 +301,7 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
-        .modelContainer(for: [Expense.self, QuickCategory.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(AppConfigViewModel())
         .environment(SubscriptionViewModel())
 }

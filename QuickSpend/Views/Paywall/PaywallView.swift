@@ -3,6 +3,7 @@ import SwiftUI
 /// Paywall screen showing subscription options
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(SubscriptionViewModel.self) private var subscription
 
     @State private var isPurchasing = false
@@ -11,16 +12,9 @@ struct PaywallView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: AppTheme.spacing24) {
-                    // Hero
                     heroSection
-
-                    // Features
                     featuresSection
-
-                    // Pricing
                     pricingSection
-
-                    // Legal
                     legalSection
                 }
                 .padding(.horizontal, AppTheme.spacing16)
@@ -30,10 +24,10 @@ struct PaywallView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
+                    Button(L10n.tr("common.close", appConfig.language)) { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Restore") {
+                    Button(L10n.tr("paywall.restore", appConfig.language)) {
                         Task {
                             await subscription.restorePurchases()
                             if subscription.isPro { dismiss() }
@@ -69,10 +63,10 @@ struct PaywallView: View {
                         .foregroundStyle(.white)
                 }
 
-            Text("Unlock Full Power")
+            Text(L10n.tr("paywall.title", appConfig.language))
                 .font(.title2.bold())
 
-            Text("Remove limits and get the most out of Quick Spend")
+            Text(L10n.tr("paywall.subtitle", appConfig.language))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -87,26 +81,26 @@ struct PaywallView: View {
             featureRow(
                 icon: "mic.fill",
                 color: AppTheme.primaryMint,
-                title: "Unlimited AI Voice Input",
-                subtitle: "No daily limit on AI-powered expense parsing"
+                title: L10n.tr("paywall.feature_voice", appConfig.language),
+                subtitle: L10n.tr("paywall.feature_voice_desc", appConfig.language)
             )
             featureRow(
                 icon: "repeat",
                 color: AppTheme.accentPink,
-                title: "Unlimited Recurring Templates",
-                subtitle: "Create as many recurring expenses as you need"
+                title: L10n.tr("paywall.feature_recurring", appConfig.language),
+                subtitle: L10n.tr("paywall.feature_recurring_desc", appConfig.language)
             )
             featureRow(
                 icon: "chart.bar.fill",
                 color: AppTheme.accentOrange,
-                title: "Extended Reports",
-                subtitle: "View reports for any time range"
+                title: L10n.tr("paywall.feature_reports", appConfig.language),
+                subtitle: L10n.tr("paywall.feature_reports_desc", appConfig.language)
             )
             featureRow(
                 icon: "heart.fill",
                 color: AppTheme.error,
-                title: "Support Development",
-                subtitle: "Help us build better features for you"
+                title: L10n.tr("paywall.feature_support", appConfig.language),
+                subtitle: L10n.tr("paywall.feature_support_desc", appConfig.language)
             )
         }
         .padding(AppTheme.spacing16)
@@ -148,14 +142,14 @@ struct PaywallView: View {
                 VStack(spacing: AppTheme.spacing4) {
                     HStack {
                         VStack(alignment: .leading) {
-                            Text("Yearly")
+                            Text(L10n.tr("paywall.plan_yearly", appConfig.language))
                                 .font(.headline)
-                            Text("$\(String(format: "%.2f", AppConstants.subscriptionYearlyPriceUSD))/year")
+                            Text("$\(String(format: "%.2f", AppConstants.subscriptionYearlyPriceUSD))/\(L10n.tr("paywall.per_year", appConfig.language))")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Text("Best Value")
+                        Text(L10n.tr("paywall.best_value", appConfig.language))
                             .font(.caption.bold())
                             .padding(.horizontal, AppTheme.spacing8)
                             .padding(.vertical, AppTheme.spacing4)
@@ -180,9 +174,9 @@ struct PaywallView: View {
             } label: {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("Monthly")
+                        Text(L10n.tr("paywall.plan_monthly", appConfig.language))
                             .font(.headline)
-                        Text("$\(String(format: "%.2f", AppConstants.subscriptionMonthlyPriceUSD))/month")
+                        Text("$\(String(format: "%.2f", AppConstants.subscriptionMonthlyPriceUSD))/\(L10n.tr("paywall.per_month", appConfig.language))")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -202,18 +196,18 @@ struct PaywallView: View {
 
     private var legalSection: some View {
         VStack(spacing: AppTheme.spacing4) {
-            Text("Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period.")
+            Text(L10n.tr("paywall.auto_renew", appConfig.language))
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)
 
             HStack(spacing: AppTheme.spacing16) {
                 if let termsURL = URL(string: AppConstants.termsOfUseUrl) {
-                    Link("Terms of Use", destination: termsURL)
+                    Link(L10n.tr("paywall.terms", appConfig.language), destination: termsURL)
                         .font(.caption2)
                 }
                 if let privacyURL = URL(string: AppConstants.privacyPolicyUrl) {
-                    Link("Privacy Policy", destination: privacyURL)
+                    Link(L10n.tr("paywall.privacy", appConfig.language), destination: privacyURL)
                         .font(.caption2)
                 }
             }
@@ -237,5 +231,6 @@ struct PaywallView: View {
 
 #Preview {
     PaywallView()
+        .environment(AppConfigViewModel())
         .environment(SubscriptionViewModel())
 }
