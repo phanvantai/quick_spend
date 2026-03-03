@@ -12,7 +12,7 @@ struct MonthlySummaryCard: View {
         VStack(spacing: AppTheme.spacing16) {
             HStack(spacing: AppTheme.spacing24) {
                 summaryItem(
-                    title: "Income",
+                    title: L10n.tr("common.income", config.language),
                     amount: income,
                     icon: "arrow.up.circle.fill",
                     color: .white.opacity(0.9)
@@ -23,7 +23,7 @@ struct MonthlySummaryCard: View {
                     .background(Color.white.opacity(0.3))
 
                 summaryItem(
-                    title: "Expense",
+                    title: L10n.tr("common.expense", config.language),
                     amount: expense,
                     icon: "arrow.down.circle.fill",
                     color: .white.opacity(0.9)
@@ -34,7 +34,7 @@ struct MonthlySummaryCard: View {
                 .background(Color.white.opacity(0.3))
 
             HStack {
-                Text("Balance")
+                Text(L10n.tr("common.balance", config.language))
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.8))
                 Spacer()

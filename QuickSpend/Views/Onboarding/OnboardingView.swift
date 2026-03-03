@@ -31,9 +31,7 @@ struct OnboardingView: View {
                     VStack(spacing: AppTheme.spacing8) {
                         Text("Quick Spend")
                             .font(.largeTitle.bold())
-                        Text(selectedLanguage == "vi"
-                             ? "Theo doi chi tieu bang giong noi"
-                             : "Track expenses with your voice")
+                        Text(L10n.tr("onboarding.tagline", selectedLanguage))
                             .font(.title3)
                             .foregroundStyle(.secondary)
                     }
@@ -62,7 +60,7 @@ struct OnboardingView: View {
                                 .font(.title2)
                                 .foregroundStyle(AppTheme.accentOrange)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(selectedLanguage == "vi" ? "Tien te" : "Currency")
+                                Text(L10n.tr("onboarding.currency", selectedLanguage))
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 Text(selectedCurrency)
@@ -70,7 +68,7 @@ struct OnboardingView: View {
                                     .foregroundStyle(.primary)
                             }
                             Spacer()
-                            Text(selectedLanguage == "vi" ? "Thay doi" : "Change")
+                            Text(L10n.tr("onboarding.change", selectedLanguage))
                                 .font(.subheadline)
                                 .foregroundStyle(AppTheme.primaryMint)
                         }
@@ -92,7 +90,7 @@ struct OnboardingView: View {
                 completeOnboarding()
             } label: {
                 HStack {
-                    Text(selectedLanguage == "vi" ? "Bat dau" : "Get Started")
+                    Text(L10n.tr("onboarding.get_started", selectedLanguage))
                     Image(systemName: "arrow.forward")
                 }
                 .font(.headline)
@@ -133,11 +131,11 @@ struct OnboardingView: View {
                 }
                 .tint(.primary)
             }
-            .navigationTitle(selectedLanguage == "vi" ? "Tien te" : "Currency")
+            .navigationTitle(L10n.tr("onboarding.currency", selectedLanguage))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(selectedLanguage == "vi" ? "Xong" : "Done") {
+                    Button(L10n.tr("common.done", selectedLanguage)) {
                         showCurrencyPicker = false
                     }
                 }

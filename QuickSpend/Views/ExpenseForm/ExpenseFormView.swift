@@ -19,7 +19,6 @@ struct ExpenseFormView: View {
     @State private var showAmountError = false
 
     private var isEditMode: Bool { existingExpense != nil }
-    private var isVi: Bool { appConfig.language == "vi" }
 
     private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType }
@@ -49,9 +48,9 @@ struct ExpenseFormView: View {
             Form {
                 // Transaction type
                 Section {
-                    Picker(isVi ? "Loại" : "Type", selection: $selectedType) {
-                        Text(isVi ? "Chi tiêu" : "Expense").tag(TransactionType.expense)
-                        Text(isVi ? "Thu nhập" : "Income").tag(TransactionType.income)
+                    Picker(L10n.tr("common.type", appConfig.language), selection: $selectedType) {
+                        Text(L10n.tr("common.expense", appConfig.language)).tag(TransactionType.expense)
+                        Text(L10n.tr("common.income", appConfig.language)).tag(TransactionType.income)
                     }
                     .pickerStyle(.segmented)
                     .listRowBackground(Color.clear)
@@ -60,13 +59,13 @@ struct ExpenseFormView: View {
                 }
 
                 // Note
-                Section(isVi ? "Mô tả" : "Description") {
-                    TextField(isVi ? "Bạn chi gì?" : "What did you spend on?", text: $noteText)
+                Section(L10n.tr("common.description", appConfig.language)) {
+                    TextField(L10n.tr("expense_form.what_spent", appConfig.language), text: $noteText)
                         .textInputAutocapitalization(.sentences)
                 }
 
                 // Amount
-                Section(isVi ? "Số tiền" : "Amount") {
+                Section(L10n.tr("common.amount", appConfig.language)) {
                     HStack {
                         Text(appConfig.config.currencySymbol)
                             .font(.title3.bold())
@@ -76,14 +75,14 @@ struct ExpenseFormView: View {
                             .font(.title3.monospacedDigit())
                     }
                     if showAmountError {
-                        Text(isVi ? "Vui lòng nhập số tiền hợp lệ" : "Please enter a valid amount")
+                        Text(L10n.tr("expense_form.invalid_amount", appConfig.language))
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
                 }
 
                 // Category
-                Section(isVi ? "Danh mục" : "Category") {
+                Section(L10n.tr("common.category", appConfig.language)) {
                     LazyVGrid(columns: [
                         GridItem(.adaptive(minimum: 90), spacing: AppTheme.spacing8)
                     ], spacing: AppTheme.spacing8) {
@@ -95,9 +94,9 @@ struct ExpenseFormView: View {
                 }
 
                 // Date
-                Section(isVi ? "Ngày" : "Date") {
+                Section(L10n.tr("common.date", appConfig.language)) {
                     DatePicker(
-                        isVi ? "Ngày" : "Date",
+                        L10n.tr("common.date", appConfig.language),
                         selection: $selectedDate,
                         in: ...Date(),
                         displayedComponents: [.date]
@@ -106,15 +105,15 @@ struct ExpenseFormView: View {
                 }
             }
             .navigationTitle(isEditMode
-                ? (isVi ? "Sửa giao dịch" : "Edit Transaction")
-                : (isVi ? "Thêm giao dịch" : "Add Transaction"))
+                ? L10n.tr("expense_form.edit_title", appConfig.language)
+                : L10n.tr("expense_form.add_title", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(isVi ? "Hủy" : "Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel", appConfig.language)) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isVi ? "Lưu" : "Save") { save() }
+                    Button(L10n.tr("common.save", appConfig.language)) { save() }
                         .bold()
                         .disabled(noteText.trimmingCharacters(in: .whitespaces).isEmpty)
                 }

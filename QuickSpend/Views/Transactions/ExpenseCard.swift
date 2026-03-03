@@ -20,7 +20,7 @@ struct ExpenseCard: View {
 
             // Category name and description
             VStack(alignment: .leading, spacing: 3) {
-                Text(category?.name ?? "Other")
+                Text(category?.name ?? L10n.tr("transactions.other", config.language))
                     .font(.body.weight(.semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
@@ -40,7 +40,7 @@ struct ExpenseCard: View {
                     .foregroundStyle(transaction.isIncome ? AppTheme.incomeColor : AppTheme.expenseColor)
 
                 if let confidence = transaction.confidence, confidence < AppConstants.confidenceWarningThreshold {
-                    Text("Low confidence")
+                    Text(L10n.tr("transactions.low_confidence", config.language))
                         .font(.system(size: 9))
                         .foregroundStyle(AppTheme.warning)
                         .padding(.horizontal, 6)

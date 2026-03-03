@@ -70,7 +70,7 @@ struct HomeView: View {
                         ReportView()
                     } label: {
                         HStack {
-                            Text(appConfig.language == "vi" ? "Xem báo cáo" : "View Report")
+                            Text(L10n.tr("home.view_report", appConfig.language))
                                 .font(.subheadline.weight(.medium))
                             Image(systemName: "arrow.right")
                                 .font(.subheadline)
@@ -208,9 +208,9 @@ struct HomeView: View {
     private var transactionListSection: some View {
         if groupedTransactions.isEmpty {
             ContentUnavailableView(
-                "No Transactions",
+                L10n.tr("home.no_transactions", appConfig.language),
                 systemImage: "tray",
-                description: Text("No transactions this month.")
+                description: Text(L10n.tr("home.no_transactions_month", appConfig.language))
             )
             .padding(.top, AppTheme.spacing24)
         } else {
@@ -258,9 +258,9 @@ struct HomeView: View {
         let calendar = Calendar.current
         let label: String
         if calendar.isDateInToday(date) {
-            label = appConfig.language == "vi" ? "Hôm nay" : "Today"
+            label = L10n.tr("home.today", appConfig.language)
         } else if calendar.isDateInYesterday(date) {
-            label = appConfig.language == "vi" ? "Hôm qua" : "Yesterday"
+            label = L10n.tr("home.yesterday", appConfig.language)
         } else {
             label = date.formatted(.dateTime.day(.twoDigits).month(.abbreviated).year())
         }

@@ -8,9 +8,9 @@ enum ReportPeriod: CaseIterable {
 
     func label(language: String) -> String {
         switch self {
-        case .thisMonth: return language == "vi" ? "Tháng này" : "This Month"
-        case .lastMonth: return language == "vi" ? "Tháng trước" : "Last Month"
-        case .last3Months: return language == "vi" ? "3 tháng" : "3 Months"
+        case .thisMonth: return L10n.tr("report.this_month", language)
+        case .lastMonth: return L10n.tr("report.last_month", language)
+        case .last3Months: return L10n.tr("report.three_months", language)
         }
     }
 
@@ -52,7 +52,6 @@ struct ReportView: View {
     @State private var selectedPeriod: ReportPeriod = .thisMonth
     @State private var showPaywall = false
 
-    private var isVi: Bool { appConfig.language == "vi" }
 
     // MARK: - Computed Stats
 
@@ -137,7 +136,7 @@ struct ReportView: View {
             .padding(.horizontal, AppTheme.spacing16)
             .padding(.vertical, AppTheme.spacing12)
         }
-        .navigationTitle(isVi ? "Báo cáo" : "Report")
+        .navigationTitle(L10n.tr("report.title", appConfig.language))
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemGroupedBackground))
         .onChange(of: selectedPeriod) { _, newPeriod in
@@ -172,7 +171,7 @@ struct ReportView: View {
         VStack(spacing: AppTheme.spacing12) {
             // Balance
             HStack {
-                Text(isVi ? "Khoản dư" : "Balance")
+                Text(L10n.tr("common.balance", appConfig.language))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -207,7 +206,7 @@ struct ReportView: View {
             // Daily average + Savings rate
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(isVi ? "Trung bình/ngày" : "Daily Average")
+                    Text(L10n.tr("home.daily_average", appConfig.language))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(appConfig.formatCurrency(stats.totalExpenses / Double(daysInPeriod)))
@@ -215,7 +214,7 @@ struct ReportView: View {
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(isVi ? "Tỷ lệ tiết kiệm" : "Savings Rate")
+                    Text(L10n.tr("home.savings_rate", appConfig.language))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(String(format: "%.0f%%", stats.savingsRate))
@@ -242,7 +241,7 @@ struct ReportView: View {
                 Text(appConfig.formatCurrency(amount))
                     .font(.subheadline.weight(.semibold).monospacedDigit())
                     .foregroundStyle(color)
-                Text(isVi ? "\(count) giao dịch" : "\(count) transactions")
+                Text(L10n.tr("transactions.count", appConfig.language, count))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
@@ -253,7 +252,7 @@ struct ReportView: View {
 
     private var topExpensesSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-            Text(isVi ? "Chi tiêu lớn nhất" : "Top Expenses")
+            Text(L10n.tr("home.top_expenses", appConfig.language))
                 .font(.headline)
 
             VStack(spacing: AppTheme.spacing8) {

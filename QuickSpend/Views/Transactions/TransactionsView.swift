@@ -8,11 +8,11 @@ enum TransactionFilter: CaseIterable {
     func label(language: String) -> String {
         switch self {
         case .all:
-            return language == "vi" ? "Tất cả" : "All"
+            return L10n.tr("transactions.all", language)
         case .income:
-            return language == "vi" ? "Tiền vào" : "Income"
+            return L10n.tr("transactions.filter_income", language)
         case .expense:
-            return language == "vi" ? "Tiền ra" : "Expense"
+            return L10n.tr("transactions.filter_expense", language)
         }
     }
 }
@@ -69,7 +69,7 @@ struct TransactionsView: View {
                 .padding(.horizontal, AppTheme.spacing16)
                 .padding(.bottom, AppTheme.spacing16)
             }
-            .navigationTitle("Transactions")
+            .navigationTitle(L10n.tr("transactions.title", appConfig.language))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -130,9 +130,9 @@ struct TransactionsView: View {
     private var transactionListSection: some View {
         if groupedTransactions.isEmpty {
             ContentUnavailableView(
-                "No Transactions",
+                L10n.tr("home.no_transactions", appConfig.language),
                 systemImage: "tray",
-                description: Text("No transactions this month.")
+                description: Text(L10n.tr("home.no_transactions_month", appConfig.language))
             )
             .padding(.top, AppTheme.spacing24)
         } else {

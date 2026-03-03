@@ -42,11 +42,11 @@ struct MonthlyBarChart: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-            Text("Daily Overview")
+            Text(L10n.tr("home.daily_overview", config.language))
                 .font(.headline)
 
             if dailyData.isEmpty {
-                Text("No transactions this month")
+                Text(L10n.tr("home.no_transactions_month", config.language))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 120)
@@ -84,8 +84,8 @@ struct MonthlyBarChart: View {
 
             // Legend
             HStack(spacing: AppTheme.spacing16) {
-                legendItem(color: AppTheme.incomeColor, label: "Income")
-                legendItem(color: AppTheme.expenseColor, label: "Expense")
+                legendItem(color: AppTheme.incomeColor, label: L10n.tr("common.income", config.language))
+                legendItem(color: AppTheme.expenseColor, label: L10n.tr("common.expense", config.language))
             }
             .font(.caption)
         }

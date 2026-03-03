@@ -50,6 +50,12 @@ final class PreferencesService {
         saveConfig(config)
     }
 
+    func resetOnboarding() {
+        var config = getConfig()
+        config.isOnboardingComplete = false
+        saveConfig(config)
+    }
+
     // MARK: - Voice Tutorial
 
     var hasShownVoiceTutorial: Bool {

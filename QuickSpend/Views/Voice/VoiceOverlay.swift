@@ -13,8 +13,6 @@ struct VoiceOverlay: View {
         dragOffset < -100
     }
 
-    private var isVi: Bool { appConfig.language == "vi" }
-
     var body: some View {
         ZStack {
             // Background
@@ -27,7 +25,7 @@ struct VoiceOverlay: View {
 
                 // Status label
                 if voiceService.transcription.isEmpty {
-                    Text(isVi ? "Đang nghe..." : "Listening...")
+                    Text(L10n.tr("voice.listening", appConfig.language))
                         .font(.title3)
                         .foregroundStyle(.white.opacity(0.6))
                 }
@@ -46,7 +44,7 @@ struct VoiceOverlay: View {
 
                 // Cancel hint (on drag)
                 if isCancelling {
-                    Text(isVi ? "Thả để hủy" : "Release to cancel")
+                    Text(L10n.tr("voice.release_cancel", appConfig.language))
                         .font(.caption)
                         .foregroundStyle(AppTheme.error)
                         .transition(.opacity)
@@ -73,7 +71,7 @@ struct VoiceOverlay: View {
                     Button {
                         onCancel()
                     } label: {
-                        Text(isVi ? "Hủy" : "Cancel")
+                        Text(L10n.tr("common.cancel", appConfig.language))
                             .font(.body.weight(.medium))
                             .foregroundStyle(.white.opacity(0.7))
                             .padding(.horizontal, AppTheme.spacing24)
@@ -88,7 +86,7 @@ struct VoiceOverlay: View {
                             onCancel()
                         }
                     } label: {
-                        Text(isVi ? "Xong" : "Done")
+                        Text(L10n.tr("common.done", appConfig.language))
                             .font(.body.weight(.semibold))
                             .foregroundStyle(.white)
                             .padding(.horizontal, AppTheme.spacing24)

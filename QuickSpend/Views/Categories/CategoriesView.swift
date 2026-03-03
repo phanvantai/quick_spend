@@ -20,9 +20,9 @@ struct CategoriesView: View {
         List {
             // Type filter
             Section {
-                Picker("Type", selection: $showIncome) {
-                    Text("Expense").tag(false)
-                    Text("Income").tag(true)
+                Picker(L10n.tr("common.type", appConfig.language), selection: $showIncome) {
+                    Text(L10n.tr("common.expense", appConfig.language)).tag(false)
+                    Text(L10n.tr("common.income", appConfig.language)).tag(true)
                 }
                 .pickerStyle(.segmented)
                 .listRowBackground(Color.clear)
@@ -34,9 +34,9 @@ struct CategoriesView: View {
             Section {
                 if filteredCategories.isEmpty {
                     ContentUnavailableView(
-                        "No Categories",
+                        L10n.tr("categories.no_categories", appConfig.language),
                         systemImage: "square.grid.2x2",
-                        description: Text("Tap + to create a category.")
+                        description: Text(L10n.tr("categories.tap_to_create", appConfig.language))
                     )
                 } else {
                     ForEach(filteredCategories, id: \.id) { category in
@@ -61,7 +61,7 @@ struct CategoriesView: View {
                 }
             }
         }
-        .navigationTitle("Categories")
+        .navigationTitle(L10n.tr("categories.title", appConfig.language))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 HStack(spacing: AppTheme.spacing12) {
@@ -90,19 +90,19 @@ struct CategoriesView: View {
                 category.updatedAt = .now
             }
         }
-        .alert("Delete Category", isPresented: .init(
+        .alert(L10n.tr("categories.delete_title", appConfig.language), isPresented: .init(
             get: { deletingCategory != nil },
             set: { if !$0 { deletingCategory = nil } }
         )) {
-            Button("Cancel", role: .cancel) { deletingCategory = nil }
-            Button("Delete", role: .destructive) {
+            Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { deletingCategory = nil }
+            Button(L10n.tr("common.delete", appConfig.language), role: .destructive) {
                 if let category = deletingCategory {
                     deleteCategory(category)
                 }
             }
         } message: {
             if let category = deletingCategory {
-                Text("Delete \"\(category.name)\"? Transactions using this category will be reassigned to \"Other\".")
+                Text(L10n.tr("categories.delete_message", appConfig.language, category.name))
             }
         }
     }
@@ -125,7 +125,7 @@ struct CategoriesView: View {
                 Text(category.name)
                     .font(.body)
                 if isFallback {
-                    Text("Required category")
+                    Text(L10n.tr("categories.required", appConfig.language))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else if !category.keywords.isEmpty {

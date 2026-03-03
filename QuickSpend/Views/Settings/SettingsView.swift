@@ -13,21 +13,19 @@ struct SettingsView: View {
     @State private var showThemePicker = false
     @State private var showPaywall = false
 
-    private var isVi: Bool { appConfig.language == "vi" }
-
     var body: some View {
         NavigationStack {
             List {
                 // Preferences
-                Section(isVi ? "Tùy chọn" : "Preferences") {
+                Section(L10n.tr("settings.preferences", appConfig.language)) {
                     NavigationLink {
                         CategoriesView()
                     } label: {
                         settingsRow(
                             icon: "square.grid.2x2.fill",
                             iconColor: AppTheme.accentTeal,
-                            title: isVi ? "Danh mục" : "Categories",
-                            subtitle: isVi ? "Quản lý danh mục" : "Manage categories"
+                            title: L10n.tr("settings.categories", appConfig.language),
+                            subtitle: L10n.tr("settings.categories_subtitle", appConfig.language)
                         )
                     }
 
@@ -37,8 +35,8 @@ struct SettingsView: View {
                         settingsRow(
                             icon: "repeat",
                             iconColor: AppTheme.accentPink,
-                            title: isVi ? "Định kỳ" : "Recurring",
-                            subtitle: isVi ? "Quản lý giao dịch định kỳ" : "Manage recurring transactions"
+                            title: L10n.tr("settings.recurring", appConfig.language),
+                            subtitle: L10n.tr("settings.recurring_subtitle", appConfig.language)
                         )
                     }
 
@@ -48,7 +46,7 @@ struct SettingsView: View {
                         settingsRow(
                             icon: "globe",
                             iconColor: AppTheme.primaryMint,
-                            title: isVi ? "Ngôn ngữ" : "Language",
+                            title: L10n.tr("settings.language", appConfig.language),
                             subtitle: appConfig.config.languageDisplayName
                         )
                     }
@@ -60,7 +58,7 @@ struct SettingsView: View {
                         settingsRow(
                             icon: "dollarsign.circle.fill",
                             iconColor: AppTheme.accentOrange,
-                            title: isVi ? "Tiền tệ" : "Currency",
+                            title: L10n.tr("settings.currency", appConfig.language),
                             subtitle: "\(appConfig.config.currencySymbol) \(appConfig.currency)"
                         )
                     }
@@ -72,7 +70,7 @@ struct SettingsView: View {
                         settingsRow(
                             icon: "paintpalette.fill",
                             iconColor: AppTheme.accentPink,
-                            title: isVi ? "Giao diện" : "Theme",
+                            title: L10n.tr("settings.theme", appConfig.language),
                             subtitle: themeDisplayName
                         )
                     }
@@ -80,13 +78,13 @@ struct SettingsView: View {
                 }
 
                 // Subscription
-                Section(isVi ? "Gói đăng ký" : "Subscription") {
+                Section(L10n.tr("settings.subscription", appConfig.language)) {
                     if subscription.isPro {
                         settingsRow(
                             icon: "star.fill",
                             iconColor: AppTheme.accentOrange,
                             title: "Quick Spend Pro",
-                            subtitle: isVi ? "Đang hoạt động" : "Active"
+                            subtitle: L10n.tr("settings.pro_active", appConfig.language)
                         )
                     } else {
                         Button {
@@ -95,8 +93,8 @@ struct SettingsView: View {
                             settingsRow(
                                 icon: "star.fill",
                                 iconColor: AppTheme.accentOrange,
-                                title: isVi ? "Nâng cấp Pro" : "Upgrade to Pro",
-                                subtitle: isVi ? "Mở khóa tính năng không giới hạn" : "Unlock unlimited features"
+                                title: L10n.tr("common.upgrade_pro", appConfig.language),
+                                subtitle: L10n.tr("settings.unlock_features", appConfig.language)
                             )
                         }
                         .tint(.primary)
@@ -104,11 +102,11 @@ struct SettingsView: View {
                 }
 
                 // About
-                Section(isVi ? "Giới thiệu" : "About") {
+                Section(L10n.tr("settings.about", appConfig.language)) {
                     aboutCard
                 }
             }
-            .navigationTitle(isVi ? "Cài đặt" : "Settings")
+            .navigationTitle(L10n.tr("settings.title", appConfig.language))
             .sheet(isPresented: $showLanguagePicker) {
                 languagePickerSheet
             }
@@ -152,9 +150,9 @@ struct SettingsView: View {
 
     private var themeDisplayName: String {
         switch appConfig.themeMode {
-        case "light": return isVi ? "Sáng" : "Light"
-        case "dark": return isVi ? "Tối" : "Dark"
-        default: return isVi ? "Hệ thống" : "System"
+        case "light": return L10n.tr("settings.theme_light", appConfig.language)
+        case "dark": return L10n.tr("settings.theme_dark", appConfig.language)
+        default: return L10n.tr("settings.theme_system", appConfig.language)
         }
     }
 
@@ -186,11 +184,11 @@ struct SettingsView: View {
                 }
                 .tint(.primary)
             }
-            .navigationTitle(isVi ? "Ngôn ngữ" : "Language")
+            .navigationTitle(L10n.tr("settings.language", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(isVi ? "Xong" : "Done") { showLanguagePicker = false }
+                    Button(L10n.tr("common.done", appConfig.language)) { showLanguagePicker = false }
                 }
             }
         }
@@ -221,11 +219,11 @@ struct SettingsView: View {
                 }
                 .tint(.primary)
             }
-            .navigationTitle(isVi ? "Tiền tệ" : "Currency")
+            .navigationTitle(L10n.tr("settings.currency", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(isVi ? "Xong" : "Done") { showCurrencyPicker = false }
+                    Button(L10n.tr("common.done", appConfig.language)) { showCurrencyPicker = false }
                 }
             }
         }
@@ -237,15 +235,15 @@ struct SettingsView: View {
     private var themePickerSheet: some View {
         NavigationStack {
             List {
-                themeOption(code: "system", icon: "circle.lefthalf.filled", title: isVi ? "Hệ thống" : "System")
-                themeOption(code: "light", icon: "sun.max.fill", title: isVi ? "Sáng" : "Light")
-                themeOption(code: "dark", icon: "moon.fill", title: isVi ? "Tối" : "Dark")
+                themeOption(code: "system", icon: "circle.lefthalf.filled", title: L10n.tr("settings.theme_system", appConfig.language))
+                themeOption(code: "light", icon: "sun.max.fill", title: L10n.tr("settings.theme_light", appConfig.language))
+                themeOption(code: "dark", icon: "moon.fill", title: L10n.tr("settings.theme_dark", appConfig.language))
             }
-            .navigationTitle(isVi ? "Giao diện" : "Theme")
+            .navigationTitle(L10n.tr("settings.theme", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(isVi ? "Xong" : "Done") { showThemePicker = false }
+                    Button(L10n.tr("common.done", appConfig.language)) { showThemePicker = false }
                 }
             }
         }
@@ -292,7 +290,7 @@ struct SettingsView: View {
                 Text("v1.0.0")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(isVi ? "Theo dõi chi tiêu dễ dàng" : "Track expenses easily")
+                Text(L10n.tr("settings.track_easily", appConfig.language))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }

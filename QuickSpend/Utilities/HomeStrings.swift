@@ -4,39 +4,39 @@ import Foundation
 enum HomeStrings {
 
     static func overviewTitle(_ lang: String) -> String {
-        lang == "vi" ? "Tổng quan thu chi" : "Income & Expense Overview"
+        L10n.tr("home.overview_title", lang)
     }
 
     static func balance(_ lang: String) -> String {
-        lang == "vi" ? "Khoản dư" : "Balance"
+        L10n.tr("common.balance", lang)
     }
 
     static func expense(_ lang: String) -> String {
-        lang == "vi" ? "Chi tiêu" : "Expense"
+        L10n.tr("common.expense", lang)
     }
 
     static func income(_ lang: String) -> String {
-        lang == "vi" ? "Thu nhập" : "Income"
+        L10n.tr("common.income", lang)
     }
 
     static func reportTitle(_ lang: String) -> String {
-        lang == "vi" ? "Báo cáo thu chi" : "Income & Expense Report"
+        L10n.tr("home.report_title", lang)
     }
 
     static func spent(_ lang: String) -> String {
-        lang == "vi" ? "Đã tiêu" : "Spent"
+        L10n.tr("home.spent", lang)
     }
 
     static func earned(_ lang: String) -> String {
-        lang == "vi" ? "Đã nhận" : "Earned"
+        L10n.tr("home.earned", lang)
     }
 
     static func viewDetailedReport(_ lang: String) -> String {
-        lang == "vi" ? "Xem chi tiết báo cáo" : "View detailed report"
+        L10n.tr("home.view_detailed_report", lang)
     }
 
     static func trendsTitle(_ lang: String) -> String {
-        lang == "vi" ? "Biến động thu chi" : "Income & Expense Trends"
+        L10n.tr("home.trends_title", lang)
     }
 
     /// Month abbreviation (e.g., "T1" for Vietnamese, "Jan" for English)

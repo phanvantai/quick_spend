@@ -21,7 +21,6 @@ struct RecurringFormView: View {
     @State private var showAmountError = false
 
     private var isEditMode: Bool { existingTemplate != nil }
-    private var isVi: Bool { appConfig.language == "vi" }
 
     private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType }
@@ -51,9 +50,9 @@ struct RecurringFormView: View {
             Form {
                 // Transaction type
                 Section {
-                    Picker(isVi ? "Loại" : "Type", selection: $selectedType) {
-                        Text(isVi ? "Chi tiêu" : "Expense").tag(TransactionType.expense)
-                        Text(isVi ? "Thu nhập" : "Income").tag(TransactionType.income)
+                    Picker(L10n.tr("common.type", appConfig.language), selection: $selectedType) {
+                        Text(L10n.tr("common.expense", appConfig.language)).tag(TransactionType.expense)
+                        Text(L10n.tr("common.income", appConfig.language)).tag(TransactionType.income)
                     }
                     .pickerStyle(.segmented)
                     .listRowBackground(Color.clear)
@@ -62,13 +61,13 @@ struct RecurringFormView: View {
                 }
 
                 // Description
-                Section(isVi ? "Mô tả" : "Description") {
-                    TextField(isVi ? "VD: Tiền nhà, Netflix" : "e.g. Monthly rent, Netflix", text: $noteText)
+                Section(L10n.tr("common.description", appConfig.language)) {
+                    TextField(L10n.tr("recurring_form.placeholder", appConfig.language), text: $noteText)
                         .textInputAutocapitalization(.sentences)
                 }
 
                 // Amount
-                Section(isVi ? "Số tiền" : "Amount") {
+                Section(L10n.tr("common.amount", appConfig.language)) {
                     HStack {
                         Text(appConfig.config.currencySymbol)
                             .font(.title3.bold())
@@ -78,14 +77,14 @@ struct RecurringFormView: View {
                             .font(.title3.monospacedDigit())
                     }
                     if showAmountError {
-                        Text(isVi ? "Vui lòng nhập số tiền hợp lệ" : "Please enter a valid amount")
+                        Text(L10n.tr("expense_form.invalid_amount", appConfig.language))
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
                 }
 
                 // Category
-                Section(isVi ? "Danh mục" : "Category") {
+                Section(L10n.tr("common.category", appConfig.language)) {
                     LazyVGrid(columns: [
                         GridItem(.adaptive(minimum: 90), spacing: AppTheme.spacing8)
                     ], spacing: AppTheme.spacing8) {
@@ -97,29 +96,29 @@ struct RecurringFormView: View {
                 }
 
                 // Recurrence pattern
-                Section(isVi ? "Tần suất" : "Recurrence") {
-                    Picker(isVi ? "Chu kỳ" : "Pattern", selection: $selectedPattern) {
-                        Text(isVi ? "Ngày" : "Daily").tag(RecurrencePattern.daily)
-                        Text(isVi ? "Tuần" : "Weekly").tag(RecurrencePattern.weekly)
-                        Text(isVi ? "Tháng" : "Monthly").tag(RecurrencePattern.monthly)
-                        Text(isVi ? "Năm" : "Yearly").tag(RecurrencePattern.yearly)
+                Section(L10n.tr("recurring_form.recurrence", appConfig.language)) {
+                    Picker(L10n.tr("recurring_form.pattern", appConfig.language), selection: $selectedPattern) {
+                        Text(L10n.tr("recurring_form.pattern_daily", appConfig.language)).tag(RecurrencePattern.daily)
+                        Text(L10n.tr("recurring_form.pattern_weekly", appConfig.language)).tag(RecurrencePattern.weekly)
+                        Text(L10n.tr("recurring_form.pattern_monthly", appConfig.language)).tag(RecurrencePattern.monthly)
+                        Text(L10n.tr("recurring_form.pattern_yearly", appConfig.language)).tag(RecurrencePattern.yearly)
                     }
                     .pickerStyle(.segmented)
                 }
 
                 // Dates
-                Section(isVi ? "Lịch trình" : "Schedule") {
+                Section(L10n.tr("recurring_form.schedule", appConfig.language)) {
                     DatePicker(
-                        isVi ? "Ngày bắt đầu" : "Start Date",
+                        L10n.tr("recurring_form.start_date", appConfig.language),
                         selection: $startDate,
                         displayedComponents: [.date]
                     )
 
-                    Toggle(isVi ? "Có ngày kết thúc" : "Has End Date", isOn: $hasEndDate)
+                    Toggle(L10n.tr("recurring_form.has_end_date", appConfig.language), isOn: $hasEndDate)
 
                     if hasEndDate {
                         DatePicker(
-                            isVi ? "Ngày kết thúc" : "End Date",
+                            L10n.tr("recurring_form.end_date", appConfig.language),
                             selection: $endDate,
                             in: startDate...,
                             displayedComponents: [.date]
@@ -128,15 +127,15 @@ struct RecurringFormView: View {
                 }
             }
             .navigationTitle(isEditMode
-                ? (isVi ? "Sửa định kỳ" : "Edit Recurring")
-                : (isVi ? "Thêm định kỳ" : "Add Recurring"))
+                ? L10n.tr("recurring_form.edit_title", appConfig.language)
+                : L10n.tr("recurring_form.add_title", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(isVi ? "Hủy" : "Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel", appConfig.language)) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isVi ? "Lưu" : "Save") { save() }
+                    Button(L10n.tr("common.save", appConfig.language)) { save() }
                         .bold()
                         .disabled(noteText.trimmingCharacters(in: .whitespaces).isEmpty)
                 }

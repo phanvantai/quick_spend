@@ -164,7 +164,7 @@ struct TrendsSection: View {
             Image(systemName: "chart.line.uptrend.xyaxis")
                 .font(.largeTitle)
                 .foregroundStyle(.tertiary)
-            Text(language == "vi" ? "Chưa có dữ liệu" : "No data")
+            Text(L10n.tr("common.no_data", language))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }

@@ -15,17 +15,13 @@ struct RecurringListView: View {
     @State private var showLimitAlert = false
     @State private var showPaywall = false
 
-    private var isVi: Bool { appConfig.language == "vi" }
-
     var body: some View {
         List {
             if templates.isEmpty {
                 ContentUnavailableView(
-                    isVi ? "Chưa có mẫu định kỳ" : "No Recurring Templates",
+                    L10n.tr("recurring.no_templates", appConfig.language),
                     systemImage: "repeat",
-                    description: Text(isVi
-                        ? "Tạo mẫu để tự động sinh giao dịch theo lịch."
-                        : "Create a template to automatically generate transactions on a schedule.")
+                    description: Text(L10n.tr("recurring.no_templates_desc", appConfig.language))
                 )
             } else {
                 ForEach(templates, id: \.id) { template in
@@ -34,21 +30,21 @@ struct RecurringListView: View {
                             Button(role: .destructive) {
                                 deletingTemplate = template
                             } label: {
-                                Label(isVi ? "Xóa" : "Delete", systemImage: "trash")
+                                Label(L10n.tr("common.delete", appConfig.language), systemImage: "trash")
                             }
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
                             Button {
                                 editingTemplate = template
                             } label: {
-                                Label(isVi ? "Sửa" : "Edit", systemImage: "pencil")
+                                Label(L10n.tr("common.edit", appConfig.language), systemImage: "pencil")
                             }
                             .tint(AppTheme.primaryMint)
                         }
                 }
             }
         }
-        .navigationTitle(isVi ? "Định kỳ" : "Recurring")
+        .navigationTitle(L10n.tr("recurring.title", appConfig.language))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -81,14 +77,14 @@ struct RecurringListView: View {
             }
         }
         .alert(
-            isVi ? "Xóa mẫu" : "Delete Template",
+            L10n.tr("recurring.delete_title", appConfig.language),
             isPresented: .init(
                 get: { deletingTemplate != nil },
                 set: { if !$0 { deletingTemplate = nil } }
             )
         ) {
-            Button(isVi ? "Hủy" : "Cancel", role: .cancel) { deletingTemplate = nil }
-            Button(isVi ? "Xóa" : "Delete", role: .destructive) {
+            Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { deletingTemplate = nil }
+            Button(L10n.tr("common.delete", appConfig.language), role: .destructive) {
                 if let template = deletingTemplate {
                     modelContext.delete(template)
                     deletingTemplate = nil
@@ -96,23 +92,19 @@ struct RecurringListView: View {
             }
         } message: {
             if let template = deletingTemplate {
-                Text(isVi
-                     ? "Xóa \"\(template.note)\"? Các giao dịch đã tạo trước đó sẽ không bị xóa."
-                     : "Delete \"\(template.note)\"? Previously generated transactions will not be removed.")
+                Text(L10n.tr("recurring.delete_message", appConfig.language, template.note))
             }
         }
         .alert(
-            isVi ? "Đã đạt giới hạn" : "Limit Reached",
+            L10n.tr("recurring.limit_title", appConfig.language),
             isPresented: $showLimitAlert
         ) {
-            Button(isVi ? "Nâng cấp Pro" : "Upgrade to Pro") {
+            Button(L10n.tr("common.upgrade_pro", appConfig.language)) {
                 showPaywall = true
             }
-            Button(isVi ? "Hủy" : "Cancel", role: .cancel) { }
+            Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { }
         } message: {
-            Text(isVi
-                 ? "Gói miễn phí giới hạn \(AppConstants.freeTierRecurringTemplatesLimit) mẫu định kỳ. Nâng cấp Pro để không giới hạn."
-                 : "Free plan allows \(AppConstants.freeTierRecurringTemplatesLimit) recurring templates. Upgrade to Pro for unlimited.")
+            Text(L10n.tr("recurring.limit_message", appConfig.language, AppConstants.freeTierRecurringTemplatesLimit))
         }
         .sheet(isPresented: $showPaywall) {
             PaywallView()
@@ -176,19 +168,11 @@ struct RecurringListView: View {
     }
 
     private func patternLabel(_ pattern: RecurrencePattern) -> String {
-        if isVi {
-            switch pattern {
-            case .daily: return "Hàng ngày"
-            case .weekly: return "Hàng tuần"
-            case .monthly: return "Hàng tháng"
-            case .yearly: return "Hàng năm"
-            }
-        }
         switch pattern {
-        case .daily: return "Daily"
-        case .weekly: return "Weekly"
-        case .monthly: return "Monthly"
-        case .yearly: return "Yearly"
+        case .daily: return L10n.tr("recurring.daily", appConfig.language)
+        case .weekly: return L10n.tr("recurring.weekly", appConfig.language)
+        case .monthly: return L10n.tr("recurring.monthly", appConfig.language)
+        case .yearly: return L10n.tr("recurring.yearly", appConfig.language)
         }
     }
 }
