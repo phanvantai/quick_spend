@@ -8,7 +8,16 @@ struct OnboardingView: View {
 
     @State private var selectedLanguage = "en"
     @State private var selectedCurrency = "USD"
+    @State private var showLanguagePicker = false
     @State private var showCurrencyPicker = false
+
+    private var selectedCurrencySymbol: String {
+        CurrencyOption.options.first { $0.code == selectedCurrency }?.symbol ?? "$"
+    }
+
+    private var selectedLanguageOption: LanguageOption {
+        LanguageOption.options.first { $0.code == selectedLanguage } ?? LanguageOption.options[0]
+    }
 
     let onComplete: () -> Void
 
@@ -37,18 +46,37 @@ struct OnboardingView: View {
                     }
 
                     // Language selection
-                    VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-                        ForEach(LanguageOption.options) { option in
-                            OptionCard(
-                                isSelected: selectedLanguage == option.code,
-                                leading: Text(option.flag).font(.largeTitle),
-                                title: option.displayName
-                            ) {
-                                selectedLanguage = option.code
-                                selectedCurrency = option.defaultCurrency
+                    Button {
+                        showLanguagePicker = true
+                    } label: {
+                        HStack(spacing: AppTheme.spacing12) {
+                            Circle()
+                                .fill(AppTheme.primaryMint)
+                                .frame(width: 36, height: 36)
+                                .overlay {
+                                    Text(selectedLanguageOption.flag)
+                                        .font(.title3)
+                                }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(L10n.tr("settings.language", selectedLanguage))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Text(selectedLanguageOption.displayName)
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
                             }
+                            Spacer()
+                            Text(L10n.tr("onboarding.change", selectedLanguage))
+                                .font(.subheadline)
+                                .foregroundStyle(AppTheme.primaryMint)
+                        }
+                        .padding(AppTheme.spacing16)
+                        .background {
+                            RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
+                                .fill(Color(.secondarySystemGroupedBackground))
                         }
                     }
+                    .buttonStyle(.plain)
                     .padding(.horizontal, AppTheme.spacing24)
 
                     // Currency (auto-detected, tap to change)
@@ -56,9 +84,14 @@ struct OnboardingView: View {
                         showCurrencyPicker = true
                     } label: {
                         HStack(spacing: AppTheme.spacing12) {
-                            Image(systemName: "dollarsign.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(AppTheme.accentOrange)
+                            Circle()
+                                .fill(AppTheme.accentOrange)
+                                .frame(width: 36, height: 36)
+                                .overlay {
+                                    Text(selectedCurrencySymbol)
+                                        .font(.title3.bold())
+                                        .foregroundStyle(.white)
+                                }
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(L10n.tr("onboarding.currency", selectedLanguage))
                                     .font(.subheadline)
@@ -102,9 +135,50 @@ struct OnboardingView: View {
             .padding(.horizontal, AppTheme.spacing24)
             .padding(.bottom, AppTheme.spacing16)
         }
+        .sheet(isPresented: $showLanguagePicker) {
+            languagePickerSheet
+        }
         .sheet(isPresented: $showCurrencyPicker) {
             currencyPickerSheet
         }
+    }
+
+    // MARK: - Language Picker Sheet
+
+    private var languagePickerSheet: some View {
+        NavigationStack {
+            List(LanguageOption.options) { option in
+                Button {
+                    selectedLanguage = option.code
+                    selectedCurrency = option.defaultCurrency
+                    showLanguagePicker = false
+                } label: {
+                    HStack(spacing: AppTheme.spacing12) {
+                        Text(option.flag)
+                            .font(.title2)
+                            .frame(width: 32)
+                        Text(option.displayName)
+                            .font(.body)
+                        Spacer()
+                        if selectedLanguage == option.code {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(AppTheme.primaryMint)
+                        }
+                    }
+                }
+                .tint(.primary)
+            }
+            .navigationTitle(L10n.tr("settings.language", selectedLanguage))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(L10n.tr("common.done", selectedLanguage)) {
+                        showLanguagePicker = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 
     // MARK: - Currency Picker Sheet
@@ -117,9 +191,14 @@ struct OnboardingView: View {
                     showCurrencyPicker = false
                 } label: {
                     HStack(spacing: AppTheme.spacing12) {
-                        Text(option.symbol)
-                            .font(.title2.bold())
-                            .frame(width: 32)
+                        Circle()
+                            .fill(AppTheme.accentOrange)
+                            .frame(width: 32, height: 32)
+                            .overlay {
+                                Text(option.symbol)
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(.white)
+                            }
                         Text(option.code)
                             .font(.body)
                         Spacer()
@@ -159,53 +238,6 @@ struct OnboardingView: View {
         )
 
         onComplete()
-    }
-}
-
-// MARK: - Option Card
-
-struct OptionCard: View {
-    let isSelected: Bool
-    let leading: AnyView
-    let title: String
-    let action: () -> Void
-
-    init(isSelected: Bool, leading: some View, title: String, action: @escaping () -> Void) {
-        self.isSelected = isSelected
-        self.leading = AnyView(leading)
-        self.title = title
-        self.action = action
-    }
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: AppTheme.spacing16) {
-                leading
-                    .frame(width: 48)
-
-                Text(title)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-
-                Spacer()
-
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(AppTheme.primaryMint)
-                        .font(.title3)
-                }
-            }
-            .padding(AppTheme.spacing12)
-            .background {
-                RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .fill(isSelected ? AppTheme.primaryMint.opacity(0.08) : Color(.secondarySystemGroupedBackground))
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .stroke(isSelected ? AppTheme.primaryMint : Color.clear, lineWidth: 2)
-            }
-        }
-        .buttonStyle(.plain)
     }
 }
 
