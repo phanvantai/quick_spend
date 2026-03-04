@@ -46,72 +46,25 @@ struct OnboardingView: View {
                     }
 
                     // Language selection
-                    Button {
-                        showLanguagePicker = true
-                    } label: {
-                        HStack(spacing: AppTheme.spacing12) {
-                            Circle()
-                                .fill(AppTheme.primaryMint)
-                                .frame(width: 36, height: 36)
-                                .overlay {
-                                    Text(selectedLanguageOption.flag)
-                                        .font(.title3)
-                                }
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(L10n.tr("settings.language", selectedLanguage))
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                Text(selectedLanguageOption.displayName)
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                            }
-                            Spacer()
-                            Text(L10n.tr("onboarding.change", selectedLanguage))
-                                .font(.subheadline)
-                                .foregroundStyle(AppTheme.primaryMint)
-                        }
-                        .padding(AppTheme.spacing16)
-                        .background {
-                            RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                                .fill(Color(.secondarySystemGroupedBackground))
-                        }
-                    }
-                    .buttonStyle(.plain)
+                    SettingSelectionRow(
+                        icon: selectedLanguageOption.flag,
+                        iconColor: AppTheme.primaryMint,
+                        label: L10n.tr("settings.language", selectedLanguage),
+                        value: selectedLanguageOption.displayName,
+                        changeText: L10n.tr("onboarding.change", selectedLanguage),
+                        action: { showLanguagePicker = true }
+                    )
                     .padding(.horizontal, AppTheme.spacing24)
 
                     // Currency (auto-detected, tap to change)
-                    Button {
-                        showCurrencyPicker = true
-                    } label: {
-                        HStack(spacing: AppTheme.spacing12) {
-                            Circle()
-                                .fill(AppTheme.accentOrange)
-                                .frame(width: 36, height: 36)
-                                .overlay {
-                                    Text(selectedCurrencySymbol)
-                                        .font(.title3.bold())
-                                        .foregroundStyle(.white)
-                                }
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(L10n.tr("onboarding.currency", selectedLanguage))
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                Text(selectedCurrency)
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                            }
-                            Spacer()
-                            Text(L10n.tr("onboarding.change", selectedLanguage))
-                                .font(.subheadline)
-                                .foregroundStyle(AppTheme.primaryMint)
-                        }
-                        .padding(AppTheme.spacing16)
-                        .background {
-                            RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                                .fill(Color(.secondarySystemGroupedBackground))
-                        }
-                    }
-                    .buttonStyle(.plain)
+                    SettingSelectionRow(
+                        icon: selectedCurrencySymbol,
+                        iconColor: AppTheme.accentOrange,
+                        label: L10n.tr("onboarding.currency", selectedLanguage),
+                        value: selectedCurrency,
+                        changeText: L10n.tr("onboarding.change", selectedLanguage),
+                        action: { showCurrencyPicker = true }
+                    )
                     .padding(.horizontal, AppTheme.spacing24)
 
                     Spacer(minLength: AppTheme.spacing24)
@@ -146,81 +99,40 @@ struct OnboardingView: View {
     // MARK: - Language Picker Sheet
 
     private var languagePickerSheet: some View {
-        NavigationStack {
-            List(LanguageOption.options) { option in
-                Button {
-                    selectedLanguage = option.code
-                    selectedCurrency = option.defaultCurrency
-                    showLanguagePicker = false
-                } label: {
-                    HStack(spacing: AppTheme.spacing12) {
-                        Text(option.flag)
-                            .font(.title2)
-                            .frame(width: 32)
-                        Text(option.displayName)
-                            .font(.body)
-                        Spacer()
-                        if selectedLanguage == option.code {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(AppTheme.primaryMint)
-                        }
-                    }
-                }
-                .tint(.primary)
-            }
-            .navigationTitle(L10n.tr("settings.language", selectedLanguage))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(L10n.tr("common.done", selectedLanguage)) {
-                        showLanguagePicker = false
-                    }
-                }
-            }
-        }
-        .presentationDetents([.medium])
+        PickerSheet(
+            title: L10n.tr("settings.language", selectedLanguage),
+            doneText: L10n.tr("common.done", selectedLanguage),
+            items: LanguageOption.options,
+            selectedId: selectedLanguage,
+            icon: { $0.flag },
+            iconStyle: .custom,
+            label: { $0.displayName },
+            onSelect: { option in
+                selectedLanguage = option.code
+                selectedCurrency = option.defaultCurrency
+                showLanguagePicker = false
+            },
+            onDone: { showLanguagePicker = false }
+        )
     }
 
     // MARK: - Currency Picker Sheet
 
     private var currencyPickerSheet: some View {
-        NavigationStack {
-            List(CurrencyOption.options) { option in
-                Button {
-                    selectedCurrency = option.code
-                    showCurrencyPicker = false
-                } label: {
-                    HStack(spacing: AppTheme.spacing12) {
-                        Circle()
-                            .fill(AppTheme.accentOrange)
-                            .frame(width: 32, height: 32)
-                            .overlay {
-                                Text(option.symbol)
-                                    .font(.subheadline.bold())
-                                    .foregroundStyle(.white)
-                            }
-                        Text(option.code)
-                            .font(.body)
-                        Spacer()
-                        if selectedCurrency == option.code {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(AppTheme.primaryMint)
-                        }
-                    }
-                }
-                .tint(.primary)
-            }
-            .navigationTitle(L10n.tr("onboarding.currency", selectedLanguage))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(L10n.tr("common.done", selectedLanguage)) {
-                        showCurrencyPicker = false
-                    }
-                }
-            }
-        }
-        .presentationDetents([.medium])
+        PickerSheet(
+            title: L10n.tr("onboarding.currency", selectedLanguage),
+            doneText: L10n.tr("common.done", selectedLanguage),
+            items: CurrencyOption.options,
+            selectedId: selectedCurrency,
+            icon: { $0.symbol },
+            iconStyle: .plain(AppTheme.accentOrange),
+            label: { $0.code },
+            onSelect: { option in
+                selectedCurrency = option.code
+                showCurrencyPicker = false
+            },
+            onDone: { showCurrencyPicker = false }
+        )
     }
 
     // MARK: - Actions

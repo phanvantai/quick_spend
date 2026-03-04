@@ -9,7 +9,6 @@ struct CategoryFormView: View {
     let onSave: (Category) -> Void
 
     @State private var name: String
-    @State private var keywordsText: String
     @State private var selectedIcon: String
     @State private var selectedColorHex: String
     @State private var selectedType: TransactionType
@@ -26,7 +25,6 @@ struct CategoryFormView: View {
         self.existingCategory = existingCategory
         self.onSave = onSave
         _name = State(initialValue: existingCategory?.name ?? "")
-        _keywordsText = State(initialValue: existingCategory?.keywords.joined(separator: ", ") ?? "")
         _selectedIcon = State(initialValue: existingCategory?.iconName ?? Self.availableIcons[0])
         _selectedColorHex = State(initialValue: existingCategory?.colorHex ?? Self.availableColorHexes[0])
         _selectedType = State(initialValue: existingCategory?.type ?? defaultType)
@@ -52,7 +50,7 @@ struct CategoryFormView: View {
                     .padding(.vertical, AppTheme.spacing4)
                 }
 
-                // Name & Keywords
+                // Name
                 Section(L10n.tr("category_form.details", appConfig.language)) {
                     TextField(L10n.tr("category_form.name_placeholder", appConfig.language), text: $name)
                         .textInputAutocapitalization(.words)
@@ -61,9 +59,6 @@ struct CategoryFormView: View {
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
-                    TextField(L10n.tr("category_form.keywords", appConfig.language), text: $keywordsText)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
                 }
 
                 // Icon Picker
@@ -180,18 +175,12 @@ struct CategoryFormView: View {
         }
         showNameError = false
 
-        let keywords = keywordsText
-            .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
-
         let category = Category(
             id: existingCategory?.id ?? trimmedName.lowercased().replacingOccurrences(of: " ", with: "_"),
             name: trimmedName,
             iconName: selectedIcon,
             colorHex: selectedColorHex,
-            type: selectedType,
-            keywords: keywords
+            type: selectedType
         )
 
         onSave(category)

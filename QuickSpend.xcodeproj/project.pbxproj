@@ -116,6 +116,8 @@
 				en,
 				Base,
 				vi,
+				ja,
+				es,
 			);
 			mainGroup = E5DD739F2F3B0A8D00D37A05;
 			minimizedProjectReferenceProxies = 1;

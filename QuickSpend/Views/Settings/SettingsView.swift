@@ -78,7 +78,7 @@ struct SettingsView: View {
                 }
 
                 // Subscription
-                Section(L10n.tr("settings.subscription", appConfig.language)) {
+                Section {
                     if subscription.isPro {
                         settingsRow(
                             icon: "star.fill",
@@ -99,11 +99,12 @@ struct SettingsView: View {
                         }
                         .tint(.primary)
                     }
-                }
-
-                // About
-                Section(L10n.tr("settings.about", appConfig.language)) {
-                    aboutCard
+                } header: {
+                    Text(L10n.tr("settings.subscription", appConfig.language))
+                } footer: {
+                    Text(L10n.tr("settings.version", appConfig.language) + " \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, AppTheme.spacing8)
                 }
             }
             .navigationTitle(L10n.tr("settings.title", appConfig.language))
@@ -271,32 +272,6 @@ struct SettingsView: View {
         .tint(.primary)
     }
 
-    // MARK: - About Card
-
-    private var aboutCard: some View {
-        HStack(spacing: AppTheme.spacing16) {
-            Circle()
-                .fill(AppTheme.primaryGradient)
-                .frame(width: 56, height: 56)
-                .overlay {
-                    Image(systemName: "wallet.bifold.fill")
-                        .font(.title2)
-                        .foregroundStyle(.white)
-                }
-
-            VStack(alignment: .leading, spacing: AppTheme.spacing4) {
-                Text("Quick Spend")
-                    .font(.headline)
-                Text("v1.0.0")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(L10n.tr("settings.track_easily", appConfig.language))
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-        }
-        .padding(.vertical, AppTheme.spacing4)
-    }
 }
 
 #Preview {

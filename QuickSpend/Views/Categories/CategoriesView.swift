@@ -83,7 +83,6 @@ struct CategoriesView: View {
         .sheet(item: $editingCategory) { category in
             CategoryFormView(existingCategory: category) { updated in
                 category.name = updated.name
-                category.keywords = updated.keywords
                 category.iconName = updated.iconName
                 category.colorHex = updated.colorHex
                 category.type = updated.type
@@ -128,11 +127,6 @@ struct CategoriesView: View {
                     Text(L10n.tr("categories.required", appConfig.language))
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                } else if !category.keywords.isEmpty {
-                    Text(category.keywords.prefix(3).joined(separator: ", "))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
                 }
             }
 
