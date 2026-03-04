@@ -17,6 +17,10 @@ struct OverviewSection: View {
         max(totalExpenses, totalIncome, 1)
     }
 
+    private var hasData: Bool {
+        totalExpenses > 0 || totalIncome > 0
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             // Header
@@ -28,33 +32,54 @@ struct OverviewSection: View {
                     .foregroundStyle(.secondary)
             }
 
-            // Balance subtitle
-            Text("\(HomeStrings.balance(language)): \(AmountAbbreviator.abbreviate(netBalance, currency: currency, language: language))")
+            if hasData {
+                // Balance subtitle
+                Text("\(HomeStrings.balance(language)): \(AmountAbbreviator.abbreviate(netBalance, currency: currency, language: language))")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                // Comparison bars card
+                HStack(alignment: .bottom, spacing: AppTheme.spacing24) {
+                    Spacer()
+                    barColumn(
+                        amount: totalExpenses,
+                        changePercent: expenseChangePercent,
+                        label: HomeStrings.expense(language),
+                        color: AppTheme.dashboardExpenseBar
+                    )
+                    barColumn(
+                        amount: totalIncome,
+                        changePercent: incomeChangePercent,
+                        label: HomeStrings.income(language),
+                        color: AppTheme.dashboardIncomeBar
+                    )
+                    Spacer()
+                }
+                .padding(AppTheme.spacing16)
+                .background {
+                    RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
+                        .fill(Color(.secondarySystemGroupedBackground))
+                }
+            } else {
+                emptyStateView
+            }
+        }
+    }
+
+    private var emptyStateView: some View {
+        VStack(spacing: AppTheme.spacing12) {
+            Image(systemName: "chart.bar.fill")
+                .font(.largeTitle)
+                .foregroundStyle(.quaternary)
+            Text(L10n.tr("common.no_data", language))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-
-            // Comparison bars card
-            HStack(alignment: .bottom, spacing: AppTheme.spacing24) {
-                Spacer()
-                barColumn(
-                    amount: totalExpenses,
-                    changePercent: expenseChangePercent,
-                    label: HomeStrings.expense(language),
-                    color: AppTheme.dashboardExpenseBar
-                )
-                barColumn(
-                    amount: totalIncome,
-                    changePercent: incomeChangePercent,
-                    label: HomeStrings.income(language),
-                    color: AppTheme.dashboardIncomeBar
-                )
-                Spacer()
-            }
-            .padding(AppTheme.spacing16)
-            .background {
-                RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                    .fill(Color(.secondarySystemGroupedBackground))
-            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 140)
+        .background {
+            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
+                .fill(Color(.secondarySystemGroupedBackground))
         }
     }
 

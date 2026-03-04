@@ -23,7 +23,7 @@ struct MainTabView: View {
     @State private var showManualFallback = false
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
                 Tab(L10n.tr("home.title", appConfig.language), systemImage: "house.fill", value: 0) {
                     HomeView()
@@ -37,6 +37,8 @@ struct MainTabView: View {
             VoiceFABButton(language: appConfig.language) {
                 handleVoiceButtonTap()
             }
+            .padding(.trailing, AppTheme.spacing16)
+            .padding(.bottom, 90)
 
             // Processing indicator
             if isProcessingVoice {
@@ -56,6 +58,7 @@ struct MainTabView: View {
                             .fill(AppTheme.primaryMint)
                     )
                     .padding(.bottom, 100)
+                    .frame(maxWidth: .infinity)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
