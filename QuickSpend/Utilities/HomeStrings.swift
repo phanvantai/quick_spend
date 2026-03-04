@@ -1,6 +1,6 @@
 import Foundation
 
-/// Localized UI strings for the home dashboard (EN/VI only)
+/// Localized UI strings for the home dashboard
 enum HomeStrings {
 
     static func overviewTitle(_ lang: String) -> String {
@@ -46,11 +46,14 @@ enum HomeStrings {
         let year = calendar.component(.year, from: date)
 
         let label: String
-        if language == "vi" {
+        switch language {
+        case "vi":
             label = "T\(month)"
-        } else {
+        case "ja":
+            label = "\(month)月"
+        default:
             let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en")
+            formatter.locale = Locale(identifier: language)
             formatter.dateFormat = "MMM"
             label = formatter.string(from: date)
         }
@@ -67,11 +70,14 @@ enum HomeStrings {
         let month = calendar.component(.month, from: date)
         let year = calendar.component(.year, from: date)
 
-        if language == "vi" {
+        switch language {
+        case "vi":
             return "Tháng \(month), \(year)"
-        } else {
+        case "ja":
+            return "\(year)年\(month)月"
+        default:
             let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en")
+            formatter.locale = Locale(identifier: language)
             formatter.dateFormat = "MMMM, yyyy"
             return formatter.string(from: date)
         }

@@ -11,7 +11,6 @@ final class Category {
     var colorHex: String
     var type: TransactionType
     var group: CategoryGroup?
-    var keywords: [String]
     var sortOrder: Int
     var isHidden: Bool
     var createdAt: Date
@@ -32,7 +31,6 @@ final class Category {
         colorHex: String,
         type: TransactionType,
         group: CategoryGroup? = nil,
-        keywords: [String] = [],
         sortOrder: Int = 0,
         isHidden: Bool = false,
         createdAt: Date = .now,
@@ -44,7 +42,6 @@ final class Category {
         self.colorHex = colorHex
         self.type = type
         self.group = group
-        self.keywords = keywords
         self.sortOrder = sortOrder
         self.isHidden = isHidden
         self.createdAt = createdAt

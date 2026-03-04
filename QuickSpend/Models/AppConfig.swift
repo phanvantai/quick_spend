@@ -16,8 +16,6 @@ struct AppConfig: Codable, Equatable {
         case "VND": return "d"
         case "USD": return "$"
         case "JPY": return "¥"
-        case "KRW": return "₩"
-        case "THB": return "฿"
         case "EUR": return "€"
         default: return currency
         }
@@ -25,17 +23,17 @@ struct AppConfig: Codable, Equatable {
 
     /// Whether this currency uses decimal places
     var currencyUsesDecimals: Bool {
-        currency != "VND" && currency != "JPY" && currency != "KRW"
+        currency != "VND" && currency != "JPY"
     }
 
     /// Whether the currency symbol goes after the amount
     var currencySymbolAfter: Bool {
-        currency == "VND" || currency == "THB"
+        currency == "VND"
     }
 
     /// Whether to use period as thousand separator
     var usesPeriodForThousands: Bool {
-        language == "vi"
+        language == "vi" || language == "es"
     }
 
     /// Format a currency amount with proper symbol placement and number formatting
@@ -67,6 +65,8 @@ struct AppConfig: Codable, Equatable {
     var languageDisplayName: String {
         switch language {
         case "vi": return "Tiếng Việt"
+        case "ja": return "日本語"
+        case "es": return "Español"
         case "en": return "English"
         default: return language
         }
@@ -97,6 +97,8 @@ struct LanguageOption: Identifiable {
     static let options: [LanguageOption] = [
         LanguageOption(code: "en", countryCode: "US", displayName: "English", flag: "🇺🇸", defaultCurrency: "USD"),
         LanguageOption(code: "vi", countryCode: "VN", displayName: "Tiếng Việt", flag: "🇻🇳", defaultCurrency: "VND"),
+        LanguageOption(code: "ja", countryCode: "JP", displayName: "日本語", flag: "🇯🇵", defaultCurrency: "JPY"),
+        LanguageOption(code: "es", countryCode: "ES", displayName: "Español", flag: "🇪🇸", defaultCurrency: "EUR"),
     ]
 
     static func defaultCurrency(for languageCode: String) -> String {
@@ -116,8 +118,6 @@ struct CurrencyOption: Identifiable {
         CurrencyOption(code: "USD", symbol: "$"),
         CurrencyOption(code: "VND", symbol: "d"),
         CurrencyOption(code: "JPY", symbol: "¥"),
-        CurrencyOption(code: "KRW", symbol: "₩"),
-        CurrencyOption(code: "THB", symbol: "฿"),
         CurrencyOption(code: "EUR", symbol: "€"),
     ]
 }

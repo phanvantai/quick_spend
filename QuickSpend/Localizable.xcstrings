@@ -74,6 +74,18 @@
             "value" : "Daily Limit Reached"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Límite diario alcanzado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1日の上限に達しました"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89,6 +101,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You've used all %lld free AI parses for today. Upgrade to Pro for unlimited."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has usado los %lld análisis de IA gratuitos de hoy. Actualiza a Pro para obtener uso ilimitado."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本日の無料AI解析%lld回分をすべて使用しました。Proにアップグレードすると無制限になります。"
           }
         },
         "vi" : {
@@ -108,6 +132,18 @@
             "value" : "Enter Manually"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresar manualmente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手動で入力"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -123,6 +159,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Please grant microphone and speech recognition access in Settings to use voice input."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite el acceso al micrófono y reconocimiento de voz en Ajustes para usar la entrada por voz."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声入力を使用するには、設定でマイクと音声認識へのアクセスを許可してください。"
           }
         },
         "vi" : {
@@ -142,6 +190,18 @@
             "value" : "Microphone Access Required"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso al micrófono requerido"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マイクへのアクセスが必要です"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -157,6 +217,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を開く"
           }
         },
         "vi" : {
@@ -179,6 +251,18 @@
             "value" : "Delete \"%@\"? Transactions using this category will be reassigned to \"Other\"."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar \"%@\"? Las transacciones de esta categoría se reasignarán a \"Otros\"."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\"を削除しますか？このカテゴリの取引は「その他」に再割り当てされます。"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -194,6 +278,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete Category"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar categoría"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリを削除"
           }
         },
         "vi" : {
@@ -213,6 +309,18 @@
             "value" : "No Categories"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin categorías"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリなし"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -228,6 +336,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Required category"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoría obligatoria"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "必須カテゴリ"
           }
         },
         "vi" : {
@@ -247,6 +367,18 @@
             "value" : "Tap + to create a category."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca + para crear una categoría."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+をタップしてカテゴリを作成"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -262,6 +394,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Categories"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリ"
           }
         },
         "vi" : {
@@ -281,6 +425,18 @@
             "value" : "Add Category"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir categoría"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリを追加"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -296,6 +452,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Color"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カラー"
           }
         },
         "vi" : {
@@ -315,6 +483,18 @@
             "value" : "Details"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detalles"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -330,6 +510,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit Category"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar categoría"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリを編集"
           }
         },
         "vi" : {
@@ -349,6 +541,18 @@
             "value" : "Icon"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icono"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコン"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -364,6 +568,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keywords (comma separated)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Palabras clave (separadas por comas)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーワード（カンマ区切り）"
           }
         },
         "vi" : {
@@ -383,6 +599,18 @@
             "value" : "Category name"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre de categoría"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリ名"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -398,6 +626,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name is required"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El nombre es obligatorio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前は必須です"
           }
         },
         "vi" : {
@@ -417,6 +657,18 @@
             "value" : "Category Name"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre de categoría"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリ名"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -432,6 +684,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Amount"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金額"
           }
         },
         "vi" : {
@@ -451,6 +715,18 @@
             "value" : "Balance"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "残高"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -466,6 +742,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
           }
         },
         "vi" : {
@@ -485,6 +773,18 @@
             "value" : "Category"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoría"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリ"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -500,6 +800,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "閉じる"
           }
         },
         "vi" : {
@@ -519,6 +831,18 @@
             "value" : "Date"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日付"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -534,6 +858,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
           }
         },
         "vi" : {
@@ -553,6 +889,18 @@
             "value" : "Description"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descripción"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "説明"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -568,6 +916,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discard"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "破棄"
           }
         },
         "vi" : {
@@ -587,6 +947,18 @@
             "value" : "Done"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完了"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -602,6 +974,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集"
           }
         },
         "vi" : {
@@ -621,6 +1005,18 @@
             "value" : "Expense"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支出"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -636,6 +1032,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Income"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingreso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "収入"
           }
         },
         "vi" : {
@@ -655,6 +1063,18 @@
             "value" : "No data"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin datos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データなし"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -670,6 +1090,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Processing..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procesando..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "処理中..."
           }
         },
         "vi" : {
@@ -689,6 +1121,18 @@
             "value" : "Save"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -706,6 +1150,18 @@
             "value" : "Type"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "種類"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -721,6 +1177,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Upgrade to Pro"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar a Pro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proにアップグレード"
           }
         },
         "vi" : {
@@ -749,6 +1217,18 @@
             "value" : "Add Transaction"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir transacción"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取引を追加"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -764,6 +1244,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit Transaction"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar transacción"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取引を編集"
           }
         },
         "vi" : {
@@ -783,6 +1275,18 @@
             "value" : "Please enter a valid amount"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresa un monto válido"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効な金額を入力してください"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -798,6 +1302,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What did you spend on?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿En qué gastaste?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "何に使いましたか？"
           }
         },
         "vi" : {
@@ -817,6 +1333,18 @@
             "value" : "Daily Average"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Promedio diario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1日の平均"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -832,6 +1360,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Daily Overview"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resumen diario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日次概要"
           }
         },
         "vi" : {
@@ -851,6 +1391,18 @@
             "value" : "Earned"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ganado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "収入"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -866,6 +1418,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No Transactions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin transacciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取引なし"
           }
         },
         "vi" : {
@@ -885,6 +1449,18 @@
             "value" : "No transactions this month."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay transacciones este mes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今月の取引はありません。"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -900,6 +1476,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No transactions this month"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin transacciones este mes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今月の取引はありません"
           }
         },
         "vi" : {
@@ -919,6 +1507,18 @@
             "value" : "Income & Expense Overview"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resumen de ingresos y gastos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "収支の概要"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -934,6 +1534,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Income & Expense Report"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reporte de ingresos y gastos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "収支レポート"
           }
         },
         "vi" : {
@@ -953,6 +1565,18 @@
             "value" : "Savings Rate"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasa de ahorro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "貯蓄率"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -968,6 +1592,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Spent"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支出"
           }
         },
         "vi" : {
@@ -987,6 +1623,18 @@
             "value" : "Home"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ホーム"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1002,6 +1650,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Today"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日"
           }
         },
         "vi" : {
@@ -1021,6 +1681,18 @@
             "value" : "Top Expenses"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastos principales"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主な支出"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1036,6 +1708,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Income & Expense Trends"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tendencias de ingresos y gastos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "収支の推移"
           }
         },
         "vi" : {
@@ -1055,6 +1739,18 @@
             "value" : "View detailed report"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver reporte detallado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細レポートを見る"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1072,6 +1768,18 @@
             "value" : "View Report"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver reporte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "レポートを見る"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1087,6 +1795,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yesterday"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "昨日"
           }
         },
         "vi" : {
@@ -1109,6 +1829,18 @@
             "value" : "Change"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1124,6 +1856,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Currency"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通貨"
           }
         },
         "vi" : {
@@ -1143,6 +1887,18 @@
             "value" : "Get Started"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comenzar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "始める"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1158,6 +1914,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Track expenses with your voice"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra gastos con tu voz"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声で支出を記録"
           }
         },
         "vi" : {
@@ -1177,6 +1945,18 @@
             "value" : "Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las suscripciones se renuevan automáticamente a menos que se cancelen al menos 24 horas antes del final del período actual."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サブスクリプションは、現在の期間終了の24時間前までにキャンセルしない限り自動更新されます。"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1192,6 +1972,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Best Value"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mejor valor"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お得"
           }
         },
         "vi" : {
@@ -1211,6 +2003,18 @@
             "value" : "Unlimited Recurring Templates"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plantillas recurrentes ilimitadas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無制限の定期テンプレート"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1226,6 +2030,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create as many recurring expenses as you need"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea todas las plantillas de gastos recurrentes que necesites"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "必要なだけ定期支出を作成できます"
           }
         },
         "vi" : {
@@ -1245,6 +2061,18 @@
             "value" : "Extended Reports"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reportes extendidos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拡張レポート"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1260,6 +2088,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View reports for any time range"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ve reportes de cualquier período de tiempo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "任意の期間のレポートを表示"
           }
         },
         "vi" : {
@@ -1279,6 +2119,18 @@
             "value" : "Support Development"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apoya el desarrollo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開発を支援"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1294,6 +2146,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Help us build better features for you"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayúdanos a construir mejores funciones para ti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "より良い機能の開発を応援してください"
           }
         },
         "vi" : {
@@ -1313,6 +2177,18 @@
             "value" : "Unlimited AI Voice Input"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrada de voz con IA ilimitada"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無制限のAI音声入力"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1328,6 +2204,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No daily limit on AI-powered expense parsing"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin límite diario en el análisis de gastos con IA"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI支出解析の1日の制限なし"
           }
         },
         "vi" : {
@@ -1347,6 +2235,18 @@
             "value" : "month"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1362,6 +2262,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "year"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "año"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年"
           }
         },
         "vi" : {
@@ -1381,6 +2293,18 @@
             "value" : "Monthly"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensual"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月額"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1396,6 +2320,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yearly"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anual"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年額"
           }
         },
         "vi" : {
@@ -1415,6 +2351,18 @@
             "value" : "Privacy Policy"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Política de privacidad"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プライバシーポリシー"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1430,6 +2378,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restore"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "復元"
           }
         },
         "vi" : {
@@ -1449,6 +2409,18 @@
             "value" : "Remove limits and get the most out of Quick Spend"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina los límites y aprovecha Quick Spend al máximo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "制限を解除してQuick Spendを最大限に活用"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1466,6 +2438,18 @@
             "value" : "Terms of Use"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Términos de uso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用規約"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1478,6 +2462,18 @@
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Spend Pro"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Spend Pro"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quick Spend Pro"
@@ -1498,6 +2494,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unlock Full Power"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquea todo el poder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フルパワーを解放"
           }
         },
         "vi" : {
@@ -1526,6 +2534,18 @@
             "value" : "Add Recurring"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir recurrente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期を追加"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1541,6 +2561,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit Recurring"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar recurrente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期を編集"
           }
         },
         "vi" : {
@@ -1560,6 +2592,18 @@
             "value" : "End Date"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha de fin"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終了日"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1575,6 +2619,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Has End Date"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiene fecha de fin"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終了日あり"
           }
         },
         "vi" : {
@@ -1594,6 +2650,18 @@
             "value" : "Pattern"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patrón"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パターン"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1609,6 +2677,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Daily"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎日"
           }
         },
         "vi" : {
@@ -1628,6 +2708,18 @@
             "value" : "Monthly"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensual"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎月"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1643,6 +2735,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weekly"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semanal"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎週"
           }
         },
         "vi" : {
@@ -1662,6 +2766,18 @@
             "value" : "Yearly"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anual"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎年"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1677,6 +2793,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "e.g. Monthly rent, Netflix"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ej. Renta mensual, Netflix"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例：家賃、Netflix"
           }
         },
         "vi" : {
@@ -1696,6 +2824,18 @@
             "value" : "Recurrence"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurrencia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繰り返し"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1711,6 +2851,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Schedule"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スケジュール"
           }
         },
         "vi" : {
@@ -1730,6 +2882,18 @@
             "value" : "Start Date"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha de inicio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始日"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1745,6 +2909,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Daily"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎日"
           }
         },
         "vi" : {
@@ -1764,6 +2940,18 @@
             "value" : "Delete \"%@\"? Previously generated transactions will not be removed."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar \"%@\"? Las transacciones generadas anteriormente no se eliminarán."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\"を削除しますか？以前生成された取引は削除されません。"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1779,6 +2967,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete Template"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar plantilla"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレートを削除"
           }
         },
         "vi" : {
@@ -1798,6 +2998,18 @@
             "value" : "Free plan allows %lld recurring templates. Upgrade to Pro for unlimited."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El plan gratuito permite %lld plantillas recurrentes. Actualiza a Pro para obtener uso ilimitado."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料プランでは定期テンプレートは%lld個までです。Proにアップグレードすると無制限になります。"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1813,6 +3025,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Limit Reached"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Límite alcanzado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上限に達しました"
           }
         },
         "vi" : {
@@ -1832,6 +3056,18 @@
             "value" : "Monthly"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensual"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎月"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1847,6 +3083,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No Recurring Templates"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin plantillas recurrentes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期テンプレートなし"
           }
         },
         "vi" : {
@@ -1866,6 +3114,18 @@
             "value" : "Create a template to automatically generate transactions on a schedule."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea una plantilla para generar transacciones automáticamente según un horario."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレートを作成して、スケジュールに従って自動的に取引を生成します。"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1881,6 +3141,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recurring"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurrentes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期"
           }
         },
         "vi" : {
@@ -1900,6 +3172,18 @@
             "value" : "Weekly"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semanal"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎週"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1915,6 +3199,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yearly"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anual"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎年"
           }
         },
         "vi" : {
@@ -1934,6 +3230,18 @@
             "value" : "Last Month"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes anterior"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先月"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1949,6 +3257,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This Month"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este mes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今月"
           }
         },
         "vi" : {
@@ -1968,6 +3288,18 @@
             "value" : "3 Months"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 meses"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3ヶ月"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1983,6 +3315,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Report"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reporte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "レポート"
           }
         },
         "vi" : {
@@ -2002,27 +3346,22 @@
             "value" : "%lld transactions"
           }
         },
-        "vi" : {
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld giao dịch"
+            "value" : "%lld transacciones"
           }
-        }
-      }
-    },
-    "settings.about" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "About"
+            "value" : "%lld件の取引"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Giới thiệu"
+            "value" : "%lld giao dịch"
           }
         }
       }
@@ -2034,6 +3373,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Categories"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリ"
           }
         },
         "vi" : {
@@ -2053,6 +3404,18 @@
             "value" : "Manage categories"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administrar categorías"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリを管理"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2068,6 +3431,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Currency"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通貨"
           }
         },
         "vi" : {
@@ -2087,6 +3462,18 @@
             "value" : "Language"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "言語"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2102,6 +3489,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preferences"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferencias"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
           }
         },
         "vi" : {
@@ -2121,6 +3520,18 @@
             "value" : "Active"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2136,6 +3547,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recurring"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurrentes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期"
           }
         },
         "vi" : {
@@ -2155,6 +3578,18 @@
             "value" : "Manage recurring transactions"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administrar transacciones recurrentes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期取引を管理"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2170,6 +3605,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subscription"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscripción"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サブスクリプション"
           }
         },
         "vi" : {
@@ -2189,6 +3636,18 @@
             "value" : "Theme"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テーマ"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2204,6 +3663,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dark"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oscuro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダーク"
           }
         },
         "vi" : {
@@ -2223,6 +3694,18 @@
             "value" : "Light"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライト"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2238,6 +3721,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "System"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム"
           }
         },
         "vi" : {
@@ -2257,27 +3752,22 @@
             "value" : "Settings"
           }
         },
-        "vi" : {
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cài đặt"
+            "value" : "Ajustes"
           }
-        }
-      }
-    },
-    "settings.track_easily" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Track expenses easily"
+            "value" : "設定"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Theo dõi chi tiêu dễ dàng"
+            "value" : "Cài đặt"
           }
         }
       }
@@ -2291,10 +3781,51 @@
             "value" : "Unlock unlimited features"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquea funciones ilimitadas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無制限の機能を解放"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mở khóa tính năng không giới hạn"
+          }
+        }
+      }
+    },
+    "settings.version" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versión"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên bản"
           }
         }
       }
@@ -2306,6 +3837,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべて"
           }
         },
         "vi" : {
@@ -2325,6 +3868,18 @@
             "value" : "%lld transactions"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld transacciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld件の取引"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2340,6 +3895,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expense"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支出"
           }
         },
         "vi" : {
@@ -2359,6 +3926,18 @@
             "value" : "Income"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingreso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "収入"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2374,6 +3953,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Low confidence"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baja confianza"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信頼度が低い"
           }
         },
         "vi" : {
@@ -2393,6 +3984,18 @@
             "value" : "Other"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otros"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その他"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2410,6 +4013,18 @@
             "value" : "Transactions"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transacciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取引"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2421,9 +4036,6 @@
     "Type" : {
 
     },
-    "v1.0.0" : {
-
-    },
     "voice_review.confirm_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2431,6 +4043,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Confirm Transaction"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar transacción"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取引を確認"
           }
         },
         "vi" : {
@@ -2450,6 +4074,18 @@
             "value" : "Low confidence - please verify"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baja confianza - por favor verifica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信頼度が低い - 確認してください"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2465,6 +4101,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transaction"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transacción"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取引"
           }
         },
         "vi" : {
@@ -2484,6 +4132,18 @@
             "value" : "Transaction %lld"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transacción %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取引 %lld"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2499,6 +4159,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld Transactions Parsed"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld transacciones analizadas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld件の取引を解析"
           }
         },
         "vi" : {
@@ -2518,6 +4190,18 @@
             "value" : "Double tap to add an expense using your voice"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para agregar un gasto con tu voz"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダブルタップで音声入力"
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2533,6 +4217,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voice input"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrada de voz"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声入力"
           }
         },
         "vi" : {
@@ -2552,6 +4248,18 @@
             "value" : "Listening..."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuchando..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞いています..."
+          }
+        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2567,6 +4275,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Release to cancel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suelta para cancelar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "離すとキャンセル"
           }
         },
         "vi" : {

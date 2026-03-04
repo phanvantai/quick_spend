@@ -44,25 +44,30 @@ Dependencies are managed via Swift Package Manager (resolved in the Xcode projec
 ## Database Models (v2)
 
 ### Transaction (`@Model`)
+
 - `id: String` (unique), `amount: Double`, `note: String`, `categoryId: String`, `type: TransactionType` (Codable enum, auto-encoded), `date: Date`, `rawInput: String?`, `confidence: Double?`, `createdAt: Date`, `updatedAt: Date`
 - Computed: `isIncome`, `isExpense`
 - Replaces old `Expense` model (v1)
 
 ### Category (`@Model`)
-- `id: String` (unique, e.g. `"food_drink"`), `name: String`, `iconName: String`, `colorHex: String`, `type: TransactionType`, `group: CategoryGroup?`, `keywords: [String]`, `sortOrder: Int`, `isHidden: Bool`, `createdAt: Date`, `updatedAt: Date`
+
+- `id: String` (unique, e.g. `"food_drink"`), `name: String`, `iconName: String`, `colorHex: String`, `type: TransactionType`, `group: CategoryGroup?`, `sortOrder: Int`, `isHidden: Bool`, `createdAt: Date`, `updatedAt: Date`
 - Computed: `color: Color` (from hex), `isIncomeCategory`, `isExpenseCategory`
 - Replaces old `QuickCategory` model (v1). No more `isSystem` distinction
 - Relationship to Transaction via string-based `categoryId` (no `@Relationship`)
 
 ### RecurringTemplate (`@Model`)
+
 - `id: String`, `amount: Double`, `note: String`, `categoryId: String`, `type: TransactionType`, `pattern: RecurrencePattern` (daily/weekly/monthly/yearly), `startDate: Date`, `endDate: Date?`, `isActive: Bool`, `lastGeneratedDate: Date?`, `createdAt: Date`, `updatedAt: Date`
 
 ### Enums
+
 - `TransactionType`: `.income`, `.expense` — Codable, stored directly by SwiftData
 - `RecurrencePattern`: `.daily`, `.weekly`, `.monthly`, `.yearly` — Codable
 - `CategoryGroup`: `.dailyLiving`, `.personal`, `.social`, `.financial`, `.earned`, `.passive`, `.received`, `.other`
 
 ### Migration Strategy
+
 - **Clean Start**: v1→v2 deletes old SwiftData store via `_resetStoreIfNeeded()` in `QuickSpendApp.swift`
 - Uses `UserDefaults` flag `hasCompletedV2Migration`
 - Categories re-seeded on fresh start via `CategoryService.seedCategoriesIfNeeded()`
@@ -70,9 +75,11 @@ Dependencies are managed via Swift Package Manager (resolved in the Xcode projec
 ## Key Conventions
 
 - Firebase and RevenueCat are optional dependencies — use `#if canImport()` for graceful degradation
-- Localization supports 2 languages: English (en) and Vietnamese (vi). Category names/keywords defined in `CategoryService.swift`, UI strings in `HomeStrings.swift`
-- Multi-currency support: USD, VND, JPY, KRW, THB, EUR with locale-specific formatting in `CurrencyFormatter`
+- Localization supports 4 languages: English (en), Vietnamese (vi), Japanese (ja), Spanish (es). Category names defined in `CategoryService.swift`, UI strings in `HomeStrings.swift`
+- AI category matching: `GeminiParserService` sends category ID + localized name to Gemini, which returns the matched ID directly. No keywords needed — Gemini understands category context from names alone
+- Multi-currency support: USD, VND, JPY, EUR with locale-specific formatting in `CurrencyFormatter`
 - Subscription gating: free tier has daily limits (5 AI parses, 3 recurring templates, 7-day reports); pro tier is unlimited. Limits defined in `AppConstants.swift`
 - SwiftData models use `@Attribute(.unique)` for IDs and Codable enums stored directly (no raw value wrappers)
 - Private implementation methods use `_` prefix (e.g., `_initializeRevenueCat()`, `_resetStoreIfNeeded()`)
 - Default category IDs follow snake_case pattern: `food_drink`, `other_expense`, `salary`, `investment_income`, etc.
+- **Reusable Views**: Always extract repeated UI patterns into reusable SwiftUI components in `Views/Components/`. Prefer generic, composable views (e.g., `SettingSelectionRow`, `PickerSheet`) over duplicating UI code across features. Check existing components before creating new ones.
