@@ -3,11 +3,13 @@ import SwiftData
 
 /// Home screen: monthly summary card + transaction list grouped by date
 struct HomeView: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedMonth = Date()
+    @State private var showAddTransaction = false
 
     // MARK: - Selected Month Data
 
@@ -114,8 +116,15 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: AppTheme.spacing16) {
+                    // Month selector + currency badge (pinned via LazyVStack below)
+                    HomeAppBar(
+                        selectedMonth: $selectedMonth,
+                        language: appConfig.language,
+                        currency: appConfig.config.currency
+                    )
+
                     // Overview: vertical bar chart (income vs expense)
                     OverviewSection(
                         totalExpenses: totalExpenses,
@@ -170,17 +179,22 @@ struct HomeView: View {
                 .padding(.bottom, AppTheme.spacing12)
             }
             .background(Color(.systemGroupedBackground))
-            .safeAreaInset(edge: .top, spacing: 0) {
-                HomeAppBar(
-                    selectedMonth: $selectedMonth,
-                    language: appConfig.language,
-                    currency: appConfig.config.currency
-                )
-                .padding(.horizontal, AppTheme.spacing16)
-                .padding(.vertical, AppTheme.spacing12)
-                .background(.bar)
+            .navigationTitle(L10n.tr("home.title", appConfig.language))
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showAddTransaction = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                    }
+                }
             }
-            .navigationBarHidden(true)
+            .sheet(isPresented: $showAddTransaction) {
+                TransactionFormView(categories: categories) { transaction in
+                    modelContext.insert(transaction)
+                }
+            }
         }
     }
 }

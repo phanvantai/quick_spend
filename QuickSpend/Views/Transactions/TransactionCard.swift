@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Transaction card showing category icon, name, note, and amount in a rounded card
-struct ExpenseCard: View {
+struct TransactionCard: View {
     let transaction: Transaction
     let category: Category?
     let config: AppConfig
@@ -55,6 +55,7 @@ struct ExpenseCard: View {
         .background {
             RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
                 .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
         }
     }
 }

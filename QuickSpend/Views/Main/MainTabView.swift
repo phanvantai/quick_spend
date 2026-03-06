@@ -28,7 +28,10 @@ struct MainTabView: View {
                 Tab(L10n.tr("home.title", appConfig.language), systemImage: "house.fill", value: 0) {
                     HomeView()
                 }
-                Tab(L10n.tr("settings.title", appConfig.language), systemImage: "gearshape.fill", value: 1) {
+                Tab(L10n.tr("transactions.title", appConfig.language), systemImage: "list.bullet.rectangle.fill", value: 1) {
+                    TransactionsView()
+                }
+                Tab(L10n.tr("settings.title", appConfig.language), systemImage: "gearshape.fill", value: 2) {
                     SettingsView()
                 }
             }
@@ -96,7 +99,7 @@ struct MainTabView: View {
             )
         }
         .sheet(isPresented: $showManualFallback) {
-            ExpenseFormView(
+            TransactionFormView(
                 categories: categories
             ) { transaction in
                 modelContext.insert(transaction)

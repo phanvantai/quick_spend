@@ -24,13 +24,8 @@ struct OverviewSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             // Header
-            HStack(spacing: AppTheme.spacing4) {
-                Text(HomeStrings.overviewTitle(language))
-                    .font(.headline)
-                Image(systemName: "info.circle")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+            Text(HomeStrings.overviewTitle(language))
+                .font(.headline)
 
             if hasData {
                 // Balance subtitle
@@ -87,19 +82,31 @@ struct OverviewSection: View {
         let barHeight = maxAmount > 0 ? (amount / maxAmount) * maxBarHeight : 0
 
         return VStack(spacing: AppTheme.spacing8) {
-            // Bar with overlaid text
-            ZStack(alignment: .top) {
-                RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .fill(color)
-                    .frame(width: barWidth, height: max(barHeight, 60))
+            if amount > 0 {
+                // Bar with overlaid text
+                ZStack(alignment: .top) {
+                    RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
+                        .fill(color)
+                        .frame(width: barWidth, height: max(barHeight, 60))
 
+                    VStack(spacing: AppTheme.spacing4) {
+                        changeBadge(percent: changePercent)
+                        Text(AmountAbbreviator.abbreviate(amount, currency: currency, language: language))
+                            .font(.title3.bold().monospacedDigit())
+                            .foregroundStyle(.white)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .padding(.top, AppTheme.spacing12)
+                }
+            } else {
+                // Zero state: just show the value without a bar
                 VStack(spacing: AppTheme.spacing4) {
                     changeBadge(percent: changePercent)
-                    Text(AmountAbbreviator.abbreviate(amount, currency: currency, language: language))
+                    Text(AmountAbbreviator.abbreviate(0, currency: currency, language: language))
                         .font(.title3.bold().monospacedDigit())
-                        .foregroundStyle(.white)
-                        .minimumScaleFactor(0.7)
+                        .foregroundStyle(.secondary)
                 }
+                .frame(width: barWidth)
                 .padding(.top, AppTheme.spacing12)
             }
 

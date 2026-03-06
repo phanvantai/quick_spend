@@ -69,6 +69,7 @@ struct TransactionsView: View {
                 .padding(.horizontal, AppTheme.spacing16)
                 .padding(.bottom, AppTheme.spacing16)
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle(L10n.tr("transactions.title", appConfig.language))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -81,12 +82,12 @@ struct TransactionsView: View {
                 }
             }
             .sheet(isPresented: $showingAddTransaction) {
-                ExpenseFormView(categories: categories) { transaction in
+                TransactionFormView(categories: categories) { transaction in
                     modelContext.insert(transaction)
                 }
             }
             .sheet(item: $editingTransaction) { transaction in
-                ExpenseFormView(categories: categories, expense: transaction) { updated in
+                TransactionFormView(categories: categories, expense: transaction) { updated in
                     transaction.amount = updated.amount
                     transaction.note = updated.note
                     transaction.categoryId = updated.categoryId
@@ -143,7 +144,7 @@ struct TransactionsView: View {
 
                         ForEach(group.transactions, id: \.id) { transaction in
                             let category = categories.first { $0.id == transaction.categoryId }
-                            ExpenseCard(
+                            TransactionCard(
                                 transaction: transaction,
                                 category: category,
                                 config: appConfig.config
