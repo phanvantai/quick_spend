@@ -54,11 +54,7 @@ struct TrendsSection: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            .padding(AppTheme.spacing16)
-            .background {
-                RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                    .fill(Color(.secondarySystemGroupedBackground))
-            }
+            .cardBackground()
         }
     }
 
@@ -289,15 +285,7 @@ struct TrendsSection: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: AppTheme.spacing8) {
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .font(.largeTitle)
-                .foregroundStyle(.tertiary)
-            Text(L10n.tr("common.no_data", language))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, minHeight: 160)
+        EmptyDataView(icon: "chart.line.uptrend.xyaxis", message: L10n.tr("common.no_data", language))
     }
 }
 

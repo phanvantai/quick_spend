@@ -70,11 +70,7 @@ struct EditableExpenseDialog: View {
         let filteredCategories = categories.filter { $0.type == data.type }
 
         // Type
-        Picker(L10n.tr("common.type", appConfig.language), selection: $editableExpenses[index].type) {
-            Text(L10n.tr("common.expense", appConfig.language)).tag(TransactionType.expense)
-            Text(L10n.tr("common.income", appConfig.language)).tag(TransactionType.income)
-        }
-        .pickerStyle(.segmented)
+        TransactionTypePicker(selection: $editableExpenses[index].type, language: appConfig.language)
         .onChange(of: editableExpenses[index].type) {
             // Reset category when type changes
             let filtered = categories.filter { $0.type == editableExpenses[index].type }

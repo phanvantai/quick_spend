@@ -37,11 +37,7 @@ struct ReportSection: View {
 
             VStack(spacing: AppTheme.spacing16) {
                 // Segmented picker
-                Picker("Type", selection: $selectedTab) {
-                    Text(HomeStrings.expense(language)).tag(TransactionType.expense)
-                    Text(HomeStrings.income(language)).tag(TransactionType.income)
-                }
-                .pickerStyle(.segmented)
+                TransactionTypePicker(selection: $selectedTab, language: language)
 
                 if activeBreakdown.isEmpty {
                     emptyState
@@ -54,11 +50,7 @@ struct ReportSection: View {
                 }
 
             }
-            .padding(AppTheme.spacing16)
-            .background {
-                RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                    .fill(Color(.secondarySystemGroupedBackground))
-            }
+            .cardBackground()
         }
     }
 
@@ -101,19 +93,7 @@ struct ReportSection: View {
     }
 
     private var changeBadge: some View {
-        let isUp = activeChangePercent >= 0
-        let arrow = isUp ? "↑" : "↓"
-        let displayPercent = abs(activeChangePercent)
-
-        return Text("\(arrow) \(String(format: "%.0f", displayPercent))%")
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(isUp ? AppTheme.dashboardExpenseBar : AppTheme.dashboardIncomeBar)
-            .padding(.horizontal, AppTheme.spacing8)
-            .padding(.vertical, 2)
-            .background {
-                Capsule()
-                    .fill(isUp ? AppTheme.dashboardExpenseBar.opacity(0.15) : AppTheme.dashboardIncomeBar.opacity(0.15))
-            }
+        ChangeBadge(percent: activeChangePercent, style: .standalone)
     }
 
     // MARK: - Category Legend
@@ -139,15 +119,7 @@ struct ReportSection: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: AppTheme.spacing8) {
-            Image(systemName: "chart.pie")
-                .font(.largeTitle)
-                .foregroundStyle(.tertiary)
-            Text(L10n.tr("common.no_data", language))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, minHeight: 160)
+        EmptyDataView(icon: "chart.pie", message: L10n.tr("common.no_data", language))
     }
 }
 

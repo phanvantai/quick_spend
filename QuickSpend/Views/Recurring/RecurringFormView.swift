@@ -50,14 +50,10 @@ struct RecurringFormView: View {
             Form {
                 // Transaction type
                 Section {
-                    Picker(L10n.tr("common.type", appConfig.language), selection: $selectedType) {
-                        Text(L10n.tr("common.expense", appConfig.language)).tag(TransactionType.expense)
-                        Text(L10n.tr("common.income", appConfig.language)).tag(TransactionType.income)
-                    }
-                    .pickerStyle(.segmented)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
-                    .padding(.vertical, AppTheme.spacing4)
+                    TransactionTypePicker(selection: $selectedType, language: appConfig.language)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
+                        .padding(.vertical, AppTheme.spacing4)
                 }
 
                 // Description

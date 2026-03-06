@@ -121,3 +121,21 @@ struct CurrencyOption: Identifiable {
         CurrencyOption(code: "EUR", symbol: "€"),
     ]
 }
+
+// MARK: - Theme Option
+
+struct ThemeOption: Identifiable {
+    let code: String
+    let icon: String
+    let title: String
+
+    var id: String { code }
+
+    static func options(language: String) -> [ThemeOption] {
+        [
+            ThemeOption(code: "system", icon: "circle.lefthalf.filled", title: L10n.tr("settings.theme_system", language)),
+            ThemeOption(code: "light", icon: "sun.max.fill", title: L10n.tr("settings.theme_light", language)),
+            ThemeOption(code: "dark", icon: "moon.fill", title: L10n.tr("settings.theme_dark", language)),
+        ]
+    }
+}

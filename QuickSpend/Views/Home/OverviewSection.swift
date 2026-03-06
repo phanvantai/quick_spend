@@ -50,11 +50,7 @@ struct OverviewSection: View {
                     )
                     Spacer()
                 }
-                .padding(AppTheme.spacing16)
-                .background {
-                    RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                        .fill(Color(.secondarySystemGroupedBackground))
-                }
+                .cardBackground()
             } else {
                 emptyStateView
             }
@@ -62,20 +58,12 @@ struct OverviewSection: View {
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: AppTheme.spacing12) {
-            Image(systemName: "chart.bar.fill")
-                .font(.largeTitle)
-                .foregroundStyle(.quaternary)
-            Text(L10n.tr("common.no_data", language))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 140)
-        .background {
-            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                .fill(Color(.secondarySystemGroupedBackground))
-        }
+        EmptyDataView(
+            icon: "chart.bar.fill",
+            message: L10n.tr("common.no_data", language),
+            minHeight: 140
+        )
+        .cardBackground()
     }
 
     private func barColumn(amount: Double, changePercent: Double, label: String, color: Color) -> some View {
@@ -118,19 +106,7 @@ struct OverviewSection: View {
     }
 
     private func changeBadge(percent: Double) -> some View {
-        let isUp = percent >= 0
-        let arrow = isUp ? "↑" : "↓"
-        let displayPercent = abs(percent)
-
-        return Text("\(arrow) \(String(format: "%.0f", displayPercent))%")
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(.white.opacity(0.9))
-            .padding(.horizontal, AppTheme.spacing8)
-            .padding(.vertical, 3)
-            .background {
-                Capsule()
-                    .fill(Color.white.opacity(0.25))
-            }
+        ChangeBadge(percent: percent, style: .overlay)
     }
 }
 

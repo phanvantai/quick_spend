@@ -15,6 +15,8 @@ struct PickerSheet<Item: Identifiable>: View {
     enum IconStyle {
         case plain(Color)
         case custom
+        /// Renders the icon string as an SF Symbol via Image(systemName:)
+        case sfSymbol(Color)
     }
 
     var body: some View {
@@ -24,9 +26,7 @@ struct PickerSheet<Item: Identifiable>: View {
                     onSelect(item)
                 } label: {
                     HStack(spacing: AppTheme.spacing12) {
-                        Text(icon(item))
-                            .font(.title2.bold())
-                            .foregroundStyle(iconColor)
+                        iconView(for: item)
                             .frame(width: 32, alignment: .center)
 
                         Text(label(item))
@@ -53,10 +53,21 @@ struct PickerSheet<Item: Identifiable>: View {
         .presentationDetents([.medium, .large])
     }
 
-    private var iconColor: Color {
+    @ViewBuilder
+    private func iconView(for item: Item) -> some View {
         switch iconStyle {
-        case .plain(let color): return color
-        case .custom: return .primary
+        case .sfSymbol(let color):
+            Image(systemName: icon(item))
+                .font(.title3)
+                .foregroundStyle(color)
+        case .plain(let color):
+            Text(icon(item))
+                .font(.title2.bold())
+                .foregroundStyle(color)
+        case .custom:
+            Text(icon(item))
+                .font(.title2.bold())
+                .foregroundStyle(.primary)
         }
     }
 }

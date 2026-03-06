@@ -92,14 +92,12 @@ struct CategoryFormView: View {
 
     private var previewCard: some View {
         HStack(spacing: AppTheme.spacing12) {
-            RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                .fill(Color(hex: selectedColorHex).opacity(0.15))
-                .frame(width: 48, height: 48)
-                .overlay {
-                    Image(systemName: selectedIcon)
-                        .font(.title3)
-                        .foregroundStyle(Color(hex: selectedColorHex))
-                }
+            CategoryIconBadge(
+                iconName: selectedIcon,
+                color: Color(hex: selectedColorHex),
+                size: 48,
+                iconFont: .title3
+            )
 
             Text(name.isEmpty ? L10n.tr("category_form.preview_name", appConfig.language) : name)
                 .font(.headline)

@@ -5,6 +5,7 @@ struct CalendarGrid: View {
     let selectedMonth: Date
     let expenses: [Transaction]
     let currency: String
+    let language: String
     @Binding var selectedDate: Date?
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
@@ -73,7 +74,8 @@ struct CalendarGrid: View {
                         isToday: isToday,
                         isSelected: isSelected,
                         hasData: data != nil,
-                        currency: currency
+                        currency: currency,
+                        language: language
                     ) {
                         let calendar = Calendar.current
                         var comps = calendar.dateComponents([.year, .month], from: selectedMonth)
@@ -115,6 +117,7 @@ private struct CalendarDayCell: View {
     let isSelected: Bool
     let hasData: Bool
     let currency: String
+    let language: String
     let action: () -> Void
 
     var body: some View {
@@ -126,13 +129,13 @@ private struct CalendarDayCell: View {
 
                 if hasData {
                     if income > 0 {
-                        Text("+\(abbreviate(income))")
+                        Text("+\(AmountAbbreviator.abbreviate(income, currency: currency, language: language))")
                             .font(.system(size: 8, weight: .semibold))
                             .foregroundStyle(AppTheme.incomeColor)
                             .lineLimit(1)
                     }
                     if expense > 0 {
-                        Text("-\(abbreviate(expense))")
+                        Text("-\(AmountAbbreviator.abbreviate(expense, currency: currency, language: language))")
                             .font(.system(size: 8, weight: .semibold))
                             .foregroundStyle(AppTheme.expenseColor)
                             .lineLimit(1)
@@ -153,16 +156,7 @@ private struct CalendarDayCell: View {
         .buttonStyle(.plain)
     }
 
-    private func abbreviate(_ amount: Double) -> String {
-        if currency == "VND" || currency == "JPY" || currency == "KRW" {
-            if amount >= 1_000_000 { return String(format: "%.1fM", amount / 1_000_000) }
-            if amount >= 1_000 { return String(format: "%.0fk", amount / 1_000) }
-            return String(format: "%.0f", amount)
-        } else {
-            if amount >= 1_000 { return String(format: "%.1fk", amount / 1_000) }
-            return String(format: "%.0f", amount)
-        }
-    }
+
 }
 
 #Preview {
@@ -171,6 +165,7 @@ private struct CalendarDayCell: View {
         selectedMonth: .now,
         expenses: [],
         currency: "USD",
+        language: "en",
         selectedDate: $selectedDate
     )
 }

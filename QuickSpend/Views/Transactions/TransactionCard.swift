@@ -9,14 +9,13 @@ struct TransactionCard: View {
     var body: some View {
         HStack(spacing: AppTheme.spacing12) {
             // Circular category icon
-            Circle()
-                .fill((category?.color ?? .secondary).opacity(0.15))
-                .frame(width: 48, height: 48)
-                .overlay {
-                    Image(systemName: category?.iconName ?? "questionmark.circle")
-                        .font(.title3)
-                        .foregroundStyle(category?.color ?? .secondary)
-                }
+            CategoryIconBadge(
+                iconName: category?.iconName ?? "questionmark.circle",
+                color: category?.color ?? .secondary,
+                size: 48,
+                iconFont: .title3,
+                shape: .circle
+            )
 
             // Category name and description
             VStack(alignment: .leading, spacing: 3) {
@@ -51,11 +50,6 @@ struct TransactionCard: View {
                 }
             }
         }
-        .padding(AppTheme.spacing16)
-        .background {
-            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                .fill(Color(.secondarySystemGroupedBackground))
-                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
-        }
+        .cardBackground(shadow: true)
     }
 }

@@ -118,13 +118,11 @@ struct RecurringListView: View {
 
         return HStack(spacing: AppTheme.spacing12) {
             // Category icon
-            RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                .fill((category?.color ?? .secondary).opacity(0.15))
-                .frame(width: 44, height: 44)
-                .overlay {
-                    Image(systemName: category?.iconName ?? "questionmark.circle")
-                        .foregroundStyle(category?.color ?? .secondary)
-                }
+            CategoryIconBadge(
+                iconName: category?.iconName ?? "questionmark.circle",
+                color: category?.color ?? .secondary,
+                size: 44
+            )
 
             // Info
             VStack(alignment: .leading, spacing: 2) {

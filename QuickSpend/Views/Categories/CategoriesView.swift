@@ -112,13 +112,11 @@ struct CategoriesView: View {
         let isFallback = category.id == "other_expense" || category.id == "other_income"
 
         return HStack(spacing: AppTheme.spacing12) {
-            RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                .fill(category.color.opacity(0.15))
-                .frame(width: 40, height: 40)
-                .overlay {
-                    Image(systemName: category.iconName)
-                        .foregroundStyle(category.color)
-                }
+            CategoryIconBadge(
+                iconName: category.iconName,
+                color: category.color,
+                size: 40
+            )
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(category.name)

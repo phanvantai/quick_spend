@@ -127,14 +127,12 @@ struct SettingsView: View {
 
     private func settingsRow(icon: String, iconColor: Color, title: String, subtitle: String) -> some View {
         HStack(spacing: AppTheme.spacing12) {
-            RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                .fill(iconColor.opacity(0.15))
-                .frame(width: 36, height: 36)
-                .overlay {
-                    Image(systemName: icon)
-                        .font(.body)
-                        .foregroundStyle(iconColor)
-                }
+            CategoryIconBadge(
+                iconName: icon,
+                color: iconColor,
+                size: 36,
+                iconFont: .body
+            )
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -160,116 +158,62 @@ struct SettingsView: View {
     // MARK: - Language Picker
 
     private var languagePickerSheet: some View {
-        NavigationStack {
-            List(LanguageOption.options) { option in
-                Button {
-                    appConfig.setLanguage(option.code)
-                    // Re-seed categories in new language
-                    CategoryService.updateCategoryNames(
-                        language: option.code,
-                        modelContext: modelContext
-                    )
-                    showLanguagePicker = false
-                } label: {
-                    HStack(spacing: AppTheme.spacing12) {
-                        Text(option.flag)
-                            .font(.title2)
-                        Text(option.displayName)
-                            .font(.body)
-                        Spacer()
-                        if appConfig.language == option.code {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(AppTheme.primaryMint)
-                        }
-                    }
-                }
-                .tint(.primary)
-            }
-            .navigationTitle(L10n.tr("settings.language", appConfig.language))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(L10n.tr("common.done", appConfig.language)) { showLanguagePicker = false }
-                }
-            }
-        }
-        .presentationDetents([.medium])
+        PickerSheet(
+            title: L10n.tr("settings.language", appConfig.language),
+            doneText: L10n.tr("common.done", appConfig.language),
+            items: LanguageOption.options,
+            selectedId: appConfig.language,
+            icon: { $0.flag },
+            iconStyle: .custom,
+            label: { $0.displayName },
+            onSelect: { option in
+                appConfig.setLanguage(option.code)
+                CategoryService.updateCategoryNames(
+                    language: option.code,
+                    modelContext: modelContext
+                )
+                showLanguagePicker = false
+            },
+            onDone: { showLanguagePicker = false }
+        )
     }
 
     // MARK: - Currency Picker
 
     private var currencyPickerSheet: some View {
-        NavigationStack {
-            List(CurrencyOption.options) { option in
-                Button {
-                    appConfig.setCurrency(option.code)
-                    showCurrencyPicker = false
-                } label: {
-                    HStack(spacing: AppTheme.spacing12) {
-                        Text(option.symbol)
-                            .font(.title2.bold())
-                            .frame(width: 32)
-                        Text(option.code)
-                            .font(.body)
-                        Spacer()
-                        if appConfig.currency == option.code {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(AppTheme.primaryMint)
-                        }
-                    }
-                }
-                .tint(.primary)
-            }
-            .navigationTitle(L10n.tr("settings.currency", appConfig.language))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(L10n.tr("common.done", appConfig.language)) { showCurrencyPicker = false }
-                }
-            }
-        }
-        .presentationDetents([.medium])
+        PickerSheet(
+            title: L10n.tr("settings.currency", appConfig.language),
+            doneText: L10n.tr("common.done", appConfig.language),
+            items: CurrencyOption.options,
+            selectedId: appConfig.currency,
+            icon: { $0.symbol },
+            iconStyle: .plain(AppTheme.accentOrange),
+            label: { $0.code },
+            onSelect: { option in
+                appConfig.setCurrency(option.code)
+                showCurrencyPicker = false
+            },
+            onDone: { showCurrencyPicker = false }
+        )
     }
 
     // MARK: - Theme Picker
 
     private var themePickerSheet: some View {
-        NavigationStack {
-            List {
-                themeOption(code: "system", icon: "circle.lefthalf.filled", title: L10n.tr("settings.theme_system", appConfig.language))
-                themeOption(code: "light", icon: "sun.max.fill", title: L10n.tr("settings.theme_light", appConfig.language))
-                themeOption(code: "dark", icon: "moon.fill", title: L10n.tr("settings.theme_dark", appConfig.language))
-            }
-            .navigationTitle(L10n.tr("settings.theme", appConfig.language))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(L10n.tr("common.done", appConfig.language)) { showThemePicker = false }
-                }
-            }
-        }
-        .presentationDetents([.medium])
-    }
-
-    private func themeOption(code: String, icon: String, title: String) -> some View {
-        Button {
-            appConfig.setThemeMode(code)
-            showThemePicker = false
-        } label: {
-            HStack(spacing: AppTheme.spacing12) {
-                Image(systemName: icon)
-                    .font(.title3)
-                    .frame(width: 32)
-                Text(title)
-                    .font(.body)
-                Spacer()
-                if appConfig.themeMode == code {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(AppTheme.primaryMint)
-                }
-            }
-        }
-        .tint(.primary)
+        PickerSheet(
+            title: L10n.tr("settings.theme", appConfig.language),
+            doneText: L10n.tr("common.done", appConfig.language),
+            items: ThemeOption.options(language: appConfig.language),
+            selectedId: appConfig.themeMode,
+            icon: { $0.icon },
+            iconStyle: .sfSymbol(.primary),
+            label: { $0.title },
+            onSelect: { option in
+                appConfig.setThemeMode(option.code)
+                showThemePicker = false
+            },
+            onDone: { showThemePicker = false }
+        )
     }
 
 }
