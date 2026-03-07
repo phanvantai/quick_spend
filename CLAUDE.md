@@ -85,3 +85,20 @@ QuickSpendApp
 ### Conditional SDK Pattern
 
 Firebase and RevenueCat integrations use `#if canImport(...)` so the app builds and runs without these SDKs (features degrade gracefully). Keep this pattern when adding new SDK-dependent code.
+
+## Testing (MANDATORY)
+
+This project follows **Test-Driven Development (TDD)**. Tests are not optional.
+
+- **Every code change must include corresponding tests.** No exceptions.
+- Write tests **before or alongside** implementation code — never skip them.
+- Test files live in `QuickSpendTests/` and follow the naming convention `<ClassName>Tests.swift`.
+- Cover all services, view models, models, and any logic-bearing code with unit tests.
+- Use `@Test` and `#expect` (Swift Testing framework) for new tests.
+- Run tests after every change to verify nothing is broken:
+
+  ```bash
+  xcodebuild -project QuickSpend.xcodeproj -scheme QuickSpend -sdk iphonesimulator test
+  ```
+
+- If a bug is fixed, add a regression test that reproduces the bug first.
