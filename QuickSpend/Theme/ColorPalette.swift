@@ -27,4 +27,17 @@ extension Color {
             opacity: Double(a) / 255
         )
     }
+
+    /// Convert Color to a 6-character uppercase hex string (e.g. "FF8C42")
+    func toHex() -> String {
+        let resolved = UIColor(self)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        resolved.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return String(
+            format: "%02X%02X%02X",
+            Int(round(r * 255)),
+            Int(round(g * 255)),
+            Int(round(b * 255))
+        )
+    }
 }

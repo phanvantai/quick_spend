@@ -4,6 +4,7 @@ import SwiftData
 /// Full-screen form for adding or editing a transaction
 struct TransactionFormView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
 
     let categories: [Category]
@@ -27,6 +28,22 @@ struct TransactionFormView: View {
     @State private var showDatePicker = false
 
     private var isEditMode: Bool { existingTransaction != nil }
+
+    private var adaptiveBackground: LinearGradient {
+        colorScheme == .dark ? AppTheme.darkBackgroundGradient : AppTheme.backgroundGradient
+    }
+
+    private var fieldBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemGroupedBackground) : Color(.systemBackground)
+    }
+
+    private var fieldBorder: Color {
+        colorScheme == .dark ? Color(.systemGray4) : Color(.systemGray5)
+    }
+
+    private var accentColor: Color {
+        colorScheme == .dark ? AppTheme.primaryLight : AppTheme.primaryMint
+    }
 
     private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType && !$0.isHidden }
@@ -71,7 +88,7 @@ struct TransactionFormView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AppTheme.backgroundGradient
+                adaptiveBackground
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
@@ -102,7 +119,7 @@ struct TransactionFormView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.body.weight(.semibold))
-                            .foregroundStyle(AppTheme.primaryMint)
+                            .foregroundStyle(accentColor)
                     }
                 }
             }
@@ -161,7 +178,7 @@ struct TransactionFormView: View {
                 .background {
                     if selectedType == type {
                         Capsule()
-                            .fill(AppTheme.primaryMint)
+                            .fill(accentColor)
                     }
                 }
                 .foregroundStyle(selectedType == type ? .white : .secondary)
@@ -193,11 +210,11 @@ struct TransactionFormView: View {
             .padding(.vertical, AppTheme.spacing16)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .fill(Color(.systemBackground))
+                    .fill(fieldBackground)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .stroke(amountError != nil ? Color.red : Color(.systemGray5), lineWidth: 1)
+                    .stroke(amountError != nil ? Color.red : fieldBorder, lineWidth: 1)
             )
 
             if let error = amountError {
@@ -245,11 +262,11 @@ struct TransactionFormView: View {
                 .padding(.vertical, AppTheme.spacing16)
                 .background(
                     RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                        .fill(Color(.systemBackground))
+                        .fill(fieldBackground)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                        .stroke(categoryError != nil ? Color.red : Color(.systemGray5), lineWidth: 1)
+                        .stroke(categoryError != nil ? Color.red : fieldBorder, lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)
@@ -287,11 +304,11 @@ struct TransactionFormView: View {
                 .padding(.vertical, AppTheme.spacing16)
                 .background(
                     RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                        .fill(Color(.systemBackground))
+                        .fill(fieldBackground)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                        .stroke(dateError != nil ? Color.red : Color(.systemGray5), lineWidth: 1)
+                        .stroke(dateError != nil ? Color.red : fieldBorder, lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)
@@ -328,11 +345,11 @@ struct TransactionFormView: View {
             .padding(.vertical, AppTheme.spacing16)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .fill(Color(.systemBackground))
+                    .fill(fieldBackground)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .stroke(noteError != nil ? Color.red : Color(.systemGray5), lineWidth: 1)
+                    .stroke(noteError != nil ? Color.red : fieldBorder, lineWidth: 1)
             )
 
             if let error = noteError {
@@ -356,9 +373,9 @@ struct TransactionFormView: View {
                     .padding(.vertical, AppTheme.spacing16)
                     .background(
                         Capsule()
-                            .stroke(AppTheme.primaryMint, lineWidth: 1.5)
+                            .stroke(accentColor, lineWidth: 1.5)
                     )
-                    .foregroundStyle(AppTheme.primaryMint)
+                    .foregroundStyle(accentColor)
             }
             .buttonStyle(.plain)
 
@@ -371,7 +388,7 @@ struct TransactionFormView: View {
                     .padding(.vertical, AppTheme.spacing16)
                     .background(
                         Capsule()
-                            .fill(AppTheme.primaryMint)
+                            .fill(accentColor)
                     )
                     .foregroundStyle(.white)
             }
@@ -379,10 +396,6 @@ struct TransactionFormView: View {
         }
         .padding(.horizontal, AppTheme.spacing16)
         .padding(.vertical, AppTheme.spacing16)
-        .background(
-            Color(.systemBackground)
-                .shadow(color: .black.opacity(0.05), radius: 8, y: -4)
-        )
     }
 
     // MARK: - Date Picker Sheet
@@ -396,7 +409,7 @@ struct TransactionFormView: View {
                 displayedComponents: [.date]
             )
             .datePickerStyle(.graphical)
-            .tint(AppTheme.primaryMint)
+            .tint(accentColor)
             .labelsHidden()
             .padding()
             .navigationTitle(L10n.tr("expense_form.transaction_date", appConfig.language))
@@ -440,7 +453,7 @@ struct TransactionFormView: View {
 
                                     if category.id == selectedCategoryId {
                                         Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(AppTheme.primaryMint)
+                                            .foregroundStyle(accentColor)
                                     }
                                 }
                             }

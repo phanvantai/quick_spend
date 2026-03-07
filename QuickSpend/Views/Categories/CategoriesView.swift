@@ -7,13 +7,33 @@ struct CategoriesView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
     @Query(sort: \Category.sortOrder) private var allCategories: [Category]
 
+    @Environment(\.editMode) private var editMode
+
     @State private var showIncome = false
     @State private var showingAddCategory = false
     @State private var editingCategory: Category?
     @State private var deletingCategory: Category?
 
+    private var selectedType: TransactionType {
+        showIncome ? .income : .expense
+    }
+
     private var filteredCategories: [Category] {
-        allCategories.filter { !$0.isHidden && (showIncome ? $0.isIncomeCategory : $0.isExpenseCategory) }
+        allCategories.filter { !$0.isHidden && $0.type == selectedType }
+    }
+
+    private var groupOrder: [CategoryGroup] {
+        selectedType == .expense
+            ? [.dailyLiving, .personal, .social, .financial, .other]
+            : [.earned, .passive, .received, .other]
+    }
+
+    private var groupedCategories: [(group: CategoryGroup, categories: [Category])] {
+        let grouped = Dictionary(grouping: filteredCategories) { $0.group ?? .other }
+        return groupOrder.compactMap { group in
+            guard let cats = grouped[group], !cats.isEmpty else { return nil }
+            return (group: group, categories: cats.sorted { $0.sortOrder < $1.sortOrder })
+        }
     }
 
     var body: some View {
@@ -30,34 +50,40 @@ struct CategoriesView: View {
                 .padding(.vertical, AppTheme.spacing4)
             }
 
-            // Categories
-            Section {
-                if filteredCategories.isEmpty {
+            // Categories grouped by CategoryGroup
+            if filteredCategories.isEmpty {
+                Section {
                     ContentUnavailableView(
                         L10n.tr("categories.no_categories", appConfig.language),
                         systemImage: "square.grid.2x2",
                         description: Text(L10n.tr("categories.tap_to_create", appConfig.language))
                     )
-                } else {
-                    ForEach(filteredCategories, id: \.id) { category in
-                        categoryRow(category)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    deletingCategory = category
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                }
+            } else {
+                ForEach(groupedCategories, id: \.group) { section in
+                    Section(groupName(for: section.group)) {
+                        ForEach(section.categories, id: \.id) { category in
+                            categoryRow(category)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        deletingCategory = category
+                                    } label: {
+                                        Label(L10n.tr("common.delete", appConfig.language), systemImage: "trash")
+                                    }
                                 }
-                            }
-                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                                Button {
-                                    editingCategory = category
-                                } label: {
-                                    Label("Edit", systemImage: "pencil")
+                                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                    Button {
+                                        editingCategory = category
+                                    } label: {
+                                        Label(L10n.tr("common.edit", appConfig.language), systemImage: "pencil")
+                                    }
+                                    .tint(AppTheme.primaryMint)
                                 }
-                                .tint(AppTheme.primaryMint)
-                            }
+                        }
+                        .onMove { source, destination in
+                            moveCategories(in: section.group, from: source, to: destination)
+                        }
                     }
-                    .onMove(perform: moveCategories)
                 }
             }
         }
@@ -65,7 +91,19 @@ struct CategoriesView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 HStack(spacing: AppTheme.spacing12) {
-                    EditButton()
+                    Button {
+                        withAnimation {
+                            if editMode?.wrappedValue == .active {
+                                editMode?.wrappedValue = .inactive
+                            } else {
+                                editMode?.wrappedValue = .active
+                            }
+                        }
+                    } label: {
+                        Text(editMode?.wrappedValue == .active
+                             ? L10n.tr("common.done", appConfig.language)
+                             : L10n.tr("common.edit", appConfig.language))
+                    }
                     Button {
                         showingAddCategory = true
                     } label: {
@@ -86,6 +124,7 @@ struct CategoriesView: View {
                 category.iconName = updated.iconName
                 category.colorHex = updated.colorHex
                 category.type = updated.type
+                category.group = updated.group
                 category.updatedAt = .now
             }
         }
@@ -139,12 +178,29 @@ struct CategoriesView: View {
         .padding(.vertical, 2)
     }
 
+    // MARK: - Group Name
+
+    private func groupName(for group: CategoryGroup) -> String {
+        let key: String
+        switch group {
+        case .dailyLiving: key = "category_group.daily_living"
+        case .personal: key = "category_group.personal"
+        case .social: key = "category_group.social"
+        case .financial: key = "category_group.financial"
+        case .earned: key = "category_group.earned"
+        case .passive: key = "category_group.passive"
+        case .received: key = "category_group.received"
+        case .other: key = "category_group.other"
+        }
+        return L10n.tr(key, appConfig.language)
+    }
+
     // MARK: - Reorder
 
-    private func moveCategories(from source: IndexSet, to destination: Int) {
-        var ordered = filteredCategories
-        ordered.move(fromOffsets: source, toOffset: destination)
-        for (index, category) in ordered.enumerated() {
+    private func moveCategories(in group: CategoryGroup, from source: IndexSet, to destination: Int) {
+        guard var sectionCats = groupedCategories.first(where: { $0.group == group })?.categories else { return }
+        sectionCats.move(fromOffsets: source, toOffset: destination)
+        for (index, category) in sectionCats.enumerated() {
             category.sortOrder = index
         }
     }

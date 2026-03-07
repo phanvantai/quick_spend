@@ -30,16 +30,19 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 ## Architecture
 
 ### Data Layer
+
 - **SwiftData** models: `Transaction`, `Category`, `RecurringTemplate` — registered in `QuickSpendApp.modelContainer`
 - **UserDefaults** via `PreferencesService` (singleton) stores `AppConfig` as JSON — holds language, currency, theme, onboarding state
 - Categories are linked to transactions via `categoryId` string (not a SwiftData relationship)
 
 ### State Management
+
 - `AppConfigViewModel` (`@Observable`) — wraps `PreferencesService`, injected as `@Environment` from app root
 - `SubscriptionViewModel` (`@Observable`) — RevenueCat integration, also `@Environment`
 - Both are created in `QuickSpendApp` and passed down via `.environment()`
 
 ### Services (`Services/`)
+
 - `CategoryService` — seeds default categories on first launch, updates names on language change
 - `RecurringService` — generates pending transactions from active templates on app startup
 - `GeminiParserService` — AI expense parsing via Firebase AI (Gemini 2.5 Flash). Compiles with `#if canImport(FirebaseAI)` guards; falls back gracefully when SDK is absent
@@ -49,7 +52,8 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 - `PreferencesService` — singleton for UserDefaults-backed app config
 
 ### View Hierarchy
-```
+
+```bash
 QuickSpendApp
 └── ContentView (routes onboarding vs main)
     ├── OnboardingView
@@ -61,19 +65,23 @@ QuickSpendApp
 ```
 
 ### Localization
+
 - Uses Apple String Catalogs (`Localizable.xcstrings`) with 4 languages: en, vi, ja, es
 - `L10n.tr(key, language)` resolves strings for the user-selected language (not system locale)
 - Category names are localized in `CategoryService.categoryName(for:language:)`
 
 ### Design System (`Theme/`)
+
 - `AppTheme` — colors (dark forest green primary), gradients, 4px-based spacing, border radii
 - `ColorPalette` — `Color(hex:)` extension for hex string colors
 - Reusable components in `Views/Components/`: `PickerSheet`, `SettingSelectionRow`, `CardBackground`, `CategoryIconBadge`, `EmptyDataView`, `TransactionTypePicker`, `ChangeBadge`
 
 ### Freemium Model
+
 - Free tier limits: 5 Gemini parses/day, 3 recurring templates, 7-day reports
 - Pro via RevenueCat (`SubscriptionViewModel`), gated with `#if canImport(RevenueCat)`
 - Constants in `AppConstants`
 
 ### Conditional SDK Pattern
+
 Firebase and RevenueCat integrations use `#if canImport(...)` so the app builds and runs without these SDKs (features degrade gracefully). Keep this pattern when adding new SDK-dependent code.
