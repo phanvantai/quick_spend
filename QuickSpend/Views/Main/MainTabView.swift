@@ -4,6 +4,7 @@ import SwiftData
 /// Main container with bottom tab bar and center voice FAB
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(SubscriptionViewModel.self) private var subscription
     @Query(sort: \Category.name) private var categories: [Category]
@@ -35,7 +36,7 @@ struct MainTabView: View {
                     SettingsView()
                 }
             }
-            .tint(AppTheme.primaryMint)
+            .tint(AppTheme.adaptiveAccent(colorScheme))
 
             VoiceFABButton(language: appConfig.language) {
                 handleVoiceButtonTap()
@@ -58,7 +59,7 @@ struct MainTabView: View {
                     .padding(.vertical, AppTheme.spacing12)
                     .background(
                         Capsule()
-                            .fill(AppTheme.primaryMint)
+                            .fill(AppTheme.adaptiveAccent(colorScheme))
                     )
                     .padding(.bottom, 100)
                     .frame(maxWidth: .infinity)
@@ -67,11 +68,11 @@ struct MainTabView: View {
             }
         }
         .animation(.easeInOut, value: isProcessingVoice)
-        .onChange(of: subscription.isPro) {
-            usageLimitService.isPro = subscription.isPro
+        .onChange(of: subscription.isPremium) {
+            usageLimitService.isPremium = subscription.isPremium
         }
         .onAppear {
-            usageLimitService.isPro = subscription.isPro
+            usageLimitService.isPremium = subscription.isPremium
         }
         .fullScreenCover(isPresented: $showVoiceOverlay) {
             VoiceOverlay(
@@ -125,7 +126,7 @@ struct MainTabView: View {
             L10n.tr("alert.daily_limit", appConfig.language),
             isPresented: $showLimitReachedAlert
         ) {
-            Button(L10n.tr("common.upgrade_pro", appConfig.language)) {
+            Button(L10n.tr("common.upgrade_premium", appConfig.language)) {
                 showPaywall = true
             }
             Button(L10n.tr("alert.enter_manually", appConfig.language)) {
@@ -135,13 +136,14 @@ struct MainTabView: View {
         } message: {
             Text(L10n.tr("alert.daily_limit_message", appConfig.language, AppConstants.freeTierGeminiLimit))
         }
+        .tint(AppTheme.adaptiveAccent(colorScheme))
     }
 
     // MARK: - Voice Flow
 
     private func handleVoiceButtonTap() {
         // Check AI parse limit before starting voice input
-        if !subscription.isPro && usageLimitService.hasReachedLimit {
+        if !subscription.isPremium && usageLimitService.hasReachedLimit {
             showLimitReachedAlert = true
             return
         }
@@ -175,7 +177,7 @@ struct MainTabView: View {
         }
 
         // Check limit before parsing
-        if !subscription.isPro && usageLimitService.hasReachedLimit {
+        if !subscription.isPremium && usageLimitService.hasReachedLimit {
             fallbackTranscription = text
             showLimitReachedAlert = true
             return

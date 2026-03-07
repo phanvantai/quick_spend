@@ -6,6 +6,7 @@ struct HomeAppBar: View {
     let language: String
     let currency: String
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showDatePicker = false
 
     private var isCurrentMonth: Bool {
@@ -91,7 +92,7 @@ struct HomeAppBar: View {
                 displayedComponents: .date
             )
             .datePickerStyle(.graphical)
-            .tint(AppTheme.primaryMint)
+            .tint(AppTheme.adaptiveAccent(colorScheme))
             .padding()
             .navigationTitle(L10n.tr("home.select_month", language))
             .navigationBarTitleDisplayMode(.inline)

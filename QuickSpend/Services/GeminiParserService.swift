@@ -292,22 +292,17 @@ private var _model: GenerativeModel?
 
 extension GeminiParserService {
     static func _initializeFirebaseModel() {
-        do {
-            _model = FirebaseAI.firebaseAI(backend: .googleAI()).generativeModel(
-                modelName: "gemini-2.5-flash",
-                generationConfig: GenerationConfig(
-                    temperature: 0.1,
-                    topP: 1,
-                    topK: 1,
-                    maxOutputTokens: 1024,
-                    responseMIMEType: "application/json"
-                )
+        _model = FirebaseAI.firebaseAI(backend: .googleAI()).generativeModel(
+            modelName: "gemini-2.5-flash",
+            generationConfig: GenerationConfig(
+                temperature: 0.1,
+                topP: 1,
+                topK: 1,
+                maxOutputTokens: 1024,
+                responseMIMEType: "application/json"
             )
-            print("[GeminiParser] Initialized with Gemini 2.5 Flash via Firebase AI")
-        } catch {
-            print("[GeminiParser] Failed to initialize: \(error)")
-            _model = nil
-        }
+        )
+        print("[GeminiParser] Initialized with Gemini 2.5 Flash via Firebase AI")
     }
 
     static func _parseWithFirebase(

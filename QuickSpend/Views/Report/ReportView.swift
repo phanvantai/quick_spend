@@ -14,8 +14,8 @@ enum ReportPeriod: CaseIterable {
         }
     }
 
-    /// Whether this period requires Pro subscription
-    var requiresPro: Bool {
+    /// Whether this period requires Premium subscription
+    var requiresPremium: Bool {
         switch self {
         case .thisMonth: return false
         case .lastMonth, .last3Months: return true
@@ -140,7 +140,7 @@ struct ReportView: View {
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemGroupedBackground))
         .onChange(of: selectedPeriod) { _, newPeriod in
-            if newPeriod.requiresPro && !subscription.isPro {
+            if newPeriod.requiresPremium && !subscription.isPremium {
                 selectedPeriod = .thisMonth
                 showPaywall = true
             }
@@ -155,7 +155,7 @@ struct ReportView: View {
     private var periodPicker: some View {
         Picker("Period", selection: $selectedPeriod) {
             ForEach(ReportPeriod.allCases, id: \.self) { period in
-                if period.requiresPro && !subscription.isPro {
+                if period.requiresPremium && !subscription.isPremium {
                     Text("\(period.label(language: appConfig.language)) 🔒").tag(period)
                 } else {
                     Text(period.label(language: appConfig.language)).tag(period)

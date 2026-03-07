@@ -110,6 +110,8 @@ struct CalendarGrid: View {
 // MARK: - Day Cell
 
 private struct CalendarDayCell: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let day: Int
     let income: Double
     let expense: Double
@@ -125,7 +127,7 @@ private struct CalendarDayCell: View {
             VStack(spacing: 1) {
                 Text("\(day)")
                     .font(.caption.weight(isToday ? .bold : .medium))
-                    .foregroundStyle(isToday ? AppTheme.primaryMint : hasData ? Color.primary : Color.secondary.opacity(0.5))
+                    .foregroundStyle(isToday ? AppTheme.adaptiveAccent(colorScheme) : hasData ? Color.primary : Color.secondary.opacity(0.5))
 
                 if hasData {
                     if income > 0 {
@@ -145,12 +147,12 @@ private struct CalendarDayCell: View {
             .frame(maxWidth: .infinity, minHeight: 52)
             .background {
                 RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                    .fill(isSelected ? AppTheme.primaryMint.opacity(0.1) :
+                    .fill(isSelected ? AppTheme.adaptiveAccent(colorScheme).opacity(0.1) :
                             hasData ? Color(.tertiarySystemGroupedBackground) : .clear)
             }
             .overlay {
                 RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                    .stroke(isToday ? AppTheme.primaryMint : .clear, lineWidth: 2)
+                    .stroke(isToday ? AppTheme.adaptiveAccent(colorScheme) : .clear, lineWidth: 2)
             }
         }
         .buttonStyle(.plain)

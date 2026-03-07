@@ -12,6 +12,8 @@ struct PickerSheet<Item: Identifiable>: View {
     let onSelect: (Item) -> Void
     let onDone: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
     enum IconStyle {
         case plain(Color)
         case custom
@@ -36,7 +38,7 @@ struct PickerSheet<Item: Identifiable>: View {
 
                         if item.id == selectedId {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(AppTheme.primaryMint)
+                                .foregroundStyle(AppTheme.adaptiveAccent(colorScheme))
                         }
                     }
                 }

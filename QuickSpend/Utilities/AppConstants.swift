@@ -59,8 +59,15 @@ enum AppConstants {
     static let confidenceWarningThreshold: Double = 0.7
     static let highConfidenceThreshold: Double = 0.9
 
-    // MARK: - Debug
+    // MARK: - Feature Requests
+
+    static let featureRequestsCollection = "feature_requests"
+    static let maxFeatureRequestTitleLength = 100
+    static let maxFeatureRequestDescriptionLength = 1000
+
+    // MARK: - Debug / Admin
 
     static let debugModeActivationTaps = 5
     static let debugModeActivationWindowSeconds: TimeInterval = 3
+    static let adminModeActivationTaps = 7
 }

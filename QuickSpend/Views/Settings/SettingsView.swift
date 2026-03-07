@@ -4,6 +4,7 @@ import SwiftData
 /// Settings screen with grouped sections
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
 
     @Environment(SubscriptionViewModel.self) private var subscription
@@ -12,12 +13,13 @@ struct SettingsView: View {
     @State private var showCurrencyPicker = false
     @State private var showThemePicker = false
     @State private var showPaywall = false
+    @State private var showPremiumStatus = false
 
     var body: some View {
         NavigationStack {
             List {
-                // Preferences
-                Section(L10n.tr("settings.preferences", appConfig.language)) {
+                // Core features
+                Section {
                     NavigationLink {
                         CategoriesView()
                     } label: {
@@ -39,13 +41,56 @@ struct SettingsView: View {
                             subtitle: L10n.tr("settings.recurring_subtitle", appConfig.language)
                         )
                     }
+                }
 
+                // Subscription
+                Section(L10n.tr("settings.subscription", appConfig.language)) {
+                    if subscription.isPremium {
+                        Button {
+                            showPremiumStatus = true
+                        } label: {
+                            settingsRow(
+                                icon: "star.fill",
+                                iconColor: AppTheme.accentOrange,
+                                title: L10n.tr("paywall.title", appConfig.language),
+                                subtitle: L10n.tr("settings.premium_active", appConfig.language)
+                            )
+                        }
+                        .tint(.primary)
+
+                        NavigationLink {
+                            FeatureRequestListView()
+                        } label: {
+                            settingsRow(
+                                icon: "lightbulb.fill",
+                                iconColor: AppTheme.adaptiveAccent(colorScheme),
+                                title: L10n.tr("feature_request.title", appConfig.language),
+                                subtitle: L10n.tr("settings.feature_request_subtitle", appConfig.language)
+                            )
+                        }
+                    } else {
+                        Button {
+                            showPaywall = true
+                        } label: {
+                            settingsRow(
+                                icon: "star.fill",
+                                iconColor: AppTheme.accentOrange,
+                                title: L10n.tr("common.upgrade_premium", appConfig.language),
+                                subtitle: L10n.tr("settings.unlock_features", appConfig.language)
+                            )
+                        }
+                        .tint(.primary)
+                    }
+                }
+
+                // Preferences
+                Section {
                     Button {
                         showLanguagePicker = true
                     } label: {
                         settingsRow(
                             icon: "globe",
-                            iconColor: AppTheme.primaryMint,
+                            iconColor: AppTheme.adaptiveAccent(colorScheme),
                             title: L10n.tr("settings.language", appConfig.language),
                             subtitle: appConfig.config.languageDisplayName
                         )
@@ -75,32 +120,8 @@ struct SettingsView: View {
                         )
                     }
                     .tint(.primary)
-                }
-
-                // Subscription
-                Section {
-                    if subscription.isPro {
-                        settingsRow(
-                            icon: "star.fill",
-                            iconColor: AppTheme.accentOrange,
-                            title: "Quick Spend Pro",
-                            subtitle: L10n.tr("settings.pro_active", appConfig.language)
-                        )
-                    } else {
-                        Button {
-                            showPaywall = true
-                        } label: {
-                            settingsRow(
-                                icon: "star.fill",
-                                iconColor: AppTheme.accentOrange,
-                                title: L10n.tr("common.upgrade_pro", appConfig.language),
-                                subtitle: L10n.tr("settings.unlock_features", appConfig.language)
-                            )
-                        }
-                        .tint(.primary)
-                    }
                 } header: {
-                    Text(L10n.tr("settings.subscription", appConfig.language))
+                    Text(L10n.tr("settings.preferences", appConfig.language))
                 } footer: {
                     Text(L10n.tr("settings.version", appConfig.language) + " \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
                         .frame(maxWidth: .infinity)
@@ -119,6 +140,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showPaywall) {
                 PaywallView()
+            }
+            .sheet(isPresented: $showPremiumStatus) {
+                PremiumStatusSheet()
             }
         }
     }

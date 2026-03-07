@@ -20,6 +20,7 @@ enum TransactionFilter: CaseIterable {
 /// Transaction list view with month navigation and filter tabs
 struct TransactionsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Category.name) private var categories: [Category]
@@ -60,7 +61,7 @@ struct TransactionsView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: AppTheme.spacing16) {
-                    MonthNavigator(selectedMonth: $selectedMonth)
+                    MonthNavigator(selectedMonth: $selectedMonth, language: appConfig.language)
 
                     filterTabs
 
@@ -162,7 +163,7 @@ struct TransactionsView: View {
                                 } label: {
                                     Label("Edit", systemImage: "pencil")
                                 }
-                                .tint(AppTheme.primaryMint)
+                                .tint(AppTheme.adaptiveAccent(colorScheme))
                             }
                         }
                     }
@@ -174,7 +175,8 @@ struct TransactionsView: View {
     // MARK: - Date Section Header
 
     private func dateSectionHeader(for date: Date) -> some View {
-        Text(date.formatted(.dateTime.day(.twoDigits).month(.twoDigits).year()))
+        let locale = Locale(identifier: appConfig.language)
+        return Text(date.formatted(.dateTime.day(.twoDigits).month(.twoDigits).year().locale(locale)))
             .font(.subheadline.bold())
             .foregroundStyle(.primary)
             .padding(.leading, AppTheme.spacing4)

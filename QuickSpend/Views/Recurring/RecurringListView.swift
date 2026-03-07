@@ -4,6 +4,7 @@ import SwiftData
 /// List of recurring expense templates with active/inactive toggle
 struct RecurringListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(SubscriptionViewModel.self) private var subscription
     @Query(sort: \RecurringTemplate.startDate, order: .reverse) private var templates: [RecurringTemplate]
@@ -39,7 +40,7 @@ struct RecurringListView: View {
                             } label: {
                                 Label(L10n.tr("common.edit", appConfig.language), systemImage: "pencil")
                             }
-                            .tint(AppTheme.primaryMint)
+                            .tint(AppTheme.adaptiveAccent(colorScheme))
                         }
                 }
             }
@@ -99,7 +100,7 @@ struct RecurringListView: View {
             L10n.tr("recurring.limit_title", appConfig.language),
             isPresented: $showLimitAlert
         ) {
-            Button(L10n.tr("common.upgrade_pro", appConfig.language)) {
+            Button(L10n.tr("common.upgrade_premium", appConfig.language)) {
                 showPaywall = true
             }
             Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { }
@@ -109,6 +110,7 @@ struct RecurringListView: View {
         .sheet(isPresented: $showPaywall) {
             PaywallView()
         }
+        .tint(AppTheme.adaptiveAccent(colorScheme))
     }
 
     // MARK: - Template Row
@@ -158,7 +160,7 @@ struct RecurringListView: View {
                 ))
                 .labelsHidden()
                 .scaleEffect(0.8)
-                .tint(AppTheme.primaryMint)
+                .tint(AppTheme.adaptiveAccent(colorScheme))
             }
         }
         .padding(.vertical, 2)

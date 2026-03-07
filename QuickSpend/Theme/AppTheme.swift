@@ -13,6 +13,12 @@ enum AppTheme {
     /// Lighter green for use on dark backgrounds (buttons, links, icons)
     static let primaryLight = Color(hex: "52B788")
 
+    /// Adaptive brand accent — light enough on dark backgrounds, full brand on light.
+    /// Use this anywhere `primaryMint` was previously used as foreground/tint color.
+    static func adaptiveAccent(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? primaryLight : primaryMint
+    }
+
     // MARK: - Accent Colors
 
     static let accentPink = Color(hex: "E57373")

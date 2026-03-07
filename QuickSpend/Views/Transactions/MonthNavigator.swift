@@ -3,9 +3,11 @@ import SwiftUI
 /// Month navigation controls (previous/next)
 struct MonthNavigator: View {
     @Binding var selectedMonth: Date
+    var language: String = "en"
 
     private var monthLabel: String {
-        selectedMonth.formatted(.dateTime.month(.wide).year())
+        let locale = Locale(identifier: language)
+        return selectedMonth.formatted(.dateTime.month(.wide).year().locale(locale))
     }
 
     private var isCurrentMonth: Bool {

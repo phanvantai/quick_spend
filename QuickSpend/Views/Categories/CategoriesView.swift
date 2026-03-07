@@ -4,6 +4,7 @@ import SwiftData
 /// Category management screen
 struct CategoriesView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Query(sort: \Category.sortOrder) private var allCategories: [Category]
 
@@ -77,7 +78,7 @@ struct CategoriesView: View {
                                     } label: {
                                         Label(L10n.tr("common.edit", appConfig.language), systemImage: "pencil")
                                     }
-                                    .tint(AppTheme.primaryMint)
+                                    .tint(AppTheme.adaptiveAccent(colorScheme))
                                 }
                         }
                         .onMove { source, destination in
@@ -143,6 +144,7 @@ struct CategoriesView: View {
                 Text(L10n.tr("categories.delete_message", appConfig.language, category.name))
             }
         }
+        .tint(AppTheme.adaptiveAccent(colorScheme))
     }
 
     // MARK: - Category Row
