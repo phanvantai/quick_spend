@@ -5,7 +5,7 @@ import SwiftUI
 @Observable
 final class AppConfigViewModel {
     private(set) var config: AppConfig
-    private let preferences = PreferencesService.shared
+    private let preferences: PreferencesService
 
     var language: String { config.language }
     var currency: String { config.currency }
@@ -14,8 +14,14 @@ final class AppConfigViewModel {
 
     var colorScheme: ColorScheme? { config.colorScheme }
 
-    init() {
-        self.config = PreferencesService.shared.getConfig()
+    convenience init() {
+        self.init(preferences: .shared)
+    }
+
+    /// Testable initializer that accepts a custom PreferencesService
+    init(preferences: PreferencesService) {
+        self.preferences = preferences
+        self.config = preferences.getConfig()
     }
 
     func setLanguage(_ language: String) {

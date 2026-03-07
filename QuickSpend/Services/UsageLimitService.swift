@@ -6,7 +6,7 @@ import Foundation
 final class UsageLimitService {
     private let usageCountKey = "gemini_daily_usage_count"
     private let lastResetDateKey = "gemini_last_reset_date"
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
 
     private(set) var usageCount: Int = 0
 
@@ -29,7 +29,12 @@ final class UsageLimitService {
         !hasReachedLimit
     }
 
-    init() {
+    convenience init() {
+        self.init(defaults: .standard)
+    }
+
+    init(defaults: UserDefaults) {
+        self.defaults = defaults
         checkAndResetIfNewDay()
     }
 

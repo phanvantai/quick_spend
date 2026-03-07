@@ -243,7 +243,7 @@ enum GeminiParserService {
 
     // MARK: - Helpers
 
-    private static func normalizeCategoryId(_ categoryStr: String, type: TransactionType) -> String {
+    static func normalizeCategoryId(_ categoryStr: String, type: TransactionType) -> String {
         let incomeCategories: Set<String> = ["salary", "freelance", "bonus", "investment_income", "interest", "gift_received", "refund", "other_income"]
         let expenseCategories: Set<String> = ["food_drink", "groceries", "transport", "housing", "bills_utilities", "shopping", "health", "education", "entertainment", "personal_care", "gifts", "family", "insurance", "savings_invest", "debt_payment", "pets", "travel", "other_expense"]
 
@@ -254,12 +254,12 @@ enum GeminiParserService {
         }
     }
 
-    private static func typeFromCategory(_ categoryId: String) -> TransactionType {
+    static func typeFromCategory(_ categoryId: String) -> TransactionType {
         let incomeCategories: Set<String> = ["salary", "freelance", "bonus", "investment_income", "interest", "gift_received", "refund", "other_income"]
         return incomeCategories.contains(categoryId) ? .income : .expense
     }
 
-    private static func parseDate(_ dateStr: String) -> Date {
+    static func parseDate(_ dateStr: String) -> Date {
         let now = Date.now
         let calendar = Calendar.current
         let normalized = dateStr.lowercased().trimmingCharacters(in: .whitespaces)

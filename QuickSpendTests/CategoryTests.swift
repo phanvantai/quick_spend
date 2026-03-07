@@ -2,19 +2,20 @@ import Testing
 import Foundation
 @testable import QuickSpend
 
+private typealias AppCategory = QuickSpend.Category
+
 @Suite("Category Model Tests")
 struct CategoryTests {
 
     @Test("Category initializes with correct values")
     func testInitialization() {
-        let category = Category(
+        let category = AppCategory(
             id: "food_drink",
             name: "Food & Drink",
             iconName: "fork.knife",
             colorHex: "#FF8C42",
             type: .expense,
             group: .dailyLiving,
-            keywords: ["food", "lunch", "dinner"],
             sortOrder: 0
         )
 
@@ -24,21 +25,19 @@ struct CategoryTests {
         #expect(category.colorHex == "#FF8C42")
         #expect(category.type == .expense)
         #expect(category.group == .dailyLiving)
-        #expect(category.keywords == ["food", "lunch", "dinner"])
         #expect(category.sortOrder == 0)
         #expect(category.isHidden == false)
     }
 
     @Test("isExpenseCategory returns true for expense type")
     func testIsExpenseCategory() {
-        let category = Category(
+        let category = AppCategory(
             id: "food_drink",
             name: "Food & Drink",
             iconName: "fork.knife",
             colorHex: "#FF8C42",
             type: .expense,
             group: .dailyLiving,
-            keywords: [],
             sortOrder: 0
         )
 
@@ -48,14 +47,13 @@ struct CategoryTests {
 
     @Test("isIncomeCategory returns true for income type")
     func testIsIncomeCategory() {
-        let category = Category(
+        let category = AppCategory(
             id: "salary",
             name: "Salary",
             iconName: "wallet.bifold.fill",
             colorHex: "#4CAF50",
             type: .income,
             group: .earned,
-            keywords: [],
             sortOrder: 0
         )
 
@@ -65,14 +63,13 @@ struct CategoryTests {
 
     @Test("Category group is optional")
     func testOptionalGroup() {
-        let category = Category(
+        let category = AppCategory(
             id: "test",
             name: "Test",
             iconName: "circle",
             colorHex: "#000000",
             type: .expense,
             group: nil,
-            keywords: [],
             sortOrder: 99
         )
 
@@ -81,17 +78,50 @@ struct CategoryTests {
 
     @Test("isHidden defaults to false")
     func testIsHiddenDefault() {
-        let category = Category(
+        let category = AppCategory(
             id: "test",
             name: "Test",
             iconName: "circle",
             colorHex: "#000000",
             type: .expense,
             group: nil,
-            keywords: [],
             sortOrder: 0
         )
 
         #expect(category.isHidden == false)
+    }
+
+    @Test("Category color computes from hex")
+    func testColorFromHex() {
+        let category = AppCategory(
+            id: "test",
+            name: "Test",
+            iconName: "circle",
+            colorHex: "#FF0000",
+            type: .expense,
+            sortOrder: 0
+        )
+
+        // Verify color property doesn't crash and returns a value
+        let _ = category.color
+    }
+
+    @Test("Category timestamps are set on creation")
+    func testTimestamps() {
+        let before = Date.now
+        let category = AppCategory(
+            id: "test",
+            name: "Test",
+            iconName: "circle",
+            colorHex: "#000000",
+            type: .expense,
+            sortOrder: 0
+        )
+        let after = Date.now
+
+        #expect(category.createdAt >= before)
+        #expect(category.createdAt <= after)
+        #expect(category.updatedAt >= before)
+        #expect(category.updatedAt <= after)
     }
 }
