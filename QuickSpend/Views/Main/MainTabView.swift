@@ -189,6 +189,7 @@ struct MainTabView: View {
                 input: text,
                 categories: categories,
                 language: appConfig.language,
+                currency: appConfig.config.currency,
                 usageLimitService: usageLimitService
             )
 

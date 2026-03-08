@@ -5,6 +5,29 @@ import Foundation
 @Suite("FeatureRequestService Tests")
 struct FeatureRequestServiceTests {
 
+    // MARK: - Test Data Helpers
+
+    private func makeSampleRequest(
+        id: String = "req_1",
+        userId: String = "user_1",
+        title: String = "Test Feature",
+        status: RequestStatus = .pending
+    ) -> FeatureRequest {
+        FeatureRequest(
+            id: id,
+            userId: userId,
+            title: title,
+            description: "Test description",
+            category: .newFeature,
+            status: status,
+            createdAt: .now,
+            updatedAt: .now,
+            appVersion: "1.0.0",
+            language: "en",
+            adminResponse: nil
+        )
+    }
+
     // MARK: - Initial State
 
     @Test("Initial state has empty requests")
@@ -36,9 +59,7 @@ struct FeatureRequestServiceTests {
     @Test("currentUserId returns consistent value across calls")
     func testCurrentUserIdConsistent() {
         let service = FeatureRequestService()
-        // First call stores the id in UserDefaults if not present
         let id1 = service.currentUserId
-        // Store it explicitly to avoid race conditions with parallel tests
         UserDefaults.standard.set(id1, forKey: "anonymous_user_id")
         UserDefaults.standard.synchronize()
         let id2 = service.currentUserId
@@ -52,20 +73,111 @@ struct FeatureRequestServiceTests {
         #expect(uuid != nil, "currentUserId should be a valid UUID string")
     }
 
-    // MARK: - myRequests
+    // MARK: - myRequests with Injected Data
 
     @Test("myRequests returns empty when no requests exist")
     func testMyRequestsEmptyWhenNoRequests() {
         let service = FeatureRequestService()
+        #expect(service.myRequests().isEmpty)
+    }
+
+    @Test("myRequests filters only requests matching currentUserId")
+    func testMyRequestsFiltersCorrectly() {
+        let service = FeatureRequestService()
+        let myUserId = service.currentUserId
+        let myRequest = makeSampleRequest(id: "req_mine", userId: myUserId, title: "My Request")
+        let otherRequest = makeSampleRequest(id: "req_other", userId: "other_user", title: "Other Request")
+
+        service._setRequests([myRequest, otherRequest])
+
         let myReqs = service.myRequests()
-        #expect(myReqs.isEmpty)
+        #expect(myReqs.count == 1)
+        #expect(myReqs.first?.id == "req_mine")
     }
 
     @Test("myRequests returns empty when no requests match currentUserId")
-    func testMyRequestsEmptyWhenNoMatches() {
+    func testMyRequestsEmptyWhenNoMatch() {
         let service = FeatureRequestService()
-        // requests array is empty by default, so myRequests should return empty
+        let otherRequest1 = makeSampleRequest(id: "req_1", userId: "other_user_1")
+        let otherRequest2 = makeSampleRequest(id: "req_2", userId: "other_user_2")
+
+        service._setRequests([otherRequest1, otherRequest2])
+
         #expect(service.myRequests().isEmpty)
+    }
+
+    @Test("myRequests returns all when all requests match currentUserId")
+    func testMyRequestsReturnsAllWhenAllMatch() {
+        let service = FeatureRequestService()
+        let myUserId = service.currentUserId
+        let req1 = makeSampleRequest(id: "req_1", userId: myUserId, title: "Feature 1")
+        let req2 = makeSampleRequest(id: "req_2", userId: myUserId, title: "Feature 2")
+
+        service._setRequests([req1, req2])
+
+        #expect(service.myRequests().count == 2)
+    }
+
+    // MARK: - _setRequests
+
+    @Test("_setRequests replaces existing requests")
+    func testSetRequestsReplaces() {
+        let service = FeatureRequestService()
+        let req1 = makeSampleRequest(id: "req_1")
+        let req2 = makeSampleRequest(id: "req_2")
+
+        service._setRequests([req1])
+        #expect(service.requests.count == 1)
+
+        service._setRequests([req1, req2])
+        #expect(service.requests.count == 2)
+    }
+
+    @Test("_setRequests with empty array clears requests")
+    func testSetRequestsClears() {
+        let service = FeatureRequestService()
+        service._setRequests([makeSampleRequest()])
+        #expect(service.requests.count == 1)
+
+        service._setRequests([])
+        #expect(service.requests.isEmpty)
+    }
+
+    // MARK: - _removeLocalRequest
+
+    @Test("_removeLocalRequest removes the correct request by ID")
+    func testRemoveLocalRequestById() {
+        let service = FeatureRequestService()
+        let req1 = makeSampleRequest(id: "req_1", title: "Keep")
+        let req2 = makeSampleRequest(id: "req_2", title: "Remove")
+        let req3 = makeSampleRequest(id: "req_3", title: "Keep Too")
+
+        service._setRequests([req1, req2, req3])
+        service._removeLocalRequest(requestId: "req_2")
+
+        #expect(service.requests.count == 2)
+        #expect(service.requests.contains { $0.id == "req_1" })
+        #expect(service.requests.contains { $0.id == "req_3" })
+        #expect(!service.requests.contains { $0.id == "req_2" })
+    }
+
+    @Test("_removeLocalRequest does nothing for nonexistent ID")
+    func testRemoveLocalRequestNonexistent() {
+        let service = FeatureRequestService()
+        let req = makeSampleRequest(id: "req_1")
+
+        service._setRequests([req])
+        service._removeLocalRequest(requestId: "nonexistent")
+
+        #expect(service.requests.count == 1)
+        #expect(service.requests.first?.id == "req_1")
+    }
+
+    @Test("_removeLocalRequest on empty requests does nothing")
+    func testRemoveLocalRequestEmpty() {
+        let service = FeatureRequestService()
+        service._removeLocalRequest(requestId: "req_1")
+        #expect(service.requests.isEmpty)
     }
 
     // MARK: - Graceful Degradation Without Firestore
@@ -74,8 +186,6 @@ struct FeatureRequestServiceTests {
     func testFetchRequestsGraceful() async {
         let service = FeatureRequestService()
         await service.fetchRequests()
-        // Without Firestore, requests should remain empty
-        // isLoading should be false after completion
         #expect(service.isLoading == false)
     }
 
@@ -88,8 +198,6 @@ struct FeatureRequestServiceTests {
             category: .newFeature,
             language: "en"
         )
-        // Result depends on whether Firestore is available at runtime
-        // Either way, isLoading should be false after completion
         let _ = result
         #expect(service.isLoading == false)
     }
@@ -102,9 +210,22 @@ struct FeatureRequestServiceTests {
             newStatus: .completed,
             response: "Done"
         )
-        // With or without Firestore, updating a nonexistent request should not succeed
-        // isLoading should be false after completion
         let _ = result
+        #expect(service.isLoading == false)
+    }
+
+    @Test("deleteRequest completes gracefully for nonexistent request")
+    func testDeleteRequestCompletes() async {
+        let service = FeatureRequestService()
+        let result = await service.deleteRequest(requestId: "nonexistent_request_id_delete")
+        let _ = result
+        #expect(service.isLoading == false)
+    }
+
+    @Test("deleteRequest sets isLoading to false after completion")
+    func testDeleteRequestIsLoadingAfterCompletion() async {
+        let service = FeatureRequestService()
+        let _ = await service.deleteRequest(requestId: "nonexistent_req_789")
         #expect(service.isLoading == false)
     }
 
@@ -127,7 +248,6 @@ struct FeatureRequestServiceTests {
             requestId: "nonexistent_req_456",
             newStatus: .planned
         )
-        // Result depends on Firestore availability; either way, should complete
         let _ = result
         #expect(service.isLoading == false)
     }
@@ -149,10 +269,9 @@ struct FeatureRequestServiceTests {
             requestId: "nonexistent_req",
             newStatus: .underReview
         )
+        let _ = await service.deleteRequest(requestId: "nonexistent_req_delete")
         await service.fetchRequests()
 
-        // After all operations complete, isLoading should be false
         #expect(service.isLoading == false)
-        // errorMessage may or may not be set depending on Firestore availability
     }
 }

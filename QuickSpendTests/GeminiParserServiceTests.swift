@@ -353,6 +353,38 @@ struct GeminiParserServiceTests {
         #expect(results[0].categoryId == "other_expense")
     }
 
+    // MARK: - parseDate (Japanese)
+
+    @Test("Japanese '今日' parses to today")
+    func testParseDateJapaneseToday() {
+        let parsed = GeminiParserService.parseDate("今日")
+        let expected = Calendar.current.startOfDay(for: .now)
+        #expect(parsed == expected)
+    }
+
+    @Test("Japanese '昨日' parses to yesterday")
+    func testParseDateJapaneseYesterday() {
+        let parsed = GeminiParserService.parseDate("昨日")
+        let expected = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -1, to: .now)!)
+        #expect(parsed == expected)
+    }
+
+    // MARK: - parseDate (Spanish)
+
+    @Test("Spanish 'hoy' parses to today")
+    func testParseDateSpanishToday() {
+        let parsed = GeminiParserService.parseDate("hoy")
+        let expected = Calendar.current.startOfDay(for: .now)
+        #expect(parsed == expected)
+    }
+
+    @Test("Spanish 'ayer' parses to yesterday")
+    func testParseDateSpanishYesterday() {
+        let parsed = GeminiParserService.parseDate("ayer")
+        let expected = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -1, to: .now)!)
+        #expect(parsed == expected)
+    }
+
     // MARK: - buildPrompt
 
     @Test("buildPrompt includes input text")
@@ -385,6 +417,7 @@ struct GeminiParserServiceTests {
 
         let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "vi")
         #expect(prompt.contains("Vietnamese"))
+        #expect(prompt.contains("Vietnamese-specific rules"))
     }
 
     @Test("buildPrompt includes language-specific hints for Japanese")
@@ -395,6 +428,7 @@ struct GeminiParserServiceTests {
 
         let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "ja")
         #expect(prompt.contains("Japanese"))
+        #expect(prompt.contains("Japanese-specific rules"))
     }
 
     @Test("buildPrompt includes language-specific hints for Spanish")
@@ -405,6 +439,7 @@ struct GeminiParserServiceTests {
 
         let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "es")
         #expect(prompt.contains("Spanish"))
+        #expect(prompt.contains("Spanish-specific rules"))
     }
 
     @Test("buildPrompt defaults to English for unknown language")
@@ -415,6 +450,7 @@ struct GeminiParserServiceTests {
 
         let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "en")
         #expect(prompt.contains("English"))
+        #expect(prompt.contains("English-specific rules"))
     }
 
     @Test("buildPrompt includes current date")
@@ -429,6 +465,48 @@ struct GeminiParserServiceTests {
 
         let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "en")
         #expect(prompt.contains(todayStr))
+    }
+
+    @Test("buildPrompt includes currency context")
+    func testBuildPromptIncludesCurrency() {
+        let categories = [
+            AppCategory(id: "food_drink", name: "Food", iconName: "fork.knife", colorHex: "#FF0000", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "en", currency: "VND")
+        #expect(prompt.contains("VND"))
+        #expect(prompt.contains("CURRENCY CONTEXT"))
+    }
+
+    @Test("buildPrompt defaults currency to USD")
+    func testBuildPromptDefaultCurrencyUSD() {
+        let categories = [
+            AppCategory(id: "food_drink", name: "Food", iconName: "fork.knife", colorHex: "#FF0000", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "en")
+        #expect(prompt.contains("USD"))
+    }
+
+    @Test("buildPrompt includes auto-detect instruction")
+    func testBuildPromptIncludesAutoDetect() {
+        let categories = [
+            AppCategory(id: "food_drink", name: "Food", iconName: "fork.knife", colorHex: "#FF0000", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "en")
+        #expect(prompt.contains("auto-detect"))
+        #expect(prompt.contains("detected_language"))
+    }
+
+    @Test("buildPrompt Vietnamese does not include English-specific rules")
+    func testBuildPromptVietnameseNoEnglishRules() {
+        let categories = [
+            AppCategory(id: "food_drink", name: "Ăn uống", iconName: "fork.knife", colorHex: "#FF0000", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "vi")
+        #expect(!prompt.contains("English-specific rules"))
     }
 
     // MARK: - isAvailable

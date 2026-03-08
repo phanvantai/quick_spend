@@ -82,10 +82,40 @@ final class FeatureRequestService {
         #endif
     }
 
+    // MARK: - Delete Request (Admin)
+
+    func deleteRequest(requestId: String) async -> Bool {
+        guard firestoreAvailable else { return false }
+        isLoading = true
+        errorMessage = nil
+
+        #if canImport(FirebaseFirestore)
+        let success = await _deleteFromFirestore(requestId: requestId)
+        isLoading = false
+        return success
+        #else
+        print("[FeatureRequest] Firestore not available")
+        isLoading = false
+        return false
+        #endif
+    }
+
     // MARK: - Filter Helpers
 
     func myRequests() -> [FeatureRequest] {
         requests.filter { $0.userId == currentUserId }
+    }
+
+    // MARK: - Test Helpers
+
+    /// Inject requests directly for unit testing without Firestore
+    func _setRequests(_ newRequests: [FeatureRequest]) {
+        requests = newRequests
+    }
+
+    /// Remove a request from the local array by ID (used for testing delete logic)
+    func _removeLocalRequest(requestId: String) {
+        requests.removeAll { $0.id == requestId }
     }
 }
 
@@ -176,6 +206,23 @@ extension FeatureRequestService {
             return false
         }
     }
+    func _deleteFromFirestore(requestId: String) async -> Bool {
+        do {
+            try await Firestore.firestore()
+                .collection(AppConstants.featureRequestsCollection)
+                .document(requestId)
+                .delete()
+            print("[FeatureRequest] Deleted request: \(requestId)")
+            await _fetchFromFirestore()
+            return true
+        } catch {
+            let errorStr = error.localizedDescription
+            errorMessage = errorStr
+            print("[FeatureRequest] Delete error: \(errorStr)")
+            return false
+        }
+    }
+
     func _updateStatusInFirestore(requestId: String, newStatus: RequestStatus, response: String?) async -> Bool {
         do {
             var updateData: [String: Any] = [

@@ -41,6 +41,7 @@ enum GeminiParserService {
         input: String,
         categories: [Category],
         language: String,
+        currency: String = "USD",
         usageLimitService: UsageLimitService
     ) async -> [ParsedTransaction] {
         // Validate input
@@ -60,6 +61,7 @@ enum GeminiParserService {
             input: input,
             categories: categories,
             language: language,
+            currency: currency,
             usageLimitService: usageLimitService
         )
         #else
@@ -107,7 +109,7 @@ enum GeminiParserService {
 
     // MARK: - Prompt Building
 
-    static func buildPrompt(input: String, categories: [Category], language: String) -> String {
+    static func buildPrompt(input: String, categories: [Category], language: String, currency: String = "USD") -> String {
         let now = Date.now
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -129,36 +131,62 @@ enum GeminiParserService {
         }.joined(separator: "\n")
 
         let languageHint: String
+        let languageSpecificRules: String
         let examples: String
 
         switch language {
         case "vi":
-            languageHint = "User is speaking in Vietnamese. Expect Vietnamese descriptions and slang."
+            languageHint = "Expected language: Vietnamese. However, the input may contain other languages — auto-detect and parse accordingly."
+            languageSpecificRules = """
+            **Vietnamese-specific rules:**
+            - Amount abbreviations: "ca"/"k"=thousand (×1,000), "củ"/"cọc"=million (×1,000,000), "1m5"=1,500,000
+            - Income keywords: nhận, lương, thưởng, thu nhập
+            - Fix common voice recognition errors: "tiền cơ"→"tiền cơm", "xă"→"xăng", "gửi xe"→"gửi xe"
+            - Date words: "hôm nay"=today, "hôm qua"=yesterday
+            """
             examples = """
             Examples:
-            "45 ca tiền cơm" → {"language":"vi","expenses":[{"amount":45000,"description":"tiền cơm","category":"food_drink","type":"expense","date":"today","confidence":0.95}]}
-            "nhận lương 15 triệu" → {"language":"vi","expenses":[{"amount":15000000,"description":"lương","category":"salary","type":"income","date":"today","confidence":0.95}]}
+            "45 ca tiền cơm" → amount=45000, description="tiền cơm", category="food_drink", type="expense"
+            "nhận lương 15 triệu" → amount=15000000, description="lương", category="salary", type="income"
             """
         case "ja":
-            languageHint = "User is speaking in Japanese. Expect Japanese descriptions."
+            languageHint = "Expected language: Japanese. However, the input may contain other languages — auto-detect and parse accordingly."
+            languageSpecificRules = """
+            **Japanese-specific rules:**
+            - Amount units: "万"(man)=×10,000, "千"(sen)=×1,000, "億"(oku)=×100,000,000
+            - Income keywords: 給料, 受け取り, ボーナス, 収入
+            - Date words: "今日"=today, "昨日"=yesterday
+            """
             examples = """
             Examples:
-            "コーヒー500円" → {"language":"ja","expenses":[{"amount":500,"description":"コーヒー","category":"food_drink","type":"expense","date":"today","confidence":0.95}]}
-            "給料25万円" → {"language":"ja","expenses":[{"amount":250000,"description":"給料","category":"salary","type":"income","date":"today","confidence":0.95}]}
+            "コーヒー500円" → amount=500, description="コーヒー", category="food_drink", type="expense"
+            "給料25万円" → amount=250000, description="給料", category="salary", type="income"
             """
         case "es":
-            languageHint = "User is speaking in Spanish. Expect Spanish descriptions."
+            languageHint = "Expected language: Spanish. However, the input may contain other languages — auto-detect and parse accordingly."
+            languageSpecificRules = """
+            **Spanish-specific rules:**
+            - Amount format: period for thousands (1.000), comma for decimals (1,50)
+            - Income keywords: salario, ingreso, recibido, sueldo, nómina
+            - Date words: "hoy"=today, "ayer"=yesterday
+            """
             examples = """
             Examples:
-            "café 5 euros" → {"language":"es","expenses":[{"amount":5,"description":"café","category":"food_drink","type":"expense","date":"today","confidence":0.95}]}
-            "salario 2000 euros" → {"language":"es","expenses":[{"amount":2000,"description":"salario","category":"salary","type":"income","date":"today","confidence":0.95}]}
+            "café 5 euros" → amount=5, description="café", category="food_drink", type="expense"
+            "salario 2000 euros" → amount=2000, description="salario", category="salary", type="income"
             """
         default:
-            languageHint = "User is speaking in English. Expect English descriptions."
+            languageHint = "Expected language: English. However, the input may contain other languages — auto-detect and parse accordingly."
+            languageSpecificRules = """
+            **English-specific rules:**
+            - Amount abbreviations: "k"=×1,000, "m"=×1,000,000
+            - Income keywords: received, salary, earned, paid, income
+            - Date words: "today", "yesterday"
+            """
             examples = """
             Examples:
-            "50k coffee" → {"language":"en","expenses":[{"amount":50000,"description":"coffee","category":"food_drink","type":"expense","date":"today","confidence":0.95}]}
-            "received salary 1.5 million" → {"language":"en","expenses":[{"amount":1500000,"description":"salary","category":"salary","type":"income","date":"today","confidence":0.95}]}
+            "50k coffee" → amount=50000, description="coffee", category="food_drink", type="expense"
+            "received salary 1.5 million" → amount=1500000, description="salary", category="salary", type="income"
             """
         }
 
@@ -168,37 +196,43 @@ enum GeminiParserService {
         Input: "\(input)"
         Context: \(languageHint)
 
+        **CURRENCY CONTEXT:**
+        - User's currency: \(currency)
+        - Interpret amounts in this currency context (e.g., "50k" in VND = 50,000 VND for a coffee, "50k" in USD = $50,000)
+
         **CURRENT DATE CONTEXT:**
         - Today is: \(currentDate) (\(currentWeekday))
         - Use this to calculate all relative dates accurately
 
-        Rules:
-        1. Extract ALL transactions (can be multiple per input)
-        2. Classify as EXPENSE or INCOME (income keywords: "received/nhận/lương/給料/受け取り/salario/ingreso", default = expense)
-        3. Parse amounts: "50k"=50000, "1m5"=1500000, Vietnamese "ca"=thousand/"củ/cọc"=million, Japanese "万"=10000, "千"=1000
-        4. Parse dates: Use CURRENT DATE CONTEXT. Return YYYY-MM-DD format only
-        5. Categorize using categories below (match keywords, fallback to "other" or "other_income")
-        6. Fix voice errors: "tiền cơ"→"tiền cơm", "xă"→"xăng"
-        7. Multiple transactions: "50k coffee and 30k parking" = 2 separate expenses
+        **GENERAL RULES:**
+        1. First, auto-detect the actual language of the input. It may differ from the expected language.
+        2. Extract ALL transactions (can be multiple per input)
+        3. Classify as EXPENSE or INCOME (default = expense)
+        4. Parse dates: Return YYYY-MM-DD format only. Use CURRENT DATE CONTEXT for relative dates.
+        5. Categorize using the categories listed below (match keywords, fallback to "other_expense" or "other_income")
+        6. Multiple transactions: "50k coffee and 30k parking" = 2 separate expenses
+        7. If the input language doesn't match the expected language, still parse correctly. Set "detected_language" to the actual language code.
 
-        Categories:
-        INCOME Categories:
+        \(languageSpecificRules)
+
+        **CATEGORIES:**
+        INCOME:
         \(incomeCatDesc)
 
-        EXPENSE Categories:
+        EXPENSE:
         \(expenseCatDesc)
 
         Return JSON in this EXACT format:
         {
-          "language": "\(language)",
+          "detected_language": "actual language code (en/vi/ja/es)",
           "expenses": [
             {
               "amount": number,
-              "description": "clear description",
+              "description": "clear description in the detected language",
               "category": "category_id from the list above",
               "type": "expense" or "income",
               "date": "YYYY-MM-DD",
-              "confidence": number between 0 and 1
+              "confidence": number between 0 and 1 (lower if language mismatch or ambiguous input)
             }
           ]
         }
@@ -264,10 +298,13 @@ enum GeminiParserService {
         let calendar = Calendar.current
         let normalized = dateStr.lowercased().trimmingCharacters(in: .whitespaces)
 
-        if normalized == "today" || normalized == "hôm nay" {
+        let todayWords: Set<String> = ["today", "hôm nay", "今日", "hoy"]
+        let yesterdayWords: Set<String> = ["yesterday", "hôm qua", "昨日", "ayer"]
+
+        if todayWords.contains(normalized) {
             return calendar.startOfDay(for: now)
         }
-        if normalized == "yesterday" || normalized == "hôm qua" {
+        if yesterdayWords.contains(normalized) {
             return calendar.startOfDay(for: calendar.date(byAdding: .day, value: -1, to: now)!)
         }
 
@@ -309,11 +346,12 @@ extension GeminiParserService {
         input: String,
         categories: [Category],
         language: String,
+        currency: String,
         usageLimitService: UsageLimitService
     ) async -> [ParsedTransaction] {
         guard let model = _model else { return [] }
 
-        let prompt = buildPrompt(input: input, categories: categories, language: language)
+        let prompt = buildPrompt(input: input, categories: categories, language: language, currency: currency)
 
         do {
             let response = try await model.generateContent(prompt)

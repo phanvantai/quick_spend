@@ -11,6 +11,7 @@ struct FeatureRequestListView: View {
     @State private var isAdminMode = false
     @State private var adminTapCount = 0
     @State private var selectedRequest: FeatureRequest?
+    @State private var requestToDelete: FeatureRequest?
 
     private var displayedRequests: [FeatureRequest] {
         showMyRequestsOnly ? service.myRequests() : service.requests
@@ -72,6 +73,13 @@ struct FeatureRequestListView: View {
                                 .onTapGesture {
                                     selectedRequest = request
                                 }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        requestToDelete = request
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                         } else {
                             requestRow(request)
                         }
@@ -109,6 +117,29 @@ struct FeatureRequestListView: View {
         }
         .task {
             await service.fetchRequests()
+        }
+        .alert(
+            "Delete Request",
+            isPresented: Binding(
+                get: { requestToDelete != nil },
+                set: { if !$0 { requestToDelete = nil } }
+            )
+        ) {
+            Button("Cancel", role: .cancel) {
+                requestToDelete = nil
+            }
+            Button("Delete", role: .destructive) {
+                if let request = requestToDelete {
+                    Task {
+                        let _ = await service.deleteRequest(requestId: request.id)
+                    }
+                    requestToDelete = nil
+                }
+            }
+        } message: {
+            if let request = requestToDelete {
+                Text("Delete \"\(request.title)\"? This cannot be undone.")
+            }
         }
     }
 
@@ -211,6 +242,7 @@ private struct AdminEditRequestSheet: View {
     @State private var selectedStatus: RequestStatus
     @State private var responseText: String = ""
     @State private var isUpdating = false
+    @State private var showDeleteConfirmation = false
 
     init(request: FeatureRequest, service: FeatureRequestService, language: String, onDismiss: @escaping () -> Void) {
         self.request = request
@@ -265,6 +297,19 @@ private struct AdminEditRequestSheet: View {
                         }
                     }
                 }
+
+                Section {
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "trash")
+                            Text("Delete Request")
+                        }
+                        .foregroundStyle(.red)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                }
             }
             .navigationTitle("Edit Request")
             .navigationBarTitleDisplayMode(.inline)
@@ -293,10 +338,27 @@ private struct AdminEditRequestSheet: View {
                 }
             }
             .tint(AppTheme.adaptiveAccent(colorScheme))
+            .alert("Delete Request", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete", role: .destructive) {
+                    deleteRequest()
+                }
+            } message: {
+                Text("Delete \"\(request.title)\"? This cannot be undone.")
+            }
         }
         .presentationDetents([.medium, .large])
         .onAppear {
             responseText = request.adminResponse ?? ""
+        }
+    }
+
+    private func deleteRequest() {
+        isUpdating = true
+        Task {
+            let _ = await service.deleteRequest(requestId: request.id)
+            isUpdating = false
+            onDismiss()
         }
     }
 
