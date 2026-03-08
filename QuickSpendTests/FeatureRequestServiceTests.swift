@@ -274,4 +274,68 @@ struct FeatureRequestServiceTests {
 
         #expect(service.isLoading == false)
     }
+
+    // MARK: - requestsByStatus
+
+    @Test("requestsByStatus returns empty when no requests exist")
+    func testRequestsByStatusEmptyWhenNoRequests() {
+        let service = FeatureRequestService()
+        #expect(service.requestsByStatus(.pending).isEmpty)
+    }
+
+    @Test("requestsByStatus filters by pending status")
+    func testRequestsByStatusFiltersPending() {
+        let service = FeatureRequestService()
+        let pending1 = makeSampleRequest(id: "req_1", status: .pending)
+        let review = makeSampleRequest(id: "req_2", status: .underReview)
+        let pending2 = makeSampleRequest(id: "req_3", status: .pending)
+        let completed = makeSampleRequest(id: "req_4", status: .completed)
+
+        service._setRequests([pending1, review, pending2, completed])
+
+        let result = service.requestsByStatus(.pending)
+        #expect(result.count == 2)
+        #expect(result.allSatisfy { $0.status == .pending })
+    }
+
+    @Test("requestsByStatus filters by completed status")
+    func testRequestsByStatusFiltersCompleted() {
+        let service = FeatureRequestService()
+        let pending = makeSampleRequest(id: "req_1", status: .pending)
+        let completed1 = makeSampleRequest(id: "req_2", status: .completed)
+        let completed2 = makeSampleRequest(id: "req_3", status: .completed)
+
+        service._setRequests([pending, completed1, completed2])
+
+        let result = service.requestsByStatus(.completed)
+        #expect(result.count == 2)
+        #expect(result.allSatisfy { $0.status == .completed })
+    }
+
+    @Test("requestsByStatus returns empty when no matching status")
+    func testRequestsByStatusReturnsEmptyWhenNoMatch() {
+        let service = FeatureRequestService()
+        let pending = makeSampleRequest(id: "req_1", status: .pending)
+        let review = makeSampleRequest(id: "req_2", status: .underReview)
+
+        service._setRequests([pending, review])
+
+        #expect(service.requestsByStatus(.declined).isEmpty)
+    }
+
+    @Test("requestsByStatus works for all status cases")
+    func testRequestsByStatusAllCases() {
+        let service = FeatureRequestService()
+        let requests = RequestStatus.allCases.enumerated().map { index, status in
+            makeSampleRequest(id: "req_\(index)", status: status)
+        }
+
+        service._setRequests(requests)
+
+        for status in RequestStatus.allCases {
+            let filtered = service.requestsByStatus(status)
+            #expect(filtered.count == 1)
+            #expect(filtered.first?.status == status)
+        }
+    }
 }

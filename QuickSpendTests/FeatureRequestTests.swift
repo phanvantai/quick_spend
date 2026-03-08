@@ -198,4 +198,14 @@ struct FeatureRequestTests {
             #expect(!name.isEmpty, "displayName for \(status.rawValue) should not be empty")
         }
     }
+
+    // MARK: - RequestStatus Equatable (used by filter)
+
+    @Test("RequestStatus equality works correctly for filtering")
+    func testRequestStatusEquality() {
+        #expect(RequestStatus.pending == RequestStatus.pending)
+        #expect(RequestStatus.pending != RequestStatus.completed)
+        #expect(RequestStatus.underReview != RequestStatus.planned)
+        #expect(RequestStatus.declined == RequestStatus.declined)
+    }
 }
