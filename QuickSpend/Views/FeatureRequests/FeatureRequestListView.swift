@@ -460,9 +460,10 @@ private struct AdminEditRequestSheet: View {
                             Image(systemName: "trash")
                             Text("Delete Request")
                         }
-                        .foregroundStyle(.red)
+                        .foregroundStyle(AppTheme.error)
                         .frame(maxWidth: .infinity, alignment: .center)
                     }
+                    .tint(AppTheme.error)
                 }
             }
             .navigationTitle("Edit Request")

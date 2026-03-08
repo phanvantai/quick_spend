@@ -5471,6 +5471,35 @@
         }
       }
     },
+    "settings.currency_locked_hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Currency cannot be changed after adding transactions. Delete all transactions first to change currency."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede cambiar la moneda después de agregar transacciones. Elimine todas las transacciones primero para cambiar la moneda."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取引を追加した後は通貨を変更できません。通貨を変更するには、すべての取引を削除してください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể thay đổi tiền tệ sau khi đã có giao dịch. Xóa tất cả giao dịch để thay đổi tiền tệ."
+          }
+        }
+      }
+    },
     "settings.feature_request_subtitle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5506,25 +5535,54 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Language"
+            "value" : "Display Language"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Idioma"
+            "value" : "Idioma de interfaz"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "言語"
+            "value" : "表示言語"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ngôn ngữ"
+            "value" : "Ngôn ngữ hiển thị"
+          }
+        }
+      }
+    },
+    "settings.language_hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Display Language sets the app interface. Speech Language sets voice recognition and AI parsing — change it if you speak a different language."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma de interfaz configura la interfaz. Idioma de voz configura el reconocimiento de voz y el análisis IA — cámbialo si hablas en otro idioma."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示言語はアプリの表示に使用されます。音声言語は音声認識とAI解析に使用されます。別の言語で話す場合は変更してください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngôn ngữ hiển thị dùng cho giao diện. Ngôn ngữ giọng nói dùng cho nhận dạng giọng nói và phân tích AI — thay đổi nếu bạn nói ngôn ngữ khác."
           }
         }
       }
@@ -5641,6 +5699,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quản lý giao dịch định kỳ"
+          }
+        }
+      }
+    },
+    "settings.speech_language" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speech Language"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma de voz"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声言語"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngôn ngữ giọng nói"
           }
         }
       }
@@ -5844,6 +5931,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mở khóa tính năng không giới hạn"
+          }
+        }
+      }
+    },
+    "settings.restore_success" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Premium subscription has been restored successfully!"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¡Tu suscripción Premium ha sido restaurada exitosamente!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premiumサブスクリプションが正常に復元されました！"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gói Premium đã được khôi phục thành công!"
+          }
+        }
+      }
+    },
+    "settings.restore_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already purchased? Restore here"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Ya compraste? Restaura aquí"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入済み？ここで復元"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã mua? Khôi phục tại đây"
           }
         }
       }

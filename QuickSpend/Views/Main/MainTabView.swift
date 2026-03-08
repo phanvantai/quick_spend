@@ -159,7 +159,7 @@ struct MainTabView: View {
             }
 
             do {
-                try voiceService.startListening(language: appConfig.language)
+                try voiceService.startListening(language: appConfig.speechLanguage)
                 showVoiceOverlay = true
             } catch {
                 print("[MainTabView] Failed to start voice: \(error)")
@@ -188,7 +188,7 @@ struct MainTabView: View {
             let results = await GeminiParserService.parse(
                 input: text,
                 categories: categories,
-                language: appConfig.language,
+                language: appConfig.speechLanguage,
                 currency: appConfig.config.currency,
                 usageLimitService: usageLimitService
             )

@@ -9,11 +9,22 @@ struct SettingsView: View {
 
     @Environment(SubscriptionViewModel.self) private var subscription
 
+    @Query private var transactions: [Transaction]
+
     @State private var showLanguagePicker = false
+    @State private var showSpeechLanguagePicker = false
     @State private var showCurrencyPicker = false
     @State private var showThemePicker = false
     @State private var showPaywall = false
     @State private var showPremiumStatus = false
+    @State private var showRestoreAlert = false
+    @State private var restoreSuccess = false
+    @State private var isRestoring = false
+
+    /// Currency cannot be changed once transactions exist to prevent data integrity issues
+    private var isCurrencyLocked: Bool {
+        !transactions.isEmpty
+    }
 
     var body: some View {
         NavigationStack {
@@ -40,6 +51,48 @@ struct SettingsView: View {
                             title: L10n.tr("settings.recurring", appConfig.language),
                             subtitle: L10n.tr("settings.recurring_subtitle", appConfig.language)
                         )
+                    }
+
+                    Button {
+                        showSpeechLanguagePicker = true
+                    } label: {
+                        settingsRow(
+                            icon: "mic.fill",
+                            iconColor: AppTheme.adaptiveAccent(colorScheme),
+                            title: L10n.tr("settings.speech_language", appConfig.language),
+                            subtitle: appConfig.config.speechLanguageDisplayName
+                        )
+                    }
+                    .tint(.primary)
+
+                    Button {
+                        if !isCurrencyLocked {
+                            showCurrencyPicker = true
+                        }
+                    } label: {
+                        HStack {
+                            settingsRow(
+                                icon: "dollarsign.circle.fill",
+                                iconColor: isCurrencyLocked ? .gray : AppTheme.accentOrange,
+                                title: L10n.tr("settings.currency", appConfig.language),
+                                subtitle: "\(appConfig.config.currencySymbol) \(appConfig.currency)"
+                            )
+                            if isCurrencyLocked {
+                                Spacer()
+                                Image(systemName: "lock.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .tint(.primary)
+                    .disabled(isCurrencyLocked)
+                } footer: {
+                    VStack(alignment: .leading, spacing: AppTheme.spacing4) {
+                        Text(L10n.tr("settings.language_hint", appConfig.language))
+                        if isCurrencyLocked {
+                            Text(L10n.tr("settings.currency_locked_hint", appConfig.language))
+                        }
                     }
                 }
 
@@ -80,6 +133,25 @@ struct SettingsView: View {
                             )
                         }
                         .tint(.primary)
+
+                        Button {
+                            Task {
+                                isRestoring = true
+                                await subscription.restorePurchases()
+                                isRestoring = false
+                                restoreSuccess = subscription.isPremium
+                                showRestoreAlert = true
+                            }
+                        } label: {
+                            settingsRow(
+                                icon: "arrow.clockwise",
+                                iconColor: AppTheme.adaptiveAccent(colorScheme),
+                                title: L10n.tr("paywall.restore", appConfig.language),
+                                subtitle: L10n.tr("settings.restore_subtitle", appConfig.language)
+                            )
+                        }
+                        .tint(.primary)
+                        .disabled(isRestoring)
                     }
                 }
 
@@ -93,18 +165,6 @@ struct SettingsView: View {
                             iconColor: AppTheme.adaptiveAccent(colorScheme),
                             title: L10n.tr("settings.language", appConfig.language),
                             subtitle: appConfig.config.languageDisplayName
-                        )
-                    }
-                    .tint(.primary)
-
-                    Button {
-                        showCurrencyPicker = true
-                    } label: {
-                        settingsRow(
-                            icon: "dollarsign.circle.fill",
-                            iconColor: AppTheme.accentOrange,
-                            title: L10n.tr("settings.currency", appConfig.language),
-                            subtitle: "\(appConfig.config.currencySymbol) \(appConfig.currency)"
                         )
                     }
                     .tint(.primary)
@@ -132,6 +192,9 @@ struct SettingsView: View {
             .sheet(isPresented: $showLanguagePicker) {
                 languagePickerSheet
             }
+            .sheet(isPresented: $showSpeechLanguagePicker) {
+                speechLanguagePickerSheet
+            }
             .sheet(isPresented: $showCurrencyPicker) {
                 currencyPickerSheet
             }
@@ -143,6 +206,29 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showPremiumStatus) {
                 PremiumStatusSheet()
+            }
+            .alert(
+                L10n.tr("paywall.restore", appConfig.language),
+                isPresented: $showRestoreAlert
+            ) {
+                Button(L10n.tr("common.close", appConfig.language), role: .cancel) { }
+            } message: {
+                if restoreSuccess {
+                    Text(L10n.tr("settings.restore_success", appConfig.language))
+                } else {
+                    Text(L10n.tr("paywall.restore_no_purchases", appConfig.language))
+                }
+            }
+            .overlay {
+                if isRestoring {
+                    ZStack {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(.white)
+                    }
+                }
             }
         }
     }
@@ -199,6 +285,30 @@ struct SettingsView: View {
                 showLanguagePicker = false
             },
             onDone: { showLanguagePicker = false }
+        )
+    }
+
+    // MARK: - Speech Language Picker
+
+    private var speechLanguagePickerSheet: some View {
+        PickerSheet(
+            title: L10n.tr("settings.speech_language", appConfig.language),
+            doneText: L10n.tr("common.done", appConfig.language),
+            items: LanguageOption.options,
+            selectedId: appConfig.speechLanguage,
+            icon: { $0.flag },
+            iconStyle: .custom,
+            label: { $0.displayName },
+            onSelect: { option in
+                // If same as app language, store nil (follow app language)
+                if option.code == appConfig.language {
+                    appConfig.setSpeechLanguage(nil)
+                } else {
+                    appConfig.setSpeechLanguage(option.code)
+                }
+                showSpeechLanguagePicker = false
+            },
+            onDone: { showSpeechLanguagePicker = false }
         )
     }
 
