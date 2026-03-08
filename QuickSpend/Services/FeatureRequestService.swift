@@ -106,6 +106,10 @@ final class FeatureRequestService {
         requests.filter { $0.userId == currentUserId }
     }
 
+    func requestsByStatus(_ status: RequestStatus) -> [FeatureRequest] {
+        requests.filter { $0.status == status }
+    }
+
     // MARK: - Test Helpers
 
     /// Inject requests directly for unit testing without Firestore

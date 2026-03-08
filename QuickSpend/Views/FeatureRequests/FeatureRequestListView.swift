@@ -3,6 +3,7 @@ import SwiftUI
 /// List of feature requests submitted by premium users
 struct FeatureRequestListView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
+    @Environment(SubscriptionViewModel.self) private var subscription
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var service = FeatureRequestService()
@@ -12,9 +13,15 @@ struct FeatureRequestListView: View {
     @State private var adminTapCount = 0
     @State private var selectedRequest: FeatureRequest?
     @State private var requestToDelete: FeatureRequest?
+    @State private var selectedStatusFilter: RequestStatus?
+    @State private var expandedRequestId: String?
 
     private var displayedRequests: [FeatureRequest] {
-        showMyRequestsOnly ? service.myRequests() : service.requests
+        var result = showMyRequestsOnly ? service.myRequests() : service.requests
+        if let filter = selectedStatusFilter {
+            result = result.filter { $0.status == filter }
+        }
+        return result
     }
 
     var body: some View {
@@ -38,13 +45,16 @@ struct FeatureRequestListView: View {
                 }
             }
 
-            // Filter toggle
+            // Filters
             Section {
                 Toggle(
                     L10n.tr("feature_request.show_mine_only", appConfig.language),
                     isOn: $showMyRequestsOnly
                 )
                 .tint(AppTheme.adaptiveAccent(colorScheme))
+
+                // Status filter
+                statusFilterRow()
             }
 
             // Requests
@@ -80,6 +90,8 @@ struct FeatureRequestListView: View {
                                         Label("Delete", systemImage: "trash")
                                     }
                                 }
+                        } else if subscription.isPremium {
+                            expandableRequestRow(request)
                         } else {
                             requestRow(request)
                         }
@@ -200,6 +212,148 @@ struct FeatureRequestListView: View {
         .padding(.vertical, 2)
     }
 
+    // MARK: - Status Filter
+
+    private func statusFilterRow() -> some View {
+        HStack {
+            Text(L10n.tr("feature_request.filter_by_status", appConfig.language))
+                .font(.body)
+
+            Spacer()
+
+            Menu {
+                Button {
+                    selectedStatusFilter = nil
+                } label: {
+                    HStack {
+                        Text(L10n.tr("feature_request.filter_all", appConfig.language))
+                        if selectedStatusFilter == nil {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+
+                Divider()
+
+                ForEach(RequestStatus.allCases, id: \.self) { status in
+                    Button {
+                        selectedStatusFilter = status
+                    } label: {
+                        HStack {
+                            Image(systemName: status.iconName)
+                            Text(status.displayName(language: appConfig.language))
+                            if selectedStatusFilter == status {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: AppTheme.spacing4) {
+                    if let filter = selectedStatusFilter {
+                        Image(systemName: filter.iconName)
+                            .font(.caption)
+                        Text(filter.displayName(language: appConfig.language))
+                            .font(.subheadline)
+                    } else {
+                        Text(L10n.tr("feature_request.filter_all", appConfig.language))
+                            .font(.subheadline)
+                    }
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption2)
+                }
+                .foregroundStyle(AppTheme.adaptiveAccent(colorScheme))
+            }
+        }
+    }
+
+    // MARK: - Expandable Request Row (Premium)
+
+    private func expandableRequestRow(_ request: FeatureRequest) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            requestRow(request)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        expandedRequestId = expandedRequestId == request.id ? nil : request.id
+                    }
+                }
+
+            if expandedRequestId == request.id {
+                requestDetailView(request)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+
+    // MARK: - Request Detail View
+
+    private func requestDetailView(_ request: FeatureRequest) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
+            Divider()
+                .padding(.top, AppTheme.spacing4)
+
+            // Full description
+            if !request.description.isEmpty {
+                VStack(alignment: .leading, spacing: AppTheme.spacing4) {
+                    Text(L10n.tr("feature_request.detail_description", appConfig.language))
+                        .font(.caption.bold())
+                        .foregroundStyle(.secondary)
+                    Text(request.description)
+                        .font(.subheadline)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            // Category
+            HStack(spacing: AppTheme.spacing4) {
+                Text(L10n.tr("feature_request.detail_category", appConfig.language))
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                Image(systemName: request.category.iconName)
+                    .font(.caption)
+                Text(request.category.displayName(language: appConfig.language))
+                    .font(.caption)
+            }
+
+            // Status
+            HStack(spacing: AppTheme.spacing4) {
+                Text(L10n.tr("feature_request.detail_status", appConfig.language))
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                statusBadge(request.status)
+            }
+
+            // Date
+            HStack(spacing: AppTheme.spacing4) {
+                Text(L10n.tr("feature_request.detail_date", appConfig.language))
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                Text(request.createdAt, format: .dateTime.year().month(.wide).day())
+                    .font(.caption)
+            }
+
+            // Admin response
+            if let response = request.adminResponse, !response.isEmpty {
+                VStack(alignment: .leading, spacing: AppTheme.spacing4) {
+                    Text(L10n.tr("feature_request.detail_response", appConfig.language))
+                        .font(.caption.bold())
+                        .foregroundStyle(.secondary)
+                    HStack(alignment: .top, spacing: AppTheme.spacing4) {
+                        Image(systemName: "arrowshape.turn.up.left.fill")
+                            .font(.system(size: 10))
+                        Text(response)
+                            .font(.subheadline)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .foregroundStyle(AppTheme.adaptiveAccent(colorScheme))
+                }
+            }
+        }
+        .padding(.top, AppTheme.spacing4)
+        .padding(.bottom, AppTheme.spacing8)
+    }
+
     // MARK: - Admin Status Picker
 
     private func adminStatusPicker(for request: FeatureRequest) -> some View {
@@ -306,9 +460,10 @@ private struct AdminEditRequestSheet: View {
                             Image(systemName: "trash")
                             Text("Delete Request")
                         }
-                        .foregroundStyle(.red)
+                        .foregroundStyle(AppTheme.error)
                         .frame(maxWidth: .infinity, alignment: .center)
                     }
+                    .tint(AppTheme.error)
                 }
             }
             .navigationTitle("Edit Request")

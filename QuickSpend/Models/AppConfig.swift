@@ -5,9 +5,16 @@ import SwiftUI
 /// Stored in UserDefaults as JSON
 struct AppConfig: Codable, Equatable {
     var language: String = "en"
+    var speechLanguage: String?  // nil = same as app language
     var currency: String = "USD"
     var themeMode: String = "system"   // "light", "dark", "system"
     var isOnboardingComplete: Bool = false
+
+    /// The language used for speech recognition and AI parsing.
+    /// Falls back to app language when not explicitly set.
+    var effectiveSpeechLanguage: String {
+        speechLanguage ?? language
+    }
 
     // MARK: - Currency
 
@@ -63,12 +70,20 @@ struct AppConfig: Codable, Equatable {
     // MARK: - Language
 
     var languageDisplayName: String {
-        switch language {
+        Self.displayName(for: language)
+    }
+
+    var speechLanguageDisplayName: String {
+        Self.displayName(for: effectiveSpeechLanguage)
+    }
+
+    static func displayName(for code: String) -> String {
+        switch code {
         case "vi": return "Tiếng Việt"
         case "ja": return "日本語"
         case "es": return "Español"
         case "en": return "English"
-        default: return language
+        default: return code
         }
     }
 

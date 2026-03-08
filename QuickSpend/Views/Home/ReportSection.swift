@@ -56,14 +56,24 @@ struct ReportSection: View {
 
     // MARK: - Donut Chart
 
+    /// Minimum percentage for a slice to display its own label
+    private let minPercentForLabel: Double = 8
+
     private var donutChart: some View {
         Chart(activeBreakdown) { stat in
             SectorMark(
                 angle: .value("Amount", stat.totalAmount),
-                innerRadius: .ratio(0.65),
+                innerRadius: .ratio(0.55),
                 angularInset: 1.5
             )
             .foregroundStyle(Color(hex: stat.colorHex))
+            .annotation(position: .overlay) {
+                if stat.percentage >= minPercentForLabel {
+                    Text("\(String(format: "%.0f", stat.percentage))%")
+                        .font(.caption.bold())
+                        .foregroundStyle(.white)
+                }
+            }
         }
         .chartLegend(.hidden)
         .frame(height: 220)
@@ -78,16 +88,6 @@ struct ReportSection: View {
                     changeBadge
                 }
                 .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-            }
-        }
-        .overlay(alignment: .bottomTrailing) {
-            // Largest segment percentage
-            if let largest = activeBreakdown.first {
-                Text("\(String(format: "%.0f", largest.percentage))%")
-                    .font(.title3.bold())
-                    .foregroundStyle(Color(hex: largest.colorHex))
-                    .padding(.trailing, AppTheme.spacing8)
-                    .padding(.bottom, AppTheme.spacing8)
             }
         }
     }
