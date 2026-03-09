@@ -9,7 +9,13 @@ struct CalendarGrid: View {
     @Binding var selectedDate: Date?
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
-    private let weekdaySymbols = Calendar.current.veryShortWeekdaySymbols
+
+    /// Locale-aware weekday symbols based on the language setting
+    private var weekdaySymbols: [String] {
+        var calendar = Calendar.current
+        calendar.locale = Locale(identifier: language)
+        return calendar.veryShortWeekdaySymbols
+    }
 
     /// Daily totals for the month
     private var dailyTotals: [Int: (income: Double, expense: Double)] {
@@ -46,7 +52,7 @@ struct CalendarGrid: View {
         VStack(spacing: AppTheme.spacing8) {
             // Weekday headers
             LazyVGrid(columns: columns, spacing: 4) {
-                ForEach(weekdaySymbols, id: \.self) { symbol in
+                ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
                         .font(.caption2.bold())
                         .foregroundStyle(.secondary)
@@ -56,8 +62,8 @@ struct CalendarGrid: View {
 
             // Day cells
             LazyVGrid(columns: columns, spacing: 4) {
-                // Empty cells for offset
-                ForEach(0..<firstWeekdayOffset, id: \.self) { _ in
+                // Empty cells for offset (use negative IDs to avoid collision with day numbers)
+                ForEach((-firstWeekdayOffset)..<0, id: \.self) { _ in
                     Color.clear.frame(height: 52)
                 }
 

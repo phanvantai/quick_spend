@@ -24,6 +24,9 @@ struct MainTabView: View {
     // Fallback: manual entry with pre-filled transcription
     @State private var fallbackTranscription = ""
     @State private var showManualFallback = false
+    // Toast feedback for parse failures
+    @State private var parseFailureMessage = ""
+    @State private var showParseFailureToast = false
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -42,7 +45,7 @@ struct MainTabView: View {
 
             VoiceFABButton(
                 language: appConfig.language,
-                isRecording: voiceService.isListening,
+                isRecording: isRecordingActive || voiceService.isListening,
                 soundLevel: voiceService.soundLevel,
                 transcription: voiceService.transcription,
                 showTutorial: !preferences.hasShownVoiceTutorial,
@@ -51,6 +54,8 @@ struct MainTabView: View {
                 onRecordCancel: { handleRecordCancel() },
                 onTutorialDismissed: { preferences.markVoiceTutorialShown() }
             )
+            .allowsHitTesting(!isProcessingVoice)
+            .opacity(isProcessingVoice ? 0.5 : 1.0)
             .padding(.trailing, AppTheme.spacing16)
             .padding(.bottom, 90)
 
@@ -77,6 +82,32 @@ struct MainTabView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .overlay(alignment: .top) {
+            if showParseFailureToast {
+                HStack(spacing: AppTheme.spacing8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(AppTheme.warning)
+                    Text(parseFailureMessage)
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                }
+                .padding(.horizontal, AppTheme.spacing16)
+                .padding(.vertical, AppTheme.spacing12)
+                .background(
+                    RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
+                        .fill(.ultraThinMaterial)
+                        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                )
+                .padding(.top, 60)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        withAnimation { showParseFailureToast = false }
+                    }
+                }
+            }
+        }
+        .animation(.easeInOut, value: showParseFailureToast)
         .animation(.easeInOut, value: isProcessingVoice)
         .onChange(of: voiceService.isListening) { _, newValue in
             if !newValue && isRecordingActive {
@@ -103,9 +134,11 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $showManualFallback) {
             TransactionFormView(
-                categories: categories
+                categories: categories,
+                initialNote: fallbackTranscription.isEmpty ? nil : fallbackTranscription
             ) { transaction in
                 modelContext.insert(transaction)
+                fallbackTranscription = ""
             }
         }
         .sheet(isPresented: $showPaywall) {
@@ -144,6 +177,12 @@ struct MainTabView: View {
     // MARK: - Hold-to-Record Voice Flow
 
     private func handleRecordStart() {
+        // Prevent concurrent recordings/parses
+        guard !isProcessingVoice, !isRecordingActive else { return }
+
+        // Sync premium status before checking limits
+        usageLimitService.isPremium = subscription.isPremium
+
         // Check AI parse limit before starting voice input
         if !subscription.isPremium && usageLimitService.hasReachedLimit {
             showLimitReachedAlert = true
@@ -197,31 +236,48 @@ struct MainTabView: View {
     }
 
     private func processTranscription(_ text: String) {
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
             print("[Voice] Transcription empty, skipping")
             return
         }
 
+        // Enforce max input length
+        let inputText: String
+        if trimmed.count > AppConstants.maxVoiceInputLength {
+            inputText = String(trimmed.prefix(AppConstants.maxVoiceInputLength))
+            print("[Voice] Transcription truncated from \(trimmed.count) to \(AppConstants.maxVoiceInputLength) chars")
+        } else {
+            inputText = trimmed
+        }
+
         guard GeminiParserService.isAvailable else {
             print("[Voice] Gemini not available, falling back to manual entry")
-            fallbackTranscription = text
+            fallbackTranscription = inputText
             showManualFallback = true
             return
         }
 
-        // Check limit before parsing
+        // Sync premium status and check limit before parsing
+        usageLimitService.isPremium = subscription.isPremium
         if !subscription.isPremium && usageLimitService.hasReachedLimit {
             print("[Voice] Daily parse limit reached, falling back to manual entry")
-            fallbackTranscription = text
+            fallbackTranscription = inputText
             showLimitReachedAlert = true
             return
         }
 
-        print("[Voice] Sending to Gemini parser: \"\(text)\"")
+        // Prevent concurrent parses
+        guard !isProcessingVoice else {
+            print("[Voice] Already processing, ignoring")
+            return
+        }
+
+        print("[Voice] Sending to Gemini parser: \"\(inputText)\"")
         isProcessingVoice = true
         Task {
             let results = await GeminiParserService.parse(
-                input: text,
+                input: inputText,
                 categories: categories,
                 language: appConfig.speechLanguage,
                 currency: appConfig.config.currency,
@@ -231,15 +287,22 @@ struct MainTabView: View {
             await MainActor.run {
                 isProcessingVoice = false
                 if results.isEmpty {
-                    print("[Voice] Gemini returned no results for: \"\(text)\" — falling back to manual entry")
-                    fallbackTranscription = text
+                    print("[Voice] Gemini returned no results for: \"\(inputText)\" — falling back to manual entry")
+                    parseFailureMessage = L10n.tr("voice.parse_failed", appConfig.language)
+                    withAnimation { showParseFailureToast = true }
+                    fallbackTranscription = inputText
                     showManualFallback = true
                 } else {
                     print("[Voice] Gemini parsed \(results.count) transaction(s):")
                     for (i, r) in results.enumerated() {
                         print("  [\(i+1)] \(r.type) \(r.amount) \"\(r.note)\" cat=\(r.categoryId) conf=\(String(format: "%.2f", r.confidence))")
                     }
-                    parsedTransactions = results
+                    // Attach raw transcription to parsed results
+                    var resultsWithRawInput = results
+                    for i in resultsWithRawInput.indices {
+                        resultsWithRawInput[i].rawInput = inputText
+                    }
+                    parsedTransactions = resultsWithRawInput
                     showTransactionReview = true
                 }
             }

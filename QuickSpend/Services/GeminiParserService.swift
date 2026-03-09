@@ -9,6 +9,7 @@ struct ParsedTransaction: Identifiable {
     var type: TransactionType
     var date: Date
     var confidence: Double
+    var rawInput: String?
 }
 
 /// AI-powered expense parser using Firebase AI (Gemini)
@@ -81,6 +82,10 @@ enum GeminiParserService {
         }
         if trimmed.count < AppConstants.minVoiceInputLength {
             print("[GeminiParser] Rejected: too short (\(trimmed.count) chars, min \(AppConstants.minVoiceInputLength)): \"\(trimmed)\"")
+            return false
+        }
+        if trimmed.count > AppConstants.maxVoiceInputLength {
+            print("[GeminiParser] Rejected: too long (\(trimmed.count) chars, max \(AppConstants.maxVoiceInputLength)): \"\(trimmed.prefix(50))...\"")
             return false
         }
 
@@ -264,7 +269,7 @@ enum GeminiParserService {
 
     // MARK: - Response Parsing
 
-    static func parseResponse(jsonData: [String: Any], language: String) -> [ParsedTransaction] {
+    static func parseResponse(jsonData: [String: Any], language: String, validCategoryIds: Set<String> = []) -> [ParsedTransaction] {
         let detectedLang = jsonData["detected_language"] as? String ?? "unknown"
         guard let expenses = jsonData["expenses"] as? [[String: Any]] else {
             print("[GeminiParser] Response has no 'expenses' array (detected_language: \(detectedLang))")
@@ -281,6 +286,9 @@ enum GeminiParserService {
                 continue
             }
 
+            // Clamp amount to max allowed
+            let clampedAmount = min(amount, AppConstants.maxExpenseAmount)
+
             let description = expenseData["description"] as? String ?? ""
             let categoryStr = (expenseData["category"] as? String ?? "other").lowercased()
             let typeStr = (expenseData["type"] as? String ?? "expense").lowercased()
@@ -288,12 +296,12 @@ enum GeminiParserService {
             let confidence = (expenseData["confidence"] as? NSNumber)?.doubleValue ?? 0.5
 
             let type = typeStr == "income" ? TransactionType.income : TransactionType.expense
-            let categoryId = normalizeCategoryId(categoryStr, type: type)
+            let categoryId = normalizeCategoryId(categoryStr, type: type, validCategoryIds: validCategoryIds)
             let correctedType = typeFromCategory(categoryId)
             let date = parseDate(dateStr)
 
             results.append(ParsedTransaction(
-                amount: amount,
+                amount: clampedAmount,
                 note: description.isEmpty ? (correctedType == .income ? "Income" : "Expense") : description,
                 categoryId: categoryId,
                 type: correctedType,
@@ -309,7 +317,12 @@ enum GeminiParserService {
 
     // MARK: - Helpers
 
-    static func normalizeCategoryId(_ categoryStr: String, type: TransactionType) -> String {
+    static func normalizeCategoryId(_ categoryStr: String, type: TransactionType, validCategoryIds: Set<String> = []) -> String {
+        // Accept any category ID that exists in the actual categories list
+        if !validCategoryIds.isEmpty && validCategoryIds.contains(categoryStr) {
+            return categoryStr
+        }
+
         let incomeCategories: Set<String> = ["salary", "freelance", "bonus", "investment_income", "interest", "gift_received", "refund", "other_income"]
         let expenseCategories: Set<String> = ["food_drink", "groceries", "transport", "housing", "bills_utilities", "shopping", "health", "education", "entertainment", "personal_care", "gifts", "family", "insurance", "savings_invest", "debt_payment", "pets", "travel", "other_expense"]
 
@@ -332,6 +345,7 @@ enum GeminiParserService {
 
         let todayWords: Set<String> = ["today", "hôm nay", "今日", "hoy"]
         let yesterdayWords: Set<String> = ["yesterday", "hôm qua", "昨日", "ayer"]
+        let dayBeforeYesterdayWords: Set<String> = ["day before yesterday", "hôm kia", "一昨日", "おととい", "anteayer", "antes de ayer"]
 
         if todayWords.contains(normalized) {
             return calendar.startOfDay(for: now)
@@ -339,15 +353,53 @@ enum GeminiParserService {
         if yesterdayWords.contains(normalized) {
             return calendar.startOfDay(for: calendar.date(byAdding: .day, value: -1, to: now)!)
         }
+        if dayBeforeYesterdayWords.contains(normalized) {
+            return calendar.startOfDay(for: calendar.date(byAdding: .day, value: -2, to: now)!)
+        }
+
+        // Handle "N days ago" patterns (English, Vietnamese, Japanese, Spanish)
+        if let daysAgo = parseDaysAgo(normalized) {
+            return calendar.startOfDay(for: calendar.date(byAdding: .day, value: -daysAgo, to: now)!)
+        }
 
         // Try ISO date
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         if let parsed = formatter.date(from: normalized) {
-            return calendar.startOfDay(for: parsed)
+            // Validate the date is not unreasonably far in the past or future
+            let yearsFromNow = calendar.dateComponents([.year], from: parsed, to: now).year ?? 0
+            if abs(yearsFromNow) <= AppConstants.maxYearsInPast {
+                return calendar.startOfDay(for: parsed)
+            }
         }
 
         return calendar.startOfDay(for: now)
+    }
+
+    /// Parse "N days ago" patterns in multiple languages
+    static func parseDaysAgo(_ text: String) -> Int? {
+        // English: "3 days ago", "1 day ago"
+        let enPattern = #"(\d+)\s*days?\s*ago"#
+        // Vietnamese: "3 ngày trước", "cách đây 3 ngày"
+        let viPattern1 = #"(\d+)\s*ngày\s*trước"#
+        let viPattern2 = #"cách\s*đây\s*(\d+)\s*ngày"#
+        // Spanish: "hace 3 días"
+        let esPattern = #"hace\s*(\d+)\s*días?"#
+
+        let patterns = [enPattern, viPattern1, viPattern2, esPattern]
+        for pattern in patterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
+               let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) {
+                // Find the capture group with the number
+                for i in 1..<match.numberOfRanges {
+                    if let range = Range(match.range(at: i), in: text),
+                       let days = Int(text[range]), days > 0 && days <= 365 {
+                        return days
+                    }
+                }
+            }
+        }
+        return nil
     }
 }
 
@@ -384,9 +436,22 @@ extension GeminiParserService {
         guard let model = _model else { return [] }
 
         let prompt = buildPrompt(input: input, categories: categories, language: language, currency: currency)
+        let validCategoryIds = Set(categories.map(\.id))
 
         do {
-            let response = try await model.generateContent(prompt)
+            let response = try await withThrowingTaskGroup(of: GenerateContentResponse.self) { group in
+                group.addTask {
+                    try await model.generateContent(prompt)
+                }
+                group.addTask {
+                    try await Task.sleep(for: .seconds(AppConstants.geminiApiTimeoutSeconds))
+                    throw GeminiTimeoutError()
+                }
+                let result = try await group.next()!
+                group.cancelAll()
+                return result
+            }
+
             guard let text = response.text, !text.isEmpty else {
                 print("[GeminiParser] Empty response from Gemini")
                 return []
@@ -400,7 +465,7 @@ extension GeminiParserService {
                 return []
             }
 
-            let results = parseResponse(jsonData: json, language: language)
+            let results = parseResponse(jsonData: json, language: language, validCategoryIds: validCategoryIds)
             if !results.isEmpty {
                 usageLimitService.incrementUsage()
                 print("[GeminiParser] Successfully parsed \(results.count) transaction(s), usage incremented")
@@ -408,10 +473,16 @@ extension GeminiParserService {
                 print("[GeminiParser] No valid transactions extracted from response")
             }
             return results
+        } catch is GeminiTimeoutError {
+            print("[GeminiParser] Gemini API timed out after \(AppConstants.geminiApiTimeoutSeconds)s")
+            return []
         } catch {
             print("[GeminiParser] Error calling Gemini: \(error)")
             return []
         }
     }
 }
+
+private struct GeminiTimeoutError: Error {}
+
 #endif

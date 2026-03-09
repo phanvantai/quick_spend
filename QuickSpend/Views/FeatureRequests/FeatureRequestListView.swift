@@ -89,6 +89,7 @@ struct FeatureRequestListView: View {
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
+                                    .tint(.red)
                                 }
                         } else if subscription.isPremium {
                             expandableRequestRow(request)

@@ -69,13 +69,14 @@ struct TransactionFormView: View {
     init(
         categories: [Category],
         expense: Transaction? = nil,
+        initialNote: String? = nil,
         onSave: @escaping (Transaction) -> Void
     ) {
         self.categories = categories
         self.existingTransaction = expense
         self.onSave = onSave
 
-        _noteText = State(initialValue: expense?.note ?? "")
+        _noteText = State(initialValue: expense?.note ?? initialNote ?? "")
         _amountText = State(initialValue: expense.map { String(format: "%.0f", $0.amount) } ?? "")
         _selectedCategoryId = State(initialValue: expense?.categoryId)
         _selectedDate = State(initialValue: expense?.date ?? {

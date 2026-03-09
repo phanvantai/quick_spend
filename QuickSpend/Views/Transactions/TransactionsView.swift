@@ -1,23 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// Transaction filter options
-enum TransactionFilter: CaseIterable {
-    case all, income, expense
-
-    func label(language: String) -> String {
-        switch self {
-        case .all:
-            return L10n.tr("transactions.all", language)
-        case .income:
-            return L10n.tr("transactions.filter_income", language)
-        case .expense:
-            return L10n.tr("transactions.filter_expense", language)
-        }
-    }
-}
-
-/// Transaction list view with month navigation and filter tabs
+/// Transaction list view with month navigation, calendar grid, and grouped transaction list
 struct TransactionsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
@@ -26,8 +10,9 @@ struct TransactionsView: View {
     @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedMonth = Date()
-    @State private var selectedFilter: TransactionFilter = .all
+    @State private var selectedDate: Date?
     @State private var editingTransaction: Transaction?
+    @State private var deletingTransaction: Transaction?
     @State private var showingAddTransaction = false
 
     /// Transactions filtered to the selected month
@@ -38,39 +23,81 @@ struct TransactionsView: View {
         }
     }
 
-    /// Transactions filtered by selected tab
-    private var filteredTransactions: [Transaction] {
-        switch selectedFilter {
-        case .all: return monthTransactions
-        case .income: return monthTransactions.filter(\.isIncome)
-        case .expense: return monthTransactions.filter(\.isExpense)
+    /// Transactions to display — filtered by selected date if one is tapped, otherwise all month
+    private var displayedTransactions: [Transaction] {
+        guard let selectedDate else { return monthTransactions }
+        let calendar = Calendar.current
+        return monthTransactions.filter {
+            calendar.isDate($0.date, equalTo: selectedDate, toGranularity: .day)
         }
     }
 
     /// Group transactions by day
     private var groupedTransactions: [(date: Date, transactions: [Transaction])] {
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: filteredTransactions) { transaction in
+        let grouped = Dictionary(grouping: displayedTransactions) { transaction in
             calendar.startOfDay(for: transaction.date)
         }
         return grouped.sorted { $0.key > $1.key }
             .map { (date: $0.key, transactions: $0.value.sorted { $0.date > $1.date }) }
     }
 
+    // MARK: - Monthly Totals
+
+    private var totalIncome: Double {
+        monthTransactions.filter(\.isIncome).reduce(0) { $0 + $1.amount }
+    }
+
+    private var totalExpense: Double {
+        monthTransactions.filter(\.isExpense).reduce(0) { $0 + $1.amount }
+    }
+
+    private var netTotal: Double {
+        totalIncome - totalExpense
+    }
+
+    // MARK: - Month Date Range Label
+
+    private var monthDateRange: String {
+        let calendar = Calendar.current
+        let comps = calendar.dateComponents([.year, .month], from: selectedMonth)
+        guard let range = calendar.range(of: .day, in: .month, for: selectedMonth) else {
+            return ""
+        }
+        let lastDay = range.count
+        let month = String(format: "%02d", comps.month ?? 1)
+        return "(01/\(month)–\(lastDay)/\(month))"
+    }
+
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: AppTheme.spacing16) {
-                    MonthNavigator(selectedMonth: $selectedMonth, language: appConfig.language)
+            List {
+                // Calendar & summary header section
+                Section {
+                    VStack(spacing: AppTheme.spacing16) {
+                        monthNavigatorWithRange
 
-                    filterTabs
+                        CalendarGrid(
+                            selectedMonth: selectedMonth,
+                            expenses: monthTransactions,
+                            currency: appConfig.config.currency,
+                            language: appConfig.language,
+                            selectedDate: $selectedDate
+                        )
 
-                    transactionListSection
+                        monthlySummarySection
+                    }
                 }
-                .padding(.horizontal, AppTheme.spacing16)
-                .padding(.bottom, AppTheme.spacing16)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+
+                // Transaction list grouped by date
+                transactionListSection
             }
+            .listStyle(.plain)
             .background(Color(.systemGroupedBackground))
+            .scrollContentBackground(.hidden)
             .navigationTitle(L10n.tr("transactions.title", appConfig.language))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -97,76 +124,138 @@ struct TransactionsView: View {
                     transaction.updatedAt = .now
                 }
             }
-        }
-    }
-
-    // MARK: - Filter Tabs
-
-    private var filterTabs: some View {
-        HStack(spacing: 0) {
-            ForEach(TransactionFilter.allCases, id: \.self) { filter in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        selectedFilter = filter
-                    }
-                } label: {
-                    VStack(spacing: AppTheme.spacing8) {
-                        Text(filter.label(language: appConfig.config.language))
-                            .font(.subheadline.weight(selectedFilter == filter ? .semibold : .regular))
-                            .foregroundStyle(selectedFilter == filter ? .primary : .secondary)
-
-                        Rectangle()
-                            .fill(selectedFilter == filter ? AppTheme.dashboardExpenseLine : .clear)
-                            .frame(height: 2)
-                    }
+            .onChange(of: selectedMonth) {
+                selectedDate = nil
+            }
+            .alert(
+                L10n.tr("common.delete", appConfig.language),
+                isPresented: Binding(
+                    get: { deletingTransaction != nil },
+                    set: { if !$0 { deletingTransaction = nil } }
+                )
+            ) {
+                Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) {
+                    deletingTransaction = nil
                 }
-                .buttonStyle(.plain)
-                .frame(maxWidth: .infinity)
+                Button(L10n.tr("common.delete", appConfig.language), role: .destructive) {
+                    if let transaction = deletingTransaction {
+                        deleteTransaction(transaction)
+                    }
+                    deletingTransaction = nil
+                }
+            } message: {
+                Text(L10n.tr("transactions.delete_confirm", appConfig.language))
             }
         }
     }
 
-    // MARK: - Expense List
+    // MARK: - Month Navigator with Date Range
+
+    private var monthNavigatorWithRange: some View {
+        VStack(spacing: AppTheme.spacing4) {
+            MonthNavigator(selectedMonth: $selectedMonth, language: appConfig.language)
+
+            Text(monthDateRange)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Monthly Summary
+
+    private var monthlySummarySection: some View {
+        HStack(spacing: 0) {
+            summaryColumn(
+                title: HomeStrings.income(appConfig.language),
+                amount: totalIncome,
+                color: AppTheme.incomeColor
+            )
+
+            Divider()
+                .frame(height: 40)
+
+            summaryColumn(
+                title: HomeStrings.expense(appConfig.language),
+                amount: totalExpense,
+                color: AppTheme.expenseColor
+            )
+
+            Divider()
+                .frame(height: 40)
+
+            summaryColumn(
+                title: HomeStrings.balance(appConfig.language),
+                amount: netTotal,
+                color: netTotal >= 0 ? AppTheme.incomeColor : AppTheme.expenseColor,
+                showSign: true
+            )
+        }
+        .cardBackground()
+    }
+
+    private func summaryColumn(title: String, amount: Double, color: Color, showSign: Bool = false) -> some View {
+        VStack(spacing: AppTheme.spacing4) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Text("\(showSign && amount >= 0 ? "+" : "")\(appConfig.config.formatCurrency(amount))")
+                .font(.caption.weight(.bold).monospacedDigit())
+                .foregroundStyle(color)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Transaction List
 
     @ViewBuilder
     private var transactionListSection: some View {
         if groupedTransactions.isEmpty {
-            ContentUnavailableView(
-                L10n.tr("home.no_transactions", appConfig.language),
-                systemImage: "tray",
-                description: Text(L10n.tr("home.no_transactions_month", appConfig.language))
-            )
-            .padding(.top, AppTheme.spacing24)
+            Section {
+                ContentUnavailableView(
+                    L10n.tr("home.no_transactions", appConfig.language),
+                    systemImage: "tray",
+                    description: Text(L10n.tr("home.no_transactions_month", appConfig.language))
+                )
+                .padding(.top, AppTheme.spacing24)
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         } else {
-            LazyVStack(spacing: AppTheme.spacing20, pinnedViews: []) {
-                ForEach(groupedTransactions, id: \.date) { group in
-                    VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-                        dateSectionHeader(for: group.date)
-
-                        ForEach(group.transactions, id: \.id) { transaction in
-                            let category = categories.first { $0.id == transaction.categoryId }
-                            TransactionCard(
-                                transaction: transaction,
-                                category: category,
-                                config: appConfig.config
-                            )
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    deleteTransaction(transaction)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
+            ForEach(groupedTransactions, id: \.date) { group in
+                Section {
+                    ForEach(group.transactions, id: \.id) { transaction in
+                        let category = categories.first { $0.id == transaction.categoryId }
+                        TransactionCard(
+                            transaction: transaction,
+                            category: category,
+                            config: appConfig.config
+                        )
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                deletingTransaction = transaction
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
-                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                                Button {
-                                    editingTransaction = transaction
-                                } label: {
-                                    Label("Edit", systemImage: "pencil")
-                                }
-                                .tint(AppTheme.adaptiveAccent(colorScheme))
+                            .tint(.red)
+                        }
+                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            Button {
+                                editingTransaction = transaction
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
                             }
+                            .tint(AppTheme.adaptiveAccent(colorScheme))
                         }
                     }
+                } header: {
+                    dateSectionHeader(for: group.date, transactions: group.transactions)
+                        .padding(.horizontal, AppTheme.spacing4)
                 }
             }
         }
@@ -174,12 +263,24 @@ struct TransactionsView: View {
 
     // MARK: - Date Section Header
 
-    private func dateSectionHeader(for date: Date) -> some View {
+    private func dateSectionHeader(for date: Date, transactions: [Transaction]) -> some View {
         let locale = Locale(identifier: appConfig.language)
-        return Text(date.formatted(.dateTime.day(.twoDigits).month(.twoDigits).year().locale(locale)))
-            .font(.subheadline.bold())
-            .foregroundStyle(.primary)
-            .padding(.leading, AppTheme.spacing4)
+        let dayTotal = transactions.reduce(0.0) { result, tx in
+            result + (tx.isIncome ? tx.amount : -tx.amount)
+        }
+
+        return HStack {
+            Text(date.formatted(.dateTime.day(.twoDigits).month(.twoDigits).year().locale(locale)))
+                .font(.subheadline.bold())
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Text("\(dayTotal >= 0 ? "+" : "-")\(appConfig.config.formatCurrency(abs(dayTotal)))")
+                .font(.subheadline.weight(.semibold).monospacedDigit())
+                .foregroundStyle(dayTotal >= 0 ? AppTheme.incomeColor : AppTheme.expenseColor)
+        }
+        .padding(.leading, AppTheme.spacing4)
     }
 
     // MARK: - Actions

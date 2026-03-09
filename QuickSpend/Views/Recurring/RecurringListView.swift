@@ -27,12 +27,13 @@ struct RecurringListView: View {
             } else {
                 ForEach(templates, id: \.id) { template in
                     templateRow(template)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) {
                                 deletingTemplate = template
                             } label: {
                                 Label(L10n.tr("common.delete", appConfig.language), systemImage: "trash")
                             }
+                            .tint(.red)
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
                             Button {

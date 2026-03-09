@@ -65,12 +65,13 @@ struct CategoriesView: View {
                     Section(groupName(for: section.group)) {
                         ForEach(section.categories, id: \.id) { category in
                             categoryRow(category)
-                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) {
                                         deletingCategory = category
                                     } label: {
                                         Label(L10n.tr("common.delete", appConfig.language), systemImage: "trash")
                                     }
+                                    .tint(.red)
                                 }
                                 .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                     Button {
@@ -88,6 +89,7 @@ struct CategoriesView: View {
                 }
             }
         }
+        .tint(AppTheme.adaptiveAccent(colorScheme))
         .navigationTitle(L10n.tr("categories.title", appConfig.language))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -144,7 +146,6 @@ struct CategoriesView: View {
                 Text(L10n.tr("categories.delete_message", appConfig.language, category.name))
             }
         }
-        .tint(AppTheme.adaptiveAccent(colorScheme))
     }
 
     // MARK: - Category Row

@@ -130,14 +130,12 @@ struct EditableExpenseDialog: View {
 
     private func save() {
         let transactions = editableExpenses.compactMap { data -> Transaction? in
-            let cleanedAmount = data.amountText
-                .replacingOccurrences(of: ",", with: "")
-                .replacingOccurrences(of: " ", with: "")
-            guard let amount = Double(cleanedAmount), amount > 0 else { return nil }
+            guard let amount = parseAmount(data.amountText), amount > 0 else { return nil }
+            let clampedAmount = min(amount, AppConstants.maxExpenseAmount)
             guard !data.note.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
 
             return Transaction(
-                amount: amount,
+                amount: clampedAmount,
                 note: data.note.trimmingCharacters(in: .whitespaces),
                 categoryId: data.categoryId,
                 type: data.type,
@@ -150,6 +148,25 @@ struct EditableExpenseDialog: View {
         guard !transactions.isEmpty else { return }
         onSave(transactions)
         dismiss()
+    }
+
+    /// Parse amount text handling both "1,500.50" (en) and "1.500,50" (European) formats
+    private func parseAmount(_ text: String) -> Double? {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return nil }
+
+        // Try the user's current locale first
+        let localeFormatter = NumberFormatter()
+        localeFormatter.numberStyle = .decimal
+        if let result = localeFormatter.number(from: trimmed)?.doubleValue {
+            return result
+        }
+
+        // Fallback: strip commas and spaces, parse as plain Double
+        let cleaned = trimmed
+            .replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: " ", with: "")
+        return Double(cleaned)
     }
 }
 
@@ -171,6 +188,6 @@ struct EditableExpenseData {
         self.type = parsed.type
         self.date = parsed.date
         self.confidence = parsed.confidence
-        self.rawInput = parsed.note
+        self.rawInput = parsed.rawInput ?? parsed.note
     }
 }

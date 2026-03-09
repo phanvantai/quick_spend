@@ -6229,6 +6229,35 @@
         }
       }
     },
+    "transactions.delete_confirm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete this transaction?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Estás seguro de que deseas eliminar esta transacción?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この取引を削除してもよろしいですか？"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có chắc chắn muốn xóa giao dịch này không?"
+          }
+        }
+      }
+    },
     "Type" : {
 
     },
@@ -6547,6 +6576,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Giữ để ghi âm, thả để gửi"
+          }
+        }
+      }
+    },
+    "voice.parse_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't understand. Please enter manually."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo entender. Por favor, ingrese manualmente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "認識できませんでした。手動で入力してください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể nhận diện. Vui lòng nhập thủ công."
           }
         }
       }

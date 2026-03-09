@@ -111,7 +111,7 @@ final class VoiceService {
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
-        recognitionTask?.cancel()
+        recognitionTask?.finish()
 
         recognitionRequest = nil
         recognitionTask = nil

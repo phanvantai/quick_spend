@@ -534,4 +534,201 @@ struct GeminiParserServiceTests {
         #expect(GeminiParserService.isAvailable == false)
         #endif
     }
+
+    // MARK: - isValidInput: maxVoiceInputLength enforcement (#7)
+
+    @Test("Input exceeding maxVoiceInputLength is invalid")
+    func testInputExceedingMaxLength() {
+        let longInput = String(repeating: "a coffee ", count: 100) // 900 chars, exceeds 500
+        #expect(longInput.count > AppConstants.maxVoiceInputLength)
+        #expect(GeminiParserService.isValidInput(longInput) == false)
+    }
+
+    @Test("Input exactly at maxVoiceInputLength is valid")
+    func testInputAtMaxLength() {
+        // Build a string exactly at max length that passes other validation
+        let base = "coffee expense for today "
+        let repeats = AppConstants.maxVoiceInputLength / base.count
+        let input = String(String(repeating: base, count: repeats).prefix(AppConstants.maxVoiceInputLength))
+        #expect(input.count <= AppConstants.maxVoiceInputLength)
+        #expect(GeminiParserService.isValidInput(input) == true)
+    }
+
+    // MARK: - normalizeCategoryId with custom categories (#8)
+
+    @Test("Custom category ID is preserved when in validCategoryIds set")
+    func testCustomCategoryPreserved() {
+        let validIds: Set<String> = ["gym_membership", "food_drink", "other_expense"]
+        let result = GeminiParserService.normalizeCategoryId("gym_membership", type: .expense, validCategoryIds: validIds)
+        #expect(result == "gym_membership")
+    }
+
+    @Test("Custom income category ID is preserved when in validCategoryIds set")
+    func testCustomIncomeCategoryPreserved() {
+        let validIds: Set<String> = ["side_hustle", "salary", "other_income"]
+        let result = GeminiParserService.normalizeCategoryId("side_hustle", type: .income, validCategoryIds: validIds)
+        #expect(result == "side_hustle")
+    }
+
+    @Test("Unknown category still falls back when not in validCategoryIds")
+    func testUnknownCategoryFallbackWithValidIds() {
+        let validIds: Set<String> = ["food_drink", "transport"]
+        let result = GeminiParserService.normalizeCategoryId("nonexistent_cat", type: .expense, validCategoryIds: validIds)
+        #expect(result == "other_expense")
+    }
+
+    @Test("Empty validCategoryIds falls back to default behavior")
+    func testEmptyValidCategoryIdsFallsBack() {
+        let result = GeminiParserService.normalizeCategoryId("custom_cat", type: .expense, validCategoryIds: [])
+        #expect(result == "other_expense")
+    }
+
+    // MARK: - parseResponse with validCategoryIds (#8)
+
+    @Test("parseResponse preserves custom category when valid IDs provided")
+    func testParseResponseWithCustomCategory() {
+        let json: [String: Any] = [
+            "expenses": [
+                ["amount": 50000, "description": "gym", "category": "gym_membership", "type": "expense", "date": "today", "confidence": 0.9] as [String: Any],
+            ]
+        ]
+
+        let validIds: Set<String> = ["gym_membership", "food_drink"]
+        let results = GeminiParserService.parseResponse(jsonData: json, language: "en", validCategoryIds: validIds)
+        #expect(results.count == 1)
+        #expect(results[0].categoryId == "gym_membership")
+    }
+
+    // MARK: - parseResponse clamps excessive amounts (#4)
+
+    @Test("parseResponse clamps amount exceeding maxExpenseAmount")
+    func testParseResponseClampsAmount() {
+        let json: [String: Any] = [
+            "expenses": [
+                ["amount": NSNumber(value: 9_999_999_999_999.0), "description": "huge", "category": "other_expense", "type": "expense", "date": "today", "confidence": 0.9] as [String: Any],
+            ]
+        ]
+
+        let results = GeminiParserService.parseResponse(jsonData: json, language: "en")
+        #expect(results.count == 1)
+        #expect(results[0].amount <= AppConstants.maxExpenseAmount)
+    }
+
+    // MARK: - parseDate: day before yesterday (#10)
+
+    @Test("'day before yesterday' parses to 2 days ago")
+    func testParseDateDayBeforeYesterday() {
+        let parsed = GeminiParserService.parseDate("day before yesterday")
+        let expected = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -2, to: .now)!)
+        #expect(parsed == expected)
+    }
+
+    @Test("Vietnamese 'hôm kia' parses to 2 days ago")
+    func testParseDateVietnameseDayBeforeYesterday() {
+        let parsed = GeminiParserService.parseDate("hôm kia")
+        let expected = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -2, to: .now)!)
+        #expect(parsed == expected)
+    }
+
+    @Test("Japanese '一昨日' parses to 2 days ago")
+    func testParseDateJapaneseDayBeforeYesterday() {
+        let parsed = GeminiParserService.parseDate("一昨日")
+        let expected = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -2, to: .now)!)
+        #expect(parsed == expected)
+    }
+
+    @Test("Spanish 'anteayer' parses to 2 days ago")
+    func testParseDateSpanishDayBeforeYesterday() {
+        let parsed = GeminiParserService.parseDate("anteayer")
+        let expected = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -2, to: .now)!)
+        #expect(parsed == expected)
+    }
+
+    // MARK: - parseDaysAgo (#10)
+
+    @Test("'3 days ago' parses correctly")
+    func testParseDaysAgoEnglish() {
+        let result = GeminiParserService.parseDaysAgo("3 days ago")
+        #expect(result == 3)
+    }
+
+    @Test("'1 day ago' parses correctly")
+    func testParseDaysAgoEnglishSingular() {
+        let result = GeminiParserService.parseDaysAgo("1 day ago")
+        #expect(result == 1)
+    }
+
+    @Test("Vietnamese '3 ngày trước' parses correctly")
+    func testParseDaysAgoVietnamese() {
+        let result = GeminiParserService.parseDaysAgo("3 ngày trước")
+        #expect(result == 3)
+    }
+
+    @Test("Vietnamese 'cách đây 5 ngày' parses correctly")
+    func testParseDaysAgoVietnameseAlt() {
+        let result = GeminiParserService.parseDaysAgo("cách đây 5 ngày")
+        #expect(result == 5)
+    }
+
+    @Test("Spanish 'hace 2 días' parses correctly")
+    func testParseDaysAgoSpanish() {
+        let result = GeminiParserService.parseDaysAgo("hace 2 días")
+        #expect(result == 2)
+    }
+
+    @Test("Non-matching text returns nil for parseDaysAgo")
+    func testParseDaysAgoNonMatch() {
+        let result = GeminiParserService.parseDaysAgo("last monday")
+        #expect(result == nil)
+    }
+
+    @Test("Zero days ago returns nil")
+    func testParseDaysAgoZero() {
+        let result = GeminiParserService.parseDaysAgo("0 days ago")
+        #expect(result == nil)
+    }
+
+    @Test("Excessive days ago (>365) returns nil")
+    func testParseDaysAgoExcessive() {
+        let result = GeminiParserService.parseDaysAgo("500 days ago")
+        #expect(result == nil)
+    }
+
+    // MARK: - parseDate with N days ago patterns (#10)
+
+    @Test("parseDate handles '3 days ago' correctly")
+    func testParseDateDaysAgo() {
+        let parsed = GeminiParserService.parseDate("3 days ago")
+        let expected = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -3, to: .now)!)
+        #expect(parsed == expected)
+    }
+
+    // MARK: - ParsedTransaction rawInput field (#3)
+
+    @Test("ParsedTransaction stores rawInput")
+    func testParsedTransactionRawInput() {
+        let transaction = ParsedTransaction(
+            amount: 50000,
+            note: "coffee",
+            categoryId: "food_drink",
+            type: .expense,
+            date: .now,
+            confidence: 0.9,
+            rawInput: "fifty thousand coffee"
+        )
+        #expect(transaction.rawInput == "fifty thousand coffee")
+    }
+
+    @Test("ParsedTransaction rawInput defaults to nil")
+    func testParsedTransactionRawInputDefault() {
+        let transaction = ParsedTransaction(
+            amount: 50000,
+            note: "coffee",
+            categoryId: "food_drink",
+            type: .expense,
+            date: .now,
+            confidence: 0.9
+        )
+        #expect(transaction.rawInput == nil)
+    }
 }
