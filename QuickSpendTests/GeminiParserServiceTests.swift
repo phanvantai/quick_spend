@@ -56,6 +56,21 @@ struct GeminiParserServiceTests {
         #expect(GeminiParserService.isValidInput("...") == false)
     }
 
+    @Test("Pure numbers without letters are invalid")
+    func testPureNumberInput() {
+        #expect(GeminiParserService.isValidInput("123456789") == false)
+        #expect(GeminiParserService.isValidInput("42") == false)
+        #expect(GeminiParserService.isValidInput("999 999") == false)
+        #expect(GeminiParserService.isValidInput("50.00") == false)
+    }
+
+    @Test("Numbers with letters are valid")
+    func testNumbersWithLetters() {
+        #expect(GeminiParserService.isValidInput("50k coffee") == true)
+        #expect(GeminiParserService.isValidInput("coffee 5") == true)
+        #expect(GeminiParserService.isValidInput("500円コーヒー") == true)
+    }
+
     @Test("Repeated single word 3+ times is invalid")
     func testRepeatedWords() {
         #expect(GeminiParserService.isValidInput("test test test") == false)

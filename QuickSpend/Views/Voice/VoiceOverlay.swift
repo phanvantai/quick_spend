@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - DEPRECATED: Replaced by inline recording bubble in VoiceFABButton (hold-to-record)
+
 /// Full-screen voice recording overlay with animated mic and transcription
 struct VoiceOverlay: View {
     @Environment(\.colorScheme) private var colorScheme

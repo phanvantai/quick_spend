@@ -12,7 +12,9 @@ struct MainTabView: View {
     @State private var selectedTab = 0
     @State private var voiceService = VoiceService()
     @State private var usageLimitService = UsageLimitService()
-    @State private var showVoiceOverlay = false
+    private let preferences = PreferencesService.shared
+    @State private var isRecordingActive = false
+    @State private var recordingStartTask: DispatchWorkItem?
     @State private var parsedTransactions: [ParsedTransaction] = []
     @State private var showTransactionReview = false
     @State private var showPermissionAlert = false
@@ -38,9 +40,17 @@ struct MainTabView: View {
             }
             .tint(AppTheme.adaptiveAccent(colorScheme))
 
-            VoiceFABButton(language: appConfig.language) {
-                handleVoiceButtonTap()
-            }
+            VoiceFABButton(
+                language: appConfig.language,
+                isRecording: voiceService.isListening,
+                soundLevel: voiceService.soundLevel,
+                transcription: voiceService.transcription,
+                showTutorial: !preferences.hasShownVoiceTutorial,
+                onRecordStart: { handleRecordStart() },
+                onRecordEnd: { handleRecordEnd() },
+                onRecordCancel: { handleRecordCancel() },
+                onTutorialDismissed: { preferences.markVoiceTutorialShown() }
+            )
             .padding(.trailing, AppTheme.spacing16)
             .padding(.bottom, 90)
 
@@ -68,24 +78,16 @@ struct MainTabView: View {
             }
         }
         .animation(.easeInOut, value: isProcessingVoice)
+        .onChange(of: voiceService.isListening) { _, newValue in
+            if !newValue && isRecordingActive {
+                isRecordingActive = false
+            }
+        }
         .onChange(of: subscription.isPremium) {
             usageLimitService.isPremium = subscription.isPremium
         }
         .onAppear {
             usageLimitService.isPremium = subscription.isPremium
-        }
-        .fullScreenCover(isPresented: $showVoiceOverlay) {
-            VoiceOverlay(
-                voiceService: voiceService,
-                onComplete: { transcription in
-                    showVoiceOverlay = false
-                    processTranscription(transcription)
-                },
-                onCancel: {
-                    voiceService.cancelListening()
-                    showVoiceOverlay = false
-                }
-            )
         }
         .sheet(isPresented: $showTransactionReview) {
             EditableExpenseDialog(
@@ -139,38 +141,69 @@ struct MainTabView: View {
         .tint(AppTheme.adaptiveAccent(colorScheme))
     }
 
-    // MARK: - Voice Flow
+    // MARK: - Hold-to-Record Voice Flow
 
-    private func handleVoiceButtonTap() {
+    private func handleRecordStart() {
         // Check AI parse limit before starting voice input
         if !subscription.isPremium && usageLimitService.hasReachedLimit {
             showLimitReachedAlert = true
             return
         }
 
-        Task {
-            var authorized = voiceService.isAuthorized
-            if !authorized {
-                authorized = await voiceService.requestPermissions()
+        // Check permissions synchronously; request async if needed
+        guard voiceService.isAuthorized else {
+            Task {
+                let authorized = await voiceService.requestPermissions()
+                if !authorized {
+                    showPermissionAlert = true
+                }
             }
-            guard authorized else {
-                showPermissionAlert = true
-                return
-            }
+            return
+        }
 
+        // Delay recording start to filter accidental taps
+        let workItem = DispatchWorkItem { [self] in
             do {
                 try voiceService.startListening(language: appConfig.speechLanguage)
-                showVoiceOverlay = true
+                isRecordingActive = true
             } catch {
                 print("[MainTabView] Failed to start voice: \(error)")
             }
         }
+        recordingStartTask = workItem
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + AppConstants.holdToRecordMinDuration,
+            execute: workItem
+        )
+    }
+
+    private func handleRecordEnd() {
+        recordingStartTask?.cancel()
+        recordingStartTask = nil
+        guard isRecordingActive else { return }
+        isRecordingActive = false
+        let text = voiceService.stopListening()
+        print("[Voice] Recording ended — transcription: \"\(text)\" (length: \(text.count))")
+        processTranscription(text)
+    }
+
+    private func handleRecordCancel() {
+        recordingStartTask?.cancel()
+        recordingStartTask = nil
+        guard isRecordingActive else { return }
+        isRecordingActive = false
+        voiceService.cancelListening()
+        print("[Voice] Recording cancelled by user")
     }
 
     private func processTranscription(_ text: String) {
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            print("[Voice] Transcription empty, skipping")
+            return
+        }
 
         guard GeminiParserService.isAvailable else {
+            print("[Voice] Gemini not available, falling back to manual entry")
             fallbackTranscription = text
             showManualFallback = true
             return
@@ -178,11 +211,13 @@ struct MainTabView: View {
 
         // Check limit before parsing
         if !subscription.isPremium && usageLimitService.hasReachedLimit {
+            print("[Voice] Daily parse limit reached, falling back to manual entry")
             fallbackTranscription = text
             showLimitReachedAlert = true
             return
         }
 
+        print("[Voice] Sending to Gemini parser: \"\(text)\"")
         isProcessingVoice = true
         Task {
             let results = await GeminiParserService.parse(
@@ -196,10 +231,14 @@ struct MainTabView: View {
             await MainActor.run {
                 isProcessingVoice = false
                 if results.isEmpty {
-                    // Parsing failed or limit reached — fall back to manual entry
+                    print("[Voice] Gemini returned no results for: \"\(text)\" — falling back to manual entry")
                     fallbackTranscription = text
                     showManualFallback = true
                 } else {
+                    print("[Voice] Gemini parsed \(results.count) transaction(s):")
+                    for (i, r) in results.enumerated() {
+                        print("  [\(i+1)] \(r.type) \(r.amount) \"\(r.note)\" cat=\(r.categoryId) conf=\(String(format: "%.2f", r.confidence))")
+                    }
                     parsedTransactions = results
                     showTransactionReview = true
                 }

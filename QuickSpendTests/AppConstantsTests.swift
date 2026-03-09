@@ -14,9 +14,9 @@ struct AppConstantsTests {
         #expect(AppConstants.freeTierReportDaysLimit > 0)
     }
 
-    @Test("Free tier Gemini limit is 5")
+    @Test("Free tier Gemini limit is 3")
     func testFreeTierGeminiLimit() {
-        #expect(AppConstants.freeTierGeminiLimit == 5)
+        #expect(AppConstants.freeTierGeminiLimit == 3)
     }
 
     @Test("Free tier recurring templates limit is 3")
@@ -107,6 +107,44 @@ struct AppConstantsTests {
     func testDateValidation() {
         #expect(AppConstants.maxYearsInPast > 0)
         #expect(AppConstants.maxYearsInFuture > 0)
+    }
+
+    // MARK: - Hold-to-Record
+
+    @Test("Hold-to-record min duration is positive")
+    func testHoldToRecordMinDuration() {
+        #expect(AppConstants.holdToRecordMinDuration > 0)
+        #expect(AppConstants.holdToRecordMinDuration == 0.2)
+    }
+
+    @Test("Drag cancel threshold is reasonable")
+    func testDragCancelThreshold() {
+        #expect(AppConstants.dragCancelThreshold > 0)
+        #expect(AppConstants.dragCancelThreshold == 80)
+    }
+
+    @Test("Recording bubble max width is reasonable")
+    func testRecordingBubbleMaxWidth() {
+        #expect(AppConstants.recordingBubbleMaxWidth > 0)
+        #expect(AppConstants.recordingBubbleMaxWidth == 240)
+    }
+
+    @Test("VoiceFABButton cancel detection within threshold")
+    func testDragWithinThreshold() {
+        let translation = CGSize(width: 30, height: 30)
+        #expect(VoiceFABButton.shouldCancel(translation: translation, threshold: 80) == false)
+    }
+
+    @Test("VoiceFABButton cancel detection beyond threshold")
+    func testDragBeyondThreshold() {
+        let translation = CGSize(width: 70, height: 50)
+        #expect(VoiceFABButton.shouldCancel(translation: translation, threshold: 80) == true)
+    }
+
+    @Test("VoiceFABButton cancel detection at exact threshold")
+    func testDragExactlyAtThreshold() {
+        let translation = CGSize(width: 80, height: 0)
+        #expect(VoiceFABButton.shouldCancel(translation: translation, threshold: 80) == false)
     }
 
     // MARK: - UI

@@ -75,12 +75,26 @@ enum GeminiParserService {
     static func isValidInput(_ input: String) -> Bool {
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if trimmed.isEmpty { return false }
-        if trimmed.count < AppConstants.minVoiceInputLength { return false }
+        if trimmed.isEmpty {
+            print("[GeminiParser] Rejected: empty input")
+            return false
+        }
+        if trimmed.count < AppConstants.minVoiceInputLength {
+            print("[GeminiParser] Rejected: too short (\(trimmed.count) chars, min \(AppConstants.minVoiceInputLength)): \"\(trimmed)\"")
+            return false
+        }
 
         // Must contain alphanumeric
         let alphanumeric = CharacterSet.alphanumerics
         if trimmed.unicodeScalars.allSatisfy({ !alphanumeric.contains($0) }) {
+            print("[GeminiParser] Rejected: no alphanumeric characters: \"\(trimmed)\"")
+            return false
+        }
+
+        // Must contain at least one letter (pure numbers have no expense context)
+        let letters = CharacterSet.letters
+        if !trimmed.unicodeScalars.contains(where: { letters.contains($0) }) {
+            print("[GeminiParser] Rejected: no letters (pure numbers/symbols): \"\(trimmed)\"")
             return false
         }
 
@@ -93,6 +107,7 @@ enum GeminiParserService {
         for pattern in fillerPatterns {
             if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
                regex.firstMatch(in: lowered, range: NSRange(lowered.startIndex..., in: lowered)) != nil {
+                print("[GeminiParser] Rejected: filler word detected: \"\(trimmed)\"")
                 return false
             }
         }
@@ -101,9 +116,13 @@ enum GeminiParserService {
         let words = lowered.split(separator: " ")
         if words.count >= 3 {
             let unique = Set(words)
-            if unique.count == 1 { return false }
+            if unique.count == 1 {
+                print("[GeminiParser] Rejected: repeated word (\(words.count)x \"\(words[0])\"): \"\(trimmed)\"")
+                return false
+            }
         }
 
+        print("[GeminiParser] Input validated: \"\(trimmed)\" (\(trimmed.count) chars, \(words.count) words)")
         return true
     }
 
@@ -246,11 +265,21 @@ enum GeminiParserService {
     // MARK: - Response Parsing
 
     static func parseResponse(jsonData: [String: Any], language: String) -> [ParsedTransaction] {
-        guard let expenses = jsonData["expenses"] as? [[String: Any]] else { return [] }
+        let detectedLang = jsonData["detected_language"] as? String ?? "unknown"
+        guard let expenses = jsonData["expenses"] as? [[String: Any]] else {
+            print("[GeminiParser] Response has no 'expenses' array (detected_language: \(detectedLang))")
+            return []
+        }
+
+        print("[GeminiParser] Response: \(expenses.count) expense(s) in JSON (detected_language: \(detectedLang))")
 
         var results: [ParsedTransaction] = []
-        for expenseData in expenses {
-            guard let amount = (expenseData["amount"] as? NSNumber)?.doubleValue, amount > 0 else { continue }
+        for (index, expenseData) in expenses.enumerated() {
+            guard let amount = (expenseData["amount"] as? NSNumber)?.doubleValue, amount > 0 else {
+                let rawAmount = expenseData["amount"]
+                print("[GeminiParser] Skipped expense[\(index)]: invalid amount (\(String(describing: rawAmount)))")
+                continue
+            }
 
             let description = expenseData["description"] as? String ?? ""
             let categoryStr = (expenseData["category"] as? String ?? "other").lowercased()
@@ -271,6 +300,9 @@ enum GeminiParserService {
                 date: date,
                 confidence: confidence
             ))
+        }
+        if results.isEmpty && !expenses.isEmpty {
+            print("[GeminiParser] All \(expenses.count) expense(s) were filtered out (invalid amounts)")
         }
         return results
     }
@@ -356,23 +388,28 @@ extension GeminiParserService {
         do {
             let response = try await model.generateContent(prompt)
             guard let text = response.text, !text.isEmpty else {
-                print("[GeminiParser] Empty response")
+                print("[GeminiParser] Empty response from Gemini")
                 return []
             }
 
+            print("[GeminiParser] Raw Gemini response: \(text)")
+
             guard let data = text.data(using: .utf8),
                   let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                print("[GeminiParser] Invalid JSON response")
+                print("[GeminiParser] Failed to parse JSON from response")
                 return []
             }
 
             let results = parseResponse(jsonData: json, language: language)
             if !results.isEmpty {
                 usageLimitService.incrementUsage()
+                print("[GeminiParser] Successfully parsed \(results.count) transaction(s), usage incremented")
+            } else {
+                print("[GeminiParser] No valid transactions extracted from response")
             }
             return results
         } catch {
-            print("[GeminiParser] Error: \(error)")
+            print("[GeminiParser] Error calling Gemini: \(error)")
             return []
         }
     }
