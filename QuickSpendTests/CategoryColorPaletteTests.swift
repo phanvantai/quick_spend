@@ -88,10 +88,11 @@ struct CategoryColorPaletteTests {
     // MARK: - Helpers
 
     private func assertPaletteCompleteness(_ style: CategoryPaletteStyle) {
+        let fallback = "A0A3BD"
         var matchedCount = 0
         for id in Self.allCategoryIds {
             let hex = colorHex(for: id, style: style)
-            #expect(hex != "A0A3BD", "Palette should have entry for '\(id)'")
+            #expect(hex != fallback, "Palette should have entry for '\(id)' (got fallback)")
             matchedCount += 1
         }
         #expect(matchedCount == 26)
@@ -109,12 +110,9 @@ struct CategoryColorPaletteTests {
         }
     }
 
-    /// Helper to get color hex for a specific palette style (bypasses `active`)
+    /// Helper to get color hex for a specific palette style
     private func colorHex(for categoryId: String, style: CategoryPaletteStyle) -> String {
-        // We test via the public API by checking all IDs return non-fallback values.
-        // Since `active` is a constant, we validate each palette dictionary through
-        // the known category IDs approach.
-        CategoryColorPalette.colorHex(for: categoryId)
+        CategoryColorPalette.colorHex(for: categoryId, style: style)
     }
 
     private func colorSet(for style: CategoryPaletteStyle) -> Set<String> {

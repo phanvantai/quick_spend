@@ -148,7 +148,6 @@ struct AnalyticsServiceTests {
         AnalyticsService.logLanguageChanged(from: "en", to: "vi")
         AnalyticsService.logCurrencyChanged(from: "USD", to: "VND")
         AnalyticsService.logThemeChanged(from: "system", to: "dark")
-        AnalyticsService.logDataCollectionToggled(enabled: true)
         AnalyticsService.logOnboardingCompleted(language: "en", currency: "USD")
     }
 
@@ -157,7 +156,6 @@ struct AnalyticsServiceTests {
         AnalyticsService.setLanguageProperty("en")
         AnalyticsService.setCurrencyProperty("USD")
         AnalyticsService.setThemeModeProperty("system")
-        AnalyticsService.setDataCollectionConsentProperty(true)
     }
 
     @Test("setUserProperty does not crash")

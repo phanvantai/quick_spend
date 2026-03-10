@@ -7,13 +7,18 @@ final class FeatureRequestService {
     private(set) var isLoading = false
     private(set) var errorMessage: String?
     private var firestoreAvailable = true
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
 
     var currentUserId: String {
-        if let existingId = UserDefaults.standard.string(forKey: "anonymous_user_id") {
+        if let existingId = defaults.string(forKey: "anonymous_user_id") {
             return existingId
         }
         let newId = UUID().uuidString
-        UserDefaults.standard.set(newId, forKey: "anonymous_user_id")
+        defaults.set(newId, forKey: "anonymous_user_id")
         return newId
     }
 

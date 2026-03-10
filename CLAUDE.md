@@ -95,6 +95,12 @@ This project follows **Test-Driven Development (TDD)**. Tests are not optional.
 - Test files live in `QuickSpendTests/` and follow the naming convention `<ClassName>Tests.swift`.
 - Cover all services, view models, models, and any logic-bearing code with unit tests.
 - Use `@Test` and `#expect` (Swift Testing framework) for new tests.
+- **Always use mock data in tests — never use real data.** This includes:
+  - Use mock/stub services instead of real service singletons (e.g., never call `PreferencesService.shared` directly; inject a mock or use a test-specific `UserDefaults` suite).
+  - Use in-memory `ModelContainer` / `ModelConfiguration(isStoredInMemoryOnly: true)` for SwiftData tests — never read from or write to the real database.
+  - Use hardcoded test fixtures (fake transactions, categories, templates) with clearly artificial values — never reference real user data, real API keys, or production identifiers.
+  - Mock external dependencies (Firebase, RevenueCat, network calls) — tests must run offline and without any real backend. Always introduce a protocol abstraction layer (e.g., `SubscriptionProvider`) between your code and third-party SDKs so tests can inject a mock implementation instead of calling the SDK directly.
+  - Each test must be fully isolated: set up its own mock data in `init()` or a setup method, and not depend on state from other tests.
 - Run tests after every change to verify nothing is broken:
 
   ```bash

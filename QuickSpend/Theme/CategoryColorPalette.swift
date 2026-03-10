@@ -15,8 +15,13 @@ struct CategoryColorPalette {
 
     /// Returns the hex color for a category ID from the active palette, with fallback
     static func colorHex(for categoryId: String) -> String {
+        colorHex(for: categoryId, style: active)
+    }
+
+    /// Returns the hex color for a category ID from a specific palette style, with fallback
+    static func colorHex(for categoryId: String, style: CategoryPaletteStyle) -> String {
         let palette: [String: String]
-        switch active {
+        switch style {
         case .softModern: palette = softModernColors
         case .vibrant: palette = vibrantColors
         case .earthyMinimal: palette = earthyMinimalColors
@@ -62,7 +67,7 @@ struct CategoryColorPalette {
         "debt_payment": "E74C3C",
         "pets": "E8A87C",
         "travel": "4ECDC4",
-        "other_expense": "A0A3BD",
+        "other_expense": "A1A4BE",
         "salary": "2ECC71",
         "freelance": "3498DB",
         "bonus": "F1C40F",

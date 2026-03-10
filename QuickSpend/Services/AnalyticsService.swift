@@ -182,10 +182,6 @@ enum AnalyticsService {
         logEvent("theme_changed", parameters: ["from": fromTheme, "to": toTheme])
     }
 
-    static func logDataCollectionToggled(enabled: Bool) {
-        logEvent("data_collection_toggled", parameters: ["enabled": enabled ? 1 : 0])
-    }
-
     static func logOnboardingCompleted(language: String, currency: String) {
         logEvent("onboarding_completed", parameters: [
             "language": language,
@@ -205,10 +201,6 @@ enum AnalyticsService {
 
     static func setThemeModeProperty(_ themeMode: String) {
         setUserProperty(name: "theme_mode", value: themeMode)
-    }
-
-    static func setDataCollectionConsentProperty(_ consent: Bool) {
-        setUserProperty(name: "data_collection_consent", value: String(consent))
     }
 
     // MARK: - Helpers

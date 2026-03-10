@@ -2,27 +2,70 @@ import Testing
 import Foundation
 @testable import QuickSpend
 
+/// Mock subscription provider for isolated testing
+struct MockSubscriptionProvider: SubscriptionProvider {
+    var premiumStatus: Bool = false
+    var prices: (monthly: String?, yearly: String?) = (nil, nil)
+    var purchaseResult: Bool = false
+    var restoreResult: Bool = false
+
+    func configure() {}
+
+    func checkPremiumStatus() async -> Bool {
+        premiumStatus
+    }
+
+    func loadPrices() async -> (monthly: String?, yearly: String?) {
+        prices
+    }
+
+    func purchase(monthly: Bool) async -> Bool {
+        purchaseResult
+    }
+
+    func restorePurchases() async -> Bool {
+        restoreResult
+    }
+}
+
 @Suite("SubscriptionViewModel Tests")
 @MainActor
 struct SubscriptionViewModelTests {
+
+    // MARK: - Test Helpers
+
+    private func makeVM(
+        premium: Bool = false,
+        prices: (monthly: String?, yearly: String?) = (nil, nil),
+        purchaseResult: Bool = false,
+        restoreResult: Bool = false
+    ) -> SubscriptionViewModel {
+        let mock = MockSubscriptionProvider(
+            premiumStatus: premium,
+            prices: prices,
+            purchaseResult: purchaseResult,
+            restoreResult: restoreResult
+        )
+        return SubscriptionViewModel(provider: mock)
+    }
 
     // MARK: - Initial State
 
     @Test("Initial state is not premium")
     func testInitialNotPremium() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         #expect(vm.isPremium == false)
     }
 
     @Test("Initial state is not loading")
     func testInitialNotLoading() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         #expect(vm.isLoading == false)
     }
 
     @Test("Initial price displays are nil")
     func testInitialPriceDisplays() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         #expect(vm.monthlyPriceDisplay == nil)
         #expect(vm.yearlyPriceDisplay == nil)
     }
@@ -31,19 +74,19 @@ struct SubscriptionViewModelTests {
 
     @Test("Free tier Gemini limit matches constants")
     func testFreeTierGeminiLimit() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         #expect(vm.geminiDailyLimit == AppConstants.freeTierGeminiLimit)
     }
 
     @Test("Free tier recurring templates limit matches constants")
     func testFreeTierRecurringLimit() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         #expect(vm.recurringTemplatesLimit == AppConstants.freeTierRecurringTemplatesLimit)
     }
 
     @Test("Free tier report days limit matches constants")
     func testFreeTierReportDaysLimit() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         #expect(vm.reportDaysLimit == AppConstants.freeTierReportDaysLimit)
     }
 
@@ -51,17 +94,30 @@ struct SubscriptionViewModelTests {
 
     @Test("Premium Gemini limit is 999")
     func testPremiumGeminiLimit() {
-        let vm = SubscriptionViewModel()
-        // Since isPremium is private(set), we test the free tier values
-        // Premium values are 999 for gemini, 999 for recurring, 3650 for reports
-        #expect(vm.geminiDailyLimit == AppConstants.freeTierGeminiLimit)
+        let vm = makeVM()
+        vm._setPremium(true)
+        #expect(vm.geminiDailyLimit == 999)
+    }
+
+    @Test("Premium recurring templates limit is 999")
+    func testPremiumRecurringLimit() {
+        let vm = makeVM()
+        vm._setPremium(true)
+        #expect(vm.recurringTemplatesLimit == 999)
+    }
+
+    @Test("Premium report days limit is 3650")
+    func testPremiumReportDaysLimit() {
+        let vm = makeVM()
+        vm._setPremium(true)
+        #expect(vm.reportDaysLimit == 365 * 10)
     }
 
     // MARK: - canAddRecurringTemplate
 
     @Test("Free user can add if under limit")
     func testCanAddRecurringUnderLimit() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         #expect(vm.canAddRecurringTemplate(currentCount: 0) == true)
         #expect(vm.canAddRecurringTemplate(currentCount: 1) == true)
         #expect(vm.canAddRecurringTemplate(currentCount: 2) == true)
@@ -69,75 +125,114 @@ struct SubscriptionViewModelTests {
 
     @Test("Free user cannot add at limit")
     func testCannotAddRecurringAtLimit() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         let limit = AppConstants.freeTierRecurringTemplatesLimit
         #expect(vm.canAddRecurringTemplate(currentCount: limit) == false)
     }
 
     @Test("Free user cannot add over limit")
     func testCannotAddRecurringOverLimit() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         let limit = AppConstants.freeTierRecurringTemplatesLimit
         #expect(vm.canAddRecurringTemplate(currentCount: limit + 1) == false)
     }
 
-    // MARK: - Graceful Degradation
+    @Test("Premium user can always add recurring templates")
+    func testPremiumCanAlwaysAddRecurring() {
+        let vm = makeVM()
+        vm._setPremium(true)
+        #expect(vm.canAddRecurringTemplate(currentCount: 100) == true)
+        #expect(vm.canAddRecurringTemplate(currentCount: 999) == true)
+    }
 
-    @Test("Initialize without RevenueCat does not crash")
-    func testInitializeGracefulDegradation() {
-        let vm = SubscriptionViewModel()
+    // MARK: - Mock Provider Behavior
+
+    @Test("initialize does not crash with mock provider")
+    func testInitializeWithMock() {
+        let vm = makeVM()
         vm.initialize()
-        // Should not crash even without RevenueCat SDK
         #expect(vm.isPremium == false)
     }
 
-    @Test("loadOfferings without RevenueCat does not crash")
-    func testLoadOfferingsGracefulDegradation() async {
-        let vm = SubscriptionViewModel()
+    @Test("loadOfferings populates prices from mock provider")
+    func testLoadOfferingsWithMock() async {
+        let vm = makeVM(prices: ("$4.99", "$39.99"))
         await vm.loadOfferings()
-        // Should not crash
+        #expect(vm.monthlyPriceDisplay == "$4.99")
+        #expect(vm.yearlyPriceDisplay == "$39.99")
     }
 
-    @Test("restorePurchases without RevenueCat does not crash")
-    func testRestorePurchasesGracefulDegradation() async {
-        let vm = SubscriptionViewModel()
+    @Test("loadOfferings with nil prices keeps nil")
+    func testLoadOfferingsNilPrices() async {
+        let vm = makeVM()
+        await vm.loadOfferings()
+        #expect(vm.monthlyPriceDisplay == nil)
+        #expect(vm.yearlyPriceDisplay == nil)
+    }
+
+    @Test("restorePurchases sets premium from mock result")
+    func testRestorePurchasesWithMock() async {
+        let vm = makeVM(restoreResult: false)
         await vm.restorePurchases()
-        // Should not crash
+        #expect(vm.isPremium == false)
+        #expect(vm.isLoading == false)
     }
 
-    @Test("purchaseMonthly without RevenueCat returns false")
-    func testPurchaseMonthlyGracefulDegradation() async {
-        let vm = SubscriptionViewModel()
+    @Test("purchaseMonthly returns false with mock")
+    func testPurchaseMonthlyReturnsFalse() async {
+        let vm = makeVM(purchaseResult: false)
         let result = await vm.purchaseMonthly()
         #expect(result == false)
+        #expect(vm.isPremium == false)
+        #expect(vm.isLoading == false)
     }
 
-    @Test("purchaseYearly without RevenueCat returns false")
-    func testPurchaseYearlyGracefulDegradation() async {
-        let vm = SubscriptionViewModel()
+    @Test("purchaseMonthly returns true and sets premium with mock")
+    func testPurchaseMonthlyReturnsTrue() async {
+        let vm = makeVM(purchaseResult: true)
+        let result = await vm.purchaseMonthly()
+        #expect(result == true)
+        #expect(vm.isPremium == true)
+        #expect(vm.isLoading == false)
+    }
+
+    @Test("purchaseYearly returns false with mock")
+    func testPurchaseYearlyReturnsFalse() async {
+        let vm = makeVM(purchaseResult: false)
         let result = await vm.purchaseYearly()
         #expect(result == false)
+        #expect(vm.isPremium == false)
+        #expect(vm.isLoading == false)
     }
 
-    @Test("refreshStatus without RevenueCat does not crash")
-    func testRefreshStatusGracefulDegradation() async {
-        let vm = SubscriptionViewModel()
+    @Test("purchaseYearly returns true and sets premium with mock")
+    func testPurchaseYearlyReturnsTrue() async {
+        let vm = makeVM(purchaseResult: true)
+        let result = await vm.purchaseYearly()
+        #expect(result == true)
+        #expect(vm.isPremium == true)
+        #expect(vm.isLoading == false)
+    }
+
+    @Test("refreshStatus updates premium from mock provider")
+    func testRefreshStatusWithMock() async {
+        let vm = makeVM(premium: false)
         await vm.refreshStatus()
-        // Should not crash
+        #expect(vm.isPremium == false)
     }
 
     // MARK: - Boundary Tests
 
     @Test("canAddRecurringTemplate at exactly limit-1 allows")
     func testCanAddRecurringBoundary() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         let limit = AppConstants.freeTierRecurringTemplatesLimit
         #expect(vm.canAddRecurringTemplate(currentCount: limit - 1) == true)
     }
 
     @Test("Feature limits are non-negative")
     func testFeatureLimitsNonNegative() {
-        let vm = SubscriptionViewModel()
+        let vm = makeVM()
         #expect(vm.geminiDailyLimit > 0)
         #expect(vm.recurringTemplatesLimit > 0)
         #expect(vm.reportDaysLimit > 0)

@@ -7,6 +7,15 @@ struct FeatureRequestServiceTests {
 
     // MARK: - Test Data Helpers
 
+    private func makeTestDefaults() -> UserDefaults {
+        let suiteName = "test.featurerequest.\(UUID().uuidString)"
+        return UserDefaults(suiteName: suiteName)!
+    }
+
+    private func makeService(defaults: UserDefaults? = nil) -> FeatureRequestService {
+        FeatureRequestService(defaults: defaults ?? makeTestDefaults())
+    }
+
     private func makeSampleRequest(
         id: String = "req_1",
         userId: String = "user_1",
@@ -32,19 +41,19 @@ struct FeatureRequestServiceTests {
 
     @Test("Initial state has empty requests")
     func testInitialRequestsEmpty() {
-        let service = FeatureRequestService()
+        let service = makeService()
         #expect(service.requests.isEmpty)
     }
 
     @Test("Initial state is not loading")
     func testInitialIsNotLoading() {
-        let service = FeatureRequestService()
+        let service = makeService()
         #expect(service.isLoading == false)
     }
 
     @Test("Initial state has no error message")
     func testInitialNoErrorMessage() {
-        let service = FeatureRequestService()
+        let service = makeService()
         #expect(service.errorMessage == nil)
     }
 
@@ -52,23 +61,21 @@ struct FeatureRequestServiceTests {
 
     @Test("currentUserId returns a non-empty string")
     func testCurrentUserIdNonEmpty() {
-        let service = FeatureRequestService()
+        let service = makeService()
         #expect(!service.currentUserId.isEmpty)
     }
 
     @Test("currentUserId returns consistent value across calls")
     func testCurrentUserIdConsistent() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let id1 = service.currentUserId
-        UserDefaults.standard.set(id1, forKey: "anonymous_user_id")
-        UserDefaults.standard.synchronize()
         let id2 = service.currentUserId
         #expect(id1 == id2)
     }
 
     @Test("currentUserId is a valid UUID string")
     func testCurrentUserIdIsValidUUID() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let uuid = UUID(uuidString: service.currentUserId)
         #expect(uuid != nil, "currentUserId should be a valid UUID string")
     }
@@ -77,13 +84,13 @@ struct FeatureRequestServiceTests {
 
     @Test("myRequests returns empty when no requests exist")
     func testMyRequestsEmptyWhenNoRequests() {
-        let service = FeatureRequestService()
+        let service = makeService()
         #expect(service.myRequests().isEmpty)
     }
 
     @Test("myRequests filters only requests matching currentUserId")
     func testMyRequestsFiltersCorrectly() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let myUserId = service.currentUserId
         let myRequest = makeSampleRequest(id: "req_mine", userId: myUserId, title: "My Request")
         let otherRequest = makeSampleRequest(id: "req_other", userId: "other_user", title: "Other Request")
@@ -97,7 +104,7 @@ struct FeatureRequestServiceTests {
 
     @Test("myRequests returns empty when no requests match currentUserId")
     func testMyRequestsEmptyWhenNoMatch() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let otherRequest1 = makeSampleRequest(id: "req_1", userId: "other_user_1")
         let otherRequest2 = makeSampleRequest(id: "req_2", userId: "other_user_2")
 
@@ -108,7 +115,7 @@ struct FeatureRequestServiceTests {
 
     @Test("myRequests returns all when all requests match currentUserId")
     func testMyRequestsReturnsAllWhenAllMatch() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let myUserId = service.currentUserId
         let req1 = makeSampleRequest(id: "req_1", userId: myUserId, title: "Feature 1")
         let req2 = makeSampleRequest(id: "req_2", userId: myUserId, title: "Feature 2")
@@ -122,7 +129,7 @@ struct FeatureRequestServiceTests {
 
     @Test("_setRequests replaces existing requests")
     func testSetRequestsReplaces() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let req1 = makeSampleRequest(id: "req_1")
         let req2 = makeSampleRequest(id: "req_2")
 
@@ -135,7 +142,7 @@ struct FeatureRequestServiceTests {
 
     @Test("_setRequests with empty array clears requests")
     func testSetRequestsClears() {
-        let service = FeatureRequestService()
+        let service = makeService()
         service._setRequests([makeSampleRequest()])
         #expect(service.requests.count == 1)
 
@@ -147,7 +154,7 @@ struct FeatureRequestServiceTests {
 
     @Test("_removeLocalRequest removes the correct request by ID")
     func testRemoveLocalRequestById() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let req1 = makeSampleRequest(id: "req_1", title: "Keep")
         let req2 = makeSampleRequest(id: "req_2", title: "Remove")
         let req3 = makeSampleRequest(id: "req_3", title: "Keep Too")
@@ -163,7 +170,7 @@ struct FeatureRequestServiceTests {
 
     @Test("_removeLocalRequest does nothing for nonexistent ID")
     func testRemoveLocalRequestNonexistent() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let req = makeSampleRequest(id: "req_1")
 
         service._setRequests([req])
@@ -175,7 +182,7 @@ struct FeatureRequestServiceTests {
 
     @Test("_removeLocalRequest on empty requests does nothing")
     func testRemoveLocalRequestEmpty() {
-        let service = FeatureRequestService()
+        let service = makeService()
         service._removeLocalRequest(requestId: "req_1")
         #expect(service.requests.isEmpty)
     }
@@ -184,14 +191,14 @@ struct FeatureRequestServiceTests {
 
     @Test("fetchRequests completes without crashing")
     func testFetchRequestsGraceful() async {
-        let service = FeatureRequestService()
+        let service = makeService()
         await service.fetchRequests()
         #expect(service.isLoading == false)
     }
 
     @Test("submitRequest completes gracefully")
     func testSubmitRequestCompletes() async {
-        let service = FeatureRequestService()
+        let service = makeService()
         let result = await service.submitRequest(
             title: "Test Feature",
             description: "A test feature request",
@@ -204,7 +211,7 @@ struct FeatureRequestServiceTests {
 
     @Test("updateRequestStatus completes gracefully for nonexistent request")
     func testUpdateRequestStatusCompletes() async {
-        let service = FeatureRequestService()
+        let service = makeService()
         let result = await service.updateRequestStatus(
             requestId: "nonexistent_request_id_xyz",
             newStatus: .completed,
@@ -216,7 +223,7 @@ struct FeatureRequestServiceTests {
 
     @Test("deleteRequest completes gracefully for nonexistent request")
     func testDeleteRequestCompletes() async {
-        let service = FeatureRequestService()
+        let service = makeService()
         let result = await service.deleteRequest(requestId: "nonexistent_request_id_delete")
         let _ = result
         #expect(service.isLoading == false)
@@ -224,14 +231,14 @@ struct FeatureRequestServiceTests {
 
     @Test("deleteRequest sets isLoading to false after completion")
     func testDeleteRequestIsLoadingAfterCompletion() async {
-        let service = FeatureRequestService()
+        let service = makeService()
         let _ = await service.deleteRequest(requestId: "nonexistent_req_789")
         #expect(service.isLoading == false)
     }
 
     @Test("submitRequest sets isLoading to false after completion")
     func testSubmitRequestIsLoadingAfterCompletion() async {
-        let service = FeatureRequestService()
+        let service = makeService()
         let _ = await service.submitRequest(
             title: "Feature",
             description: "Description",
@@ -243,7 +250,7 @@ struct FeatureRequestServiceTests {
 
     @Test("updateRequestStatus without response parameter works")
     func testUpdateRequestStatusWithoutResponse() async {
-        let service = FeatureRequestService()
+        let service = makeService()
         let result = await service.updateRequestStatus(
             requestId: "nonexistent_req_456",
             newStatus: .planned
@@ -256,7 +263,7 @@ struct FeatureRequestServiceTests {
 
     @Test("Multiple sequential operations do not crash")
     func testMultipleSequentialOperations() async {
-        let service = FeatureRequestService()
+        let service = makeService()
 
         await service.fetchRequests()
         let _ = await service.submitRequest(
@@ -279,13 +286,13 @@ struct FeatureRequestServiceTests {
 
     @Test("requestsByStatus returns empty when no requests exist")
     func testRequestsByStatusEmptyWhenNoRequests() {
-        let service = FeatureRequestService()
+        let service = makeService()
         #expect(service.requestsByStatus(.pending).isEmpty)
     }
 
     @Test("requestsByStatus filters by pending status")
     func testRequestsByStatusFiltersPending() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let pending1 = makeSampleRequest(id: "req_1", status: .pending)
         let review = makeSampleRequest(id: "req_2", status: .underReview)
         let pending2 = makeSampleRequest(id: "req_3", status: .pending)
@@ -300,7 +307,7 @@ struct FeatureRequestServiceTests {
 
     @Test("requestsByStatus filters by completed status")
     func testRequestsByStatusFiltersCompleted() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let pending = makeSampleRequest(id: "req_1", status: .pending)
         let completed1 = makeSampleRequest(id: "req_2", status: .completed)
         let completed2 = makeSampleRequest(id: "req_3", status: .completed)
@@ -314,7 +321,7 @@ struct FeatureRequestServiceTests {
 
     @Test("requestsByStatus returns empty when no matching status")
     func testRequestsByStatusReturnsEmptyWhenNoMatch() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let pending = makeSampleRequest(id: "req_1", status: .pending)
         let review = makeSampleRequest(id: "req_2", status: .underReview)
 
@@ -325,7 +332,7 @@ struct FeatureRequestServiceTests {
 
     @Test("requestsByStatus works for all status cases")
     func testRequestsByStatusAllCases() {
-        let service = FeatureRequestService()
+        let service = makeService()
         let requests = RequestStatus.allCases.enumerated().map { index, status in
             makeSampleRequest(id: "req_\(index)", status: status)
         }
