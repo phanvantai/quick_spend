@@ -71,6 +71,10 @@ struct RecurringFormView: View {
                         TextField("0.00", text: $amountText)
                             .keyboardType(.decimalPad)
                             .font(.title3.monospacedDigit())
+                            .onChange(of: amountText) {
+                                let formatted = appConfig.config.formatAmountInput(amountText)
+                                if formatted != amountText { amountText = formatted }
+                            }
                     }
                     if showAmountError {
                         Text(L10n.tr("expense_form.invalid_amount", appConfig.language))
@@ -177,10 +181,7 @@ struct RecurringFormView: View {
     // MARK: - Save
 
     private func save() {
-        let cleanedAmount = amountText
-            .replacingOccurrences(of: ",", with: "")
-            .replacingOccurrences(of: " ", with: "")
-        guard let amount = Double(cleanedAmount), amount > 0 else {
+        guard let amount = appConfig.config.parseAmount(amountText), amount > 0 else {
             showAmountError = true
             return
         }

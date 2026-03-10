@@ -133,6 +133,8 @@ struct TransactionFormView: View {
                 if hasAttemptedSave { validateCategory() }
             }
             .onChange(of: amountText) {
+                let formatted = appConfig.config.formatAmountInput(amountText)
+                if formatted != amountText { amountText = formatted }
                 if hasAttemptedSave { validateAmount() }
             }
             .onChange(of: selectedCategoryId) {
@@ -200,7 +202,7 @@ struct TransactionFormView: View {
                     L10n.tr("expense_form.enter_amount", appConfig.language),
                     text: $amountText
                 )
-                .keyboardType(.numberPad)
+                .keyboardType(.decimalPad)
                 .font(.body)
 
                 Text(appConfig.config.currency)
@@ -503,11 +505,7 @@ struct TransactionFormView: View {
             amountError = L10n.tr("expense_form.amount_required", appConfig.language)
             return false
         }
-        let cleaned = trimmed
-            .replacingOccurrences(of: ",", with: "")
-            .replacingOccurrences(of: ".", with: "")
-            .replacingOccurrences(of: " ", with: "")
-        guard let amount = Double(cleaned), amount > 0 else {
+        guard let amount = appConfig.config.parseAmount(trimmed), amount > 0 else {
             amountError = L10n.tr("expense_form.amount_positive", appConfig.language)
             return false
         }
@@ -564,11 +562,7 @@ struct TransactionFormView: View {
 
         guard validateAll() else { return }
 
-        let cleaned = amountText
-            .replacingOccurrences(of: ",", with: "")
-            .replacingOccurrences(of: ".", with: "")
-            .replacingOccurrences(of: " ", with: "")
-        let amount = Double(cleaned)!
+        let amount = appConfig.config.parseAmount(amountText)!
 
         let transaction = Transaction(
             id: existingTransaction?.id ?? UUID().uuidString,

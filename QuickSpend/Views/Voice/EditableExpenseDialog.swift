@@ -91,6 +91,12 @@ struct EditableExpenseDialog: View {
             TextField(L10n.tr("common.amount", appConfig.language), text: $editableExpenses[index].amountText)
                 .keyboardType(.decimalPad)
                 .font(.body.monospacedDigit())
+                .onChange(of: editableExpenses[index].amountText) {
+                    let formatted = appConfig.config.formatAmountInput(editableExpenses[index].amountText)
+                    if formatted != editableExpenses[index].amountText {
+                        editableExpenses[index].amountText = formatted
+                    }
+                }
         }
 
         // Category
@@ -150,23 +156,8 @@ struct EditableExpenseDialog: View {
         dismiss()
     }
 
-    /// Parse amount text handling both "1,500.50" (en) and "1.500,50" (European) formats
     private func parseAmount(_ text: String) -> Double? {
-        let trimmed = text.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return nil }
-
-        // Try the user's current locale first
-        let localeFormatter = NumberFormatter()
-        localeFormatter.numberStyle = .decimal
-        if let result = localeFormatter.number(from: trimmed)?.doubleValue {
-            return result
-        }
-
-        // Fallback: strip commas and spaces, parse as plain Double
-        let cleaned = trimmed
-            .replacingOccurrences(of: ",", with: "")
-            .replacingOccurrences(of: " ", with: "")
-        return Double(cleaned)
+        appConfig.config.parseAmount(text)
     }
 }
 

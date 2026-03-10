@@ -18,53 +18,109 @@ struct AppConfig: Codable, Equatable {
 
     // MARK: - Currency
 
-    var currencySymbol: String {
-        switch currency {
-        case "VND": return "d"
-        case "USD": return "$"
-        case "JPY": return "¥"
-        case "EUR": return "€"
-        default: return currency
+    /// Locale used for currency formatting, derived from the user's language.
+    var currencyLocale: Locale {
+        switch language {
+        case "vi": return Locale(identifier: "vi_VN")
+        case "ja": return Locale(identifier: "ja_JP")
+        case "es": return Locale(identifier: "es_ES")
+        default:   return Locale(identifier: "en_US")
         }
     }
 
-    /// Whether this currency uses decimal places
-    var currencyUsesDecimals: Bool {
-        currency != "VND" && currency != "JPY"
+    /// The currency symbol for the current locale and currency code.
+    var currencySymbol: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currency
+        formatter.locale = currencyLocale
+        return formatter.currencySymbol
     }
 
-    /// Whether the currency symbol goes after the amount
-    var currencySymbolAfter: Bool {
-        currency == "VND"
-    }
-
-    /// Whether to use period as thousand separator
-    var usesPeriodForThousands: Bool {
-        language == "vi" || language == "es"
-    }
-
-    /// Format a currency amount with proper symbol placement and number formatting
+    /// Format a currency amount using locale-aware formatting.
     func formatCurrency(_ amount: Double) -> String {
         let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = currencyUsesDecimals ? 2 : 0
-        formatter.maximumFractionDigits = currencyUsesDecimals ? 2 : 0
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currency
+        formatter.locale = currencyLocale
+        return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+    }
+
+    // MARK: - Amount Parsing
+
+    /// Parse an amount string respecting the current language's decimal/thousands separators.
+    /// For example, English uses "," for thousands and "." for decimals (1,234.56),
+    /// while Vietnamese/Spanish use "." for thousands and "," for decimals (1.234,56).
+    func parseAmount(_ text: String) -> Double? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        let usesPeriodForThousands = (language == "vi" || language == "es")
 
         if usesPeriodForThousands {
-            formatter.groupingSeparator = "."
-            formatter.decimalSeparator = ","
+            // vi/es: "." is thousands separator, "," is decimal separator
+            let cleaned = trimmed
+                .replacingOccurrences(of: ".", with: "")   // strip thousands separator
+                .replacingOccurrences(of: ",", with: ".")  // convert decimal separator to "."
+                .replacingOccurrences(of: " ", with: "")
+            return Double(cleaned)
         } else {
-            formatter.groupingSeparator = ","
-            formatter.decimalSeparator = "."
+            // en/ja: "," is thousands separator, "." is decimal separator
+            let cleaned = trimmed
+                .replacingOccurrences(of: ",", with: "")   // strip thousands separator
+                .replacingOccurrences(of: " ", with: "")
+            return Double(cleaned)
+        }
+    }
+
+    // MARK: - Live Amount Formatting
+
+    /// Format raw keyboard input with locale-appropriate grouping separators as the user types.
+    /// Accepts digits plus the locale's decimal separator ("." for en/ja, "," for vi/es).
+    /// Returns the formatted string suitable for display in a TextField.
+    func formatAmountInput(_ text: String) -> String {
+        let usesPeriodForThousands = (language == "vi" || language == "es")
+        let decimalSep: Character = usesPeriodForThousands ? "," : "."
+        let thousandsSep: Character = usesPeriodForThousands ? "." : ","
+
+        // Strip everything except digits and the locale-appropriate decimal separator
+        var digits = String(text.filter { $0.isNumber || $0 == decimalSep })
+
+        // Ensure at most one decimal separator
+        if let first = digits.firstIndex(of: decimalSep) {
+            let rest = digits[digits.index(after: first)...].filter { $0 != decimalSep }
+            digits = String(digits[...first]) + rest
         }
 
-        let formatted = formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+        // Split into integer and decimal parts
+        let parts = digits.split(separator: decimalSep, maxSplits: 1, omittingEmptySubsequences: false)
+        var integerPart = String(parts.first ?? "")
+        let decimalPart = parts.count > 1 ? String(parts[1]) : nil
 
-        if currencySymbolAfter {
-            return "\(formatted) \(currencySymbol)"
-        } else {
-            return "\(currencySymbol)\(formatted)"
+        // Remove leading zeros (but keep at least one "0")
+        integerPart = String(integerPart.drop(while: { $0 == "0" }))
+        if integerPart.isEmpty { integerPart = digits.contains(decimalSep) || !text.isEmpty ? "0" : "" }
+
+        // Guard empty
+        if integerPart.isEmpty && decimalPart == nil { return "" }
+
+        // Insert thousands separators
+        var result = ""
+        for (i, char) in integerPart.reversed().enumerated() {
+            if i > 0 && i % 3 == 0 {
+                result.append(thousandsSep)
+            }
+            result.append(char)
         }
+        result = String(result.reversed())
+
+        // Append decimal part
+        if let dec = decimalPart {
+            result.append(decimalSep)
+            result.append(contentsOf: dec)
+        }
+
+        return result
     }
 
     // MARK: - Language
@@ -131,7 +187,7 @@ struct CurrencyOption: Identifiable {
 
     static let options: [CurrencyOption] = [
         CurrencyOption(code: "USD", symbol: "$"),
-        CurrencyOption(code: "VND", symbol: "d"),
+        CurrencyOption(code: "VND", symbol: "₫"),
         CurrencyOption(code: "JPY", symbol: "¥"),
         CurrencyOption(code: "EUR", symbol: "€"),
     ]

@@ -17,22 +17,15 @@ enum CurrencyFormatter {
 
     /// Format amount without currency symbol (just the number)
     static func formatNumber(_ amount: Double, currency: String, language: String) -> String {
-        let usesDecimals = currency != "VND" && currency != "JPY" && currency != "KRW"
-        let usesPeriodForThousands = language == "vi" || language == "es"
-
+        let config = AppConfig(language: language, currency: currency)
         let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = usesDecimals ? 2 : 0
-        formatter.maximumFractionDigits = usesDecimals ? 2 : 0
-
-        if usesPeriodForThousands {
-            formatter.groupingSeparator = "."
-            formatter.decimalSeparator = ","
-        } else {
-            formatter.groupingSeparator = ","
-            formatter.decimalSeparator = "."
-        }
-
-        return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currency
+        formatter.locale = config.currencyLocale
+        formatter.currencySymbol = ""
+        let result = formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+        // Trim any leftover whitespace or non-breaking spaces from empty symbol
+        return result.trimmingCharacters(in: .whitespaces)
+            .trimmingCharacters(in: .init(charactersIn: "\u{00A0}"))
     }
 }

@@ -7,6 +7,9 @@ final class AppConfigViewModel {
     private(set) var config: AppConfig
     private let preferences: PreferencesService
 
+    /// Supported language codes in the app
+    private static let supportedLanguages: Set<String> = ["en", "vi", "ja", "es"]
+
     var language: String { config.language }
     var speechLanguage: String { config.effectiveSpeechLanguage }
     var currency: String { config.currency }
@@ -32,6 +35,42 @@ final class AppConfigViewModel {
             config.speechLanguage = nil
         }
         preferences.saveConfig(config)
+        // Sync to iOS per-app language setting
+        Self.setSystemLanguage(language)
+    }
+
+    /// Detect the iOS per-app language setting and update AppConfig if it differs.
+    /// Call this on app launch and when returning to foreground.
+    func syncLanguageFromSystem() {
+        guard let systemLanguage = Self.detectSystemLanguage() else { return }
+        if systemLanguage != config.language {
+            config.language = systemLanguage
+            // Reset speech language so it follows the new app language
+            if config.speechLanguage == systemLanguage {
+                config.speechLanguage = nil
+            }
+            preferences.saveConfig(config)
+        }
+    }
+
+    // MARK: - System Language Sync (Internal for testing)
+
+    /// Resolve the iOS-level preferred language to a supported app language code.
+    static func detectSystemLanguage() -> String? {
+        // Locale.preferredLanguages respects the per-app language override in iOS Settings
+        let preferred = Locale.preferredLanguages
+        for tag in preferred {
+            let code = Locale(identifier: tag).language.languageCode?.identifier ?? tag
+            if supportedLanguages.contains(code) {
+                return code
+            }
+        }
+        return nil
+    }
+
+    /// Write the language to the iOS per-app language UserDefaults key.
+    private static func setSystemLanguage(_ language: String) {
+        UserDefaults.standard.set([language], forKey: "AppleLanguages")
     }
 
     func setSpeechLanguage(_ speechLanguage: String?) {
@@ -56,7 +95,10 @@ final class AppConfigViewModel {
 
     /// Bulk update (useful during onboarding)
     func updatePreferences(language: String? = nil, currency: String? = nil, isOnboardingComplete: Bool? = nil) {
-        if let language { config.language = language }
+        if let language {
+            config.language = language
+            Self.setSystemLanguage(language)
+        }
         if let currency { config.currency = currency }
         if let isOnboardingComplete { config.isOnboardingComplete = isOnboardingComplete }
         preferences.saveConfig(config)

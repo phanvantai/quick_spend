@@ -25,6 +25,12 @@ struct QuickSpendApp: App {
                 .environment(appConfig)
                 .environment(subscription)
                 .preferredColorScheme(appConfig.colorScheme)
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                    appConfig.syncLanguageFromSystem()
+                }
+                .task {
+                    appConfig.syncLanguageFromSystem()
+                }
         }
         .modelContainer(for: [
             Transaction.self,

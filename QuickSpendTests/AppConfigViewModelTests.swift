@@ -218,7 +218,7 @@ struct AppConfigViewModelTests {
         vm.setCurrency("VND")
         vm.setLanguage("vi")
         let formatted = vm.formatCurrency(1500000)
-        #expect(formatted.contains("d"))
+        #expect(formatted.contains("₫"))
     }
 
     // MARK: - Sequential Operations
@@ -237,5 +237,53 @@ struct AppConfigViewModelTests {
         #expect(vm.themeMode == "dark")
         #expect(vm.isOnboardingComplete == true)
         #expect(vm.colorScheme == .dark)
+    }
+
+    // MARK: - System Language Sync
+
+    @Test("detectSystemLanguage returns a supported language code")
+    func testDetectSystemLanguage() {
+        // Locale.preferredLanguages always has at least one entry on iOS/simulator
+        let result = AppConfigViewModel.detectSystemLanguage()
+        // The simulator typically runs in English, so we should get a supported language
+        if let lang = result {
+            let supported: Set<String> = ["en", "vi", "ja", "es"]
+            #expect(supported.contains(lang))
+        }
+        // nil is acceptable if the system language is none of the supported ones
+    }
+
+    @Test("syncLanguageFromSystem does not overwrite when system matches config")
+    func testSyncLanguageFromSystemNoChange() {
+        let vm = makeViewModel()
+        // detectSystemLanguage reads Locale.preferredLanguages which is affected
+        // by the AppleLanguages UserDefaults key. Set it to a known value first.
+        UserDefaults.standard.set(["en"], forKey: "AppleLanguages")
+        let systemLang = AppConfigViewModel.detectSystemLanguage() ?? "en"
+        // Set config to match system
+        vm.setLanguage(systemLang)
+
+        // Sync should not change anything
+        vm.syncLanguageFromSystem()
+        #expect(vm.language == systemLang)
+    }
+
+    @Test("updatePreferences with language syncs to system")
+    func testUpdatePreferencesSyncsLanguage() {
+        let vm = makeViewModel()
+        // This should not crash and should update the config
+        vm.updatePreferences(language: "ja", currency: "JPY", isOnboardingComplete: true)
+        #expect(vm.language == "ja")
+        #expect(vm.currency == "JPY")
+        #expect(vm.isOnboardingComplete == true)
+    }
+
+    @Test("setLanguage writes to AppleLanguages UserDefaults key")
+    func testSetLanguageWritesAppleLanguages() {
+        let vm = makeViewModel()
+        vm.setLanguage("vi")
+        // Verify AppleLanguages was updated in standard UserDefaults
+        let appleLanguages = UserDefaults.standard.stringArray(forKey: "AppleLanguages")
+        #expect(appleLanguages?.first == "vi")
     }
 }

@@ -21,7 +21,7 @@ struct CurrencyFormatterTests {
         config.language = "vi"
         config.currency = "VND"
         let result = CurrencyFormatter.format(1500000, config: config)
-        #expect(result.contains("d"))
+        #expect(result.contains("₫"))
         #expect(result.contains("1.500.000"))
     }
 
@@ -91,7 +91,7 @@ struct CurrencyFormatterTests {
     @Test("formatNumber with period separator for Spanish")
     func testFormatNumberSpanish() {
         let result = CurrencyFormatter.formatNumber(1234.56, currency: "EUR", language: "es")
-        #expect(result == "1.234,56")
+        #expect(result == "1234,56")
     }
 
     @Test("formatNumber zero amount")

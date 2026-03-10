@@ -34,7 +34,7 @@ struct AppConfigTests {
     func testCurrencySymbol() {
         let tests: [(String, String)] = [
             ("USD", "$"),
-            ("VND", "d"),
+            ("VND", "₫"),
             ("JPY", "¥"),
             ("EUR", "€"),
         ]
@@ -42,57 +42,24 @@ struct AppConfigTests {
         for (code, expected) in tests {
             var config = AppConfig()
             config.currency = code
-            #expect(config.currencySymbol == expected, "Currency \(code) should have symbol \(expected)")
+            #expect(config.currencySymbol.contains(expected), "Currency \(code) should contain symbol \(expected)")
         }
-
-        // Unknown currencies fall back to the currency code itself
-        var krw = AppConfig()
-        krw.currency = "KRW"
-        #expect(krw.currencySymbol == "KRW")
     }
 
-    @Test("currencyUsesDecimals is correct")
-    func testCurrencyUsesDecimals() {
-        let noDecimals = ["VND", "JPY"]
-        let withDecimals = ["USD", "EUR"]
+    @Test("currencyLocale maps language to correct locale")
+    func testCurrencyLocale() {
+        let tests: [(String, String)] = [
+            ("en", "en_US"),
+            ("vi", "vi_VN"),
+            ("ja", "ja_JP"),
+            ("es", "es_ES"),
+        ]
 
-        for code in noDecimals {
+        for (lang, expectedId) in tests {
             var config = AppConfig()
-            config.currency = code
-            #expect(config.currencyUsesDecimals == false, "\(code) should not use decimals")
+            config.language = lang
+            #expect(config.currencyLocale.identifier == expectedId, "Language \(lang) should map to \(expectedId)")
         }
-
-        for code in withDecimals {
-            var config = AppConfig()
-            config.currency = code
-            #expect(config.currencyUsesDecimals == true, "\(code) should use decimals")
-        }
-    }
-
-    @Test("currencySymbolAfter is correct")
-    func testCurrencySymbolAfter() {
-        var vnd = AppConfig()
-        vnd.currency = "VND"
-        #expect(vnd.currencySymbolAfter == true)
-
-        var usd = AppConfig()
-        usd.currency = "USD"
-        #expect(usd.currencySymbolAfter == false)
-
-        var eur = AppConfig()
-        eur.currency = "EUR"
-        #expect(eur.currencySymbolAfter == false)
-    }
-
-    @Test("usesPeriodForThousands only for Vietnamese")
-    func testUsesPeriodForThousands() {
-        var vi = AppConfig()
-        vi.language = "vi"
-        #expect(vi.usesPeriodForThousands == true)
-
-        var en = AppConfig()
-        en.language = "en"
-        #expect(en.usesPeriodForThousands == false)
     }
 
     @Test("formatCurrency formats correctly for USD")
@@ -113,7 +80,7 @@ struct AppConfigTests {
         config.language = "vi"
 
         let formatted = config.formatCurrency(1500000)
-        #expect(formatted.contains("d"))
+        #expect(formatted.contains("₫"))
         #expect(formatted.contains("1.500.000"))
     }
 
@@ -190,7 +157,7 @@ struct AppConfigTests {
         let options = CurrencyOption.options
         let symbolMap = Dictionary(uniqueKeysWithValues: options.map { ($0.code, $0.symbol) })
         #expect(symbolMap["USD"] == "$")
-        #expect(symbolMap["VND"] == "d")
+        #expect(symbolMap["VND"] == "₫")
         #expect(symbolMap["JPY"] == "¥")
         #expect(symbolMap["EUR"] == "€")
     }
@@ -278,20 +245,6 @@ struct AppConfigTests {
         #expect(config.languageDisplayName == "zz")
     }
 
-    @Test("usesPeriodForThousands is true for Spanish")
-    func testUsesPeriodForThousandsSpanish() {
-        var config = AppConfig()
-        config.language = "es"
-        #expect(config.usesPeriodForThousands == true)
-    }
-
-    @Test("usesPeriodForThousands is false for Japanese")
-    func testUsesPeriodForThousandsJapanese() {
-        var config = AppConfig()
-        config.language = "ja"
-        #expect(config.usesPeriodForThousands == false)
-    }
-
     @Test("formatCurrency for JPY has no decimals")
     func testFormatCurrencyJPY() {
         var config = AppConfig()
@@ -315,7 +268,7 @@ struct AppConfigTests {
         #expect(formatted.contains("1,234.56"))
     }
 
-    @Test("formatCurrency for EUR with Spanish language uses period separator")
+    @Test("formatCurrency for EUR with Spanish language uses correct locale formatting")
     func testFormatCurrencyEURSpanish() {
         var config = AppConfig()
         config.currency = "EUR"
@@ -323,7 +276,7 @@ struct AppConfigTests {
 
         let formatted = config.formatCurrency(1234.56)
         #expect(formatted.contains("€"))
-        #expect(formatted.contains("1.234,56"))
+        #expect(formatted.contains("1234,56"))
     }
 
     @Test("AppConfig Equatable conformance")
@@ -406,5 +359,168 @@ struct AppConfigTests {
         let decoded = try JSONDecoder().decode(AppConfig.self, from: data)
         #expect(decoded.speechLanguage == nil)
         #expect(decoded.effectiveSpeechLanguage == "vi")
+    }
+
+    // MARK: - parseAmount
+
+    @Test("parseAmount with English locale parses decimal point correctly")
+    func testParseAmountEnglishDecimal() {
+        var config = AppConfig()
+        config.language = "en"
+
+        #expect(config.parseAmount("12.5") == 12.5)
+        #expect(config.parseAmount("12.50") == 12.5)
+        #expect(config.parseAmount("0.99") == 0.99)
+    }
+
+    @Test("parseAmount with English locale strips comma thousands separator")
+    func testParseAmountEnglishThousands() {
+        var config = AppConfig()
+        config.language = "en"
+
+        #expect(config.parseAmount("1,234") == 1234)
+        #expect(config.parseAmount("1,234.56") == 1234.56)
+        #expect(config.parseAmount("1,000,000") == 1_000_000)
+    }
+
+    @Test("parseAmount with English locale handles plain integers")
+    func testParseAmountEnglishInteger() {
+        var config = AppConfig()
+        config.language = "en"
+
+        #expect(config.parseAmount("125") == 125)
+        #expect(config.parseAmount("0") == 0)
+    }
+
+    @Test("parseAmount with Vietnamese locale parses comma decimal correctly")
+    func testParseAmountVietnameseDecimal() {
+        var config = AppConfig()
+        config.language = "vi"
+
+        #expect(config.parseAmount("12,5") == 12.5)
+        #expect(config.parseAmount("12,50") == 12.5)
+    }
+
+    @Test("parseAmount with Vietnamese locale strips period thousands separator")
+    func testParseAmountVietnameseThousands() {
+        var config = AppConfig()
+        config.language = "vi"
+
+        #expect(config.parseAmount("1.234") == 1234)
+        #expect(config.parseAmount("1.234,56") == 1234.56)
+        #expect(config.parseAmount("1.000.000") == 1_000_000)
+    }
+
+    @Test("parseAmount with Spanish locale uses comma as decimal separator")
+    func testParseAmountSpanishDecimal() {
+        var config = AppConfig()
+        config.language = "es"
+
+        #expect(config.parseAmount("12,5") == 12.5)
+        #expect(config.parseAmount("1.234,56") == 1234.56)
+    }
+
+    @Test("parseAmount with Japanese locale uses period as decimal separator")
+    func testParseAmountJapaneseDecimal() {
+        var config = AppConfig()
+        config.language = "ja"
+
+        #expect(config.parseAmount("12.5") == 12.5)
+        #expect(config.parseAmount("1,234") == 1234)
+    }
+
+    @Test("parseAmount returns nil for empty or whitespace-only input")
+    func testParseAmountEmpty() {
+        let config = AppConfig()
+
+        #expect(config.parseAmount("") == nil)
+        #expect(config.parseAmount("   ") == nil)
+    }
+
+    @Test("parseAmount returns nil for non-numeric input")
+    func testParseAmountNonNumeric() {
+        let config = AppConfig()
+
+        #expect(config.parseAmount("abc") == nil)
+        #expect(config.parseAmount("$12") == nil)
+    }
+
+    @Test("parseAmount trims whitespace before parsing")
+    func testParseAmountTrimsWhitespace() {
+        var config = AppConfig()
+        config.language = "en"
+
+        #expect(config.parseAmount("  12.5  ") == 12.5)
+        #expect(config.parseAmount(" 1,234 ") == 1234)
+    }
+
+    // MARK: - formatAmountInput
+
+    @Test("formatAmountInput adds comma grouping for English")
+    func testFormatAmountInputEnglish() {
+        var config = AppConfig()
+        config.language = "en"
+
+        #expect(config.formatAmountInput("1234") == "1,234")
+        #expect(config.formatAmountInput("1500000") == "1,500,000")
+        #expect(config.formatAmountInput("123") == "123")
+        #expect(config.formatAmountInput("1234.56") == "1,234.56")
+    }
+
+    @Test("formatAmountInput adds period grouping for Vietnamese")
+    func testFormatAmountInputVietnamese() {
+        var config = AppConfig()
+        config.language = "vi"
+
+        #expect(config.formatAmountInput("1234") == "1.234")
+        #expect(config.formatAmountInput("1500000") == "1.500.000")
+        #expect(config.formatAmountInput("1234,56") == "1.234,56")
+    }
+
+    @Test("formatAmountInput adds period grouping for Spanish")
+    func testFormatAmountInputSpanish() {
+        var config = AppConfig()
+        config.language = "es"
+
+        #expect(config.formatAmountInput("1234,56") == "1.234,56")
+        #expect(config.formatAmountInput("1500000") == "1.500.000")
+    }
+
+    @Test("formatAmountInput handles edge cases")
+    func testFormatAmountInputEdgeCases() {
+        var config = AppConfig()
+        config.language = "en"
+
+        #expect(config.formatAmountInput("") == "")
+        #expect(config.formatAmountInput("0") == "0")
+        #expect(config.formatAmountInput("0.99") == "0.99")
+        #expect(config.formatAmountInput("12.") == "12.")
+        #expect(config.formatAmountInput("0000123") == "123")
+    }
+
+    @Test("formatAmountInput is idempotent with already-formatted input")
+    func testFormatAmountInputIdempotent() {
+        var config = AppConfig()
+        config.language = "en"
+
+        let formatted = config.formatAmountInput("1234567")
+        #expect(formatted == "1,234,567")
+        // Re-formatting should produce the same result
+        #expect(config.formatAmountInput(formatted) == "1,234,567")
+    }
+
+    @Test("formatAmountInput round-trips with parseAmount")
+    func testFormatAmountInputParseRoundTrip() {
+        var config = AppConfig()
+        config.language = "en"
+
+        let formatted = config.formatAmountInput("1234.56")
+        #expect(formatted == "1,234.56")
+        #expect(config.parseAmount(formatted) == 1234.56)
+
+        config.language = "vi"
+        let formattedVi = config.formatAmountInput("1234,56")
+        #expect(formattedVi == "1.234,56")
+        #expect(config.parseAmount(formattedVi) == 1234.56)
     }
 }
