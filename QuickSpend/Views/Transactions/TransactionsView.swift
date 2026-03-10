@@ -71,33 +71,37 @@ struct TransactionsView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // Calendar & summary header section
-                Section {
-                    VStack(spacing: AppTheme.spacing16) {
-                        monthNavigatorWithRange
+            VStack(spacing: 0) {
+                // Month navigator pinned above the list
+                monthNavigatorWithRange
+                    .padding(.vertical, AppTheme.spacing8)
 
-                        CalendarGrid(
-                            selectedMonth: selectedMonth,
-                            expenses: monthTransactions,
-                            currency: appConfig.config.currency,
-                            language: appConfig.language,
-                            selectedDate: $selectedDate
-                        )
+                List {
+                    // Calendar & summary header section
+                    Section {
+                        VStack(spacing: AppTheme.spacing16) {
+                            CalendarGrid(
+                                selectedMonth: selectedMonth,
+                                expenses: monthTransactions,
+                                currency: appConfig.config.currency,
+                                language: appConfig.language,
+                                selectedDate: $selectedDate
+                            )
 
-                        monthlySummarySection
+                            monthlySummarySection
+                        }
                     }
-                }
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
 
-                // Transaction list grouped by date
-                transactionListSection
+                    // Transaction list grouped by date
+                    transactionListSection
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
-            .listStyle(.plain)
             .background(Color(.systemGroupedBackground))
-            .scrollContentBackground(.hidden)
             .navigationTitle(L10n.tr("transactions.title", appConfig.language))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
