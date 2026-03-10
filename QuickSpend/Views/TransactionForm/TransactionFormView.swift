@@ -537,7 +537,8 @@ struct TransactionFormView: View {
 
     @discardableResult
     private func validateDate() -> Bool {
-        if selectedDate > Date() {
+        let calendar = Calendar.current
+        if calendar.startOfDay(for: selectedDate) > calendar.startOfDay(for: Date()) {
             dateError = L10n.tr("expense_form.future_date", appConfig.language)
             return false
         }

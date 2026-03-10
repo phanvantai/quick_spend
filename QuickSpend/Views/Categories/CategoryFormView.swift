@@ -280,27 +280,9 @@ struct CategoryFormView: View {
 
     // MARK: - Available Colors
 
-    static let availableColorHexes: [String] = [
-        "FF3B30", // Red
-        "FF6B9D", // Pink
-        "AF52DE", // Purple
-        "5856D6", // Indigo
-        "5F5CF1", // Blue-violet
-        "007AFF", // Blue
-        "5AC8FA", // Light Blue
-        "00D9C0", // Teal
-        "34C759", // Green
-        "4CAF50", // Medium Green
-        "00C896", // Mint
-        "FFCC00", // Yellow
-        "FF9800", // Orange
-        "FF8C42", // Dark Orange
-        "FF5757", // Coral
-        "8E8E93", // Gray
-        "6C5CE7", // Lavender
-        "2196F3", // Bright Blue
-        "009688", // Dark Teal
-    ]
+    static var availableColorHexes: [String] {
+        CategoryColorPalette.availableColorHexes()
+    }
 }
 
 #Preview {
