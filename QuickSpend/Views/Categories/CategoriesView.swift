@@ -1,26 +1,30 @@
 import SwiftUI
 import SwiftData
 
-/// Category management screen
+/// Category management screen with grid layout and expandable groups
 struct CategoriesView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Query(sort: \Category.sortOrder) private var allCategories: [Category]
 
-    @Environment(\.editMode) private var editMode
-
     @State private var showIncome = false
     @State private var showingAddCategory = false
     @State private var editingCategory: Category?
     @State private var deletingCategory: Category?
+    @State private var searchText = ""
+    @State private var collapsedGroups: Set<CategoryGroup> = []
+
+    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: AppTheme.spacing12), count: 3)
 
     private var selectedType: TransactionType {
         showIncome ? .income : .expense
     }
 
     private var filteredCategories: [Category] {
-        allCategories.filter { !$0.isHidden && $0.type == selectedType }
+        let typeFiltered = allCategories.filter { !$0.isHidden && $0.type == selectedType }
+        if searchText.isEmpty { return typeFiltered }
+        return typeFiltered.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
     }
 
     private var groupOrder: [CategoryGroup] {
@@ -38,82 +42,37 @@ struct CategoriesView: View {
     }
 
     var body: some View {
-        List {
-            // Type filter
-            Section {
-                Picker(L10n.tr("common.type", appConfig.language), selection: $showIncome) {
-                    Text(L10n.tr("common.expense", appConfig.language)).tag(false)
-                    Text(L10n.tr("common.income", appConfig.language)).tag(true)
-                }
-                .pickerStyle(.segmented)
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets())
-                .padding(.vertical, AppTheme.spacing4)
-            }
+        ScrollView {
+            VStack(spacing: AppTheme.spacing16) {
+                // Type picker
+                typePicker
 
-            // Categories grouped by CategoryGroup
-            if filteredCategories.isEmpty {
-                Section {
-                    ContentUnavailableView(
-                        L10n.tr("categories.no_categories", appConfig.language),
-                        systemImage: "square.grid.2x2",
-                        description: Text(L10n.tr("categories.tap_to_create", appConfig.language))
-                    )
-                }
-            } else {
-                ForEach(groupedCategories, id: \.group) { section in
-                    Section(groupName(for: section.group)) {
-                        ForEach(section.categories, id: \.id) { category in
-                            categoryRow(category)
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button(role: .destructive) {
-                                        deletingCategory = category
-                                    } label: {
-                                        Label(L10n.tr("common.delete", appConfig.language), systemImage: "trash")
-                                    }
-                                    .tint(.red)
-                                }
-                                .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                                    Button {
-                                        editingCategory = category
-                                    } label: {
-                                        Label(L10n.tr("common.edit", appConfig.language), systemImage: "pencil")
-                                    }
-                                    .tint(AppTheme.adaptiveAccent(colorScheme))
-                                }
-                        }
-                        .onMove { source, destination in
-                            moveCategories(in: section.group, from: source, to: destination)
-                        }
+                // Search bar
+                searchBar
+
+                // Category groups
+                if filteredCategories.isEmpty {
+                    emptyState
+                } else {
+                    ForEach(groupedCategories, id: \.group) { section in
+                        categoryGroupCard(section.group, categories: section.categories)
                     }
                 }
             }
+            .padding(.horizontal, AppTheme.spacing16)
+            .padding(.bottom, AppTheme.spacing32)
         }
-        .tint(AppTheme.adaptiveAccent(colorScheme))
+        .background(Color(.systemGroupedBackground))
         .navigationTitle(L10n.tr("categories.title", appConfig.language))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                HStack(spacing: AppTheme.spacing12) {
-                    Button {
-                        withAnimation {
-                            if editMode?.wrappedValue == .active {
-                                editMode?.wrappedValue = .inactive
-                            } else {
-                                editMode?.wrappedValue = .active
-                            }
-                        }
-                    } label: {
-                        Text(editMode?.wrappedValue == .active
-                             ? L10n.tr("common.done", appConfig.language)
-                             : L10n.tr("common.edit", appConfig.language))
-                    }
-                    Button {
-                        showingAddCategory = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title3)
-                    }
+                Button {
+                    showingAddCategory = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
                 }
+                .tint(AppTheme.adaptiveAccent(colorScheme))
             }
         }
         .sheet(isPresented: $showingAddCategory) {
@@ -148,37 +107,147 @@ struct CategoriesView: View {
         }
     }
 
-    // MARK: - Category Row
+    // MARK: - Type Picker
 
-    private func categoryRow(_ category: Category) -> some View {
-        let isFallback = category.id == "other_expense" || category.id == "other_income"
+    private var typePicker: some View {
+        Picker(L10n.tr("common.type", appConfig.language), selection: $showIncome) {
+            Text(L10n.tr("common.expense", appConfig.language)).tag(false)
+            Text(L10n.tr("common.income", appConfig.language)).tag(true)
+        }
+        .pickerStyle(.segmented)
+        .padding(.top, AppTheme.spacing4)
+    }
 
-        return HStack(spacing: AppTheme.spacing12) {
-            CategoryIconBadge(
-                iconName: category.iconName,
-                color: category.color,
-                size: 40
-            )
+    // MARK: - Search Bar
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(category.name)
-                    .font(.body)
-                if isFallback {
-                    Text(L10n.tr("categories.required", appConfig.language))
-                        .font(.caption)
+    private var searchBar: some View {
+        HStack(spacing: AppTheme.spacing8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+            TextField(L10n.tr("common.search", appConfig.language), text: $searchText)
+                .textFieldStyle(.plain)
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
                 }
             }
+        }
+        .padding(AppTheme.spacing12)
+        .background {
+            RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
+                .fill(Color(.secondarySystemGroupedBackground))
+        }
+    }
 
-            Spacer()
+    // MARK: - Empty State
 
-            if isFallback {
-                Image(systemName: "lock.fill")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+    private var emptyState: some View {
+        ContentUnavailableView(
+            L10n.tr("categories.no_categories", appConfig.language),
+            systemImage: "square.grid.2x2",
+            description: Text(L10n.tr("categories.tap_to_create", appConfig.language))
+        )
+        .padding(.top, AppTheme.spacing48)
+    }
+
+    // MARK: - Category Group Card
+
+    private func categoryGroupCard(_ group: CategoryGroup, categories: [Category]) -> some View {
+        let isCollapsed = collapsedGroups.contains(group)
+
+        return VStack(spacing: 0) {
+            // Group header
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    if isCollapsed {
+                        collapsedGroups.remove(group)
+                    } else {
+                        collapsedGroups.insert(group)
+                    }
+                }
+            } label: {
+                HStack(spacing: AppTheme.spacing8) {
+                    Image(systemName: group.iconName)
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.adaptiveAccent(colorScheme))
+
+                    Text(groupName(for: group))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.up")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(isCollapsed ? 180 : 0))
+                }
+                .padding(.horizontal, AppTheme.spacing16)
+                .padding(.vertical, AppTheme.spacing12)
+            }
+            .buttonStyle(.plain)
+
+            // Grid content
+            if !isCollapsed {
+                LazyVGrid(columns: gridColumns, spacing: AppTheme.spacing16) {
+                    ForEach(categories, id: \.id) { category in
+                        categoryGridItem(category)
+                    }
+                }
+                .padding(.horizontal, AppTheme.spacing12)
+                .padding(.bottom, AppTheme.spacing16)
             }
         }
-        .padding(.vertical, 2)
+        .background {
+            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
+                .fill(Color(.secondarySystemGroupedBackground))
+        }
+    }
+
+    // MARK: - Category Grid Item
+
+    private func categoryGridItem(_ category: Category) -> some View {
+        let isFallback = category.id == "other_expense" || category.id == "other_income"
+
+        return Button {
+            editingCategory = category
+        } label: {
+            VStack(spacing: AppTheme.spacing8) {
+                CategoryIconBadge(
+                    iconName: category.iconName,
+                    color: category.color,
+                    size: 48,
+                    shape: .circle
+                )
+
+                Text(category.name)
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .frame(height: 32)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button {
+                editingCategory = category
+            } label: {
+                Label(L10n.tr("common.edit", appConfig.language), systemImage: "pencil")
+            }
+
+            if !isFallback {
+                Button(role: .destructive) {
+                    deletingCategory = category
+                } label: {
+                    Label(L10n.tr("common.delete", appConfig.language), systemImage: "trash")
+                }
+            }
+        }
     }
 
     // MARK: - Group Name
@@ -198,20 +267,9 @@ struct CategoriesView: View {
         return L10n.tr(key, appConfig.language)
     }
 
-    // MARK: - Reorder
-
-    private func moveCategories(in group: CategoryGroup, from source: IndexSet, to destination: Int) {
-        guard var sectionCats = groupedCategories.first(where: { $0.group == group })?.categories else { return }
-        sectionCats.move(fromOffsets: source, toOffset: destination)
-        for (index, category) in sectionCats.enumerated() {
-            category.sortOrder = index
-        }
-    }
-
     // MARK: - Actions
 
     private func deleteCategory(_ category: Category) {
-        // Reassign transactions to "other_expense" or "other_income"
         let fallbackId = category.isIncomeCategory ? "other_income" : "other_expense"
         CategoryService.reassignTransactions(
             from: category.id,

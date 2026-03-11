@@ -107,4 +107,30 @@ struct EnumTests {
             #expect(decoded == group)
         }
     }
+
+    @Test("CategoryGroup iconName returns valid SF Symbol name for every case")
+    func testCategoryGroupIconName() {
+        let expectedIcons: [CategoryGroup: String] = [
+            .dailyLiving: "cup.and.saucer.fill",
+            .personal: "person.fill",
+            .social: "person.2.fill",
+            .financial: "banknote.fill",
+            .earned: "briefcase.fill",
+            .passive: "chart.line.uptrend.xyaxis",
+            .received: "gift.fill",
+            .other: "ellipsis.circle.fill",
+        ]
+
+        for group in CategoryGroup.allCases {
+            #expect(!group.iconName.isEmpty, "Icon name should not be empty for \(group)")
+            #expect(group.iconName == expectedIcons[group], "Unexpected icon for \(group)")
+        }
+    }
+
+    @Test("CategoryGroup iconName covers all cases")
+    func testCategoryGroupIconNameCoversAllCases() {
+        // Ensure every case has a non-empty icon name
+        let icons = Set(CategoryGroup.allCases.map(\.iconName))
+        #expect(icons.count == CategoryGroup.allCases.count, "Each group should have a unique icon")
+    }
 }
