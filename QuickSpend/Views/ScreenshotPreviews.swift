@@ -221,6 +221,180 @@ private func screenshotAppConfig() -> AppConfigViewModel {
     .environment(screenshotAppConfig())
 }
 
+// MARK: - Screenshot 6: Voice FAB Idle (Home with FAB visible)
+
+#Preview("Screenshot - Voice FAB Idle") {
+    let container = try! screenshotContainer()
+    ZStack(alignment: .bottomTrailing) {
+        HomeView()
+
+        VoiceFABButton(
+            language: "en",
+            isRecording: false,
+            soundLevel: 0,
+            transcription: "",
+            showTutorial: false,
+            onRecordStart: {},
+            onRecordEnd: {},
+            onRecordCancel: {},
+            onTutorialDismissed: {}
+        )
+        .padding(.trailing, AppTheme.spacing16)
+        .padding(.bottom, 90)
+    }
+    .modelContainer(container)
+    .environment(screenshotAppConfig())
+}
+
+// MARK: - Screenshot 7: Voice FAB Recording with Transcription
+
+#Preview("Screenshot - Voice Recording") {
+    let container = try! screenshotContainer()
+    ZStack(alignment: .bottomTrailing) {
+        HomeView()
+
+        // Recording bubble overlay (matches MainTabView layout)
+        VStack {
+            Spacer()
+            RecordingBubbleView(
+                language: "en",
+                transcription: "Coffee at Starbucks twelve fifty",
+                soundLevel: 0.6,
+                isDragCancelling: false
+            )
+            .padding(.horizontal, AppTheme.spacing16)
+            .padding(.bottom, 200)
+        }
+
+        VoiceFABButton(
+            language: "en",
+            isRecording: true,
+            soundLevel: 0.6,
+            transcription: "Coffee at Starbucks twelve fifty",
+            showTutorial: false,
+            onRecordStart: {},
+            onRecordEnd: {},
+            onRecordCancel: {},
+            onTutorialDismissed: {}
+        )
+        .padding(.trailing, AppTheme.spacing16)
+        .padding(.bottom, 90)
+    }
+    .modelContainer(container)
+    .environment(screenshotAppConfig())
+}
+
+// MARK: - Screenshot 8: Voice FAB Drag-to-Cancel
+
+#Preview("Screenshot - Voice Cancel") {
+    let container = try! screenshotContainer()
+    ZStack(alignment: .bottomTrailing) {
+        HomeView()
+
+        // Cancel state bubble
+        VStack {
+            Spacer()
+            RecordingBubbleView(
+                language: "en",
+                transcription: "Coffee at Starbucks twelve fifty",
+                soundLevel: 0.4,
+                isDragCancelling: true
+            )
+            .padding(.horizontal, AppTheme.spacing16)
+            .padding(.bottom, 200)
+        }
+
+        // FAB in cancel state (red circle with X)
+        ZStack {
+            Circle()
+                .fill(AppTheme.error.opacity(0.12))
+                .frame(width: 100, height: 100)
+            Circle()
+                .fill(AppTheme.error.opacity(0.25))
+                .frame(width: 84, height: 84)
+            Circle()
+                .fill(AppTheme.error)
+                .frame(width: 68, height: 68)
+                .shadow(color: AppTheme.error.opacity(0.35), radius: 12, x: 0, y: 6)
+            Image(systemName: "xmark")
+                .font(.title.weight(.semibold))
+                .foregroundStyle(.white)
+        }
+        .padding(.trailing, AppTheme.spacing16)
+        .padding(.bottom, 90)
+    }
+    .modelContainer(container)
+    .environment(screenshotAppConfig())
+}
+
+// MARK: - Screenshot 9: Voice FAB Tutorial Tooltip
+
+#Preview("Screenshot - Voice Tutorial") {
+    ZStack(alignment: .bottomTrailing) {
+        Color(.systemGroupedBackground)
+            .ignoresSafeArea()
+
+        VoiceFABButton(
+            language: "en",
+            isRecording: false,
+            soundLevel: 0,
+            transcription: "",
+            showTutorial: true,
+            onRecordStart: {},
+            onRecordEnd: {},
+            onRecordCancel: {},
+            onTutorialDismissed: {}
+        )
+        .padding(.trailing, AppTheme.spacing16)
+        .padding(.bottom, 90)
+    }
+    .environment(screenshotAppConfig())
+}
+
+// MARK: - Screenshot 10: Processing Indicator
+
+#Preview("Screenshot - Voice Processing") {
+    ZStack(alignment: .bottomTrailing) {
+        Color(.systemGroupedBackground)
+            .ignoresSafeArea()
+
+        VStack {
+            Spacer()
+            HStack(spacing: AppTheme.spacing8) {
+                ProgressView()
+                    .tint(.white)
+                Text("Processing...")
+                    .font(.subheadline)
+                    .foregroundStyle(.white)
+            }
+            .padding(.horizontal, AppTheme.spacing16)
+            .padding(.vertical, AppTheme.spacing12)
+            .background(
+                Capsule()
+                    .fill(AppTheme.primaryGradient)
+            )
+            .padding(.bottom, 100)
+            .frame(maxWidth: .infinity)
+        }
+
+        VoiceFABButton(
+            language: "en",
+            isRecording: false,
+            soundLevel: 0,
+            transcription: "",
+            showTutorial: false,
+            onRecordStart: {},
+            onRecordEnd: {},
+            onRecordCancel: {},
+            onTutorialDismissed: {}
+        )
+        .opacity(0.5)
+        .padding(.trailing, AppTheme.spacing16)
+        .padding(.bottom, 90)
+    }
+    .environment(screenshotAppConfig())
+}
+
 // MARK: - Mock Premium Provider
 
 private struct MockPremiumProvider: SubscriptionProvider {

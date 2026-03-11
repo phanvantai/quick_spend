@@ -13,6 +13,7 @@ struct VoiceFABButton: View {
     let onRecordEnd: () -> Void
     let onRecordCancel: () -> Void
     let onTutorialDismissed: () -> Void
+    var onDragCancelStateChange: ((Bool) -> Void)?
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var isPulsing = false
@@ -32,16 +33,6 @@ struct VoiceFABButton: View {
                         removal: .opacity
                     ))
                     .onTapGesture { dismissTutorial() }
-            }
-
-            // Inline recording bubble (above the FAB)
-            if isRecording {
-                recordingBubble
-                    .offset(x: -20, y: -100)
-                    .transition(.asymmetric(
-                        insertion: .scale(scale: 0.8, anchor: .bottomTrailing).combined(with: .opacity),
-                        removal: .opacity
-                    ))
             }
 
             // FAB button
@@ -201,7 +192,7 @@ struct VoiceFABButton: View {
                 .fill(.ultraThinMaterial)
                 .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
         )
-        .frame(maxWidth: AppConstants.recordingBubbleMaxWidth, alignment: .trailing)
+        .frame(maxWidth: 240, alignment: .trailing)
     }
 
     // MARK: - Hold Gesture
@@ -220,8 +211,11 @@ struct VoiceFABButton: View {
                 let distance = Self.dragDistance(dragOffset)
                 let wasCancelling = isDragCancelling
                 isDragCancelling = distance > AppConstants.dragCancelThreshold
-                if isDragCancelling && !wasCancelling {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                if isDragCancelling != wasCancelling {
+                    onDragCancelStateChange?(isDragCancelling)
+                    if isDragCancelling {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    }
                 }
             }
             .onEnded { _ in
@@ -235,68 +229,14 @@ struct VoiceFABButton: View {
                 }
                 dragOffset = .zero
                 isDragCancelling = false
+                onDragCancelStateChange?(false)
             }
-    }
-
-    // MARK: - Recording Bubble
-
-    private var recordingBubble: some View {
-        VStack(spacing: AppTheme.spacing4) {
-            if isDragCancelling {
-                Label(L10n.tr("voice.release_cancel", language), systemImage: "xmark.circle.fill")
-                    .font(.caption)
-                    .foregroundStyle(AppTheme.error)
-                    .transition(.opacity)
-            }
-
-            if transcription.isEmpty {
-                Text(L10n.tr("voice.listening", language))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            } else {
-                Text(transcription)
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.trailing)
-            }
-
-            soundLevelBars
-        }
-        .padding(.horizontal, AppTheme.spacing16)
-        .padding(.vertical, AppTheme.spacing12)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
-        )
-        .frame(maxWidth: AppConstants.recordingBubbleMaxWidth, alignment: .trailing)
-    }
-
-    private var soundLevelBars: some View {
-        HStack(spacing: 2) {
-            ForEach(0..<5, id: \.self) { i in
-                RoundedRectangle(cornerRadius: 1.5)
-                    .fill(isDragCancelling ? AppTheme.error : buttonAccentColor)
-                    .frame(width: 3, height: barHeight(for: i))
-                    .animation(.easeOut(duration: 0.1), value: soundLevel)
-            }
-        }
-        .padding(.top, AppTheme.spacing4)
     }
 
     // MARK: - Helpers
 
     private var buttonAccentColor: Color {
         AppTheme.adaptiveAccent(colorScheme)
-    }
-
-    private func barHeight(for index: Int) -> CGFloat {
-        let base: CGFloat = 6
-        let maxExtra: CGFloat = 14
-        let phase = Float(index) * 0.25
-        let level = min(max(soundLevel + phase * 0.3 - 0.15, 0), 1)
-        return base + CGFloat(level) * maxExtra
     }
 
     /// Calculate whether a drag translation exceeds the cancel threshold

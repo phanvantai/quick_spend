@@ -31,7 +31,6 @@ enum AppConstants {
     static let voiceStopDelayMs = 100
     static let holdToRecordMinDuration: TimeInterval = 0.2
     static let dragCancelThreshold: CGFloat = 80
-    static let recordingBubbleMaxWidth: CGFloat = 240
 
     // MARK: - Expense & Transaction Limits
 

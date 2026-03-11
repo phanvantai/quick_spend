@@ -123,12 +123,6 @@ struct AppConstantsTests {
         #expect(AppConstants.dragCancelThreshold == 80)
     }
 
-    @Test("Recording bubble max width is reasonable")
-    func testRecordingBubbleMaxWidth() {
-        #expect(AppConstants.recordingBubbleMaxWidth > 0)
-        #expect(AppConstants.recordingBubbleMaxWidth == 240)
-    }
-
     @Test("VoiceFABButton cancel detection within threshold")
     func testDragWithinThreshold() {
         let translation = CGSize(width: 30, height: 30)

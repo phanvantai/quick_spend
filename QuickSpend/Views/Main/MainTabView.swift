@@ -27,6 +27,8 @@ struct MainTabView: View {
     // Toast feedback for parse failures
     @State private var parseFailureMessage = ""
     @State private var showParseFailureToast = false
+    // Drag-to-cancel state (surfaced from VoiceFABButton for recording bubble)
+    @State private var isDragCancelling = false
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -52,12 +54,32 @@ struct MainTabView: View {
                 onRecordStart: { handleRecordStart() },
                 onRecordEnd: { handleRecordEnd() },
                 onRecordCancel: { handleRecordCancel() },
-                onTutorialDismissed: { preferences.markVoiceTutorialShown() }
+                onTutorialDismissed: { preferences.markVoiceTutorialShown() },
+                onDragCancelStateChange: { isDragCancelling = $0 }
             )
             .allowsHitTesting(!isProcessingVoice)
             .opacity(isProcessingVoice ? 0.5 : 1.0)
             .padding(.trailing, AppTheme.spacing16)
             .padding(.bottom, 90)
+
+            // Recording bubble overlay (full-width, above tab bar)
+            if isRecordingActive || voiceService.isListening {
+                VStack {
+                    Spacer()
+                    RecordingBubbleView(
+                        language: appConfig.language,
+                        transcription: voiceService.transcription,
+                        soundLevel: voiceService.soundLevel,
+                        isDragCancelling: isDragCancelling
+                    )
+                    .padding(.horizontal, AppTheme.spacing16)
+                    .padding(.bottom, 200)
+                }
+                .transition(.asymmetric(
+                    insertion: .scale(scale: 0.9, anchor: .bottom).combined(with: .opacity),
+                    removal: .scale(scale: 0.95, anchor: .bottom).combined(with: .opacity)
+                ))
+            }
 
             // Processing indicator
             if isProcessingVoice {
@@ -109,6 +131,8 @@ struct MainTabView: View {
         }
         .animation(.easeInOut, value: showParseFailureToast)
         .animation(.easeInOut, value: isProcessingVoice)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isRecordingActive)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: voiceService.isListening)
         .onChange(of: voiceService.isListening) { _, newValue in
             if !newValue && isRecordingActive {
                 isRecordingActive = false
