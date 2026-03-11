@@ -12,10 +12,18 @@ struct CategoryFormView: View {
     @State private var selectedIcon: String
     @State private var selectedColorHex: String
     @State private var selectedType: TransactionType
+    @State private var selectedGroup: CategoryGroup
 
     @State private var showNameError = false
+    @State private var customColor: Color
 
     private var isEditMode: Bool { existingCategory != nil }
+
+    private var availableGroups: [CategoryGroup] {
+        selectedType == .expense
+            ? [.dailyLiving, .personal, .social, .financial, .other]
+            : [.earned, .passive, .received, .other]
+    }
 
     init(
         existingCategory: Category? = nil,
@@ -28,6 +36,8 @@ struct CategoryFormView: View {
         _selectedIcon = State(initialValue: existingCategory?.iconName ?? Self.availableIcons[0])
         _selectedColorHex = State(initialValue: existingCategory?.colorHex ?? Self.availableColorHexes[0])
         _selectedType = State(initialValue: existingCategory?.type ?? defaultType)
+        _selectedGroup = State(initialValue: existingCategory?.group ?? (defaultType == .expense ? .dailyLiving : .earned))
+        _customColor = State(initialValue: Color(hex: existingCategory?.colorHex ?? Self.availableColorHexes[0]))
     }
 
     var body: some View {
@@ -61,6 +71,16 @@ struct CategoryFormView: View {
                     }
                 }
 
+                // Group
+                Section(L10n.tr("category_form.group", appConfig.language)) {
+                    Picker(L10n.tr("category_form.group", appConfig.language), selection: $selectedGroup) {
+                        ForEach(availableGroups, id: \.self) { group in
+                            Text(groupName(for: group)).tag(group)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+
                 // Icon Picker
                 Section(L10n.tr("category_form.icon", appConfig.language)) {
                     iconPicker
@@ -69,6 +89,11 @@ struct CategoryFormView: View {
                 // Color Picker
                 Section(L10n.tr("category_form.color", appConfig.language)) {
                     colorPicker
+
+                    ColorPicker(L10n.tr("category_form.custom_color", appConfig.language), selection: $customColor, supportsOpacity: false)
+                        .onChange(of: customColor) {
+                            selectedColorHex = customColor.toHex()
+                        }
                 }
             }
             .navigationTitle(isEditMode
@@ -85,6 +110,11 @@ struct CategoryFormView: View {
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
+            .onChange(of: selectedType) {
+                if !availableGroups.contains(selectedGroup) {
+                    selectedGroup = availableGroups.first ?? .other
+                }
+            }
         }
     }
 
@@ -92,14 +122,12 @@ struct CategoryFormView: View {
 
     private var previewCard: some View {
         HStack(spacing: AppTheme.spacing12) {
-            RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                .fill(Color(hex: selectedColorHex).opacity(0.15))
-                .frame(width: 48, height: 48)
-                .overlay {
-                    Image(systemName: selectedIcon)
-                        .font(.title3)
-                        .foregroundStyle(Color(hex: selectedColorHex))
-                }
+            CategoryIconBadge(
+                iconName: selectedIcon,
+                color: Color(hex: selectedColorHex),
+                size: 48,
+                iconFont: .title3
+            )
 
             Text(name.isEmpty ? L10n.tr("category_form.preview_name", appConfig.language) : name)
                 .font(.headline)
@@ -143,6 +171,7 @@ struct CategoryFormView: View {
                 let isSelected = hex == selectedColorHex
                 Button {
                     selectedColorHex = hex
+                    customColor = Color(hex: hex)
                 } label: {
                     Circle()
                         .fill(Color(hex: hex))
@@ -165,6 +194,23 @@ struct CategoryFormView: View {
         .padding(.vertical, AppTheme.spacing4)
     }
 
+    // MARK: - Group Name
+
+    private func groupName(for group: CategoryGroup) -> String {
+        let key: String
+        switch group {
+        case .dailyLiving: key = "category_group.daily_living"
+        case .personal: key = "category_group.personal"
+        case .social: key = "category_group.social"
+        case .financial: key = "category_group.financial"
+        case .earned: key = "category_group.earned"
+        case .passive: key = "category_group.passive"
+        case .received: key = "category_group.received"
+        case .other: key = "category_group.other"
+        }
+        return L10n.tr(key, appConfig.language)
+    }
+
     // MARK: - Save
 
     private func save() {
@@ -180,7 +226,8 @@ struct CategoryFormView: View {
             name: trimmedName,
             iconName: selectedIcon,
             colorHex: selectedColorHex,
-            type: selectedType
+            type: selectedType,
+            group: selectedGroup
         )
 
         onSave(category)
@@ -233,27 +280,9 @@ struct CategoryFormView: View {
 
     // MARK: - Available Colors
 
-    static let availableColorHexes: [String] = [
-        "FF3B30", // Red
-        "FF6B9D", // Pink
-        "AF52DE", // Purple
-        "5856D6", // Indigo
-        "5F5CF1", // Blue-violet
-        "007AFF", // Blue
-        "5AC8FA", // Light Blue
-        "00D9C0", // Teal
-        "34C759", // Green
-        "4CAF50", // Medium Green
-        "00C896", // Mint
-        "FFCC00", // Yellow
-        "FF9800", // Orange
-        "FF8C42", // Dark Orange
-        "FF5757", // Coral
-        "8E8E93", // Gray
-        "6C5CE7", // Lavender
-        "2196F3", // Bright Blue
-        "009688", // Dark Teal
-    ]
+    static var availableColorHexes: [String] {
+        CategoryColorPalette.availableColorHexes()
+    }
 }
 
 #Preview {

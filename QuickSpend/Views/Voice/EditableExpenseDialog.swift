@@ -70,11 +70,7 @@ struct EditableExpenseDialog: View {
         let filteredCategories = categories.filter { $0.type == data.type }
 
         // Type
-        Picker(L10n.tr("common.type", appConfig.language), selection: $editableExpenses[index].type) {
-            Text(L10n.tr("common.expense", appConfig.language)).tag(TransactionType.expense)
-            Text(L10n.tr("common.income", appConfig.language)).tag(TransactionType.income)
-        }
-        .pickerStyle(.segmented)
+        TransactionTypePicker(selection: $editableExpenses[index].type, language: appConfig.language)
         .onChange(of: editableExpenses[index].type) {
             // Reset category when type changes
             let filtered = categories.filter { $0.type == editableExpenses[index].type }
@@ -95,6 +91,12 @@ struct EditableExpenseDialog: View {
             TextField(L10n.tr("common.amount", appConfig.language), text: $editableExpenses[index].amountText)
                 .keyboardType(.decimalPad)
                 .font(.body.monospacedDigit())
+                .onChange(of: editableExpenses[index].amountText) {
+                    let formatted = appConfig.config.formatAmountInput(editableExpenses[index].amountText)
+                    if formatted != editableExpenses[index].amountText {
+                        editableExpenses[index].amountText = formatted
+                    }
+                }
         }
 
         // Category
@@ -134,14 +136,12 @@ struct EditableExpenseDialog: View {
 
     private func save() {
         let transactions = editableExpenses.compactMap { data -> Transaction? in
-            let cleanedAmount = data.amountText
-                .replacingOccurrences(of: ",", with: "")
-                .replacingOccurrences(of: " ", with: "")
-            guard let amount = Double(cleanedAmount), amount > 0 else { return nil }
+            guard let amount = parseAmount(data.amountText), amount > 0 else { return nil }
+            let clampedAmount = min(amount, AppConstants.maxExpenseAmount)
             guard !data.note.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
 
             return Transaction(
-                amount: amount,
+                amount: clampedAmount,
                 note: data.note.trimmingCharacters(in: .whitespaces),
                 categoryId: data.categoryId,
                 type: data.type,
@@ -154,6 +154,10 @@ struct EditableExpenseDialog: View {
         guard !transactions.isEmpty else { return }
         onSave(transactions)
         dismiss()
+    }
+
+    private func parseAmount(_ text: String) -> Double? {
+        appConfig.config.parseAmount(text)
     }
 }
 
@@ -175,6 +179,6 @@ struct EditableExpenseData {
         self.type = parsed.type
         self.date = parsed.date
         self.confidence = parsed.confidence
-        self.rawInput = parsed.note
+        self.rawInput = parsed.rawInput ?? parsed.note
     }
 }

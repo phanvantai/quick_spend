@@ -5,10 +5,17 @@ struct CalendarGrid: View {
     let selectedMonth: Date
     let expenses: [Transaction]
     let currency: String
+    let language: String
     @Binding var selectedDate: Date?
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
-    private let weekdaySymbols = Calendar.current.veryShortWeekdaySymbols
+
+    /// Locale-aware weekday symbols based on the language setting
+    private var weekdaySymbols: [String] {
+        var calendar = Calendar.current
+        calendar.locale = Locale(identifier: language)
+        return calendar.veryShortWeekdaySymbols
+    }
 
     /// Daily totals for the month
     private var dailyTotals: [Int: (income: Double, expense: Double)] {
@@ -45,7 +52,7 @@ struct CalendarGrid: View {
         VStack(spacing: AppTheme.spacing8) {
             // Weekday headers
             LazyVGrid(columns: columns, spacing: 4) {
-                ForEach(weekdaySymbols, id: \.self) { symbol in
+                ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
                         .font(.caption2.bold())
                         .foregroundStyle(.secondary)
@@ -55,8 +62,8 @@ struct CalendarGrid: View {
 
             // Day cells
             LazyVGrid(columns: columns, spacing: 4) {
-                // Empty cells for offset
-                ForEach(0..<firstWeekdayOffset, id: \.self) { _ in
+                // Empty cells for offset (use negative IDs to avoid collision with day numbers)
+                ForEach((-firstWeekdayOffset)..<0, id: \.self) { _ in
                     Color.clear.frame(height: 52)
                 }
 
@@ -73,7 +80,8 @@ struct CalendarGrid: View {
                         isToday: isToday,
                         isSelected: isSelected,
                         hasData: data != nil,
-                        currency: currency
+                        currency: currency,
+                        language: language
                     ) {
                         let calendar = Calendar.current
                         var comps = calendar.dateComponents([.year, .month], from: selectedMonth)
@@ -108,6 +116,8 @@ struct CalendarGrid: View {
 // MARK: - Day Cell
 
 private struct CalendarDayCell: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let day: Int
     let income: Double
     let expense: Double
@@ -115,6 +125,7 @@ private struct CalendarDayCell: View {
     let isSelected: Bool
     let hasData: Bool
     let currency: String
+    let language: String
     let action: () -> Void
 
     var body: some View {
@@ -122,17 +133,17 @@ private struct CalendarDayCell: View {
             VStack(spacing: 1) {
                 Text("\(day)")
                     .font(.caption.weight(isToday ? .bold : .medium))
-                    .foregroundStyle(isToday ? AppTheme.primaryMint : hasData ? Color.primary : Color.secondary.opacity(0.5))
+                    .foregroundStyle(isToday ? AppTheme.adaptiveAccent(colorScheme) : hasData ? Color.primary : Color.secondary.opacity(0.5))
 
                 if hasData {
                     if income > 0 {
-                        Text("+\(abbreviate(income))")
+                        Text("+\(AmountAbbreviator.abbreviate(income, currency: currency, language: language))")
                             .font(.system(size: 8, weight: .semibold))
                             .foregroundStyle(AppTheme.incomeColor)
                             .lineLimit(1)
                     }
                     if expense > 0 {
-                        Text("-\(abbreviate(expense))")
+                        Text("-\(AmountAbbreviator.abbreviate(expense, currency: currency, language: language))")
                             .font(.system(size: 8, weight: .semibold))
                             .foregroundStyle(AppTheme.expenseColor)
                             .lineLimit(1)
@@ -142,27 +153,18 @@ private struct CalendarDayCell: View {
             .frame(maxWidth: .infinity, minHeight: 52)
             .background {
                 RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                    .fill(isSelected ? AppTheme.primaryMint.opacity(0.1) :
+                    .fill(isSelected ? AppTheme.adaptiveAccent(colorScheme).opacity(0.1) :
                             hasData ? Color(.tertiarySystemGroupedBackground) : .clear)
             }
             .overlay {
                 RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                    .stroke(isToday ? AppTheme.primaryMint : .clear, lineWidth: 2)
+                    .stroke(isToday ? AppTheme.adaptiveAccent(colorScheme) : .clear, lineWidth: 2)
             }
         }
         .buttonStyle(.plain)
     }
 
-    private func abbreviate(_ amount: Double) -> String {
-        if currency == "VND" || currency == "JPY" || currency == "KRW" {
-            if amount >= 1_000_000 { return String(format: "%.1fM", amount / 1_000_000) }
-            if amount >= 1_000 { return String(format: "%.0fk", amount / 1_000) }
-            return String(format: "%.0f", amount)
-        } else {
-            if amount >= 1_000 { return String(format: "%.1fk", amount / 1_000) }
-            return String(format: "%.0f", amount)
-        }
-    }
+
 }
 
 #Preview {
@@ -171,6 +173,7 @@ private struct CalendarDayCell: View {
         selectedMonth: .now,
         expenses: [],
         currency: "USD",
+        language: "en",
         selectedDate: $selectedDate
     )
 }

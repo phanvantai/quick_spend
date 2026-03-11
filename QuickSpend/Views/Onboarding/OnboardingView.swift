@@ -4,6 +4,7 @@ import SwiftData
 /// Single-screen onboarding: language + currency selection on one page
 struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
 
     @State private var selectedLanguage = "en"
@@ -48,7 +49,7 @@ struct OnboardingView: View {
                     // Language selection
                     SettingSelectionRow(
                         icon: selectedLanguageOption.flag,
-                        iconColor: AppTheme.primaryMint,
+                        iconColor: AppTheme.adaptiveAccent(colorScheme),
                         label: L10n.tr("settings.language", selectedLanguage),
                         value: selectedLanguageOption.displayName,
                         changeText: L10n.tr("onboarding.change", selectedLanguage),
@@ -84,7 +85,7 @@ struct OnboardingView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .tint(AppTheme.primaryMint)
+            .tint(AppTheme.adaptiveAccent(colorScheme))
             .padding(.horizontal, AppTheme.spacing24)
             .padding(.bottom, AppTheme.spacing16)
         }

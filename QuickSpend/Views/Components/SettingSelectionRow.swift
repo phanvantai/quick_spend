@@ -3,6 +3,8 @@ import SwiftUI
 /// Reusable tappable row for selecting a setting (language, currency, etc.)
 /// Shows an icon/symbol, label, current value, and a "Change" action text.
 struct SettingSelectionRow: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let icon: String
     let iconColor: Color
     let label: String
@@ -31,7 +33,7 @@ struct SettingSelectionRow: View {
 
                 Text(changeText)
                     .font(.subheadline)
-                    .foregroundStyle(AppTheme.primaryMint)
+                    .foregroundStyle(AppTheme.adaptiveAccent(colorScheme))
             }
             .padding(AppTheme.spacing16)
             .background {

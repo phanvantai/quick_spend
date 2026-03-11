@@ -50,14 +50,10 @@ struct RecurringFormView: View {
             Form {
                 // Transaction type
                 Section {
-                    Picker(L10n.tr("common.type", appConfig.language), selection: $selectedType) {
-                        Text(L10n.tr("common.expense", appConfig.language)).tag(TransactionType.expense)
-                        Text(L10n.tr("common.income", appConfig.language)).tag(TransactionType.income)
-                    }
-                    .pickerStyle(.segmented)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
-                    .padding(.vertical, AppTheme.spacing4)
+                    TransactionTypePicker(selection: $selectedType, language: appConfig.language)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
+                        .padding(.vertical, AppTheme.spacing4)
                 }
 
                 // Description
@@ -75,6 +71,10 @@ struct RecurringFormView: View {
                         TextField("0.00", text: $amountText)
                             .keyboardType(.decimalPad)
                             .font(.title3.monospacedDigit())
+                            .onChange(of: amountText) {
+                                let formatted = appConfig.config.formatAmountInput(amountText)
+                                if formatted != amountText { amountText = formatted }
+                            }
                     }
                     if showAmountError {
                         Text(L10n.tr("expense_form.invalid_amount", appConfig.language))
@@ -181,10 +181,7 @@ struct RecurringFormView: View {
     // MARK: - Save
 
     private func save() {
-        let cleanedAmount = amountText
-            .replacingOccurrences(of: ",", with: "")
-            .replacingOccurrences(of: " ", with: "")
-        guard let amount = Double(cleanedAmount), amount > 0 else {
+        guard let amount = appConfig.config.parseAmount(amountText), amount > 0 else {
             showAmountError = true
             return
         }

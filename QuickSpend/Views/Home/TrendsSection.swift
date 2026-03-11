@@ -8,6 +8,7 @@ struct TrendsSection: View {
     let currency: String
 
     @State private var selectedHalf: Int = 1  // 0 = first half, 1 = second half (recent)
+    @State private var selectedMonth: String?
 
     private var firstHalfLabel: String {
         guard trendData.count >= 6 else { return "" }
@@ -34,11 +35,10 @@ struct TrendsSection: View {
             VStack(spacing: AppTheme.spacing16) {
                 // Period segment picker
                 if trendData.count >= 12 {
-                    Picker("Period", selection: $selectedHalf) {
-                        Text(firstHalfLabel).tag(0)
-                        Text(secondHalfLabel).tag(1)
+                    HStack(spacing: AppTheme.spacing8) {
+                        periodButton(label: firstHalfLabel, tag: 0)
+                        periodButton(label: secondHalfLabel, tag: 1)
                     }
-                    .pickerStyle(.segmented)
                 }
 
                 if displayedData.isEmpty {
@@ -54,58 +54,93 @@ struct TrendsSection: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            .padding(AppTheme.spacing16)
-            .background {
-                RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                    .fill(Color(.secondarySystemGroupedBackground))
-            }
+            .cardBackground()
         }
+    }
+
+    // MARK: - Period Button
+
+    private func periodButton(label: String, tag: Int) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedHalf = tag
+                selectedMonth = nil
+            }
+        } label: {
+            Text(label)
+                .font(.caption.weight(.medium))
+                .padding(.horizontal, AppTheme.spacing12)
+                .padding(.vertical, AppTheme.spacing8)
+                .background {
+                    RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
+                        .fill(selectedHalf == tag ? AppTheme.primaryDark.opacity(0.1) : Color.clear)
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
+                        .stroke(selectedHalf == tag ? AppTheme.primaryDark : Color(.systemGray4), lineWidth: 1)
+                }
+        }
+        .foregroundStyle(selectedHalf == tag ? AppTheme.primaryDark : .secondary)
     }
 
     // MARK: - Line Chart
 
+    /// Flattened data points for the chart (one entry per type per month)
+    private var chartPoints: [TrendChartPoint] {
+        displayedData.flatMap { point in
+            [
+                TrendChartPoint(monthLabel: point.monthLabel, amount: point.totalExpenses, type: "expense"),
+                TrendChartPoint(monthLabel: point.monthLabel, amount: point.totalIncome, type: "income")
+            ]
+        }
+    }
+
+    /// Selected month data for the tooltip
+    private var selectedMonthData: MonthlyTrend? {
+        guard let selectedMonth else { return nil }
+        return displayedData.first { $0.monthLabel == selectedMonth }
+    }
+
     private var lineChart: some View {
-        Chart {
-            ForEach(displayedData) { point in
-                // Expense area
-                AreaMark(
-                    x: .value("Month", point.monthLabel),
-                    y: .value("Amount", point.totalExpenses)
-                )
-                .foregroundStyle(AppTheme.dashboardExpenseLine.opacity(0.12))
-                .interpolationMethod(.catmullRom)
+        Chart(chartPoints) { point in
+            // Area fill with gradient opacity
+            AreaMark(
+                x: .value("Month", point.monthLabel),
+                y: .value("Amount", point.amount),
+                series: .value("Type", point.type),
+                stacking: .unstacked
+            )
+            .foregroundStyle(
+                point.type == "expense"
+                    ? AppTheme.dashboardExpenseLine.opacity(0.15)
+                    : AppTheme.dashboardIncomeLine.opacity(0.1)
+            )
+            .interpolationMethod(.linear)
 
-                // Expense line
-                LineMark(
-                    x: .value("Month", point.monthLabel),
-                    y: .value("Amount", point.totalExpenses)
-                )
-                .foregroundStyle(AppTheme.dashboardExpenseLine)
-                .interpolationMethod(.catmullRom)
-                .lineStyle(StrokeStyle(lineWidth: 2))
-                .symbol(.circle)
-                .symbolSize(30)
+            // Line
+            LineMark(
+                x: .value("Month", point.monthLabel),
+                y: .value("Amount", point.amount),
+                series: .value("Type", point.type)
+            )
+            .foregroundStyle(by: .value("Type", point.type))
+            .interpolationMethod(.linear)
+            .lineStyle(StrokeStyle(lineWidth: 2.5))
 
-                // Income area
-                AreaMark(
+            // Data point circles
+            if point.monthLabel == selectedMonth || selectedMonth == nil {
+                PointMark(
                     x: .value("Month", point.monthLabel),
-                    y: .value("Amount", point.totalIncome)
+                    y: .value("Amount", point.amount)
                 )
-                .foregroundStyle(AppTheme.dashboardIncomeLine.opacity(0.12))
-                .interpolationMethod(.catmullRom)
-
-                // Income line
-                LineMark(
-                    x: .value("Month", point.monthLabel),
-                    y: .value("Amount", point.totalIncome)
-                )
-                .foregroundStyle(AppTheme.dashboardIncomeLine)
-                .interpolationMethod(.catmullRom)
-                .lineStyle(StrokeStyle(lineWidth: 2))
-                .symbol(.circle)
-                .symbolSize(30)
+                .foregroundStyle(by: .value("Type", point.type))
+                .symbolSize(selectedMonth == point.monthLabel ? 50 : 20)
             }
         }
+        .chartForegroundStyleScale([
+            "expense": AppTheme.dashboardExpenseLine,
+            "income": AppTheme.dashboardIncomeLine
+        ])
         .chartYAxis {
             AxisMarks(position: .leading) { value in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [4]))
@@ -114,6 +149,7 @@ struct TrendsSection: View {
                     if let amount = value.as(Double.self) {
                         Text(AmountAbbreviator.abbreviate(amount, currency: currency, language: language))
                             .font(.caption2)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -124,12 +160,101 @@ struct TrendsSection: View {
                     if let label = value.as(String.self) {
                         Text(label)
                             .font(.caption2)
+                            .foregroundStyle(label == selectedMonth ? .primary : .secondary)
                     }
                 }
             }
         }
         .chartLegend(.hidden)
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                Rectangle()
+                    .fill(Color.clear)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                let origin = geometry[proxy.plotFrame!].origin
+                                let location = CGPoint(
+                                    x: value.location.x - origin.x,
+                                    y: value.location.y - origin.y
+                                )
+                                if let month: String = proxy.value(atX: location.x) {
+                                    // Snap to nearest data point
+                                    if displayedData.contains(where: { $0.monthLabel == month }) {
+                                        selectedMonth = month
+                                    }
+                                }
+                            }
+                            .onEnded { _ in
+                                selectedMonth = nil
+                            }
+                    )
+            }
+        }
+        .chartOverlay { proxy in
+            // Tooltip annotation
+            if let selectedMonth, let data = selectedMonthData {
+                GeometryReader { geometry in
+                    let plotFrame = geometry[proxy.plotFrame!]
+                    if let xPosition: CGFloat = proxy.position(forX: selectedMonth) {
+                        let maxY = max(data.totalIncome, data.totalExpenses)
+                        if let yPosition: CGFloat = proxy.position(forY: maxY) {
+                            tooltipView(data: data)
+                                .position(
+                                    x: plotFrame.origin.x + constrainTooltipX(
+                                        xPosition: xPosition,
+                                        plotWidth: plotFrame.width,
+                                        tooltipWidth: 100
+                                    ),
+                                    y: plotFrame.origin.y + max(yPosition - 45, 10)
+                                )
+                        }
+                    }
+                }
+                .allowsHitTesting(false)
+            }
+        }
         .frame(height: 220)
+    }
+
+    // MARK: - Tooltip
+
+    private func tooltipView(data: MonthlyTrend) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(AppTheme.dashboardIncomeLine)
+                    .frame(width: 6, height: 6)
+                Text(AmountAbbreviator.abbreviate(data.totalIncome, currency: currency, language: language))
+                    .font(.caption.weight(.semibold))
+            }
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(AppTheme.dashboardExpenseLine)
+                    .frame(width: 6, height: 6)
+                Text(AmountAbbreviator.abbreviate(data.totalExpenses, currency: currency, language: language))
+                    .font(.caption.weight(.semibold))
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+        }
+    }
+
+    /// Keep tooltip within plot bounds
+    private func constrainTooltipX(xPosition: CGFloat, plotWidth: CGFloat, tooltipWidth: CGFloat) -> CGFloat {
+        let halfTooltip = tooltipWidth / 2
+        if xPosition - halfTooltip < 0 {
+            return halfTooltip
+        } else if xPosition + halfTooltip > plotWidth {
+            return plotWidth - halfTooltip
+        }
+        return xPosition
     }
 
     // MARK: - Helpers
@@ -160,15 +285,7 @@ struct TrendsSection: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: AppTheme.spacing8) {
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .font(.largeTitle)
-                .foregroundStyle(.tertiary)
-            Text(L10n.tr("common.no_data", language))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, minHeight: 160)
+        EmptyDataView(icon: "chart.line.uptrend.xyaxis", message: L10n.tr("common.no_data", language))
     }
 }
 
@@ -191,4 +308,14 @@ struct TrendsSection: View {
         currency: "VND"
     )
     .padding()
+}
+
+// MARK: - Chart Data Point
+
+/// A single data point for the trend chart, flattened from MonthlyTrend
+private struct TrendChartPoint: Identifiable {
+    let id = UUID()
+    let monthLabel: String
+    let amount: Double
+    let type: String // "expense" or "income"
 }

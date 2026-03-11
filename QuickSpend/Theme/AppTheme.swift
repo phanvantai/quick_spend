@@ -10,6 +10,14 @@ enum AppTheme {
     static let primaryMint = Color(hex: "1B4332")
     static let primaryGreen = Color(hex: "2D6A4F")
     static let primaryDark = Color(hex: "143D29")
+    /// Lighter green for use on dark backgrounds (buttons, links, icons)
+    static let primaryLight = Color(hex: "52B788")
+
+    /// Adaptive brand accent — light enough on dark backgrounds, full brand on light.
+    /// Use this anywhere `primaryMint` was previously used as foreground/tint color.
+    static func adaptiveAccent(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? primaryLight : primaryMint
+    }
 
     // MARK: - Accent Colors
 
@@ -57,6 +65,12 @@ enum AppTheme {
 
     static let backgroundGradient = LinearGradient(
         colors: [Color(hex: "E8F5E9"), Color(hex: "FFFFFF")],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+
+    static let darkBackgroundGradient = LinearGradient(
+        colors: [Color(hex: "0A1F14"), Color(hex: "141414")],
         startPoint: .top,
         endPoint: .bottom
     )

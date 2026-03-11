@@ -4,6 +4,7 @@ import SwiftData
 /// List of recurring expense templates with active/inactive toggle
 struct RecurringListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(SubscriptionViewModel.self) private var subscription
     @Query(sort: \RecurringTemplate.startDate, order: .reverse) private var templates: [RecurringTemplate]
@@ -26,12 +27,13 @@ struct RecurringListView: View {
             } else {
                 ForEach(templates, id: \.id) { template in
                     templateRow(template)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) {
                                 deletingTemplate = template
                             } label: {
                                 Label(L10n.tr("common.delete", appConfig.language), systemImage: "trash")
                             }
+                            .tint(.red)
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
                             Button {
@@ -39,7 +41,7 @@ struct RecurringListView: View {
                             } label: {
                                 Label(L10n.tr("common.edit", appConfig.language), systemImage: "pencil")
                             }
-                            .tint(AppTheme.primaryMint)
+                            .tint(AppTheme.adaptiveAccent(colorScheme))
                         }
                 }
             }
@@ -99,7 +101,7 @@ struct RecurringListView: View {
             L10n.tr("recurring.limit_title", appConfig.language),
             isPresented: $showLimitAlert
         ) {
-            Button(L10n.tr("common.upgrade_pro", appConfig.language)) {
+            Button(L10n.tr("common.upgrade_premium", appConfig.language)) {
                 showPaywall = true
             }
             Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { }
@@ -109,6 +111,7 @@ struct RecurringListView: View {
         .sheet(isPresented: $showPaywall) {
             PaywallView()
         }
+        .tint(AppTheme.adaptiveAccent(colorScheme))
     }
 
     // MARK: - Template Row
@@ -118,13 +121,11 @@ struct RecurringListView: View {
 
         return HStack(spacing: AppTheme.spacing12) {
             // Category icon
-            RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
-                .fill((category?.color ?? .secondary).opacity(0.15))
-                .frame(width: 44, height: 44)
-                .overlay {
-                    Image(systemName: category?.iconName ?? "questionmark.circle")
-                        .foregroundStyle(category?.color ?? .secondary)
-                }
+            CategoryIconBadge(
+                iconName: category?.iconName ?? "questionmark.circle",
+                color: category?.color ?? .secondary,
+                size: 44
+            )
 
             // Info
             VStack(alignment: .leading, spacing: 2) {
@@ -160,7 +161,7 @@ struct RecurringListView: View {
                 ))
                 .labelsHidden()
                 .scaleEffect(0.8)
-                .tint(AppTheme.primaryMint)
+                .tint(AppTheme.adaptiveAccent(colorScheme))
             }
         }
         .padding(.vertical, 2)

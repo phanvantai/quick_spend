@@ -37,11 +37,7 @@ struct ReportSection: View {
 
             VStack(spacing: AppTheme.spacing16) {
                 // Segmented picker
-                Picker("Type", selection: $selectedTab) {
-                    Text(HomeStrings.expense(language)).tag(TransactionType.expense)
-                    Text(HomeStrings.income(language)).tag(TransactionType.income)
-                }
-                .pickerStyle(.segmented)
+                TransactionTypePicker(selection: $selectedTab, language: language)
 
                 if activeBreakdown.isEmpty {
                     emptyState
@@ -54,24 +50,30 @@ struct ReportSection: View {
                 }
 
             }
-            .padding(AppTheme.spacing16)
-            .background {
-                RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                    .fill(Color(.secondarySystemGroupedBackground))
-            }
+            .cardBackground()
         }
     }
 
     // MARK: - Donut Chart
 
+    /// Minimum percentage for a slice to display its own label
+    private let minPercentForLabel: Double = 8
+
     private var donutChart: some View {
         Chart(activeBreakdown) { stat in
             SectorMark(
                 angle: .value("Amount", stat.totalAmount),
-                innerRadius: .ratio(0.65),
+                innerRadius: .ratio(0.55),
                 angularInset: 1.5
             )
             .foregroundStyle(Color(hex: stat.colorHex))
+            .annotation(position: .overlay) {
+                if stat.percentage >= minPercentForLabel {
+                    Text("\(String(format: "%.0f", stat.percentage))%")
+                        .font(.caption.bold())
+                        .foregroundStyle(.white)
+                }
+            }
         }
         .chartLegend(.hidden)
         .frame(height: 220)
@@ -88,32 +90,10 @@ struct ReportSection: View {
                 .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
             }
         }
-        .overlay(alignment: .bottomTrailing) {
-            // Largest segment percentage
-            if let largest = activeBreakdown.first {
-                Text("\(String(format: "%.0f", largest.percentage))%")
-                    .font(.title3.bold())
-                    .foregroundStyle(Color(hex: largest.colorHex))
-                    .padding(.trailing, AppTheme.spacing8)
-                    .padding(.bottom, AppTheme.spacing8)
-            }
-        }
     }
 
     private var changeBadge: some View {
-        let isUp = activeChangePercent >= 0
-        let arrow = isUp ? "↑" : "↓"
-        let displayPercent = abs(activeChangePercent)
-
-        return Text("\(arrow) \(String(format: "%.0f", displayPercent))%")
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(isUp ? AppTheme.dashboardExpenseBar : AppTheme.dashboardIncomeBar)
-            .padding(.horizontal, AppTheme.spacing8)
-            .padding(.vertical, 2)
-            .background {
-                Capsule()
-                    .fill(isUp ? AppTheme.dashboardExpenseBar.opacity(0.15) : AppTheme.dashboardIncomeBar.opacity(0.15))
-            }
+        ChangeBadge(percent: activeChangePercent, style: .standalone)
     }
 
     // MARK: - Category Legend
@@ -139,15 +119,7 @@ struct ReportSection: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: AppTheme.spacing8) {
-            Image(systemName: "chart.pie")
-                .font(.largeTitle)
-                .foregroundStyle(.tertiary)
-            Text(L10n.tr("common.no_data", language))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, minHeight: 160)
+        EmptyDataView(icon: "chart.pie", message: L10n.tr("common.no_data", language))
     }
 }
 

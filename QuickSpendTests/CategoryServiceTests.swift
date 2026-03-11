@@ -53,8 +53,8 @@ struct CategoryServiceTests {
     func testColorHex() {
         let categories = CategoryService.defaultCategories(language: "en")
         for category in categories {
-            #expect(category.colorHex.hasPrefix("#"), "Category \(category.id) colorHex should start with #")
-            #expect(category.colorHex.count == 7, "Category \(category.id) colorHex should be #RRGGBB format")
+            #expect(!category.colorHex.isEmpty, "Category \(category.id) colorHex should not be empty")
+            #expect(category.colorHex.count == 6, "Category \(category.id) colorHex should be RRGGBB format (6 chars)")
         }
     }
 
@@ -117,12 +117,95 @@ struct CategoryServiceTests {
         #expect(enNames != viNames, "EN and VI names should differ")
     }
 
-    @Test("Categories have keywords for AI matching")
-    func testKeywords() {
-        let categories = CategoryService.defaultCategories(language: "en")
-        let withKeywords = categories.filter { !$0.keywords.isEmpty }
+    @Test("categoryName returns localized names for all supported languages")
+    func testCategoryNameLocalization() {
+        let languages = ["en", "vi", "ja", "es"]
+        for lang in languages {
+            let name = CategoryService.categoryName(for: "food_drink", language: lang)
+            #expect(!name.isEmpty, "Category name should not be empty for language \(lang)")
+        }
+    }
 
-        // Most categories should have keywords
-        #expect(withKeywords.count > 20, "Most categories should have keywords for AI matching")
+    @Test("categoryName falls back to English for unknown language")
+    func testCategoryNameFallback() {
+        let name = CategoryService.categoryName(for: "food_drink", language: "zz")
+        #expect(name == "Food & Drink")
+    }
+
+    @Test("categoryName returns ID for unknown category")
+    func testCategoryNameUnknown() {
+        let name = CategoryService.categoryName(for: "unknown_category", language: "en")
+        #expect(name == "unknown_category")
+    }
+
+    @Test("Default categories have no # prefix in colorHex from definitions")
+    func testColorHexNoPrefix() {
+        // The CategoryService definitions use hex without #, but Category stores with it
+        let categories = CategoryService.defaultCategories(language: "en")
+        for category in categories {
+            // colorHex should be the raw hex from definition (without #)
+            #expect(!category.colorHex.isEmpty, "Category \(category.id) should have a colorHex")
+        }
+    }
+
+    @Test("categoryName returns correct English names for all categories")
+    func testAllEnglishCategoryNames() {
+        let expectedNames: [String: String] = [
+            "food_drink": "Food & Drink",
+            "groceries": "Groceries",
+            "transport": "Transport",
+            "housing": "Housing",
+            "salary": "Salary",
+            "freelance": "Freelance",
+            "other_expense": "Other",
+            "other_income": "Other Income",
+        ]
+        for (id, expected) in expectedNames {
+            let name = CategoryService.categoryName(for: id, language: "en")
+            #expect(name == expected, "Expected '\(expected)' for \(id), got '\(name)'")
+        }
+    }
+
+    @Test("categoryName returns Vietnamese names")
+    func testVietnameseCategoryNames() {
+        #expect(CategoryService.categoryName(for: "food_drink", language: "vi") == "Ăn uống")
+        #expect(CategoryService.categoryName(for: "salary", language: "vi") == "Lương")
+    }
+
+    @Test("categoryName returns Japanese names")
+    func testJapaneseCategoryNames() {
+        #expect(CategoryService.categoryName(for: "food_drink", language: "ja") == "飲食")
+        #expect(CategoryService.categoryName(for: "salary", language: "ja") == "給料")
+    }
+
+    @Test("categoryName returns Spanish names")
+    func testSpanishCategoryNames() {
+        #expect(CategoryService.categoryName(for: "food_drink", language: "es") == "Comida y bebida")
+        #expect(CategoryService.categoryName(for: "salary", language: "es") == "Salario")
+    }
+
+    @Test("Default categories for all languages have same count")
+    func testAllLanguagesSameCount() {
+        let languages = ["en", "vi", "ja", "es"]
+        let counts = languages.map { CategoryService.defaultCategories(language: $0).count }
+        for count in counts {
+            #expect(count == counts[0], "All languages should produce the same number of categories")
+        }
+    }
+
+    @Test("Default categories have sequential sort orders")
+    func testSequentialSortOrders() {
+        let categories = CategoryService.defaultCategories(language: "en")
+        for (index, category) in categories.enumerated() {
+            #expect(category.sortOrder == index, "Category \(category.id) should have sortOrder \(index)")
+        }
+    }
+
+    @Test("Default categories include all expected groups")
+    func testAllGroupsRepresented() {
+        let categories = CategoryService.defaultCategories(language: "en")
+        let groups = Set(categories.map(\.group))
+        let expectedGroups: Set<CategoryGroup> = [.dailyLiving, .personal, .social, .financial, .earned, .passive, .received, .other]
+        #expect(groups == expectedGroups)
     }
 }

@@ -73,7 +73,7 @@ struct MonthlyBarChart: View {
                     AxisMarks(position: .leading) { value in
                         AxisValueLabel {
                             if let amount = value.as(Double.self) {
-                                Text(abbreviateAmount(amount))
+                                Text(AmountAbbreviator.abbreviate(amount, currency: config.currency, language: config.language))
                                     .font(.caption2)
                             }
                         }
@@ -89,11 +89,7 @@ struct MonthlyBarChart: View {
             }
             .font(.caption)
         }
-        .padding(AppTheme.spacing16)
-        .background {
-            RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                .fill(Color(.secondarySystemGroupedBackground))
-        }
+        .cardBackground(radius: AppTheme.radiusMedium)
     }
 
     private func legendItem(color: Color, label: String) -> some View {
@@ -103,14 +99,7 @@ struct MonthlyBarChart: View {
         }
     }
 
-    private func abbreviateAmount(_ amount: Double) -> String {
-        if amount >= 1_000_000 {
-            return String(format: "%.1fM", amount / 1_000_000)
-        } else if amount >= 1_000 {
-            return String(format: "%.0fK", amount / 1_000)
-        }
-        return String(format: "%.0f", amount)
-    }
+
 }
 
 private struct DailyTotal: Identifiable {

@@ -1,7 +1,10 @@
 import SwiftUI
 
+// MARK: - DEPRECATED: Replaced by inline recording bubble in VoiceFABButton (hold-to-record)
+
 /// Full-screen voice recording overlay with animated mic and transcription
 struct VoiceOverlay: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     let voiceService: VoiceService
     let onComplete: (String) -> Void
@@ -93,7 +96,7 @@ struct VoiceOverlay: View {
                             .padding(.vertical, AppTheme.spacing12)
                             .background {
                                 Capsule()
-                                    .fill(AppTheme.primaryMint)
+                                    .fill(AppTheme.adaptiveAccent(colorScheme))
                             }
                     }
                 }
@@ -113,20 +116,20 @@ struct VoiceOverlay: View {
         ZStack {
             // Pulse ring
             Circle()
-                .fill(AppTheme.primaryMint.opacity(0.15))
+                .fill(AppTheme.adaptiveAccent(colorScheme).opacity(0.15))
                 .frame(width: 120, height: 120)
                 .scaleEffect(1.0 + CGFloat(voiceService.soundLevel) * 0.5)
                 .animation(.easeOut(duration: 0.1), value: voiceService.soundLevel)
 
             Circle()
-                .fill(AppTheme.primaryMint.opacity(0.3))
+                .fill(AppTheme.adaptiveAccent(colorScheme).opacity(0.3))
                 .frame(width: 90, height: 90)
                 .scaleEffect(1.0 + CGFloat(voiceService.soundLevel) * 0.3)
                 .animation(.easeOut(duration: 0.1), value: voiceService.soundLevel)
 
             // Main button
             Circle()
-                .fill(isCancelling ? AppTheme.error : AppTheme.primaryMint)
+                .fill(isCancelling ? AppTheme.error : AppTheme.adaptiveAccent(colorScheme))
                 .frame(width: 72, height: 72)
                 .overlay {
                     Image(systemName: isCancelling ? "xmark" : "mic.fill")

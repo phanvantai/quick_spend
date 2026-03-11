@@ -13,14 +13,14 @@ enum AppConstants {
     static let subscriptionYearlyPriceUSD = 24.99
     static let termsOfUseUrl = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
     static let privacyPolicyUrl = "https://portfolio.taiphanvan.dev/quickspend/privacy"
-    static let freeTierGeminiLimit = 5
+    static let freeTierGeminiLimit = 3
     static let freeTierRecurringTemplatesLimit = 3
     static let freeTierReportDaysLimit = 7
 
     // MARK: - API & Network
 
     static let geminiApiTimeoutSeconds = 30
-    static let geminiDailyParsingLimit = 5
+    static let geminiDailyParsingLimit = 3
     static let geminiWarningThreshold = 5
     static let geminiCriticalThreshold = 3
 
@@ -29,6 +29,8 @@ enum AppConstants {
     static let minVoiceInputLength = 2
     static let maxVoiceInputLength = 500
     static let voiceStopDelayMs = 100
+    static let holdToRecordMinDuration: TimeInterval = 0.2
+    static let dragCancelThreshold: CGFloat = 80
 
     // MARK: - Expense & Transaction Limits
 
@@ -59,8 +61,15 @@ enum AppConstants {
     static let confidenceWarningThreshold: Double = 0.7
     static let highConfidenceThreshold: Double = 0.9
 
-    // MARK: - Debug
+    // MARK: - Feature Requests
+
+    static let featureRequestsCollection = "feature_requests"
+    static let maxFeatureRequestTitleLength = 100
+    static let maxFeatureRequestDescriptionLength = 1000
+
+    // MARK: - Debug / Admin
 
     static let debugModeActivationTaps = 5
     static let debugModeActivationWindowSeconds: TimeInterval = 3
+    static let adminModeActivationTaps = 7
 }

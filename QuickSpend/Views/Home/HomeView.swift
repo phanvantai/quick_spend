@@ -9,34 +9,15 @@ struct HomeView: View {
     @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedMonth = Date()
-    @State private var selectedFilter: TransactionFilter = .all
-    @State private var editingTransaction: Transaction?
-    @State private var showingAddTransaction = false
+    @State private var showAddTransaction = false
 
-    // MARK: - Filtered Data
+    // MARK: - Selected Month Data
 
     private var monthTransactions: [Transaction] {
         let calendar = Calendar.current
         return allTransactions.filter {
             calendar.isDate($0.date, equalTo: selectedMonth, toGranularity: .month)
         }
-    }
-
-    private var filteredTransactions: [Transaction] {
-        switch selectedFilter {
-        case .all: return monthTransactions
-        case .income: return monthTransactions.filter(\.isIncome)
-        case .expense: return monthTransactions.filter(\.isExpense)
-        }
-    }
-
-    private var groupedTransactions: [(date: Date, transactions: [Transaction])] {
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: filteredTransactions) { transaction in
-            calendar.startOfDay(for: transaction.date)
-        }
-        return grouped.sorted { $0.key > $1.key }
-            .map { (date: $0.key, transactions: $0.value.sorted { $0.date > $1.date }) }
     }
 
     private var totalIncome: Double {
@@ -51,19 +32,121 @@ struct HomeView: View {
         totalIncome - totalExpenses
     }
 
+    // MARK: - Previous Month (for % change)
+
+    private var previousMonthTransactions: [Transaction] {
+        let calendar = Calendar.current
+        guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: selectedMonth) else { return [] }
+        return allTransactions.filter {
+            calendar.isDate($0.date, equalTo: prevMonth, toGranularity: .month)
+        }
+    }
+
+    private var previousTotalExpenses: Double {
+        previousMonthTransactions.filter(\.isExpense).reduce(0) { $0 + $1.amount }
+    }
+
+    private var previousTotalIncome: Double {
+        previousMonthTransactions.filter(\.isIncome).reduce(0) { $0 + $1.amount }
+    }
+
+    private var expenseChangePercent: Double {
+        guard previousTotalExpenses > 0 else { return 0 }
+        return ((totalExpenses - previousTotalExpenses) / previousTotalExpenses) * 100
+    }
+
+    private var incomeChangePercent: Double {
+        guard previousTotalIncome > 0 else { return 0 }
+        return ((totalIncome - previousTotalIncome) / previousTotalIncome) * 100
+    }
+
+    // MARK: - Category Breakdown (for pie chart)
+
+    private var expenseBreakdown: [CategoryStats] {
+        buildCategoryBreakdown(for: .expense)
+    }
+
+    private var incomeBreakdown: [CategoryStats] {
+        buildCategoryBreakdown(for: .income)
+    }
+
+    private func buildCategoryBreakdown(for type: TransactionType) -> [CategoryStats] {
+        let typed = monthTransactions.filter { $0.type == type }
+        let total = typed.reduce(0) { $0 + $1.amount }
+        guard total > 0 else { return [] }
+
+        let grouped = Dictionary(grouping: typed) { $0.categoryId }
+        return grouped.compactMap { (categoryId, transactions) -> CategoryStats? in
+            guard let category = categories.first(where: { $0.id == categoryId }) else { return nil }
+            let amount = transactions.reduce(0) { $0 + $1.amount }
+            return CategoryStats(
+                categoryId: categoryId,
+                categoryName: category.name,
+                totalAmount: amount,
+                count: transactions.count,
+                percentage: (amount / total) * 100,
+                colorHex: category.colorHex,
+                iconName: category.iconName,
+                type: type
+            )
+        }
+        .sorted { $0.totalAmount > $1.totalAmount }
+    }
+
+    // MARK: - 12-Month Trend Data (always from current date)
+
+    private var trendData: [MonthlyTrend] {
+        let calendar = Calendar.current
+        let now = Date()
+        return (0..<12).reversed().map { offset -> MonthlyTrend in
+            let month = calendar.date(byAdding: .month, value: -offset, to: now)!
+            let monthTx = allTransactions.filter {
+                calendar.isDate($0.date, equalTo: month, toGranularity: .month)
+            }
+            return MonthlyTrend(
+                month: month,
+                monthLabel: HomeStrings.monthAbbreviation(for: month, language: appConfig.language),
+                totalExpenses: monthTx.filter(\.isExpense).reduce(0) { $0 + $1.amount },
+                totalIncome: monthTx.filter(\.isIncome).reduce(0) { $0 + $1.amount }
+            )
+        }
+    }
+
     // MARK: - Body
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: AppTheme.spacing16) {
+                    // Month selector + currency badge (pinned via LazyVStack below)
                     HomeAppBar(
                         selectedMonth: $selectedMonth,
                         language: appConfig.language,
                         currency: appConfig.config.currency
                     )
 
-                    summaryCard
+                    // Overview: vertical bar chart (income vs expense)
+                    OverviewSection(
+                        totalExpenses: totalExpenses,
+                        totalIncome: totalIncome,
+                        netBalance: netBalance,
+                        expenseChangePercent: expenseChangePercent,
+                        incomeChangePercent: incomeChangePercent,
+                        language: appConfig.language,
+                        currency: appConfig.config.currency
+                    )
+
+                    // Report: pie/donut chart by category
+                    ReportSection(
+                        expenseBreakdown: expenseBreakdown,
+                        incomeBreakdown: incomeBreakdown,
+                        totalExpenses: totalExpenses,
+                        totalIncome: totalIncome,
+                        expenseChangePercent: expenseChangePercent,
+                        incomeChangePercent: incomeChangePercent,
+                        language: appConfig.language,
+                        currency: appConfig.config.currency
+                    )
 
                     // View Report button
                     NavigationLink {
@@ -84,197 +167,34 @@ struct HomeView: View {
                         }
                     }
 
-                    filterTabs
-
-                    transactionListSection
+                    // Trends: 12-month line chart (always from current date)
+                    TrendsSection(
+                        trendData: trendData,
+                        language: appConfig.language,
+                        currency: appConfig.config.currency
+                    )
                 }
                 .padding(.horizontal, AppTheme.spacing16)
-                .padding(.vertical, AppTheme.spacing12)
+                .padding(.top, AppTheme.spacing12)
+                .padding(.bottom, AppTheme.spacing12)
             }
-            .toolbar(.hidden, for: .navigationBar)
             .background(Color(.systemGroupedBackground))
+            .navigationTitle(L10n.tr("home.title", appConfig.language))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        showingAddTransaction = true
+                        showAddTransaction = true
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title3)
                     }
                 }
             }
-            .sheet(isPresented: $showingAddTransaction) {
-                ExpenseFormView(categories: categories) { transaction in
+            .sheet(isPresented: $showAddTransaction) {
+                TransactionFormView(categories: categories) { transaction in
                     modelContext.insert(transaction)
                 }
             }
-            .sheet(item: $editingTransaction) { transaction in
-                ExpenseFormView(categories: categories, expense: transaction) { updated in
-                    transaction.amount = updated.amount
-                    transaction.note = updated.note
-                    transaction.categoryId = updated.categoryId
-                    transaction.date = updated.date
-                    transaction.type = updated.type
-                    transaction.updatedAt = .now
-                }
-            }
-        }
-    }
-
-    // MARK: - Summary Card
-
-    private var summaryCard: some View {
-        VStack(spacing: AppTheme.spacing12) {
-            // Balance row
-            HStack {
-                Text(HomeStrings.balance(appConfig.language))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text(appConfig.formatCurrency(netBalance))
-                    .font(.title2.bold().monospacedDigit())
-                    .foregroundStyle(netBalance >= 0 ? AppTheme.incomeColor : AppTheme.expenseColor)
-            }
-
-            Divider()
-
-            // Income / Expense row
-            HStack {
-                HStack(spacing: AppTheme.spacing8) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .foregroundStyle(AppTheme.incomeColor)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(HomeStrings.income(appConfig.language))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(appConfig.formatCurrency(totalIncome))
-                            .font(.subheadline.weight(.semibold).monospacedDigit())
-                            .foregroundStyle(AppTheme.incomeColor)
-                    }
-                }
-
-                Spacer()
-
-                HStack(spacing: AppTheme.spacing8) {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(HomeStrings.expense(appConfig.language))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(appConfig.formatCurrency(totalExpenses))
-                            .font(.subheadline.weight(.semibold).monospacedDigit())
-                            .foregroundStyle(AppTheme.expenseColor)
-                    }
-                    Image(systemName: "arrow.down.circle.fill")
-                        .foregroundStyle(AppTheme.expenseColor)
-                }
-            }
-        }
-        .padding(AppTheme.spacing16)
-        .background {
-            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                .fill(Color(.secondarySystemGroupedBackground))
-        }
-    }
-
-    // MARK: - Filter Tabs
-
-    private var filterTabs: some View {
-        HStack(spacing: 0) {
-            ForEach(TransactionFilter.allCases, id: \.self) { filter in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        selectedFilter = filter
-                    }
-                } label: {
-                    VStack(spacing: AppTheme.spacing8) {
-                        Text(filter.label(language: appConfig.language))
-                            .font(.subheadline.weight(selectedFilter == filter ? .semibold : .regular))
-                            .foregroundStyle(selectedFilter == filter ? .primary : .secondary)
-
-                        Rectangle()
-                            .fill(selectedFilter == filter ? AppTheme.primaryMint : .clear)
-                            .frame(height: 2)
-                    }
-                }
-                .buttonStyle(.plain)
-                .frame(maxWidth: .infinity)
-            }
-        }
-    }
-
-    // MARK: - Transaction List
-
-    @ViewBuilder
-    private var transactionListSection: some View {
-        if groupedTransactions.isEmpty {
-            ContentUnavailableView(
-                L10n.tr("home.no_transactions", appConfig.language),
-                systemImage: "tray",
-                description: Text(L10n.tr("home.no_transactions_month", appConfig.language))
-            )
-            .padding(.top, AppTheme.spacing24)
-        } else {
-            LazyVStack(spacing: AppTheme.spacing20) {
-                ForEach(groupedTransactions, id: \.date) { group in
-                    VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-                        dateSectionHeader(for: group.date)
-
-                        ForEach(group.transactions, id: \.id) { transaction in
-                            let category = categories.first { $0.id == transaction.categoryId }
-                            ExpenseCard(
-                                transaction: transaction,
-                                category: category,
-                                config: appConfig.config
-                            )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                editingTransaction = transaction
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    deleteTransaction(transaction)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
-                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                                Button {
-                                    editingTransaction = transaction
-                                } label: {
-                                    Label("Edit", systemImage: "pencil")
-                                }
-                                .tint(AppTheme.primaryMint)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: - Date Section Header
-
-    private func dateSectionHeader(for date: Date) -> some View {
-        let calendar = Calendar.current
-        let label: String
-        if calendar.isDateInToday(date) {
-            label = L10n.tr("home.today", appConfig.language)
-        } else if calendar.isDateInYesterday(date) {
-            label = L10n.tr("home.yesterday", appConfig.language)
-        } else {
-            label = date.formatted(.dateTime.day(.twoDigits).month(.abbreviated).year())
-        }
-        return Text(label)
-            .font(.subheadline.bold())
-            .foregroundStyle(.primary)
-            .padding(.leading, AppTheme.spacing4)
-    }
-
-    // MARK: - Actions
-
-    private func deleteTransaction(_ transaction: Transaction) {
-        withAnimation {
-            modelContext.delete(transaction)
         }
     }
 }

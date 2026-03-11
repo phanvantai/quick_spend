@@ -66,47 +66,46 @@ struct CategoryService {
         struct CategoryDef {
             let id: String
             let iconName: String
-            let colorHex: String
             let type: TransactionType
             let group: CategoryGroup
         }
 
         let definitions: [CategoryDef] = [
             // Expense - Daily Living
-            CategoryDef(id: "food_drink", iconName: "fork.knife", colorHex: "FF8C42", type: .expense, group: .dailyLiving),
-            CategoryDef(id: "groceries", iconName: "cart.fill", colorHex: "8BC34A", type: .expense, group: .dailyLiving),
-            CategoryDef(id: "transport", iconName: "car.fill", colorHex: "5F5CF1", type: .expense, group: .dailyLiving),
-            CategoryDef(id: "housing", iconName: "house.fill", colorHex: "795548", type: .expense, group: .dailyLiving),
-            CategoryDef(id: "bills_utilities", iconName: "bolt.fill", colorHex: "FF5757", type: .expense, group: .dailyLiving),
+            CategoryDef(id: "food_drink", iconName: "fork.knife", type: .expense, group: .dailyLiving),
+            CategoryDef(id: "groceries", iconName: "cart.fill", type: .expense, group: .dailyLiving),
+            CategoryDef(id: "transport", iconName: "car.fill", type: .expense, group: .dailyLiving),
+            CategoryDef(id: "housing", iconName: "house.fill", type: .expense, group: .dailyLiving),
+            CategoryDef(id: "bills_utilities", iconName: "bolt.fill", type: .expense, group: .dailyLiving),
             // Expense - Personal
-            CategoryDef(id: "shopping", iconName: "bag.fill", colorHex: "6C5CE7", type: .expense, group: .personal),
-            CategoryDef(id: "health", iconName: "cross.case.fill", colorHex: "4CAF50", type: .expense, group: .personal),
-            CategoryDef(id: "education", iconName: "book.fill", colorHex: "3F51B5", type: .expense, group: .personal),
-            CategoryDef(id: "entertainment", iconName: "film.fill", colorHex: "FF6B9D", type: .expense, group: .personal),
-            CategoryDef(id: "personal_care", iconName: "sparkles", colorHex: "E91E63", type: .expense, group: .personal),
+            CategoryDef(id: "shopping", iconName: "bag.fill", type: .expense, group: .personal),
+            CategoryDef(id: "health", iconName: "cross.case.fill", type: .expense, group: .personal),
+            CategoryDef(id: "education", iconName: "book.fill", type: .expense, group: .personal),
+            CategoryDef(id: "entertainment", iconName: "film.fill", type: .expense, group: .personal),
+            CategoryDef(id: "personal_care", iconName: "sparkles", type: .expense, group: .personal),
             // Expense - Social
-            CategoryDef(id: "gifts", iconName: "gift.fill", colorHex: "9C27B0", type: .expense, group: .social),
-            CategoryDef(id: "family", iconName: "person.2.fill", colorHex: "00BCD4", type: .expense, group: .social),
+            CategoryDef(id: "gifts", iconName: "gift.fill", type: .expense, group: .social),
+            CategoryDef(id: "family", iconName: "person.2.fill", type: .expense, group: .social),
             // Expense - Financial
-            CategoryDef(id: "insurance", iconName: "shield.fill", colorHex: "607D8B", type: .expense, group: .financial),
-            CategoryDef(id: "savings_invest", iconName: "chart.line.uptrend.xyaxis", colorHex: "009688", type: .expense, group: .financial),
-            CategoryDef(id: "debt_payment", iconName: "creditcard.fill", colorHex: "F44336", type: .expense, group: .financial),
+            CategoryDef(id: "insurance", iconName: "shield.fill", type: .expense, group: .financial),
+            CategoryDef(id: "savings_invest", iconName: "chart.line.uptrend.xyaxis", type: .expense, group: .financial),
+            CategoryDef(id: "debt_payment", iconName: "creditcard.fill", type: .expense, group: .financial),
             // Expense - Other
-            CategoryDef(id: "pets", iconName: "pawprint.fill", colorHex: "8D6E63", type: .expense, group: .other),
-            CategoryDef(id: "travel", iconName: "airplane", colorHex: "00ACC1", type: .expense, group: .other),
-            CategoryDef(id: "other_expense", iconName: "ellipsis.circle.fill", colorHex: "9E9EB5", type: .expense, group: .other),
+            CategoryDef(id: "pets", iconName: "pawprint.fill", type: .expense, group: .other),
+            CategoryDef(id: "travel", iconName: "airplane", type: .expense, group: .other),
+            CategoryDef(id: "other_expense", iconName: "ellipsis.circle.fill", type: .expense, group: .other),
             // Income - Earned
-            CategoryDef(id: "salary", iconName: "wallet.bifold.fill", colorHex: "2E7D32", type: .income, group: .earned),
-            CategoryDef(id: "freelance", iconName: "laptopcomputer", colorHex: "2196F3", type: .income, group: .earned),
-            CategoryDef(id: "bonus", iconName: "star.fill", colorHex: "FFC107", type: .income, group: .earned),
+            CategoryDef(id: "salary", iconName: "wallet.bifold.fill", type: .income, group: .earned),
+            CategoryDef(id: "freelance", iconName: "laptopcomputer", type: .income, group: .earned),
+            CategoryDef(id: "bonus", iconName: "star.fill", type: .income, group: .earned),
             // Income - Passive
-            CategoryDef(id: "investment_income", iconName: "chart.bar.fill", colorHex: "26A69A", type: .income, group: .passive),
-            CategoryDef(id: "interest", iconName: "percent", colorHex: "0288D1", type: .income, group: .passive),
+            CategoryDef(id: "investment_income", iconName: "chart.bar.fill", type: .income, group: .passive),
+            CategoryDef(id: "interest", iconName: "percent", type: .income, group: .passive),
             // Income - Received
-            CategoryDef(id: "gift_received", iconName: "gift.fill", colorHex: "F06292", type: .income, group: .received),
-            CategoryDef(id: "refund", iconName: "arrow.uturn.backward.circle.fill", colorHex: "FF9800", type: .income, group: .received),
+            CategoryDef(id: "gift_received", iconName: "gift.fill", type: .income, group: .received),
+            CategoryDef(id: "refund", iconName: "arrow.uturn.backward.circle.fill", type: .income, group: .received),
             // Income - Other
-            CategoryDef(id: "other_income", iconName: "plus.circle.fill", colorHex: "7B1FA2", type: .income, group: .other),
+            CategoryDef(id: "other_income", iconName: "plus.circle.fill", type: .income, group: .other),
         ]
 
         return definitions.enumerated().map { index, def in
@@ -114,7 +113,7 @@ struct CategoryService {
                 id: def.id,
                 name: categoryName(for: def.id, language: language),
                 iconName: def.iconName,
-                colorHex: def.colorHex,
+                colorHex: CategoryColorPalette.colorHex(for: def.id),
                 type: def.type,
                 group: def.group,
                 sortOrder: index

@@ -14,8 +14,8 @@ enum ReportPeriod: CaseIterable {
         }
     }
 
-    /// Whether this period requires Pro subscription
-    var requiresPro: Bool {
+    /// Whether this period requires Premium subscription
+    var requiresPremium: Bool {
         switch self {
         case .thisMonth: return false
         case .lastMonth, .last3Months: return true
@@ -140,7 +140,7 @@ struct ReportView: View {
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemGroupedBackground))
         .onChange(of: selectedPeriod) { _, newPeriod in
-            if newPeriod.requiresPro && !subscription.isPro {
+            if newPeriod.requiresPremium && !subscription.isPremium {
                 selectedPeriod = .thisMonth
                 showPaywall = true
             }
@@ -155,7 +155,7 @@ struct ReportView: View {
     private var periodPicker: some View {
         Picker("Period", selection: $selectedPeriod) {
             ForEach(ReportPeriod.allCases, id: \.self) { period in
-                if period.requiresPro && !subscription.isPro {
+                if period.requiresPremium && !subscription.isPremium {
                     Text("\(period.label(language: appConfig.language)) 🔒").tag(period)
                 } else {
                     Text(period.label(language: appConfig.language)).tag(period)
@@ -223,11 +223,7 @@ struct ReportView: View {
                 }
             }
         }
-        .padding(AppTheme.spacing16)
-        .background {
-            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                .fill(Color(.secondarySystemGroupedBackground))
-        }
+        .cardBackground()
     }
 
     private func statItem(icon: String, color: Color, label: String, amount: Double, count: Int) -> some View {
@@ -264,14 +260,13 @@ struct ReportView: View {
                             .foregroundStyle(.secondary)
                             .frame(width: 20)
 
-                        Circle()
-                            .fill((category?.color ?? .secondary).opacity(0.15))
-                            .frame(width: 36, height: 36)
-                            .overlay {
-                                Image(systemName: category?.iconName ?? "questionmark.circle")
-                                    .font(.body)
-                                    .foregroundStyle(category?.color ?? .secondary)
-                            }
+                        CategoryIconBadge(
+                            iconName: category?.iconName ?? "questionmark.circle",
+                            color: category?.color ?? .secondary,
+                            size: 36,
+                            iconFont: .body,
+                            shape: .circle
+                        )
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(transaction.note)
@@ -291,11 +286,7 @@ struct ReportView: View {
                     .padding(.vertical, AppTheme.spacing4)
                 }
             }
-            .padding(AppTheme.spacing16)
-            .background {
-                RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
-                    .fill(Color(.secondarySystemGroupedBackground))
-            }
+            .cardBackground()
         }
     }
 }

@@ -6,6 +6,9 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
 
+    /// Track the last-known language so we can update categories when it changes
+    @State private var lastSyncedLanguage: String?
+
     var body: some View {
         if appConfig.isOnboardingComplete {
             MainTabView()
@@ -16,6 +19,17 @@ struct ContentView: View {
                     )
                     // Generate pending recurring transactions on each launch
                     let _ = RecurringService.generatePendingTransactions(modelContext: modelContext)
+                    lastSyncedLanguage = appConfig.language
+                }
+                .onChange(of: appConfig.language) { _, newLanguage in
+                    // When language changes (e.g. synced from iOS Settings), update category names
+                    if lastSyncedLanguage != newLanguage {
+                        CategoryService.updateCategoryNames(
+                            language: newLanguage,
+                            modelContext: modelContext
+                        )
+                        lastSyncedLanguage = newLanguage
+                    }
                 }
         } else {
             OnboardingView {
