@@ -1,6 +1,6 @@
 # App Store Metadata
 
-This file contains all App Store submission metadata for QuickSpend in both English and Vietnamese.
+This file contains all App Store submission metadata for QuickSpend in English, Vietnamese, Japanese, and Spanish.
 
 ---
 
@@ -23,15 +23,15 @@ Voice-Powered Expense Tracking
 ### Promotional Text (170 chars max)
 
 ```bash
-Track expenses & income with voice! Speaks 6 languages, AI-powered, works offline. Perfect for busy people wanting effortless money management.
+Track expenses & income with voice! 4 languages, AI-powered, works offline. Perfect for busy people wanting effortless money management.
 ```
 
-**Character count: 148** ✅
+**Character count: 140** ✅
 
 ### Keywords (100 chars max)
 
 ```bash
-expense,income,budget,voice,AI,spending,tracker,finance,multilingual,recurring,export,calendar,dark
+expense,income,budget,voice,AI,spending,tracker,finance,multilingual,recurring,category,calendar,dark
 ```
 
 **Character count: 99** ✅
@@ -46,14 +46,15 @@ Just speak naturally and let AI organize your finances automatically. No typing 
 WHAT YOU CAN DO:
 
 Voice Input
-• Tap to record: "50 dollars for coffee" or "30k parking"
+• Hold to record, drag to cancel: "50 dollars for coffee" or "30k parking"
 • AI extracts amount, description, category, and date
-• Supports 6 languages: English, Vietnamese, Japanese, Korean, Thai, Spanish
+• Supports 4 languages: English, Vietnamese, Japanese, Spanish
 • Understands dates: "yesterday", "last week", "3 days ago"
+• Review and edit AI-parsed expenses before saving
 
 Track Your Money
 • Add income and expenses in seconds
-• 13 categories (Food, Transport, Shopping, Bills, Health, Entertainment, Salary, Freelance, Investment, and more)
+• 30+ categories organized in groups (Daily Living, Personal, Social, Financial, and more)
 • Create custom categories with your own icons and colors
 • Swipe to edit or delete transactions
 
@@ -61,27 +62,27 @@ See Insights
 • Interactive charts showing spending by category
 • Monthly calendar view with daily totals
 • Filter by day, week, month, year, or custom range
-• Track spending trends over time
+• 12-month spending trends over time
+• Month-over-month change tracking
 
 Recurring Transactions
-• Set up monthly or yearly recurring items
+• Set up daily, weekly, monthly, or yearly recurring items
 • Perfect for rent, salary, subscriptions, bills
 • Pause or resume anytime
-
-Export & Import
-• Export all your data to JSON
-• Import from previous backups
-• Complete backup with categories and settings
 
 Features:
 • Works completely offline
 • No signup required
 • Dark mode support
-• 6 languages and 6 currencies
+• 4 languages and 4 currencies (USD, VND, JPY, EUR)
 • All data stored locally and securely
 • No ads or tracking
 
-SUBSCRIPTION TERMS
+PRO SUBSCRIPTION
+Unlock unlimited AI voice parses, unlimited recurring templates, extended reports, and feature requests.
+• Monthly: $2.99
+• Yearly: $24.99
+
 Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period.
 
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
@@ -111,15 +112,15 @@ Quản Lý Chi Tiêu Bằng Giọng Nói
 ### Promotional Text (170 chars max) VN
 
 ```bash
-Ghi chi tiêu & thu nhập bằng giọng nói! 6 ngôn ngữ, AI thông minh, offline. Hoàn hảo cho người bận rộn muốn quản lý tiền dễ dàng.
+Ghi chi tiêu & thu nhập bằng giọng nói! 4 ngôn ngữ, AI thông minh, offline. Hoàn hảo cho người bận rộn muốn quản lý tiền dễ dàng.
 ```
 
-**Character count: 136** ✅
+**Character count: 134** ✅
 
 ### Keywords (100 chars max) VN
 
 ```bash
-chi tiêu,thu nhập,ngân sách,giọng nói,AI,quản lý,tài chính,đa ngôn ngữ,định kỳ,xuất,lịch,tối
+chi tiêu,thu nhập,ngân sách,giọng nói,AI,quản lý,tài chính,đa ngôn ngữ,định kỳ,danh mục,lịch,tối
 ```
 
 **Character count: 97** ✅
@@ -134,14 +135,15 @@ Chỉ cần nói tự nhiên và để AI sắp xếp tài chính tự động. 
 BẠN CÓ THỂ LÀM GÌ:
 
 Nhập bằng giọng nói
-• Nhấn để ghi âm: "50k tiền cơm" hoặc "30 nghìn đổ xăng"
+• Giữ để ghi âm, kéo để hủy: "50k tiền cơm" hoặc "30 nghìn đổ xăng"
 • AI trích xuất số tiền, mô tả, danh mục và ngày tháng
-• Hỗ trợ 6 ngôn ngữ: Tiếng Việt, Anh, Nhật, Hàn, Thái, Tây Ban Nha
+• Hỗ trợ 4 ngôn ngữ: Tiếng Việt, Anh, Nhật, Tây Ban Nha
 • Hiểu thời gian: "hôm qua", "tuần trước", "3 ngày trước"
+• Xem lại và chỉnh sửa chi tiêu AI phân tích trước khi lưu
 
 Theo dõi tiền
 • Thêm thu nhập và chi tiêu trong vài giây
-• 13 danh mục (Ăn uống, Đi lại, Mua sắm, Hóa đơn, Sức khỏe, Giải trí, Lương, Freelance, Đầu tư, và hơn thế nữa)
+• 30+ danh mục được sắp xếp theo nhóm (Sinh hoạt, Cá nhân, Xã hội, Tài chính, và hơn thế nữa)
 • Tạo danh mục riêng với biểu tượng và màu sắc tùy chỉnh
 • Vuốt để chỉnh sửa hoặc xóa giao dịch
 
@@ -149,27 +151,27 @@ Xem thống kê
 • Biểu đồ tương tác hiển thị chi tiêu theo danh mục
 • Lịch theo tháng với tổng hàng ngày
 • Lọc theo ngày, tuần, tháng, năm hoặc tùy chỉnh
-• Theo dõi xu hướng chi tiêu theo thời gian
+• Xu hướng chi tiêu 12 tháng theo thời gian
+• Theo dõi thay đổi so với tháng trước
 
 Giao dịch định kỳ
-• Thiết lập mục định kỳ hàng tháng hoặc hàng năm
+• Thiết lập mục định kỳ hàng ngày, hàng tuần, hàng tháng hoặc hàng năm
 • Hoàn hảo cho tiền thuê, lương, đăng ký, hóa đơn
 • Tạm dừng hoặc tiếp tục bất cứ lúc nào
-
-Xuất & nhập
-• Xuất tất cả dữ liệu sang JSON
-• Nhập từ bản sao lưu trước
-• Sao lưu đầy đủ với danh mục và cài đặt
 
 Tính năng:
 • Hoạt động hoàn toàn offline
 • Không cần đăng ký
 • Hỗ trợ chế độ tối
-• 6 ngôn ngữ và 6 đơn vị tiền tệ
+• 4 ngôn ngữ và 4 đơn vị tiền tệ (USD, VND, JPY, EUR)
 • Tất cả dữ liệu lưu cục bộ và an toàn
 • Không quảng cáo hay theo dõi
 
-ĐIỀU KHOẢN ĐĂNG KÝ
+GÓI PRO
+Mở khóa không giới hạn phân tích giọng nói AI, mẫu định kỳ không giới hạn, báo cáo mở rộng, và gửi yêu cầu tính năng.
+• Hàng tháng: $2.99
+• Hàng năm: $24.99
+
 Thanh toán sẽ được tính vào tài khoản Apple ID của bạn khi xác nhận mua. Đăng ký tự động gia hạn trừ khi tự động gia hạn được tắt ít nhất 24 giờ trước khi kết thúc kỳ hiện tại. Tài khoản của bạn sẽ bị tính phí gia hạn trong vòng 24 giờ trước khi kết thúc kỳ hiện tại.
 
 Điều khoản sử dụng: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
@@ -199,15 +201,15 @@ QuickSpend: Instant Tracker
 ### Promotional Text (170 chars max) JP
 
 ```bash
-音声で収支を記録！6言語対応、AI搭載、オフライン動作。忙しい人のための簡単な家計管理アプリ。
+音声で収支を記録！4言語対応、AI搭載、オフライン動作。忙しい人のための簡単な家計管理アプリ。
 ```
 
-**Character count: 52** ✅
+**Character count: 48** ✅
 
 ### Keywords (100 chars max) JP
 
 ```bash
-支出,収入,予算,音声,AI,家計簿,多言語,定期,エクスポート,カレンダー,ダークモード
+支出,収入,予算,音声,AI,家計簿,多言語,定期,カテゴリー,カレンダー,ダークモード
 ```
 
 **Character count: 48** ✅
@@ -222,14 +224,15 @@ QuickSpend: Instant Tracker
 できること：
 
 音声入力
-• タップして録音：「コーヒー50ドル」または「駐車場30k」
+• 長押しで録音、ドラッグでキャンセル：「コーヒー50ドル」または「駐車場30k」
 • AIが金額、説明、カテゴリー、日付を自動抽出
-• 6言語対応：英語、ベトナム語、日本語、韓国語、タイ語、スペイン語
+• 4言語対応：英語、ベトナム語、日本語、スペイン語
 • 日付理解：「昨日」「先週」「3日前」
+• 保存前にAI解析結果を確認・編集可能
 
 お金の管理
 • 数秒で収入と支出を追加
-• 13カテゴリー（食費、交通費、買い物、公共料金、医療、娯楽、給与、フリーランス、投資など）
+• 30以上のカテゴリーをグループ別に整理（日常生活、個人、社会、金融など）
 • カスタムアイコンと色でカテゴリー作成
 • スワイプで編集・削除
 
@@ -237,209 +240,33 @@ QuickSpend: Instant Tracker
 • カテゴリー別支出を示すインタラクティブなチャート
 • 日次合計付き月間カレンダー
 • 日・週・月・年・カスタム範囲でフィルター
-• 時系列の支出傾向を追跡
+• 12ヶ月の支出傾向を追跡
+• 前月比の変動を追跡
 
 定期取引
-• 月次または年次の定期項目を設定
+• 日次、週次、月次、年次の定期項目を設定
 • 家賃、給与、サブスク、請求書に最適
 • いつでも一時停止・再開
-
-エクスポート・インポート
-• すべてのデータをJSONでエクスポート
-• 以前のバックアップからインポート
-• カテゴリーと設定を含む完全バックアップ
 
 機能：
 • 完全オフライン動作
 • サインアップ不要
 • ダークモード対応
-• 6言語・6通貨
+• 4言語・4通貨（USD、VND、JPY、EUR）
 • すべてのデータをローカルに安全保存
 • 広告・トラッキングなし
 
-サブスクリプション規約
+PROサブスクリプション
+無制限のAI音声解析、無制限の定期テンプレート、拡張レポート、機能リクエストをアンロック。
+• 月額：$2.99
+• 年額：$24.99
+
 購入確認時にApple IDアカウントに課金されます。サブスクリプションは、現在の期間の終了の少なくとも24時間前に自動更新をオフにしない限り、自動的に更新されます。現在の期間の終了前24時間以内に、アカウントに更新料金が請求されます。
 
 利用規約: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 プライバシーポリシー: https://portfolio.taiphanvan.dev/quickspend/privacy
 
 今すぐQuickSpendを試して、最速の家計管理を体験しましょう！
-```
-
----
-
-## Korean Version
-
-### App Name KR
-
-```bash
-QuickSpend: Instant Tracker
-```
-
-### Subtitle (30 chars max) KR
-
-```bash
-음성으로 지출 관리
-```
-
-**Character count: 10** ✅
-
-### Promotional Text (170 chars max) KR
-
-```bash
-음성으로 수입과 지출을 기록하세요! 6개 언어, AI 기반, 오프라인 작동. 바쁜 사람들을 위한 간편한 가계부 앱.
-```
-
-**Character count: 66** ✅
-
-### Keywords (100 chars max) KR
-
-```bash
-지출,수입,예산,음성,AI,가계부,다국어,정기,내보내기,달력,다크모드
-```
-
-**Character count: 43** ✅
-
-### Description KR
-
-```bash
-음성으로 수입과 지출 기록
-
-자연스럽게 말하면 AI가 자동으로 가계를 정리합니다. 타이핑 불필요.
-
-할 수 있는 것:
-
-음성 입력
-• 탭하여 녹음: "커피 50달러" 또는 "주차 30k"
-• AI가 금액, 설명, 카테고리, 날짜를 자동 추출
-• 6개 언어 지원: 영어, 베트남어, 일본어, 한국어, 태국어, 스페인어
-• 날짜 이해: "어제", "지난주", "3일 전"
-
-돈 관리
-• 몇 초 만에 수입과 지출 추가
-• 13개 카테고리 (식비, 교통, 쇼핑, 공과금, 의료, 엔터테인먼트, 급여, 프리랜스, 투자 등)
-• 사용자 지정 아이콘 및 색상으로 카테고리 생성
-• 스와이프로 거래 편집 또는 삭제
-
-인사이트 보기
-• 카테고리별 지출을 보여주는 인터랙티브 차트
-• 일일 합계가 있는 월간 달력
-• 일/주/월/연도/사용자 지정 범위로 필터링
-• 시간 경과에 따른 지출 추세 추적
-
-정기 거래
-• 월별 또는 연별 정기 항목 설정
-• 임대료, 급여, 구독, 청구서에 완벽
-• 언제든지 일시 중지 또는 재개
-
-내보내기 및 가져오기
-• 모든 데이터를 JSON으로 내보내기
-• 이전 백업에서 가져오기
-• 카테고리 및 설정 포함 전체 백업
-
-기능:
-• 완전 오프라인 작동
-• 가입 불필요
-• 다크 모드 지원
-• 6개 언어 및 6개 통화
-• 모든 데이터를 로컬에 안전하게 저장
-• 광고 또는 추적 없음
-
-구독 약관
-구매 확인 시 Apple ID 계정으로 결제됩니다. 현재 기간 종료 최소 24시간 전에 자동 갱신을 끄지 않으면 구독이 자동으로 갱신됩니다. 현재 기간 종료 전 24시간 이내에 갱신 요금이 계정에 청구됩니다.
-
-이용 약관: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-개인정보 처리방침: https://portfolio.taiphanvan.dev/quickspend/privacy
-
-지금 QuickSpend를 사용해보고 가장 빠른 가계 관리를 경험하세요!
-```
-
----
-
-## Thai Version
-
-### App Name TH
-
-```bash
-QuickSpend: Instant Tracker
-```
-
-### Subtitle (30 chars max) TH
-
-```bash
-จัดการค่าใช้จ่ายด้วยเสียง
-```
-
-**Character count: 24** ✅
-
-### Promotional Text (170 chars max) TH
-
-```bash
-บันทึกรายรับรายจ่ายด้วยเสียง! 6 ภาษา, AI อัจฉริยะ, ทำงานออฟไลน์ได้ เหมาะสำหรับคนยุ่งที่ต้องการจัดการเงินง่ายๆ
-```
-
-**Character count: 110** ✅
-
-### Keywords (100 chars max) TH
-
-```bash
-ค่าใช้จ่าย,รายได้,งบประมาณ,เสียง,AI,การเงิน,หลายภาษา,ประจำ,ส่งออก,ปฏิทิน,โหมดมืด
-```
-
-**Character count: 82** ✅
-
-### Description TH
-
-```bash
-บันทึกรายรับรายจ่ายด้วยเสียง
-
-แค่พูดตามธรรมชาติและให้ AI จัดระเบียบการเงินโดยอัตโนมัติ ไม่ต้องพิมพ์
-
-ทำอะไรได้บ้าง:
-
-ป้อนข้อมูลด้วยเสียง
-• แตะเพื่อบันทึก: "กาแฟ 50 ดอลลาร์" หรือ "จอดรถ 30k"
-• AI แยกจำนวนเงิน คำอธิบาย หมวดหมู่ และวันที่โดยอัตโนมัติ
-• รองรับ 6 ภาษา: อังกฤษ เวียดนาม ญี่ปุ่น เกาหลี ไทย สเปน
-• เข้าใจวันที่: "เมื่อวาน" "สัปดาห์ที่แล้ว" "3 วันก่อน"
-
-จัดการเงิน
-• เพิ่มรายรับและรายจ่ายในไม่กี่วินาที
-• 13 หมวดหมู่ (อาหาร การเดินทาง ช้อปปิ้ง ค่าใช้จ่าย สุขภาพ ความบันเทิง เงินเดือน อิสระ การลงทุน และอื่นๆ)
-• สร้างหมวดหมู่ด้วยไอคอนและสีที่กำหนดเอง
-• ปัดเพื่อแก้ไขหรือลบธุรกรรม
-
-ดูข้อมูลเชิงลึก
-• แผนภูมิแบบโต้ตอบแสดงรายจ่ายตามหมวดหมู่
-• ปฏิทินรายเดือนพร้อมยอดรวมรายวัน
-• กรองตามวัน สัปดาห์ เดือน ปี หรือช่วงที่กำหนดเอง
-• ติดตามแนวโน้มการใช้จ่ายตามเวลา
-
-ธุรกรรมประจำ
-• ตั้งค่ารายการประจำรายเดือนหรือรายปี
-• เหมาะสำหรับค่าเช่า เงินเดือน สมาชิก ค่าใช้จ่าย
-• หยุดชั่วคราวหรือดำเนินการต่อได้ทุกเมื่อ
-
-ส่งออกและนำเข้า
-• ส่งออกข้อมูลทั้งหมดเป็น JSON
-• นำเข้าจากข้อมูลสำรองก่อนหน้า
-• สำรองข้อมูลแบบเต็มพร้อมหมวดหมู่และการตั้งค่า
-
-ฟีเจอร์:
-• ทำงานออฟไลน์ได้ทั้งหมด
-• ไม่จำเป็นต้องสมัครสมาชิก
-• รองรับโหมดมืด
-• 6 ภาษาและ 6 สกุลเงิน
-• จัดเก็บข้อมูลทั้งหมดในเครื่องอย่างปลอดภัย
-• ไม่มีโฆษณาหรือการติดตาม
-
-ข้อกำหนดการสมัครสมาชิก
-การชำระเงินจะถูกเรียกเก็บจากบัญชี Apple ID ของคุณเมื่อยืนยันการซื้อ การสมัครสมาชิกจะต่ออายุโดยอัตโนมัติ ยกเว้นการต่ออายุอัตโนมัติถูกปิดอย่างน้อย 24 ชั่วโมงก่อนสิ้นสุดระยะเวลาปัจจุบัน บัญชีของคุณจะถูกเรียกเก็บเงินสำหรับการต่ออายุภายใน 24 ชั่วโมงก่อนสิ้นสุดระยะเวลาปัจจุบัน
-
-ข้อกำหนดการใช้งาน: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-นโยบายความเป็นส่วนตัว: https://portfolio.taiphanvan.dev/quickspend/privacy
-
-ลอง QuickSpend วันนี้และสัมผัสวิธีที่เร็วที่สุดในการติดตามเงินของคุณ!
 ```
 
 ---
@@ -463,15 +290,15 @@ Control de Gastos por Voz
 ### Promotional Text (170 chars max) SP
 
 ```bash
-¡Registra ingresos y gastos por voz! 6 idiomas, IA inteligente, funciona offline. Perfecto para personas ocupadas que quieren gestión de dinero sin esfuerzo.
+Registra ingresos y gastos por voz! 4 idiomas, IA inteligente, funciona offline. Perfecto para personas ocupadas que quieren gestionar dinero sin esfuerzo.
 ```
 
-**Character count: 158** ✅
+**Character count: 156** ✅
 
 ### Keywords (100 chars max) SP
 
 ```bash
-gastos,ingresos,presupuesto,voz,IA,finanzas,multilingüe,recurrente,exportar,calendario,modo oscuro
+gastos,ingresos,presupuesto,voz,IA,finanzas,multilingue,recurrente,categoria,calendario,modo oscuro
 ```
 
 **Character count: 99** ✅
@@ -481,53 +308,54 @@ gastos,ingresos,presupuesto,voz,IA,finanzas,multilingüe,recurrente,exportar,cal
 ```bash
 REGISTRA INGRESOS Y GASTOS CON TU VOZ
 
-Solo habla naturalmente y deja que la IA organice tus finanzas automáticamente. No requiere escritura.
+Solo habla naturalmente y deja que la IA organice tus finanzas automaticamente. No requiere escritura.
 
-QUÉ PUEDES HACER:
+QUE PUEDES HACER:
 
 Entrada de voz
-• Toca para grabar: "50 dólares de café" o "30k de estacionamiento"
-• La IA extrae cantidad, descripción, categoría y fecha automáticamente
-• Compatible con 6 idiomas: Inglés, Vietnamita, Japonés, Coreano, Tailandés, Español
-• Entiende fechas: "ayer", "la semana pasada", "hace 3 días"
+• Manten pulsado para grabar, arrastra para cancelar: "50 dolares de cafe" o "30k de estacionamiento"
+• La IA extrae cantidad, descripcion, categoria y fecha automaticamente
+• Compatible con 4 idiomas: Ingles, Vietnamita, Japones, Espanol
+• Entiende fechas: "ayer", "la semana pasada", "hace 3 dias"
+• Revisa y edita los gastos analizados por IA antes de guardar
 
 Gestiona tu dinero
 • Agrega ingresos y gastos en segundos
-• 13 categorías (Comida, Transporte, Compras, Facturas, Salud, Entretenimiento, Salario, Freelance, Inversión y más)
-• Crea categorías personalizadas con tus propios iconos y colores
+• 30+ categorias organizadas en grupos (Vida diaria, Personal, Social, Financiero y mas)
+• Crea categorias personalizadas con tus propios iconos y colores
 • Desliza para editar o eliminar transacciones
 
 Ver perspectivas
-• Gráficos interactivos mostrando gastos por categoría
+• Graficos interactivos mostrando gastos por categoria
 • Vista de calendario mensual con totales diarios
-• Filtra por día, semana, mes, año o rango personalizado
-• Rastrea tendencias de gasto a lo largo del tiempo
+• Filtra por dia, semana, mes, ano o rango personalizado
+• Tendencias de gasto de 12 meses
+• Seguimiento de cambios mes a mes
 
 Transacciones recurrentes
-• Configura elementos recurrentes mensuales o anuales
+• Configura elementos recurrentes diarios, semanales, mensuales o anuales
 • Perfecto para alquiler, salario, suscripciones, facturas
 • Pausa o reanuda en cualquier momento
 
-Exportar e importar
-• Exporta todos tus datos a JSON
-• Importa desde copias de seguridad anteriores
-• Copia de seguridad completa con categorías y configuraciones
-
-Características:
-• Funciona completamente sin conexión
+Caracteristicas:
+• Funciona completamente sin conexion
 • No requiere registro
 • Soporte de modo oscuro
-• 6 idiomas y 6 monedas
+• 4 idiomas y 4 monedas (USD, VND, JPY, EUR)
 • Todos los datos almacenados localmente y de forma segura
 • Sin anuncios ni seguimiento
 
-TÉRMINOS DE SUSCRIPCIÓN
-El pago se cargará a su cuenta de Apple ID en el momento de la confirmación de la compra. La suscripción se renueva automáticamente a menos que la renovación automática se desactive al menos 24 horas antes del final del período actual. Se cobrará a su cuenta la renovación dentro de las 24 horas anteriores al final del período actual.
+SUSCRIPCION PRO
+Desbloquea analisis de voz IA ilimitados, plantillas recurrentes ilimitadas, informes extendidos y solicitudes de funciones.
+• Mensual: $2.99
+• Anual: $24.99
 
-Términos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Política de privacidad: https://portfolio.taiphanvan.dev/quickspend/privacy
+El pago se cargara a su cuenta de Apple ID en el momento de la confirmacion de la compra. La suscripcion se renueva automaticamente a menos que la renovacion automatica se desactive al menos 24 horas antes del final del periodo actual. Se cobrara a su cuenta la renovacion dentro de las 24 horas anteriores al final del periodo actual.
 
-¡Prueba QuickSpend hoy y experimenta la forma más rápida de rastrear tu dinero!
+Terminos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Politica de privacidad: https://portfolio.taiphanvan.dev/quickspend/privacy
+
+Prueba QuickSpend hoy y experimenta la forma mas rapida de rastrear tu dinero!
 ```
 
 ---
@@ -543,94 +371,63 @@ Política de privacidad: https://portfolio.taiphanvan.dev/quickspend/privacy
 
 Recommend highlighting these features in App Store screenshots (in order):
 
-1. **Voice Input** - Show the voice recording overlay in action
-2. **AI Parsing** - Show how one voice input becomes structured transactions
-3. **Income & Expense List** - Show home screen with categorized transactions
-4. **Category Chart** - Show beautiful donut chart with 13-category breakdown
+1. **Voice Input** - Show the hold-to-record overlay with drag-to-cancel in action
+2. **AI Parsing** - Show how one voice input becomes structured transactions with editable dialog
+3. **Home Dashboard** - Show monthly summary with income/expense totals and change badges
+4. **Category Chart** - Show pie chart with category group breakdown
 5. **Calendar View** - Show monthly calendar with daily income/expense totals
-6. **Spending Trends** - Show line chart with spending insights over time
-7. **Multilingual Support** - Show 6-language selection screen
-8. **JSON Backup** - Show JSON export/import for complete data backup
-9. **Recurring Expenses** - Show recurring template management
-10. **Dark Mode** - Show dark theme with beautiful mint gradient
+6. **Spending Trends** - Show 12-month trend line chart with spending insights
+7. **Category Grid** - Show 30+ categories organized in expandable groups
+8. **Recurring Transactions** - Show recurring template management (daily/weekly/monthly/yearly)
+9. **Dark Mode** - Show dark theme with beautiful forest green gradient
 
 ### Screenshot Text Overlays (English)
 
 1. "Just Speak, We'll Handle the Rest"
 2. "AI Understands Natural Language"
 3. "Track Income & Expenses Effortlessly"
-4. "13 Smart Categories, Fully Customizable"
+4. "30+ Smart Categories, Fully Customizable"
 5. "Calendar View with Daily Totals"
-6. "Beautiful Visual Insights"
-7. "6 Languages, 6 Currencies"
-8. "Export & Import Your Data"
-9. "Set Up Recurring Transactions"
-10. "Gorgeous Dark Mode"
+6. "Beautiful 12-Month Trends"
+7. "Organized Category Groups"
+8. "Daily, Weekly, Monthly & Yearly Recurring"
+9. "Gorgeous Dark Mode"
 
 ### Screenshot Text Overlays (Vietnamese)
 
-1. "Chỉ Cần Nói, Chúng Tôi Lo Phần Còn Lại"
-2. "AI Hiểu Ngôn Ngữ Tự Nhiên"
-3. "Theo Dõi Thu & Chi Dễ Dàng"
-4. "13 Danh Mục Thông Minh, Tùy Chỉnh Được"
-5. "Lịch Với Tổng Hàng Ngày"
-6. "Thống Kê Trực Quan Đẹp Mắt"
-7. "6 Ngôn Ngữ, 6 Đơn Vị Tiền Tệ"
-8. "Xuất & Nhập Dữ Liệu"
-9. "Thiết Lập Giao Dịch Định Kỳ"
-10. "Chế Độ Tối Tuyệt Đẹp"
+1. "Chi Can Noi, Chung Toi Lo Phan Con Lai"
+2. "AI Hieu Ngon Ngu Tu Nhien"
+3. "Theo Doi Thu & Chi De Dang"
+4. "30+ Danh Muc Thong Minh, Tuy Chinh Duoc"
+5. "Lich Voi Tong Hang Ngay"
+6. "Xu Huong 12 Thang Dep Mat"
+7. "Nhom Danh Muc Co To Chuc"
+8. "Dinh Ky Hang Ngay, Tuan, Thang & Nam"
+9. "Che Do Toi Tuyet Dep"
 
 ### Screenshot Text Overlays (Japanese)
 
 1. "話すだけ、残りはおまかせ"
 2. "AIが自然言語を理解"
 3. "収支を簡単に追跡"
-4. "13のスマートカテゴリー、カスタマイズ可能"
+4. "30以上のスマートカテゴリー、カスタマイズ可能"
 5. "日次合計付きカレンダー"
-6. "美しいビジュアルインサイト"
-7. "6言語、6通貨"
-8. "データのエクスポートとインポート"
-9. "定期取引の設定"
-10. "美しいダークモード"
-
-### Screenshot Text Overlays (Korean)
-
-1. "말만 하세요, 나머지는 저희가"
-2. "AI가 자연어 이해"
-3. "수입과 지출을 쉽게 추적"
-4. "13개 스마트 카테고리, 사용자 지정 가능"
-5. "일일 합계가 있는 달력"
-6. "아름다운 시각적 인사이트"
-7. "6개 언어, 6개 통화"
-8. "데이터 내보내기 및 가져오기"
-9. "정기 거래 설정"
-10. "멋진 다크 모드"
-
-### Screenshot Text Overlays (Thai)
-
-1. "แค่พูด เราจัดการที่เหลือให้"
-2. "AI เข้าใจภาษาธรรมชาติ"
-3. "ติดตามรายรับรายจ่ายได้ง่าย"
-4. "13 หมวดหมู่อัจฉริยะ ปรับแต่งได้"
-5. "ปฏิทินพร้อมยอดรวมรายวัน"
-6. "ข้อมูลเชิงลึกที่สวยงาม"
-7. "6 ภาษา 6 สกุลเงิน"
-8. "ส่งออกและนำเข้าข้อมูล"
-9. "ตั้งค่าธุรกรรมประจำ"
-10. "โหมดมืดที่สวยงาม"
+6. "美しい12ヶ月トレンド"
+7. "整理されたカテゴリーグループ"
+8. "日次・週次・月次・年次の定期取引"
+9. "美しいダークモード"
 
 ### Screenshot Text Overlays (Spanish)
 
 1. "Solo Habla, Nosotros Hacemos el Resto"
 2. "La IA Entiende el Lenguaje Natural"
-3. "Rastrea Ingresos y Gastos Fácilmente"
-4. "13 Categorías Inteligentes, Totalmente Personalizables"
+3. "Rastrea Ingresos y Gastos Facilmente"
+4. "30+ Categorias Inteligentes, Totalmente Personalizables"
 5. "Vista de Calendario con Totales Diarios"
-6. "Hermosas Perspectivas Visuales"
-7. "6 Idiomas, 6 Monedas"
-8. "Exporta e Importa tus Datos"
-9. "Configura Transacciones Recurrentes"
-10. "Modo Oscuro Impresionante"
+6. "Hermosas Tendencias de 12 Meses"
+7. "Grupos de Categorias Organizados"
+8. "Recurrentes Diarios, Semanales, Mensuales y Anuales"
+9. "Modo Oscuro Impresionante"
 
 ---
 
@@ -642,31 +439,109 @@ Recommend highlighting these features in App Store screenshots (in order):
 
 ---
 
-## What's New (Version Update Template)
+## What's New — Version 2.0
 
 ### English
 
 ```bash
-What's New in [Version]
+What's New in 2.0 — Complete Redesign
 
-• [Feature 1]
-• [Feature 2]
-• [Bug fixes and performance improvements]
+• Rebuilt from the ground up with a brand new SwiftUI interface
+• Hold-to-record voice input with drag-to-cancel gesture
+• AI-powered expense parsing with editable review before saving
+• 30+ categories organized in expandable grid groups
+• New home dashboard with monthly summary and change badges
+• 12-month spending trend charts
+• Calendar view with daily income/expense totals
+• Recurring transactions: daily, weekly, monthly, and yearly
+• 4 languages (English, Vietnamese, Japanese, Spanish) and 4 currencies
+• Pro subscription with unlimited AI parses and extended reports
+• Dark mode with forest green theme
 
-We're constantly improving QuickSpend. Have feedback? Let us know!
+This is a major update. We'd love your feedback!
 ```
 
 ### Vietnamese
 
 ```bash
-Có Gì Mới Trong Phiên Bản [Version]
+Co Gi Moi Trong Phien Ban 2.0 — Thiet Ke Hoan Toan Moi
 
-• [Tính năng 1]
-• [Tính năng 2]
-• [Sửa lỗi và cải thiện hiệu suất]
+• Xay dung lai tu dau voi giao dien SwiftUI hoan toan moi
+• Giu de ghi am, keo de huy voi cu chi truc quan
+• AI phan tich chi tieu thong minh, xem lai va chinh sua truoc khi luu
+• 30+ danh muc duoc to chuc theo nhom luoi co the mo rong
+• Trang chu moi voi tong ket hang thang va chi so thay doi
+• Bieu do xu huong chi tieu 12 thang
+• Lich voi tong thu chi hang ngay
+• Giao dich dinh ky: hang ngay, hang tuan, hang thang va hang nam
+• 4 ngon ngu (Viet, Anh, Nhat, Tay Ban Nha) va 4 don vi tien te
+• Goi Pro voi AI khong gioi han va bao cao mo rong
+• Che do toi voi giao dien xanh reu
 
-Chúng tôi liên tục cải thiện QuickSpend. Có phản hồi? Hãy cho chúng tôi biết!
+Day la ban cap nhat lon. Chung toi rat mong nhan phan hoi tu ban!
 ```
+
+### Japanese
+
+```bash
+2.0の新機能 — 完全リデザイン
+
+• 全く新しいSwiftUIインターフェースでゼロから再構築
+• 長押しで録音、ドラッグでキャンセルの音声入力
+• AI搭載の支出解析、保存前に確認・編集可能
+• 30以上のカテゴリーを展開可能なグリッドグループで整理
+• 月次サマリーと変動バッジ付きの新しいホームダッシュボード
+• 12ヶ月の支出トレンドチャート
+• 日次収支合計付きカレンダービュー
+• 定期取引：日次、週次、月次、年次
+• 4言語（英語、ベトナム語、日本語、スペイン語）と4通貨
+• Proサブスクで無制限AI解析と拡張レポート
+• フォレストグリーンテーマのダークモード
+
+メジャーアップデートです。フィードバックをお待ちしています！
+```
+
+### Spanish
+
+```bash
+Novedades en 2.0 — Rediseno Completo
+
+• Reconstruido desde cero con una interfaz SwiftUI completamente nueva
+• Manten pulsado para grabar, arrastra para cancelar
+• Analisis de gastos con IA, revisa y edita antes de guardar
+• 30+ categorias organizadas en grupos de cuadricula expandibles
+• Nuevo panel con resumen mensual e indicadores de cambio
+• Graficos de tendencias de gasto de 12 meses
+• Vista de calendario con totales diarios de ingresos y gastos
+• Transacciones recurrentes: diarias, semanales, mensuales y anuales
+• 4 idiomas (Ingles, Vietnamita, Japones, Espanol) y 4 monedas
+• Suscripcion Pro con analisis IA ilimitados e informes extendidos
+• Modo oscuro con tema verde bosque
+
+Esta es una actualizacion importante. Nos encantaria recibir tus comentarios!
+```
+
+---
+
+## Subscription Details
+
+| Plan | Price | Product ID |
+|---|---|---|
+| Monthly | $2.99 | via RevenueCat |
+| Yearly | $24.99 | via RevenueCat |
+
+### Free Tier Limits
+
+- 3 AI voice parses per day
+- 3 recurring templates
+- Reports: Current month only
+
+### Pro Unlocks
+
+- Unlimited AI voice parses
+- Unlimited recurring templates
+- Extended reports (last month, last 3 months)
+- Feature request submission
 
 ---
 
@@ -678,7 +553,7 @@ Chúng tôi liên tục cải thiện QuickSpend. Có phản hồi? Hãy cho ch�
 - Description has no strict character limit but should be concise and scannable
 - Keywords are case-insensitive and spaces are ignored
 - Focus on ASO (App Store Optimization) with relevant, searchable terms
-- Highlight unique features (voice input, AI, bilingual) prominently
+- Highlight unique features (voice input, AI, multilingual) prominently
 - Include social proof and benefits-focused copy
 - **IMPORTANT: Emojis and icons are NOT allowed in App Store descriptions**
 - Use clear section headers and bullet points for readability instead of emojis
