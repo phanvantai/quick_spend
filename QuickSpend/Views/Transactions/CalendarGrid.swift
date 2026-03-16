@@ -37,11 +37,7 @@ struct CalendarGrid: View {
 
     /// First weekday offset (0 = Sunday)
     private var firstWeekdayOffset: Int {
-        let calendar = Calendar.current
-        var comps = calendar.dateComponents([.year, .month], from: selectedMonth)
-        comps.day = 1
-        guard let firstDay = calendar.date(from: comps) else { return 0 }
-        return (calendar.component(.weekday, from: firstDay) - calendar.firstWeekday + 7) % 7
+        calendarFirstWeekdayOffset(for: selectedMonth)
     }
 
     private var daysInMonth: Int {
@@ -165,6 +161,17 @@ private struct CalendarDayCell: View {
     }
 
 
+}
+
+// MARK: - Testable Helper
+
+/// Returns the number of leading empty cells before day 1 of `month`.
+/// Uses Sunday (weekday=1) as the fixed week start to match `veryShortWeekdaySymbols` order.
+func calendarFirstWeekdayOffset(for month: Date, calendar: Calendar = .current) -> Int {
+    var comps = calendar.dateComponents([.year, .month], from: month)
+    comps.day = 1
+    guard let firstDay = calendar.date(from: comps) else { return 0 }
+    return (calendar.component(.weekday, from: firstDay) - 1 + 7) % 7
 }
 
 #Preview {
