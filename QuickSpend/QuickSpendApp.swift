@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import CoreData
 #if canImport(FirebaseCore)
 import FirebaseCore
 #endif
@@ -8,9 +9,46 @@ import FirebaseCore
 struct QuickSpendApp: App {
     @State private var appConfig = AppConfigViewModel()
     @State private var subscription = SubscriptionViewModel()
+    @State private var cloudSync = CloudSyncService()
+
+    let modelContainer: ModelContainer
 
     init() {
-        Self._resetStoreIfNeeded()
+        let schema = Schema([
+            Transaction.self,
+            Category.self,
+            RecurringTemplate.self,
+        ])
+
+        let cloudConfig = ModelConfiguration(
+            schema: schema,
+            cloudKitDatabase: .private("iCloud.com.randomtech.quickSpend")
+        )
+
+        // Initialize CloudKit schema once during development, then skip on subsequent launches.
+        #if DEBUG
+        let schemaInitKey = "hasInitializedCloudKitSchema"
+        if !UserDefaults.standard.bool(forKey: schemaInitKey) {
+            Self._initializeCloudKitSchema(config: cloudConfig)
+            UserDefaults.standard.set(true, forKey: schemaInitKey)
+        }
+        #endif
+
+        if let container = try? ModelContainer(for: schema, configurations: cloudConfig) {
+            modelContainer = container
+            print("[QuickSpendApp] ModelContainer created with CloudKit sync")
+        } else {
+            // Fallback to local-only storage if CloudKit is unavailable
+            let localConfig = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
+            do {
+                modelContainer = try ModelContainer(for: schema, configurations: localConfig)
+                print("[QuickSpendApp] ModelContainer created without CloudKit (fallback)")
+            } catch {
+                fatalError("[QuickSpendApp] Failed to create ModelContainer: \(error)")
+            }
+        }
+
+        // Initialize SDKs after all stored properties are set
         #if canImport(FirebaseCore)
         FirebaseApp.configure()
         #endif
@@ -24,6 +62,7 @@ struct QuickSpendApp: App {
             ContentView()
                 .environment(appConfig)
                 .environment(subscription)
+                .environment(cloudSync)
                 .preferredColorScheme(appConfig.colorScheme)
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                     appConfig.syncLanguageFromSystem()
@@ -32,28 +71,47 @@ struct QuickSpendApp: App {
                     appConfig.syncLanguageFromSystem()
                 }
         }
-        .modelContainer(for: [
-            Transaction.self,
-            Category.self,
-            RecurringTemplate.self,
-        ])
+        .modelContainer(modelContainer)
     }
 
-    /// Reset SwiftData store when upgrading from v1 to v2 (clean start migration)
-    private static func _resetStoreIfNeeded() {
-        let key = "hasCompletedV2Migration"
-        guard !UserDefaults.standard.bool(forKey: key) else { return }
+    // MARK: - CloudKit Schema Initialization (DEBUG only)
 
-        let appSupport = FileManager.default.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first!
-        let storeURL = appSupport.appendingPathComponent("default.store")
-        try? FileManager.default.removeItem(at: storeURL)
+    #if DEBUG
+    /// Push the SwiftData schema to CloudKit's development environment.
+    /// Runs inside autoreleasepool so the Core Data stack is fully deallocated
+    /// before SwiftData's ModelContainer opens the same store.
+    private static func _initializeCloudKitSchema(config: ModelConfiguration) {
+        do {
+            try autoreleasepool {
+                let desc = NSPersistentStoreDescription(url: config.url)
+                let opts = NSPersistentCloudKitContainerOptions(
+                    containerIdentifier: "iCloud.com.randomtech.quickSpend"
+                )
+                desc.cloudKitContainerOptions = opts
+                desc.shouldAddStoreAsynchronously = false
 
-        // Reset onboarding so categories get re-seeded
-        PreferencesService.shared.resetOnboarding()
-        UserDefaults.standard.set(true, forKey: key)
-        print("[QuickSpendApp] V2 migration: reset SwiftData store")
+                if let mom = NSManagedObjectModel.makeManagedObjectModel(for: [
+                    Transaction.self,
+                    Category.self,
+                    RecurringTemplate.self,
+                ]) {
+                    let container = NSPersistentCloudKitContainer(name: "QuickSpend", managedObjectModel: mom)
+                    container.persistentStoreDescriptions = [desc]
+                    container.loadPersistentStores { _, error in
+                        if let error {
+                            print("[QuickSpendApp] CloudKit schema init store load error: \(error)")
+                        }
+                    }
+                    try container.initializeCloudKitSchema()
+                    if let store = container.persistentStoreCoordinator.persistentStores.first {
+                        try container.persistentStoreCoordinator.remove(store)
+                    }
+                    print("[QuickSpendApp] CloudKit development schema initialized")
+                }
+            }
+        } catch {
+            print("[QuickSpendApp] CloudKit schema initialization failed: \(error)")
+        }
     }
+    #endif
 }

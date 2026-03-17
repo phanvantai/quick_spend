@@ -14,7 +14,7 @@ struct RecurringServiceTests {
 
     /// Creates an in-memory model container for testing
     private func makeContainer() throws -> ModelContainer {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try ModelContainer(
             for: Transaction.self, AppCategory.self, RecurringTemplate.self,
             configurations: config

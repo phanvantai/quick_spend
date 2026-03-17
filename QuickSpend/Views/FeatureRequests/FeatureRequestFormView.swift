@@ -6,6 +6,7 @@ struct FeatureRequestFormView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
 
     let service: FeatureRequestService
+    let isPremium: Bool
 
     @State private var title = ""
     @State private var description = ""
@@ -118,7 +119,8 @@ struct FeatureRequestFormView: View {
                 title: trimmedTitle,
                 description: description.trimmingCharacters(in: .whitespaces),
                 category: selectedCategory,
-                language: appConfig.language
+                language: appConfig.language,
+                isPremium: isPremium
             )
             isSubmitting = false
             if success { dismiss() }
@@ -127,6 +129,6 @@ struct FeatureRequestFormView: View {
 }
 
 #Preview {
-    FeatureRequestFormView(service: FeatureRequestService())
+    FeatureRequestFormView(service: FeatureRequestService(), isPremium: false)
         .environment(AppConfigViewModel())
 }
