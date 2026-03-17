@@ -286,4 +286,30 @@ struct AppConfigViewModelTests {
         let appleLanguages = UserDefaults.standard.stringArray(forKey: "AppleLanguages")
         #expect(appleLanguages?.first == "vi")
     }
+
+    // MARK: - Reset All
+
+    @Test("resetAll resets config to defaults")
+    func testResetAllResetsConfig() {
+        let vm = makeViewModel()
+
+        // Modify everything
+        vm.setLanguage("vi")
+        vm.setCurrency("VND")
+        vm.setThemeMode("dark")
+        vm.completeOnboarding()
+
+        #expect(vm.language == "vi")
+        #expect(vm.currency == "VND")
+        #expect(vm.themeMode == "dark")
+        #expect(vm.isOnboardingComplete == true)
+
+        // Reset
+        vm.resetAll()
+
+        #expect(vm.language == "en")
+        #expect(vm.currency == "USD")
+        #expect(vm.themeMode == "system")
+        #expect(vm.isOnboardingComplete == false)
+    }
 }

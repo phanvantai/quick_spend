@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// List of feature requests submitted by premium users
+/// List of feature requests submitted by users
 struct FeatureRequestListView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(SubscriptionViewModel.self) private var subscription
@@ -91,10 +91,8 @@ struct FeatureRequestListView: View {
                                     }
                                     .tint(.red)
                                 }
-                        } else if subscription.isPremium {
-                            expandableRequestRow(request)
                         } else {
-                            requestRow(request)
+                            expandableRequestRow(request)
                         }
                     }
                 }
@@ -120,7 +118,7 @@ struct FeatureRequestListView: View {
             }
         }
         .sheet(isPresented: $showAddForm) {
-            FeatureRequestFormView(service: service)
+            FeatureRequestFormView(service: service, isPremium: subscription.isPremium)
         }
         .sheet(item: $selectedRequest) { request in
             adminStatusPicker(for: request)
@@ -200,6 +198,14 @@ struct FeatureRequestListView: View {
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
 
+                    if request.priority >= 1 {
+                        Text("·")
+                            .foregroundStyle(.tertiary)
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 8))
+                            .foregroundStyle(AppTheme.accentOrange)
+                    }
+
                     if request.userId == service.currentUserId {
                         Text("·")
                             .foregroundStyle(.tertiary)
@@ -268,7 +274,7 @@ struct FeatureRequestListView: View {
         }
     }
 
-    // MARK: - Expandable Request Row (Premium)
+    // MARK: - Expandable Request Row
 
     private func expandableRequestRow(_ request: FeatureRequest) -> some View {
         VStack(alignment: .leading, spacing: 0) {

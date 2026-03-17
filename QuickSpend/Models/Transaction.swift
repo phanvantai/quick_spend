@@ -4,16 +4,16 @@ import SwiftData
 /// Core transaction model for both expenses and income
 @Model
 final class Transaction {
-    @Attribute(.unique) var id: String
-    var amount: Double
-    var note: String
-    var categoryId: String
-    var type: TransactionType
-    var date: Date
+    var id: String = ""
+    var amount: Double = 0
+    var note: String = ""
+    var categoryId: String = ""
+    var type: TransactionType = TransactionType.expense
+    var date: Date = Date.now
     var rawInput: String?
     var confidence: Double?
-    var createdAt: Date
-    var updatedAt: Date
+    var createdAt: Date = Date.now
+    var updatedAt: Date = Date.now
 
     var isIncome: Bool { type == .income }
     var isExpense: Bool { type == .expense }

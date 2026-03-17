@@ -104,6 +104,12 @@ final class AppConfigViewModel {
         preferences.saveConfig(config)
     }
 
+    /// Reset all preferences to defaults (used by "Delete All Data")
+    func resetAll() {
+        preferences.clearAll()
+        config = AppConfig()
+    }
+
     /// Format an amount using current config
     func formatCurrency(_ amount: Double) -> String {
         config.formatCurrency(amount)

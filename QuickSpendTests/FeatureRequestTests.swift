@@ -22,7 +22,8 @@ struct FeatureRequestTests {
             updatedAt: now,
             appVersion: "1.0.0",
             language: "en",
-            adminResponse: nil
+            adminResponse: nil,
+            priority: 0
         )
 
         #expect(request.id == "req_1")
@@ -34,6 +35,7 @@ struct FeatureRequestTests {
         #expect(request.appVersion == "1.0.0")
         #expect(request.language == "en")
         #expect(request.adminResponse == nil)
+        #expect(request.priority == 0)
     }
 
     @Test("FeatureRequest with admin response")
@@ -49,11 +51,13 @@ struct FeatureRequestTests {
             updatedAt: .now,
             appVersion: "1.0.0",
             language: "en",
-            adminResponse: "Fixed in v1.1"
+            adminResponse: "Fixed in v1.1",
+            priority: 1
         )
 
         #expect(request.adminResponse == "Fixed in v1.1")
         #expect(request.status == .completed)
+        #expect(request.priority == 1)
     }
 
     @Test("FeatureRequest is Codable")
@@ -69,7 +73,8 @@ struct FeatureRequestTests {
             updatedAt: Date(timeIntervalSince1970: 1000000),
             appVersion: "1.0.0",
             language: "vi",
-            adminResponse: nil
+            adminResponse: nil,
+            priority: 1
         )
 
         let data = try JSONEncoder().encode(request)
@@ -80,6 +85,45 @@ struct FeatureRequestTests {
         #expect(decoded.category == request.category)
         #expect(decoded.status == request.status)
         #expect(decoded.language == request.language)
+        #expect(decoded.priority == request.priority)
+    }
+
+    @Test("FeatureRequest priority 0 for free user")
+    func testPriorityFreeUser() {
+        let request = FeatureRequest(
+            id: "req_1",
+            userId: "user_1",
+            title: "Free request",
+            description: "From free user",
+            category: .newFeature,
+            status: .pending,
+            createdAt: .now,
+            updatedAt: .now,
+            appVersion: "1.0.0",
+            language: "en",
+            adminResponse: nil,
+            priority: 0
+        )
+        #expect(request.priority == 0)
+    }
+
+    @Test("FeatureRequest priority 1 for premium user")
+    func testPriorityPremiumUser() {
+        let request = FeatureRequest(
+            id: "req_2",
+            userId: "user_2",
+            title: "Premium request",
+            description: "From premium user",
+            category: .improvement,
+            status: .pending,
+            createdAt: .now,
+            updatedAt: .now,
+            appVersion: "1.0.0",
+            language: "en",
+            adminResponse: nil,
+            priority: 1
+        )
+        #expect(request.priority == 1)
     }
 
     // MARK: - RequestCategory

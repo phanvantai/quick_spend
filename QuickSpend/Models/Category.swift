@@ -5,16 +5,16 @@ import SwiftData
 /// Category model for organizing transactions
 @Model
 final class Category {
-    @Attribute(.unique) var id: String
-    var name: String
-    var iconName: String
-    var colorHex: String
-    var type: TransactionType
+    var id: String = ""
+    var name: String = ""
+    var iconName: String = ""
+    var colorHex: String = "#000000"
+    var type: TransactionType = TransactionType.expense
     var group: CategoryGroup?
-    var sortOrder: Int
-    var isHidden: Bool
-    var createdAt: Date
-    var updatedAt: Date
+    var sortOrder: Int = 0
+    var isHidden: Bool = false
+    var createdAt: Date = Date.now
+    var updatedAt: Date = Date.now
 
     /// Resolved SwiftUI Color from hex string
     var color: Color {
