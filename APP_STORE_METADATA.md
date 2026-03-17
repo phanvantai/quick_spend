@@ -72,10 +72,11 @@ Recurring Transactions
 
 Features:
 • Works completely offline
+• iCloud sync across all your Apple devices
 • No signup required
 • Dark mode support
 • 4 languages and 4 currencies (USD, VND, JPY, EUR)
-• All data stored locally and securely
+• All data stored locally and securely on-device or in iCloud
 • No ads or tracking
 
 PRO SUBSCRIPTION
@@ -161,10 +162,11 @@ Giao dịch định kỳ
 
 Tính năng:
 • Hoạt động hoàn toàn offline
+• Đồng bộ iCloud trên tất cả thiết bị Apple của bạn
 • Không cần đăng ký
 • Hỗ trợ chế độ tối
 • 4 ngôn ngữ và 4 đơn vị tiền tệ (USD, VND, JPY, EUR)
-• Tất cả dữ liệu lưu cục bộ và an toàn
+• Dữ liệu lưu cục bộ an toàn hoặc trên iCloud
 • Không quảng cáo hay theo dõi
 
 GÓI PRO
@@ -250,10 +252,11 @@ QuickSpend: Instant Tracker
 
 機能：
 • 完全オフライン動作
+• すべてのAppleデバイスでiCloud同期
 • サインアップ不要
 • ダークモード対応
 • 4言語・4通貨（USD、VND、JPY、EUR）
-• すべてのデータをローカルに安全保存
+• データをデバイス上またはiCloudに安全保存
 • 広告・トラッキングなし
 
 PROサブスクリプション
@@ -339,10 +342,11 @@ Transacciones recurrentes
 
 Caracteristicas:
 • Funciona completamente sin conexion
+• Sincronizacion iCloud en todos tus dispositivos Apple
 • No requiere registro
 • Soporte de modo oscuro
 • 4 idiomas y 4 monedas (USD, VND, JPY, EUR)
-• Todos los datos almacenados localmente y de forma segura
+• Datos almacenados localmente en el dispositivo o en iCloud
 • Sin anuncios ni seguimiento
 
 SUSCRIPCION PRO
@@ -436,6 +440,42 @@ Recommend highlighting these features in App Store screenshots (in order):
 **Support URL:** <https://portfolio.taiphanvan.dev/quickspend>
 **Marketing URL:** <https://portfolio.taiphanvan.dev/quickspend>
 **Privacy Policy URL:** <https://portfolio.taiphanvan.dev/quickspend/privacy>
+
+---
+
+## What's New — Version 2.1
+
+### English
+
+```bash
+iCloud Sync is here!
+
+Your expenses now sync automatically across all your Apple devices. Switch between iPhone, iPad, and Mac — everything stays up to date.
+```
+
+### Vietnamese
+
+```bash
+Da co dong bo iCloud!
+
+Chi tieu cua ban gio tu dong dong bo tren tat ca thiet bi Apple. Chuyen doi giua iPhone, iPad va Mac — moi thu luon cap nhat.
+```
+
+### Japanese
+
+```bash
+iCloud同期が登場！
+
+支出データがすべてのAppleデバイスに自動同期されます。iPhone、iPad、Mac間を切り替えても、常に最新の状態を保てます。
+```
+
+### Spanish
+
+```bash
+Ya esta disponible la sincronizacion iCloud!
+
+Tus gastos se sincronizan automaticamente en todos tus dispositivos Apple. Cambia entre iPhone, iPad y Mac — todo siempre actualizado.
+```
 
 ---
 
