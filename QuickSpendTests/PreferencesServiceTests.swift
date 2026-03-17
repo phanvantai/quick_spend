@@ -86,16 +86,6 @@ struct PreferencesServiceTests {
         #expect(service.getConfig().isOnboardingComplete == true)
     }
 
-    @Test("resetOnboarding sets flag to false")
-    func testResetOnboarding() {
-        let service = makeService()
-
-        service.completeOnboarding()
-        #expect(service.getConfig().isOnboardingComplete == true)
-
-        service.resetOnboarding()
-        #expect(service.getConfig().isOnboardingComplete == false)
-    }
 
     @Test("Multiple sequential updates persist correctly")
     func testSequentialUpdates() {

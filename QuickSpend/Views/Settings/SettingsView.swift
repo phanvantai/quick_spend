@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
 
     @Environment(SubscriptionViewModel.self) private var subscription
+    @Environment(CloudSyncService.self) private var cloudSync
 
     @Query private var transactions: [Transaction]
 
@@ -20,6 +21,7 @@ struct SettingsView: View {
     @State private var showRestoreAlert = false
     @State private var restoreSuccess = false
     @State private var isRestoring = false
+    @State private var showDeleteAllConfirm = false
 
     /// Currency cannot be changed once transactions exist to prevent data integrity issues
     private var isCurrencyLocked: Bool {
@@ -110,17 +112,6 @@ struct SettingsView: View {
                             )
                         }
                         .tint(.primary)
-
-                        NavigationLink {
-                            FeatureRequestListView()
-                        } label: {
-                            settingsRow(
-                                icon: "lightbulb.fill",
-                                iconColor: AppTheme.adaptiveAccent(colorScheme),
-                                title: L10n.tr("feature_request.title", appConfig.language),
-                                subtitle: L10n.tr("settings.feature_request_subtitle", appConfig.language)
-                            )
-                        }
                     } else {
                         Button {
                             showPaywall = true
@@ -153,6 +144,65 @@ struct SettingsView: View {
                         .tint(.primary)
                         .disabled(isRestoring)
                     }
+
+                    NavigationLink {
+                        FeatureRequestListView()
+                    } label: {
+                        settingsRow(
+                            icon: "lightbulb.fill",
+                            iconColor: AppTheme.adaptiveAccent(colorScheme),
+                            title: L10n.tr("feature_request.title", appConfig.language),
+                            subtitle: L10n.tr("settings.feature_request_subtitle", appConfig.language)
+                        )
+                    }
+                }
+
+                // iCloud Sync
+                Section {
+                    HStack(spacing: AppTheme.spacing12) {
+                        CategoryIconBadge(
+                            iconName: cloudSync.isEnabled ? "icloud.fill" : "icloud.slash.fill",
+                            color: cloudSync.isEnabled ? AppTheme.adaptiveAccent(colorScheme) : .gray,
+                            size: 36,
+                            iconFont: .body
+                        )
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(L10n.tr("settings.icloud_sync", appConfig.language))
+                                .font(.body)
+                            HStack(spacing: 4) {
+                                if cloudSync.isSyncing {
+                                    ProgressView()
+                                        .scaleEffect(0.6)
+                                }
+                                Text(iCloudStatusText)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        Spacer()
+
+                        if cloudSync.isEnabled {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                                .font(.body)
+                        }
+                    }
+                    .padding(.vertical, 2)
+
+                    Button(role: .destructive) {
+                        showDeleteAllConfirm = true
+                    } label: {
+                        settingsRow(
+                            icon: "trash.fill",
+                            iconColor: .red,
+                            title: L10n.tr("settings.delete_all_data", appConfig.language),
+                            subtitle: L10n.tr("settings.delete_all_data_subtitle", appConfig.language)
+                        )
+                    }
+                } header: {
+                    Text(L10n.tr("settings.data", appConfig.language))
                 }
 
                 // Preferences
@@ -219,6 +269,17 @@ struct SettingsView: View {
                     Text(L10n.tr("paywall.restore_no_purchases", appConfig.language))
                 }
             }
+            .alert(
+                L10n.tr("settings.delete_all_data_confirm_title", appConfig.language),
+                isPresented: $showDeleteAllConfirm
+            ) {
+                Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { }
+                Button(L10n.tr("common.delete", appConfig.language), role: .destructive) {
+                    deleteAllData()
+                }
+            } message: {
+                Text(L10n.tr("settings.delete_all_data_confirm_message", appConfig.language))
+            }
             .overlay {
                 if isRestoring {
                     ZStack {
@@ -253,6 +314,42 @@ struct SettingsView: View {
             }
         }
         .padding(.vertical, 2)
+    }
+
+    // MARK: - Delete All Data
+
+    private func deleteAllData() {
+        do {
+            try modelContext.delete(model: Transaction.self)
+            try modelContext.delete(model: Category.self)
+            try modelContext.delete(model: RecurringTemplate.self)
+        } catch {
+            print("[Settings] Failed to delete data: \(error)")
+        }
+        appConfig.resetAll()
+    }
+
+    // MARK: - iCloud Status
+
+    private var iCloudStatusText: String {
+        switch cloudSync.iCloudStatus {
+        case .available:
+            if cloudSync.isSyncing {
+                return L10n.tr("settings.icloud_syncing", appConfig.language)
+            } else if cloudSync.lastSyncDate != nil {
+                return L10n.tr("settings.icloud_synced", appConfig.language)
+            } else {
+                return L10n.tr("settings.icloud_connected", appConfig.language)
+            }
+        case .noAccount:
+            return L10n.tr("settings.icloud_no_account", appConfig.language)
+        case .restricted:
+            return L10n.tr("settings.icloud_restricted", appConfig.language)
+        case .temporarilyUnavailable:
+            return L10n.tr("settings.icloud_unavailable", appConfig.language)
+        case .unknown:
+            return L10n.tr("settings.icloud_unknown", appConfig.language)
+        }
     }
 
     // MARK: - Theme
@@ -357,4 +454,5 @@ struct SettingsView: View {
         .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
         .environment(AppConfigViewModel())
         .environment(SubscriptionViewModel())
+        .environment(CloudSyncService())
 }

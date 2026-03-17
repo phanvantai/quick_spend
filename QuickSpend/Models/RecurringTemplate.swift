@@ -5,18 +5,18 @@ import SwiftData
 /// Generates normal transactions on schedule
 @Model
 final class RecurringTemplate {
-    @Attribute(.unique) var id: String
-    var amount: Double
-    var note: String
-    var categoryId: String
-    var type: TransactionType
-    var pattern: RecurrencePattern
-    var startDate: Date
+    var id: String = ""
+    var amount: Double = 0
+    var note: String = ""
+    var categoryId: String = ""
+    var type: TransactionType = TransactionType.expense
+    var pattern: RecurrencePattern = RecurrencePattern.monthly
+    var startDate: Date = Date.now
     var endDate: Date?
     var lastGeneratedDate: Date?
-    var isActive: Bool
-    var createdAt: Date
-    var updatedAt: Date
+    var isActive: Bool = true
+    var createdAt: Date = Date.now
+    var updatedAt: Date = Date.now
 
     init(
         id: String = UUID().uuidString,

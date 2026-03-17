@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-/// Feature request submitted by premium users, stored in Firestore
+/// Feature request submitted by users, stored in Firestore
 struct FeatureRequest: Identifiable, Codable {
     let id: String
     let userId: String
@@ -14,6 +14,8 @@ struct FeatureRequest: Identifiable, Codable {
     let appVersion: String
     let language: String
     let adminResponse: String?
+    /// Priority level: 0 = free user, 1 = premium user
+    let priority: Int
 }
 
 /// Categories for feature requests

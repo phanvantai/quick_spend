@@ -61,7 +61,19 @@ struct RecurringService {
 
         var lastGenerated: Date?
         for date in dates {
+            let deterministicId = Self.deterministicId(templateId: template.id, date: date)
+
+            // Skip if a transaction with this deterministic ID already exists (CloudKit dedup)
+            let existingDescriptor = FetchDescriptor<Transaction>(
+                predicate: #Predicate { $0.id == deterministicId }
+            )
+            if (try? modelContext.fetchCount(existingDescriptor)) ?? 0 > 0 {
+                lastGenerated = date
+                continue
+            }
+
             let transaction = Transaction(
+                id: deterministicId,
                 amount: template.amount,
                 note: template.note,
                 categoryId: template.categoryId,
@@ -78,6 +90,18 @@ struct RecurringService {
         }
 
         return dates.count
+    }
+
+    // MARK: - Deterministic ID
+
+    /// Generate a deterministic transaction ID from a template ID and date.
+    /// This ensures the same recurring transaction isn't duplicated across devices
+    /// when CloudKit syncs data between them.
+    static func deterministicId(templateId: String, date: Date) -> String {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
+        let dateKey = String(format: "%04d-%02d-%02d", components.year!, components.month!, components.day!)
+        return "recurring_\(templateId)_\(dateKey)"
     }
 
     // MARK: - Date Calculation

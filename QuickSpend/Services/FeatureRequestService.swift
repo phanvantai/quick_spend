@@ -1,16 +1,38 @@
 import Foundation
 
-/// Service for submitting and fetching feature requests from Firestore
+// MARK: - Store Protocol
+
+/// Abstracts the persistence backend so tests can inject a mock instead of hitting real Firestore.
+protocol FeatureRequestStore: Sendable {
+    func fetchRequests() async throws -> [FeatureRequest]
+    func submitRequest(_ request: FeatureRequest) async throws
+    func deleteRequest(requestId: String) async throws
+    func updateRequestStatus(requestId: String, newStatus: RequestStatus, response: String?) async throws
+}
+
+// MARK: - Service
+
+/// Service for submitting and fetching feature requests
 @Observable
 final class FeatureRequestService {
     private(set) var requests: [FeatureRequest] = []
     private(set) var isLoading = false
     private(set) var errorMessage: String?
-    private var firestoreAvailable = true
+    private var storeAvailable = true
     private let defaults: UserDefaults
+    private let store: FeatureRequestStore?
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, store: FeatureRequestStore? = nil) {
         self.defaults = defaults
+        if let store {
+            self.store = store
+        } else {
+            #if canImport(FirebaseFirestore)
+            self.store = FirestoreFeatureRequestStore()
+            #else
+            self.store = nil
+            #endif
+        }
     }
 
     var currentUserId: String {
@@ -22,23 +44,26 @@ final class FeatureRequestService {
         return newId
     }
 
-    private var appVersion: String {
+    var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
     }
 
     // MARK: - Fetch All Requests
 
     func fetchRequests() async {
-        guard firestoreAvailable else { return }
+        guard storeAvailable, let store else {
+            print("[FeatureRequest] Store not available")
+            return
+        }
         isLoading = true
         errorMessage = nil
 
-        #if canImport(FirebaseFirestore)
-        await _fetchFromFirestore()
-        #else
-        print("[FeatureRequest] Firestore not available")
-        isLoading = false
-        #endif
+        do {
+            requests = try await store.fetchRequests()
+            isLoading = false
+        } catch {
+            handleError(error)
+        }
     }
 
     // MARK: - Submit New Request
@@ -47,62 +72,73 @@ final class FeatureRequestService {
         title: String,
         description: String,
         category: RequestCategory,
-        language: String
+        language: String,
+        isPremium: Bool = false
     ) async -> Bool {
-        guard firestoreAvailable else { return false }
+        guard storeAvailable, let store else { return false }
         isLoading = true
         errorMessage = nil
 
-        #if canImport(FirebaseFirestore)
-        let success = await _submitToFirestore(
+        let request = FeatureRequest(
+            id: UUID().uuidString,
+            userId: currentUserId,
             title: title,
             description: description,
             category: category,
-            language: language
+            status: .pending,
+            createdAt: .now,
+            updatedAt: .now,
+            appVersion: appVersion,
+            language: language,
+            adminResponse: nil,
+            priority: isPremium ? 1 : 0
         )
-        isLoading = false
-        return success
-        #else
-        print("[FeatureRequest] Firestore not available")
-        isLoading = false
-        return false
-        #endif
+
+        do {
+            try await store.submitRequest(request)
+            requests = try await store.fetchRequests()
+            isLoading = false
+            return true
+        } catch {
+            handleError(error)
+            return false
+        }
     }
 
     // MARK: - Update Request Status (Admin)
 
     func updateRequestStatus(requestId: String, newStatus: RequestStatus, response: String? = nil) async -> Bool {
-        guard firestoreAvailable else { return false }
+        guard storeAvailable, let store else { return false }
         isLoading = true
         errorMessage = nil
 
-        #if canImport(FirebaseFirestore)
-        let success = await _updateStatusInFirestore(requestId: requestId, newStatus: newStatus, response: response)
-        isLoading = false
-        return success
-        #else
-        print("[FeatureRequest] Firestore not available")
-        isLoading = false
-        return false
-        #endif
+        do {
+            try await store.updateRequestStatus(requestId: requestId, newStatus: newStatus, response: response)
+            requests = try await store.fetchRequests()
+            isLoading = false
+            return true
+        } catch {
+            handleError(error)
+            return false
+        }
     }
 
     // MARK: - Delete Request (Admin)
 
     func deleteRequest(requestId: String) async -> Bool {
-        guard firestoreAvailable else { return false }
+        guard storeAvailable, let store else { return false }
         isLoading = true
         errorMessage = nil
 
-        #if canImport(FirebaseFirestore)
-        let success = await _deleteFromFirestore(requestId: requestId)
-        isLoading = false
-        return success
-        #else
-        print("[FeatureRequest] Firestore not available")
-        isLoading = false
-        return false
-        #endif
+        do {
+            try await store.deleteRequest(requestId: requestId)
+            requests = try await store.fetchRequests()
+            isLoading = false
+            return true
+        } catch {
+            handleError(error)
+            return false
+        }
     }
 
     // MARK: - Filter Helpers
@@ -126,134 +162,98 @@ final class FeatureRequestService {
     func _removeLocalRequest(requestId: String) {
         requests.removeAll { $0.id == requestId }
     }
+
+    // MARK: - Private
+
+    private func handleError(_ error: Error) {
+        let errorStr = error.localizedDescription
+        if errorStr.contains("NOT_FOUND") || errorStr.contains("does not exist") {
+            storeAvailable = false
+            print("[FeatureRequest] Store not configured - disabling")
+        }
+        errorMessage = errorStr
+        isLoading = false
+        print("[FeatureRequest] Error: \(errorStr)")
+    }
 }
 
-// MARK: - Firestore Integration
+// MARK: - Firestore Implementation
 
 #if canImport(FirebaseFirestore)
 import FirebaseFirestore
 
-extension FeatureRequestService {
-    func _fetchFromFirestore() async {
-        do {
-            let snapshot = try await Firestore.firestore()
-                .collection(AppConstants.featureRequestsCollection)
-                .order(by: "createdAt", descending: true)
-                .limit(to: 100)
-                .getDocuments()
+/// Real Firestore-backed store used in production.
+struct FirestoreFeatureRequestStore: FeatureRequestStore {
+    private var db: Firestore { Firestore.firestore() }
+    private var collection: CollectionReference {
+        db.collection(AppConstants.featureRequestsCollection)
+    }
 
-            requests = snapshot.documents.compactMap { doc in
-                let data = doc.data()
-                guard let title = data["title"] as? String,
-                      let description = data["description"] as? String,
-                      let categoryRaw = data["category"] as? String,
-                      let statusRaw = data["status"] as? String
-                else { return nil }
+    func fetchRequests() async throws -> [FeatureRequest] {
+        let snapshot = try await collection
+            .order(by: "createdAt", descending: true)
+            .limit(to: 100)
+            .getDocuments()
 
-                let createdAt = (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
-                let updatedAt = (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
+        return snapshot.documents.compactMap { doc in
+            let data = doc.data()
+            guard let title = data["title"] as? String,
+                  let description = data["description"] as? String,
+                  let categoryRaw = data["category"] as? String,
+                  let statusRaw = data["status"] as? String
+            else { return nil }
 
-                return FeatureRequest(
-                    id: doc.documentID,
-                    userId: data["userId"] as? String ?? "",
-                    title: title,
-                    description: description,
-                    category: RequestCategory(rawValue: categoryRaw) ?? .other,
-                    status: RequestStatus(rawValue: statusRaw) ?? .pending,
-                    createdAt: createdAt,
-                    updatedAt: updatedAt,
-                    appVersion: data["appVersion"] as? String ?? "unknown",
-                    language: data["language"] as? String ?? "en",
-                    adminResponse: data["adminResponse"] as? String
-                )
-            }
-            isLoading = false
-            print("[FeatureRequest] Fetched \(requests.count) requests")
-        } catch {
-            let errorStr = error.localizedDescription
-            if errorStr.contains("NOT_FOUND") || errorStr.contains("does not exist") {
-                firestoreAvailable = false
-                print("[FeatureRequest] Firestore not configured - disabling")
-            }
-            errorMessage = errorStr
-            isLoading = false
-            print("[FeatureRequest] Fetch error: \(errorStr)")
+            let createdAt = (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+            let updatedAt = (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
+
+            return FeatureRequest(
+                id: doc.documentID,
+                userId: data["userId"] as? String ?? "",
+                title: title,
+                description: description,
+                category: RequestCategory(rawValue: categoryRaw) ?? .other,
+                status: RequestStatus(rawValue: statusRaw) ?? .pending,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                appVersion: data["appVersion"] as? String ?? "unknown",
+                language: data["language"] as? String ?? "en",
+                adminResponse: data["adminResponse"] as? String,
+                priority: data["priority"] as? Int ?? 0
+            )
         }
     }
 
-    func _submitToFirestore(
-        title: String,
-        description: String,
-        category: RequestCategory,
-        language: String
-    ) async -> Bool {
-        do {
-            try await Firestore.firestore()
-                .collection(AppConstants.featureRequestsCollection)
-                .addDocument(data: [
-                    "userId": currentUserId,
-                    "title": title,
-                    "description": description,
-                    "category": category.rawValue,
-                    "status": RequestStatus.pending.rawValue,
-                    "createdAt": FieldValue.serverTimestamp(),
-                    "updatedAt": FieldValue.serverTimestamp(),
-                    "appVersion": appVersion,
-                    "language": language,
-                ])
-            print("[FeatureRequest] Submitted: \(title)")
-            await _fetchFromFirestore()
-            return true
-        } catch {
-            let errorStr = error.localizedDescription
-            if errorStr.contains("NOT_FOUND") || errorStr.contains("does not exist") {
-                firestoreAvailable = false
-                print("[FeatureRequest] Firestore not configured - disabling")
-            }
-            errorMessage = errorStr
-            print("[FeatureRequest] Submit error: \(errorStr)")
-            return false
-        }
-    }
-    func _deleteFromFirestore(requestId: String) async -> Bool {
-        do {
-            try await Firestore.firestore()
-                .collection(AppConstants.featureRequestsCollection)
-                .document(requestId)
-                .delete()
-            print("[FeatureRequest] Deleted request: \(requestId)")
-            await _fetchFromFirestore()
-            return true
-        } catch {
-            let errorStr = error.localizedDescription
-            errorMessage = errorStr
-            print("[FeatureRequest] Delete error: \(errorStr)")
-            return false
-        }
+    func submitRequest(_ request: FeatureRequest) async throws {
+        try await collection.addDocument(data: [
+            "userId": request.userId,
+            "title": request.title,
+            "description": request.description,
+            "category": request.category.rawValue,
+            "status": request.status.rawValue,
+            "createdAt": FieldValue.serverTimestamp(),
+            "updatedAt": FieldValue.serverTimestamp(),
+            "appVersion": request.appVersion,
+            "language": request.language,
+            "priority": request.priority,
+        ])
+        print("[FeatureRequest] Submitted: \(request.title)")
     }
 
-    func _updateStatusInFirestore(requestId: String, newStatus: RequestStatus, response: String?) async -> Bool {
-        do {
-            var updateData: [String: Any] = [
-                "status": newStatus.rawValue,
-                "updatedAt": FieldValue.serverTimestamp(),
-            ]
-            if let response, !response.isEmpty {
-                updateData["adminResponse"] = response
-            }
-            try await Firestore.firestore()
-                .collection(AppConstants.featureRequestsCollection)
-                .document(requestId)
-                .updateData(updateData)
-            print("[FeatureRequest] Updated status of \(requestId) to \(newStatus.rawValue)")
-            await _fetchFromFirestore()
-            return true
-        } catch {
-            let errorStr = error.localizedDescription
-            errorMessage = errorStr
-            print("[FeatureRequest] Update status error: \(errorStr)")
-            return false
+    func deleteRequest(requestId: String) async throws {
+        try await collection.document(requestId).delete()
+        print("[FeatureRequest] Deleted request: \(requestId)")
+    }
+
+    func updateRequestStatus(requestId: String, newStatus: RequestStatus, response: String?) async throws {
+        var updateData: [String: Any] = [
+            "status": newStatus.rawValue,
+            "updatedAt": FieldValue.serverTimestamp(),
+        ]
+        if let response, !response.isEmpty {
+            updateData["adminResponse"] = response
         }
+        try await collection.document(requestId).updateData(updateData)
+        print("[FeatureRequest] Updated status of \(requestId) to \(newStatus.rawValue)")
     }
 }
 #endif
