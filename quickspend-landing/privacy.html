@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — QuickSpend</title>
+  <meta name="description" content="QuickSpend Privacy Policy. Learn how we protect your data and respect your privacy.">
+  <link rel="icon" type="image/png" href="assets/app-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              50: '#F0FDF4', 100: '#DCFCE7', 200: '#BBF7D0', 300: '#86EFAC',
+              400: '#52B788', 500: '#2D6A4F', 600: '#1B4332', 700: '#143D29',
+              800: '#0D2818', 900: '#071510',
+            },
+          },
+          fontFamily: {
+            heading: ['"Plus Jakarta Sans"', '"Noto Sans JP"', 'system-ui', 'sans-serif'],
+            body: ['Inter', '"Noto Sans JP"', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif; }
+    .fade-up {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    .fade-up.delay-1 { transition-delay: 0.1s; }
+    .fade-up.delay-2 { transition-delay: 0.2s; }
+    .lang-dropdown { display: none; }
+    .lang-dropdown.open { display: block; }
+    .prose h2 { margin-top: 2.5rem; margin-bottom: 0.75rem; }
+    .prose h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    .prose p, .prose ul { margin-bottom: 1rem; }
+    .prose ul { list-style: disc; padding-left: 1.5rem; }
+    .prose li { margin-bottom: 0.25rem; }
+    @media (prefers-reduced-motion: reduce) {
+      .fade-up { opacity: 1; transform: none; transition: none; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body class="bg-white text-forest-600 font-body overflow-x-hidden">
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav class="fixed top-4 left-4 right-4 z-50 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg shadow-forest-600/5 border border-forest-100 px-4 lg:px-6 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-2.5">
+        <img src="assets/app-icon.png" alt="QuickSpend" class="w-9 h-9 rounded-xl shadow-sm">
+        <span class="font-heading font-bold text-lg text-forest-600">QuickSpend</span>
+      </a>
+      <div class="flex items-center gap-3">
+        <!-- Language Switcher -->
+        <div class="relative">
+          <button id="lang-toggle" class="flex items-center gap-1.5 text-sm font-medium text-forest-500 hover:text-forest-600 px-3 py-1.5 rounded-lg hover:bg-forest-50 transition-colors cursor-pointer" aria-label="Change language">
+            <span id="lang-current-flag">🇺🇸</span>
+            <span id="lang-current-code">EN</span>
+            <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="lang-dropdown" class="lang-dropdown absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-forest-100 py-1.5 min-w-[160px]">
+            <button onclick="setLang('en')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇺🇸 English</button>
+            <button onclick="setLang('vi')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇻🇳 Tiếng Việt</button>
+            <button onclick="setLang('ja')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇯🇵 日本語</button>
+            <button onclick="setLang('es')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇪🇸 Español</button>
+          </div>
+        </div>
+        <a href="index.html" class="text-sm font-medium text-forest-500 hover:text-forest-600 px-3 py-1.5 rounded-lg hover:bg-forest-50 transition-colors cursor-pointer" data-i18n="nav.back">Back to Home</a>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- ============ HEADER ============ -->
+  <section class="relative pt-32 pb-12 bg-gradient-to-b from-forest-50 to-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="fade-up inline-flex items-center gap-2 bg-forest-100 text-forest-600 text-sm font-medium px-4 py-1.5 rounded-full mb-4">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+        <span data-i18n="header.badge">Your Privacy Matters</span>
+      </div>
+      <h1 class="fade-up delay-1 font-heading font-extrabold text-4xl sm:text-5xl text-forest-700 mb-4" data-i18n="header.title">Privacy Policy</h1>
+      <p class="fade-up delay-2 text-forest-400" data-i18n="header.updated">Last updated: March 19, 2026</p>
+    </div>
+  </section>
+
+
+  <!-- ============ CONTENT ============ -->
+  <section class="py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="fade-up prose text-forest-500 leading-relaxed">
+
+        <!-- Intro -->
+        <p data-i18n="intro">
+          QuickSpend ("we", "our", or "the app") is an iOS expense tracking application developed by an independent developer. We are committed to protecting your privacy. This policy explains what data we collect, how we use it, and the choices you have.
+        </p>
+
+        <!-- 1. Data Storage -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s1.title">1. Local-First Data Storage</h2>
+        <p data-i18n="s1.p1">
+          All your financial data — transactions, categories, recurring templates, and preferences — is stored <strong>locally on your device</strong> using Apple's SwiftData framework. We do not operate servers that store your personal financial information.
+        </p>
+        <ul>
+          <li data-i18n="s1.l1">Transaction amounts, descriptions, and dates remain on your device</li>
+          <li data-i18n="s1.l2">Category configurations are stored locally</li>
+          <li data-i18n="s1.l3">App preferences (language, currency, theme) are stored in your device's local storage</li>
+        </ul>
+
+        <!-- 2. iCloud Sync -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s2.title">2. iCloud Sync (Optional)</h2>
+        <p data-i18n="s2.p1">
+          If you enable iCloud sync, your data is stored in your <strong>private iCloud container</strong> via Apple's CloudKit. This data is encrypted and managed by Apple under their privacy policy. We cannot access your iCloud data. You can disable iCloud sync at any time in the app settings.
+        </p>
+
+        <!-- 3. Voice & AI -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s3.title">3. Voice Input & AI Processing</h2>
+        <p data-i18n="s3.p1">
+          QuickSpend uses Apple's on-device speech recognition to convert your voice into text. The transcribed text is then sent to <strong>Google's Gemini AI</strong> (via Firebase AI SDK) to extract structured expense data (amount, category, date).
+        </p>
+        <ul>
+          <li data-i18n="s3.l1">Voice audio is processed on-device by Apple's Speech framework and is not sent to our servers</li>
+          <li data-i18n="s3.l2">Transcribed text is sent to Google's Gemini API for parsing. Google's privacy policy applies to this processing</li>
+          <li data-i18n="s3.l3">We do not store or log your voice recordings or transcriptions on any server</li>
+        </ul>
+
+        <!-- 4. Analytics -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s4.title">4. Analytics</h2>
+        <p data-i18n="s4.p1">
+          We use <strong>Firebase Analytics</strong> to understand how the app is used and improve the experience. Our analytics are designed to be privacy-safe:
+        </p>
+        <ul>
+          <li data-i18n="s4.l1"><strong>No personally identifiable information (PII)</strong> is ever sent to analytics</li>
+          <li data-i18n="s4.l2">Transaction amounts are bucketed into ranges (e.g., "0–10K", "10K–100K") — exact amounts are never logged</li>
+          <li data-i18n="s4.l3">Transaction descriptions are never sent to analytics</li>
+          <li data-i18n="s4.l4">We track general usage patterns: which features are used, screen views, and app events</li>
+        </ul>
+
+        <!-- 5. Subscriptions -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s5.title">5. Subscriptions & Payments</h2>
+        <p data-i18n="s5.p1">
+          In-app purchases and subscriptions are handled entirely by <strong>Apple's App Store</strong> and <strong>RevenueCat</strong> (our subscription management provider). We do not collect or store any payment information, credit card numbers, or billing details. Please refer to Apple's and RevenueCat's respective privacy policies for how they handle payment data.
+        </p>
+
+        <!-- 6. No Account -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s6.title">6. No Account Required</h2>
+        <p data-i18n="s6.p1">
+          QuickSpend does not require you to create an account, provide an email address, or sign in. There is no user registration, and we do not collect names, email addresses, phone numbers, or any other personal identifiers.
+        </p>
+
+        <!-- 7. Third-Party -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s7.title">7. Third-Party Services</h2>
+        <p data-i18n="s7.p1">
+          QuickSpend integrates with the following third-party services, each governed by their own privacy policies:
+        </p>
+        <ul>
+          <li data-i18n="s7.l1"><strong>Firebase Analytics</strong> (Google) — anonymous usage analytics</li>
+          <li data-i18n="s7.l2"><strong>Firebase AI / Gemini</strong> (Google) — AI-powered expense parsing from text</li>
+          <li data-i18n="s7.l3"><strong>RevenueCat</strong> — subscription management and purchase validation</li>
+          <li data-i18n="s7.l4"><strong>Apple iCloud / CloudKit</strong> — optional cloud data synchronization</li>
+        </ul>
+
+        <!-- 8. Data Retention -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s8.title">8. Data Retention & Deletion</h2>
+        <p data-i18n="s8.p1">
+          Since your data is stored locally on your device (and optionally in your private iCloud), you have full control over it. You can delete all app data at any time by:
+        </p>
+        <ul>
+          <li data-i18n="s8.l1">Deleting individual transactions within the app</li>
+          <li data-i18n="s8.l2">Uninstalling the app (removes all local data)</li>
+          <li data-i18n="s8.l3">Managing your iCloud storage through iOS Settings (if iCloud sync is enabled)</li>
+        </ul>
+
+        <!-- 9. Children -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s9.title">9. Children's Privacy</h2>
+        <p data-i18n="s9.p1">
+          QuickSpend is not directed at children under 13. We do not knowingly collect personal information from children. Since no account or personal data is required to use the app, children's data protection concerns are inherently minimized.
+        </p>
+
+        <!-- 10. Changes -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s10.title">10. Changes to This Policy</h2>
+        <p data-i18n="s10.p1">
+          We may update this privacy policy from time to time. Any changes will be reflected on this page with an updated "Last updated" date. We encourage you to review this policy periodically.
+        </p>
+
+        <!-- 11. Contact -->
+        <h2 class="font-heading font-bold text-2xl text-forest-700" data-i18n="s11.title">11. Contact Us</h2>
+        <p data-i18n="s11.p1">
+          If you have any questions or concerns about this privacy policy, please contact us at:
+        </p>
+        <p class="font-medium text-forest-600">
+          taipv.swe@gmail.com
+        </p>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="bg-forest-800 text-forest-300 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <img src="assets/app-icon.png" alt="QuickSpend" class="w-8 h-8 rounded-lg">
+          <span class="font-heading font-bold text-white">QuickSpend</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm">
+          <span class="text-white cursor-default" data-i18n="footer.privacy">Privacy Policy</span>
+          <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener" class="hover:text-white transition-colors cursor-pointer" data-i18n="footer.terms">Terms of Service</a>
+          <a href="index.html" class="hover:text-white transition-colors cursor-pointer" data-i18n="footer.home">Home</a>
+        </div>
+        <p class="text-sm text-forest-400">&copy; 2026 QuickSpend. <span data-i18n="footer.rights">All rights reserved.</span></p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ============ SCRIPTS ============ -->
+  <script>
+    const T = {
+      en: {
+        'nav.back': 'Back to Home',
+        'header.badge': 'Your Privacy Matters',
+        'header.title': 'Privacy Policy',
+        'header.updated': 'Last updated: March 19, 2026',
+        'intro': 'QuickSpend ("we", "our", or "the app") is an iOS expense tracking application developed by an independent developer. We are committed to protecting your privacy. This policy explains what data we collect, how we use it, and the choices you have.',
+        's1.title': '1. Local-First Data Storage',
+        's1.p1': 'All your financial data — transactions, categories, recurring templates, and preferences — is stored <strong>locally on your device</strong> using Apple\'s SwiftData framework. We do not operate servers that store your personal financial information.',
+        's1.l1': 'Transaction amounts, descriptions, and dates remain on your device',
+        's1.l2': 'Category configurations are stored locally',
+        's1.l3': 'App preferences (language, currency, theme) are stored in your device\'s local storage',
+        's2.title': '2. iCloud Sync (Optional)',
+        's2.p1': 'If you enable iCloud sync, your data is stored in your <strong>private iCloud container</strong> via Apple\'s CloudKit. This data is encrypted and managed by Apple under their privacy policy. We cannot access your iCloud data. You can disable iCloud sync at any time in the app settings.',
+        's3.title': '3. Voice Input & AI Processing',
+        's3.p1': 'QuickSpend uses Apple\'s on-device speech recognition to convert your voice into text. The transcribed text is then sent to <strong>Google\'s Gemini AI</strong> (via Firebase AI SDK) to extract structured expense data (amount, category, date).',
+        's3.l1': 'Voice audio is processed on-device by Apple\'s Speech framework and is not sent to our servers',
+        's3.l2': 'Transcribed text is sent to Google\'s Gemini API for parsing. Google\'s privacy policy applies to this processing',
+        's3.l3': 'We do not store or log your voice recordings or transcriptions on any server',
+        's4.title': '4. Analytics',
+        's4.p1': 'We use <strong>Firebase Analytics</strong> to understand how the app is used and improve the experience. Our analytics are designed to be privacy-safe:',
+        's4.l1': '<strong>No personally identifiable information (PII)</strong> is ever sent to analytics',
+        's4.l2': 'Transaction amounts are bucketed into ranges (e.g., "0–10K", "10K–100K") — exact amounts are never logged',
+        's4.l3': 'Transaction descriptions are never sent to analytics',
+        's4.l4': 'We track general usage patterns: which features are used, screen views, and app events',
+        's5.title': '5. Subscriptions & Payments',
+        's5.p1': 'In-app purchases and subscriptions are handled entirely by <strong>Apple\'s App Store</strong> and <strong>RevenueCat</strong> (our subscription management provider). We do not collect or store any payment information, credit card numbers, or billing details. Please refer to Apple\'s and RevenueCat\'s respective privacy policies for how they handle payment data.',
+        's6.title': '6. No Account Required',
+        's6.p1': 'QuickSpend does not require you to create an account, provide an email address, or sign in. There is no user registration, and we do not collect names, email addresses, phone numbers, or any other personal identifiers.',
+        's7.title': '7. Third-Party Services',
+        's7.p1': 'QuickSpend integrates with the following third-party services, each governed by their own privacy policies:',
+        's7.l1': '<strong>Firebase Analytics</strong> (Google) — anonymous usage analytics',
+        's7.l2': '<strong>Firebase AI / Gemini</strong> (Google) — AI-powered expense parsing from text',
+        's7.l3': '<strong>RevenueCat</strong> — subscription management and purchase validation',
+        's7.l4': '<strong>Apple iCloud / CloudKit</strong> — optional cloud data synchronization',
+        's8.title': '8. Data Retention & Deletion',
+        's8.p1': 'Since your data is stored locally on your device (and optionally in your private iCloud), you have full control over it. You can delete all app data at any time by:',
+        's8.l1': 'Deleting individual transactions within the app',
+        's8.l2': 'Uninstalling the app (removes all local data)',
+        's8.l3': 'Managing your iCloud storage through iOS Settings (if iCloud sync is enabled)',
+        's9.title': '9. Children\'s Privacy',
+        's9.p1': 'QuickSpend is not directed at children under 13. We do not knowingly collect personal information from children. Since no account or personal data is required to use the app, children\'s data protection concerns are inherently minimized.',
+        's10.title': '10. Changes to This Policy',
+        's10.p1': 'We may update this privacy policy from time to time. Any changes will be reflected on this page with an updated "Last updated" date. We encourage you to review this policy periodically.',
+        's11.title': '11. Contact Us',
+        's11.p1': 'If you have any questions or concerns about this privacy policy, please contact us at:',
+        'footer.privacy': 'Privacy Policy',
+        'footer.terms': 'Terms of Service',
+        'footer.home': 'Home',
+        'footer.rights': 'All rights reserved.',
+      },
+      vi: {
+        'nav.back': 'Về Trang Chủ',
+        'header.badge': 'Quyền Riêng Tư Của Bạn',
+        'header.title': 'Chính Sách Bảo Mật',
+        'header.updated': 'Cập nhật lần cuối: 19 tháng 3, 2026',
+        'intro': 'QuickSpend ("chúng tôi" hoặc "ứng dụng") là ứng dụng theo dõi chi tiêu trên iOS được phát triển bởi nhà phát triển độc lập. Chúng tôi cam kết bảo vệ quyền riêng tư của bạn. Chính sách này giải thích dữ liệu chúng tôi thu thập, cách sử dụng và các lựa chọn bạn có.',
+        's1.title': '1. Lưu Trữ Dữ Liệu Tại Thiết Bị',
+        's1.p1': 'Tất cả dữ liệu tài chính của bạn — giao dịch, danh mục, mẫu định kỳ và cài đặt — được lưu trữ <strong>cục bộ trên thiết bị</strong> sử dụng framework SwiftData của Apple. Chúng tôi không vận hành máy chủ lưu trữ thông tin tài chính cá nhân của bạn.',
+        's1.l1': 'Số tiền, mô tả và ngày giao dịch được giữ trên thiết bị của bạn',
+        's1.l2': 'Cấu hình danh mục được lưu trữ cục bộ',
+        's1.l3': 'Cài đặt ứng dụng (ngôn ngữ, tiền tệ, giao diện) được lưu trong bộ nhớ cục bộ của thiết bị',
+        's2.title': '2. Đồng Bộ iCloud (Tùy Chọn)',
+        's2.p1': 'Nếu bạn bật đồng bộ iCloud, dữ liệu được lưu trong <strong>vùng chứa iCloud riêng tư</strong> qua CloudKit của Apple. Dữ liệu này được mã hóa và quản lý bởi Apple theo chính sách bảo mật của họ. Chúng tôi không thể truy cập dữ liệu iCloud của bạn. Bạn có thể tắt đồng bộ iCloud bất kỳ lúc nào trong cài đặt ứng dụng.',
+        's3.title': '3. Nhập Giọng Nói & Xử Lý AI',
+        's3.p1': 'QuickSpend sử dụng nhận dạng giọng nói trên thiết bị của Apple để chuyển đổi giọng nói thành văn bản. Văn bản sau đó được gửi đến <strong>Google Gemini AI</strong> (qua Firebase AI SDK) để trích xuất dữ liệu chi tiêu (số tiền, danh mục, ngày).',
+        's3.l1': 'Âm thanh giọng nói được xử lý trên thiết bị bởi Speech framework của Apple và không được gửi đến máy chủ của chúng tôi',
+        's3.l2': 'Văn bản phiên âm được gửi đến Gemini API của Google để phân tích. Chính sách bảo mật của Google áp dụng cho quá trình xử lý này',
+        's3.l3': 'Chúng tôi không lưu trữ hoặc ghi lại bản ghi âm hoặc phiên âm của bạn trên bất kỳ máy chủ nào',
+        's4.title': '4. Phân Tích',
+        's4.p1': 'Chúng tôi sử dụng <strong>Firebase Analytics</strong> để hiểu cách ứng dụng được sử dụng và cải thiện trải nghiệm. Phân tích của chúng tôi được thiết kế để bảo vệ quyền riêng tư:',
+        's4.l1': '<strong>Không có thông tin nhận dạng cá nhân (PII)</strong> nào được gửi đến phân tích',
+        's4.l2': 'Số tiền giao dịch được phân nhóm theo phạm vi (ví dụ: "0–10K", "10K–100K") — số tiền chính xác không bao giờ được ghi lại',
+        's4.l3': 'Mô tả giao dịch không bao giờ được gửi đến phân tích',
+        's4.l4': 'Chúng tôi theo dõi các mẫu sử dụng chung: tính năng nào được dùng, lượt xem màn hình và sự kiện ứng dụng',
+        's5.title': '5. Đăng Ký & Thanh Toán',
+        's5.p1': 'Mua hàng trong ứng dụng và đăng ký được xử lý hoàn toàn bởi <strong>App Store của Apple</strong> và <strong>RevenueCat</strong> (nhà cung cấp quản lý đăng ký). Chúng tôi không thu thập hoặc lưu trữ bất kỳ thông tin thanh toán, số thẻ tín dụng hoặc chi tiết hóa đơn nào. Vui lòng tham khảo chính sách bảo mật của Apple và RevenueCat.',
+        's6.title': '6. Không Cần Tài Khoản',
+        's6.p1': 'QuickSpend không yêu cầu bạn tạo tài khoản, cung cấp email hoặc đăng nhập. Không có đăng ký người dùng, và chúng tôi không thu thập tên, địa chỉ email, số điện thoại hoặc bất kỳ thông tin nhận dạng cá nhân nào.',
+        's7.title': '7. Dịch Vụ Bên Thứ Ba',
+        's7.p1': 'QuickSpend tích hợp với các dịch vụ bên thứ ba sau, mỗi dịch vụ được quản lý bởi chính sách bảo mật riêng:',
+        's7.l1': '<strong>Firebase Analytics</strong> (Google) — phân tích sử dụng ẩn danh',
+        's7.l2': '<strong>Firebase AI / Gemini</strong> (Google) — phân tích chi tiêu bằng AI từ văn bản',
+        's7.l3': '<strong>RevenueCat</strong> — quản lý đăng ký và xác minh mua hàng',
+        's7.l4': '<strong>Apple iCloud / CloudKit</strong> — đồng bộ dữ liệu đám mây tùy chọn',
+        's8.title': '8. Lưu Giữ & Xóa Dữ Liệu',
+        's8.p1': 'Vì dữ liệu được lưu cục bộ trên thiết bị (và tùy chọn trong iCloud riêng tư), bạn có toàn quyền kiểm soát. Bạn có thể xóa tất cả dữ liệu ứng dụng bất kỳ lúc nào bằng cách:',
+        's8.l1': 'Xóa từng giao dịch trong ứng dụng',
+        's8.l2': 'Gỡ cài đặt ứng dụng (xóa tất cả dữ liệu cục bộ)',
+        's8.l3': 'Quản lý bộ nhớ iCloud qua Cài đặt iOS (nếu đã bật đồng bộ iCloud)',
+        's9.title': '9. Quyền Riêng Tư Trẻ Em',
+        's9.p1': 'QuickSpend không hướng đến trẻ em dưới 13 tuổi. Chúng tôi không cố ý thu thập thông tin cá nhân từ trẻ em. Vì không yêu cầu tài khoản hoặc dữ liệu cá nhân để sử dụng ứng dụng, các lo ngại về bảo vệ dữ liệu trẻ em được giảm thiểu.',
+        's10.title': '10. Thay Đổi Chính Sách',
+        's10.p1': 'Chúng tôi có thể cập nhật chính sách bảo mật này theo thời gian. Mọi thay đổi sẽ được phản ánh trên trang này với ngày "Cập nhật lần cuối" mới. Chúng tôi khuyến khích bạn xem lại chính sách này định kỳ.',
+        's11.title': '11. Liên Hệ',
+        's11.p1': 'Nếu bạn có bất kỳ câu hỏi hoặc thắc mắc nào về chính sách bảo mật này, vui lòng liên hệ chúng tôi tại:',
+        'footer.privacy': 'Chính Sách Bảo Mật',
+        'footer.terms': 'Điều Khoản Dịch Vụ',
+        'footer.home': 'Trang Chủ',
+        'footer.rights': 'Đã đăng ký bản quyền.',
+      },
+      ja: {
+        'nav.back': 'ホームに戻る',
+        'header.badge': 'プライバシーを大切に',
+        'header.title': 'プライバシーポリシー',
+        'header.updated': '最終更新日: 2026年3月19日',
+        'intro': 'QuickSpend（「当社」または「本アプリ」）は、独立した開発者が開発したiOS向け支出追跡アプリケーションです。私たちはお客様のプライバシーの保護に取り組んでいます。このポリシーでは、収集するデータ、使用方法、お客様の選択肢について説明します。',
+        's1.title': '1. ローカルファーストのデータ保存',
+        's1.p1': 'お客様のすべての財務データ（取引、カテゴリ、定期テンプレート、設定）は、AppleのSwiftDataフレームワークを使用して<strong>デバイスにローカル保存</strong>されます。お客様の個人的な財務情報を保存するサーバーは運用していません。',
+        's1.l1': '取引金額、説明、日付はデバイス上に保持されます',
+        's1.l2': 'カテゴリ設定はローカルに保存されます',
+        's1.l3': 'アプリの設定（言語、通貨、テーマ）はデバイスのローカルストレージに保存されます',
+        's2.title': '2. iCloud同期（オプション）',
+        's2.p1': 'iCloud同期を有効にすると、データはAppleのCloudKitを通じて<strong>プライベートiCloudコンテナ</strong>に保存されます。このデータはAppleのプライバシーポリシーの下で暗号化・管理されます。当社はお客様のiCloudデータにアクセスできません。アプリの設定からいつでもiCloud同期を無効にできます。',
+        's3.title': '3. 音声入力とAI処理',
+        's3.p1': 'QuickSpendはAppleのデバイス上の音声認識を使用して音声をテキストに変換します。変換されたテキストは<strong>GoogleのGemini AI</strong>（Firebase AI SDK経由）に送信され、構造化された支出データ（金額、カテゴリ、日付）を抽出します。',
+        's3.l1': '音声はAppleのSpeechフレームワークによりデバイス上で処理され、当社のサーバーには送信されません',
+        's3.l2': '変換されたテキストはGoogleのGemini APIに解析のために送信されます。Googleのプライバシーポリシーがこの処理に適用されます',
+        's3.l3': '当社は音声録音やテキスト変換をサーバーに保存または記録しません',
+        's4.title': '4. アナリティクス',
+        's4.p1': 'アプリの使用状況を理解し体験を改善するために<strong>Firebase Analytics</strong>を使用しています。アナリティクスはプライバシーを守るよう設計されています：',
+        's4.l1': '<strong>個人を特定できる情報（PII）</strong>がアナリティクスに送信されることはありません',
+        's4.l2': '取引金額は範囲にグループ化されます（例：「0〜10K」「10K〜100K」）— 正確な金額は記録されません',
+        's4.l3': '取引の説明がアナリティクスに送信されることはありません',
+        's4.l4': '一般的な使用パターン（使用される機能、画面表示、アプリイベント）を追跡します',
+        's5.title': '5. サブスクリプションと支払い',
+        's5.p1': 'アプリ内購入とサブスクリプションは<strong>AppleのApp Store</strong>と<strong>RevenueCat</strong>（サブスクリプション管理プロバイダー）によって完全に処理されます。支払い情報、クレジットカード番号、請求の詳細を収集または保存しません。AppleおよびRevenueCatのそれぞれのプライバシーポリシーをご参照ください。',
+        's6.title': '6. アカウント不要',
+        's6.p1': 'QuickSpendはアカウントの作成、メールアドレスの提供、サインインを必要としません。ユーザー登録はなく、名前、メールアドレス、電話番号、その他の個人識別情報を収集しません。',
+        's7.title': '7. サードパーティサービス',
+        's7.p1': 'QuickSpendは以下のサードパーティサービスと統合しており、それぞれ独自のプライバシーポリシーに準拠しています：',
+        's7.l1': '<strong>Firebase Analytics</strong>（Google）— 匿名の使用状況分析',
+        's7.l2': '<strong>Firebase AI / Gemini</strong>（Google）— テキストからのAI搭載支出解析',
+        's7.l3': '<strong>RevenueCat</strong> — サブスクリプション管理と購入検証',
+        's7.l4': '<strong>Apple iCloud / CloudKit</strong> — オプションのクラウドデータ同期',
+        's8.title': '8. データの保持と削除',
+        's8.p1': 'データはデバイスにローカル保存されるため（オプションでプライベートiCloudにも）、お客様が完全に管理できます。以下の方法でいつでもすべてのアプリデータを削除できます：',
+        's8.l1': 'アプリ内で個々の取引を削除',
+        's8.l2': 'アプリをアンインストール（すべてのローカルデータを削除）',
+        's8.l3': 'iOS設定からiCloudストレージを管理（iCloud同期が有効な場合）',
+        's9.title': '9. 子どものプライバシー',
+        's9.p1': 'QuickSpendは13歳未満の子どもを対象としていません。子どもから意図的に個人情報を収集することはありません。アプリの使用にアカウントや個人データが不要なため、子どものデータ保護に関する懸念は本質的に最小限です。',
+        's10.title': '10. ポリシーの変更',
+        's10.p1': 'このプライバシーポリシーは随時更新される場合があります。変更はこのページに「最終更新日」の更新とともに反映されます。定期的にこのポリシーを確認することをお勧めします。',
+        's11.title': '11. お問い合わせ',
+        's11.p1': 'このプライバシーポリシーについてご質問やご懸念がある場合は、以下までお問い合わせください：',
+        'footer.privacy': 'プライバシーポリシー',
+        'footer.terms': '利用規約',
+        'footer.home': 'ホーム',
+        'footer.rights': '全著作権所有。',
+      },
+      es: {
+        'nav.back': 'Volver al Inicio',
+        'header.badge': 'Tu Privacidad Importa',
+        'header.title': 'Política de Privacidad',
+        'header.updated': 'Última actualización: 19 de marzo de 2026',
+        'intro': 'QuickSpend ("nosotros" o "la aplicación") es una aplicación de seguimiento de gastos para iOS desarrollada por un desarrollador independiente. Estamos comprometidos con la protección de tu privacidad. Esta política explica qué datos recopilamos, cómo los usamos y las opciones que tienes.',
+        's1.title': '1. Almacenamiento Local de Datos',
+        's1.p1': 'Todos tus datos financieros — transacciones, categorías, plantillas recurrentes y preferencias — se almacenan <strong>localmente en tu dispositivo</strong> usando el framework SwiftData de Apple. No operamos servidores que almacenen tu información financiera personal.',
+        's1.l1': 'Los montos, descripciones y fechas de las transacciones permanecen en tu dispositivo',
+        's1.l2': 'Las configuraciones de categorías se almacenan localmente',
+        's1.l3': 'Las preferencias de la app (idioma, moneda, tema) se guardan en el almacenamiento local del dispositivo',
+        's2.title': '2. Sincronización iCloud (Opcional)',
+        's2.p1': 'Si habilitas la sincronización iCloud, tus datos se almacenan en tu <strong>contenedor privado de iCloud</strong> a través de CloudKit de Apple. Estos datos están encriptados y gestionados por Apple bajo su política de privacidad. No podemos acceder a tus datos de iCloud. Puedes desactivar la sincronización iCloud en cualquier momento.',
+        's3.title': '3. Entrada de Voz y Procesamiento IA',
+        's3.p1': 'QuickSpend usa el reconocimiento de voz en el dispositivo de Apple para convertir tu voz en texto. El texto transcrito se envía a <strong>Google Gemini AI</strong> (a través de Firebase AI SDK) para extraer datos de gastos estructurados (monto, categoría, fecha).',
+        's3.l1': 'El audio de voz se procesa en el dispositivo por el framework Speech de Apple y no se envía a nuestros servidores',
+        's3.l2': 'El texto transcrito se envía a la API Gemini de Google para su análisis. La política de privacidad de Google aplica a este procesamiento',
+        's3.l3': 'No almacenamos ni registramos tus grabaciones de voz o transcripciones en ningún servidor',
+        's4.title': '4. Analíticas',
+        's4.p1': 'Usamos <strong>Firebase Analytics</strong> para entender cómo se usa la app y mejorar la experiencia. Nuestras analíticas están diseñadas para proteger la privacidad:',
+        's4.l1': '<strong>No se envía información personal identificable (PII)</strong> a las analíticas',
+        's4.l2': 'Los montos de transacciones se agrupan en rangos (ej: "0–10K", "10K–100K") — los montos exactos nunca se registran',
+        's4.l3': 'Las descripciones de transacciones nunca se envían a analíticas',
+        's4.l4': 'Rastreamos patrones generales de uso: qué funciones se utilizan, vistas de pantalla y eventos de la app',
+        's5.title': '5. Suscripciones y Pagos',
+        's5.p1': 'Las compras y suscripciones dentro de la app son gestionadas completamente por el <strong>App Store de Apple</strong> y <strong>RevenueCat</strong> (nuestro proveedor de gestión de suscripciones). No recopilamos ni almacenamos información de pago, números de tarjeta de crédito ni detalles de facturación. Consulta las políticas de privacidad de Apple y RevenueCat.',
+        's6.title': '6. Sin Cuenta Requerida',
+        's6.p1': 'QuickSpend no requiere crear una cuenta, proporcionar un correo electrónico ni iniciar sesión. No hay registro de usuarios y no recopilamos nombres, correos electrónicos, números de teléfono ni ningún otro identificador personal.',
+        's7.title': '7. Servicios de Terceros',
+        's7.p1': 'QuickSpend se integra con los siguientes servicios de terceros, cada uno gobernado por sus propias políticas de privacidad:',
+        's7.l1': '<strong>Firebase Analytics</strong> (Google) — analíticas de uso anónimas',
+        's7.l2': '<strong>Firebase AI / Gemini</strong> (Google) — análisis de gastos con IA desde texto',
+        's7.l3': '<strong>RevenueCat</strong> — gestión de suscripciones y validación de compras',
+        's7.l4': '<strong>Apple iCloud / CloudKit</strong> — sincronización opcional de datos en la nube',
+        's8.title': '8. Retención y Eliminación de Datos',
+        's8.p1': 'Dado que tus datos se almacenan localmente en tu dispositivo (y opcionalmente en tu iCloud privado), tienes control total. Puedes eliminar todos los datos de la app en cualquier momento:',
+        's8.l1': 'Eliminando transacciones individuales dentro de la app',
+        's8.l2': 'Desinstalando la app (elimina todos los datos locales)',
+        's8.l3': 'Gestionando tu almacenamiento iCloud a través de Ajustes de iOS (si la sincronización iCloud está habilitada)',
+        's9.title': '9. Privacidad Infantil',
+        's9.p1': 'QuickSpend no está dirigido a menores de 13 años. No recopilamos intencionalmente información personal de niños. Dado que no se requiere cuenta ni datos personales para usar la app, las preocupaciones de protección de datos infantiles se minimizan inherentemente.',
+        's10.title': '10. Cambios en Esta Política',
+        's10.p1': 'Podemos actualizar esta política de privacidad periódicamente. Cualquier cambio se reflejará en esta página con una fecha de "Última actualización" actualizada. Te recomendamos revisar esta política periódicamente.',
+        's11.title': '11. Contáctanos',
+        's11.p1': 'Si tienes alguna pregunta o inquietud sobre esta política de privacidad, contáctanos en:',
+        'footer.privacy': 'Política de Privacidad',
+        'footer.terms': 'Términos de Servicio',
+        'footer.home': 'Inicio',
+        'footer.rights': 'Todos los derechos reservados.',
+      }
+    };
+
+    const langMeta = {
+      en: { flag: '\u{1F1FA}\u{1F1F8}', code: 'EN', htmlLang: 'en' },
+      vi: { flag: '\u{1F1FB}\u{1F1F3}', code: 'VI', htmlLang: 'vi' },
+      ja: { flag: '\u{1F1EF}\u{1F1F5}', code: 'JA', htmlLang: 'ja' },
+      es: { flag: '\u{1F1EA}\u{1F1F8}', code: 'ES', htmlLang: 'es' },
+    };
+
+    let currentLang = localStorage.getItem('qs-lang') || 'en';
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('qs-lang', lang);
+      document.documentElement.lang = langMeta[lang].htmlLang;
+      document.getElementById('lang-current-flag').textContent = langMeta[lang].flag;
+      document.getElementById('lang-current-code').textContent = langMeta[lang].code;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (T[lang] && T[lang][key]) el.innerHTML = T[lang][key];
+      });
+      document.getElementById('lang-dropdown').classList.remove('open');
+    }
+
+    document.getElementById('lang-toggle').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('lang-dropdown').classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+      document.getElementById('lang-dropdown').classList.remove('open');
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    setLang(currentLang);
+  </script>
+</body>
+</html>
