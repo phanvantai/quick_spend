@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support — QuickSpend</title>
+  <meta name="description" content="Get help with QuickSpend. FAQs, troubleshooting, feature requests, and contact information.">
+  <link rel="icon" type="image/png" href="assets/app-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              50: '#F0FDF4', 100: '#DCFCE7', 200: '#BBF7D0', 300: '#86EFAC',
+              400: '#52B788', 500: '#2D6A4F', 600: '#1B4332', 700: '#143D29',
+              800: '#0D2818', 900: '#071510',
+            },
+          },
+          fontFamily: {
+            heading: ['"Plus Jakarta Sans"', '"Noto Sans JP"', 'system-ui', 'sans-serif'],
+            body: ['Inter', '"Noto Sans JP"', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif; }
+    .fade-up {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    .fade-up.delay-1 { transition-delay: 0.1s; }
+    .fade-up.delay-2 { transition-delay: 0.2s; }
+    .fade-up.delay-3 { transition-delay: 0.3s; }
+    .lang-dropdown { display: none; }
+    .lang-dropdown.open { display: block; }
+    .faq-answer { display: none; }
+    .faq-answer.open { display: block; }
+    .faq-toggle svg { transition: transform 0.2s ease; }
+    .faq-toggle.open svg { transform: rotate(45deg); }
+    @media (prefers-reduced-motion: reduce) {
+      .fade-up { opacity: 1; transform: none; transition: none; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body class="bg-white text-forest-600 font-body overflow-x-hidden">
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav class="fixed top-4 left-4 right-4 z-50 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg shadow-forest-600/5 border border-forest-100 px-4 lg:px-6 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-2.5">
+        <img src="assets/app-icon.png" alt="QuickSpend" class="w-9 h-9 rounded-xl shadow-sm">
+        <span class="font-heading font-bold text-lg text-forest-600">QuickSpend</span>
+      </a>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <button id="lang-toggle" class="flex items-center gap-1.5 text-sm font-medium text-forest-500 hover:text-forest-600 px-3 py-1.5 rounded-lg hover:bg-forest-50 transition-colors cursor-pointer" aria-label="Change language">
+            <span id="lang-current-flag">🇺🇸</span>
+            <span id="lang-current-code">EN</span>
+            <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="lang-dropdown" class="lang-dropdown absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-forest-100 py-1.5 min-w-[160px]">
+            <button onclick="setLang('en')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇺🇸 English</button>
+            <button onclick="setLang('vi')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇻🇳 Tiếng Việt</button>
+            <button onclick="setLang('ja')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇯🇵 日本語</button>
+            <button onclick="setLang('es')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇪🇸 Español</button>
+          </div>
+        </div>
+        <a href="index.html" class="text-sm font-medium text-forest-500 hover:text-forest-600 px-3 py-1.5 rounded-lg hover:bg-forest-50 transition-colors cursor-pointer" data-i18n="nav.back">Back to Home</a>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- ============ HEADER ============ -->
+  <section class="relative pt-32 pb-12 bg-gradient-to-b from-forest-50 to-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="fade-up inline-flex items-center gap-2 bg-forest-100 text-forest-600 text-sm font-medium px-4 py-1.5 rounded-full mb-4">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        <span data-i18n="header.badge">We're Here to Help</span>
+      </div>
+      <h1 class="fade-up delay-1 font-heading font-extrabold text-4xl sm:text-5xl text-forest-700 mb-4" data-i18n="header.title">Support Center</h1>
+      <p class="fade-up delay-2 text-lg text-forest-400 max-w-xl mx-auto" data-i18n="header.subtitle">Find answers to common questions or reach out to us directly</p>
+    </div>
+  </section>
+
+
+  <!-- ============ CONTACT OPTIONS ============ -->
+  <section class="py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid sm:grid-cols-3 gap-5 mb-16">
+        <!-- Email -->
+        <a href="mailto:taipv.swe@gmail.com" class="fade-up group bg-white border border-forest-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-forest-200 transition-all duration-300 cursor-pointer">
+          <div class="w-12 h-12 bg-gradient-to-br from-forest-500 to-forest-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </div>
+          <h3 class="font-heading font-bold text-forest-700 mb-1" data-i18n="contact.email.title">Email Us</h3>
+          <p class="text-sm text-forest-400" data-i18n="contact.email.desc">taipv.swe@gmail.com</p>
+        </a>
+
+        <!-- GitHub -->
+        <a href="https://github.com/phanvantai/quick_spend/issues" target="_blank" rel="noopener" class="fade-up delay-1 group bg-white border border-forest-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-forest-200 transition-all duration-300 cursor-pointer">
+          <div class="w-12 h-12 bg-gradient-to-br from-forest-500 to-forest-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          </div>
+          <h3 class="font-heading font-bold text-forest-700 mb-1" data-i18n="contact.github.title">Report a Bug</h3>
+          <p class="text-sm text-forest-400" data-i18n="contact.github.desc">Open an issue on GitHub</p>
+        </a>
+
+        <!-- App Store -->
+        <a href="https://apps.apple.com/us/app/quickspend-instant-tracker/id6754815176" target="_blank" rel="noopener" class="fade-up delay-2 group bg-white border border-forest-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-forest-200 transition-all duration-300 cursor-pointer">
+          <div class="w-12 h-12 bg-gradient-to-br from-forest-500 to-forest-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          </div>
+          <h3 class="font-heading font-bold text-forest-700 mb-1" data-i18n="contact.rate.title">Rate the App</h3>
+          <p class="text-sm text-forest-400" data-i18n="contact.rate.desc">Leave a review on App Store</p>
+        </a>
+      </div>
+
+
+      <!-- ============ FAQ ============ -->
+      <div class="max-w-3xl mx-auto">
+        <h2 class="fade-up font-heading font-extrabold text-3xl text-forest-700 text-center mb-10" data-i18n="faq.title">Frequently Asked Questions</h2>
+
+        <div class="space-y-3">
+          <!-- FAQ 1 -->
+          <div class="fade-up bg-white border border-forest-100 rounded-xl overflow-hidden">
+            <button class="faq-toggle flex items-center justify-between w-full px-6 py-4 text-left cursor-pointer hover:bg-forest-50/50 transition-colors" onclick="toggleFaq(this)">
+              <span class="font-medium text-forest-700 pr-4" data-i18n="faq.q1">How does voice input work?</span>
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            </button>
+            <div class="faq-answer px-6 pb-4">
+              <p class="text-sm text-forest-400 leading-relaxed" data-i18n="faq.a1">Tap the microphone button on the home screen and speak naturally. For example, say "Coffee $4.50 today" or "Lunch 150k yesterday". Our AI (powered by Google Gemini) will automatically extract the amount, category, and date. Voice recognition happens on-device, and only the transcribed text is sent to the AI for parsing.</p>
+            </div>
+          </div>
+
+          <!-- FAQ 2 -->
+          <div class="fade-up delay-1 bg-white border border-forest-100 rounded-xl overflow-hidden">
+            <button class="faq-toggle flex items-center justify-between w-full px-6 py-4 text-left cursor-pointer hover:bg-forest-50/50 transition-colors" onclick="toggleFaq(this)">
+              <span class="font-medium text-forest-700 pr-4" data-i18n="faq.q2">Is my financial data safe?</span>
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            </button>
+            <div class="faq-answer px-6 pb-4">
+              <p class="text-sm text-forest-400 leading-relaxed" data-i18n="faq.a2">Yes. All your transactions and financial data are stored locally on your device. We don't operate any servers that store your personal information. If you enable iCloud sync, data is stored in your private iCloud container encrypted by Apple. We never see your financial data.</p>
+            </div>
+          </div>
+
+          <!-- FAQ 3 -->
+          <div class="fade-up delay-1 bg-white border border-forest-100 rounded-xl overflow-hidden">
+            <button class="faq-toggle flex items-center justify-between w-full px-6 py-4 text-left cursor-pointer hover:bg-forest-50/50 transition-colors" onclick="toggleFaq(this)">
+              <span class="font-medium text-forest-700 pr-4" data-i18n="faq.q3">What's the difference between Free and Pro?</span>
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            </button>
+            <div class="faq-answer px-6 pb-4">
+              <p class="text-sm text-forest-400 leading-relaxed" data-i18n="faq.a3">The free version includes 3 AI voice parses per day, 3 recurring templates, and 7-day reports. Pro ($2.99/month or $24.99/year) unlocks unlimited voice parses, unlimited recurring templates, all-time reports and analytics, and feature request voting. All core features like manual entry, categories, and multi-currency work in both versions.</p>
+            </div>
+          </div>
+
+          <!-- FAQ 4 -->
+          <div class="fade-up delay-2 bg-white border border-forest-100 rounded-xl overflow-hidden">
+            <button class="faq-toggle flex items-center justify-between w-full px-6 py-4 text-left cursor-pointer hover:bg-forest-50/50 transition-colors" onclick="toggleFaq(this)">
+              <span class="font-medium text-forest-700 pr-4" data-i18n="faq.q4">Does iCloud sync work across devices?</span>
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            </button>
+            <div class="faq-answer px-6 pb-4">
+              <p class="text-sm text-forest-400 leading-relaxed" data-i18n="faq.a4">Yes. When iCloud sync is enabled, your transactions, categories, and settings sync automatically across all your Apple devices signed into the same iCloud account. You can enable or disable this in Settings at any time.</p>
+            </div>
+          </div>
+
+          <!-- FAQ 5 -->
+          <div class="fade-up delay-2 bg-white border border-forest-100 rounded-xl overflow-hidden">
+            <button class="faq-toggle flex items-center justify-between w-full px-6 py-4 text-left cursor-pointer hover:bg-forest-50/50 transition-colors" onclick="toggleFaq(this)">
+              <span class="font-medium text-forest-700 pr-4" data-i18n="faq.q5">Which languages and currencies are supported?</span>
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            </button>
+            <div class="faq-answer px-6 pb-4">
+              <p class="text-sm text-forest-400 leading-relaxed" data-i18n="faq.a5">QuickSpend supports 4 languages: English, Vietnamese (Tiếng Việt), Japanese (日本語), and Spanish (Español). You can change the language independently from your device settings. For currencies, the app supports all major currencies worldwide — you can set your preferred currency in Settings.</p>
+            </div>
+          </div>
+
+          <!-- FAQ 6 -->
+          <div class="fade-up delay-3 bg-white border border-forest-100 rounded-xl overflow-hidden">
+            <button class="faq-toggle flex items-center justify-between w-full px-6 py-4 text-left cursor-pointer hover:bg-forest-50/50 transition-colors" onclick="toggleFaq(this)">
+              <span class="font-medium text-forest-700 pr-4" data-i18n="faq.q6">How do I delete my data?</span>
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            </button>
+            <div class="faq-answer px-6 pb-4">
+              <p class="text-sm text-forest-400 leading-relaxed" data-i18n="faq.a6">You can delete individual transactions by swiping left on them in the Transactions tab. To remove all data, simply uninstall the app — this deletes all locally stored data. If you have iCloud sync enabled, manage your iCloud storage through iOS Settings > Apple ID > iCloud.</p>
+            </div>
+          </div>
+
+          <!-- FAQ 7 -->
+          <div class="fade-up delay-3 bg-white border border-forest-100 rounded-xl overflow-hidden">
+            <button class="faq-toggle flex items-center justify-between w-full px-6 py-4 text-left cursor-pointer hover:bg-forest-50/50 transition-colors" onclick="toggleFaq(this)">
+              <span class="font-medium text-forest-700 pr-4" data-i18n="faq.q7">How do I request a new feature?</span>
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            </button>
+            <div class="faq-answer px-6 pb-4">
+              <p class="text-sm text-forest-400 leading-relaxed" data-i18n="faq.a7">Pro subscribers can vote on feature requests directly in the app. You can also email us at taipv.swe@gmail.com or open a feature request on our GitHub repository. We read every suggestion and prioritize based on community interest.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ STILL NEED HELP ============ -->
+  <section class="py-16 bg-gradient-to-b from-white to-forest-50/50">
+    <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="fade-up bg-white border border-forest-100 rounded-2xl p-8 shadow-sm">
+        <div class="w-14 h-14 bg-gradient-to-br from-forest-500 to-forest-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3 class="font-heading font-bold text-xl text-forest-700 mb-2" data-i18n="help.title">Still Need Help?</h3>
+        <p class="text-sm text-forest-400 mb-6" data-i18n="help.desc">Can't find what you're looking for? Send us an email and we'll get back to you as soon as possible.</p>
+        <a href="mailto:taipv.swe@gmail.com" class="inline-flex items-center gap-2 bg-forest-600 hover:bg-forest-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-200 cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <span data-i18n="help.cta">Contact Us</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="bg-forest-800 text-forest-300 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <img src="assets/app-icon.png" alt="QuickSpend" class="w-8 h-8 rounded-lg">
+          <span class="font-heading font-bold text-white">QuickSpend</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm">
+          <a href="privacy.html" class="hover:text-white transition-colors cursor-pointer" data-i18n="footer.privacy">Privacy Policy</a>
+          <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener" class="hover:text-white transition-colors cursor-pointer" data-i18n="footer.terms">Terms of Service</a>
+          <span class="text-white cursor-default" data-i18n="footer.support">Support</span>
+          <a href="index.html" class="hover:text-white transition-colors cursor-pointer" data-i18n="footer.home">Home</a>
+        </div>
+        <p class="text-sm text-forest-400">&copy; 2026 QuickSpend. <span data-i18n="footer.rights">All rights reserved.</span></p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ============ SCRIPTS ============ -->
+  <script>
+    // FAQ toggle
+    function toggleFaq(btn) {
+      const answer = btn.nextElementSibling;
+      const isOpen = answer.classList.toggle('open');
+      btn.classList.toggle('open', isOpen);
+    }
+
+    // Translations
+    const T = {
+      en: {
+        'nav.back': 'Back to Home',
+        'header.badge': "We're Here to Help",
+        'header.title': 'Support Center',
+        'header.subtitle': 'Find answers to common questions or reach out to us directly',
+        'contact.email.title': 'Email Us',
+        'contact.email.desc': 'taipv.swe@gmail.com',
+        'contact.github.title': 'Report a Bug',
+        'contact.github.desc': 'Open an issue on GitHub',
+        'contact.rate.title': 'Rate the App',
+        'contact.rate.desc': 'Leave a review on App Store',
+        'faq.title': 'Frequently Asked Questions',
+        'faq.q1': 'How does voice input work?',
+        'faq.a1': 'Tap the microphone button on the home screen and speak naturally. For example, say "Coffee $4.50 today" or "Lunch 150k yesterday". Our AI (powered by Google Gemini) will automatically extract the amount, category, and date. Voice recognition happens on-device, and only the transcribed text is sent to the AI for parsing.',
+        'faq.q2': 'Is my financial data safe?',
+        'faq.a2': "Yes. All your transactions and financial data are stored locally on your device. We don't operate any servers that store your personal information. If you enable iCloud sync, data is stored in your private iCloud container encrypted by Apple. We never see your financial data.",
+        'faq.q3': "What's the difference between Free and Pro?",
+        'faq.a3': 'The free version includes 3 AI voice parses per day, 3 recurring templates, and 7-day reports. Pro ($2.99/month or $24.99/year) unlocks unlimited voice parses, unlimited recurring templates, all-time reports and analytics, and feature request voting. All core features like manual entry, categories, and multi-currency work in both versions.',
+        'faq.q4': 'Does iCloud sync work across devices?',
+        'faq.a4': 'Yes. When iCloud sync is enabled, your transactions, categories, and settings sync automatically across all your Apple devices signed into the same iCloud account. You can enable or disable this in Settings at any time.',
+        'faq.q5': 'Which languages and currencies are supported?',
+        'faq.a5': 'QuickSpend supports 4 languages: English, Vietnamese (Tiếng Việt), Japanese (日本語), and Spanish (Español). You can change the language independently from your device settings. For currencies, the app supports all major currencies worldwide — you can set your preferred currency in Settings.',
+        'faq.q6': 'How do I delete my data?',
+        'faq.a6': 'You can delete individual transactions by swiping left on them in the Transactions tab. To remove all data, simply uninstall the app — this deletes all locally stored data. If you have iCloud sync enabled, manage your iCloud storage through iOS Settings > Apple ID > iCloud.',
+        'faq.q7': 'How do I request a new feature?',
+        'faq.a7': 'Pro subscribers can vote on feature requests directly in the app. You can also email us at taipv.swe@gmail.com or open a feature request on our GitHub repository. We read every suggestion and prioritize based on community interest.',
+        'help.title': 'Still Need Help?',
+        'help.desc': "Can't find what you're looking for? Send us an email and we'll get back to you as soon as possible.",
+        'help.cta': 'Contact Us',
+        'footer.privacy': 'Privacy Policy',
+        'footer.terms': 'Terms of Service',
+        'footer.support': 'Support',
+        'footer.home': 'Home',
+        'footer.rights': 'All rights reserved.',
+      },
+      vi: {
+        'nav.back': 'Về Trang Chủ',
+        'header.badge': 'Chúng Tôi Sẵn Sàng Hỗ Trợ',
+        'header.title': 'Trung Tâm Hỗ Trợ',
+        'header.subtitle': 'Tìm câu trả lời cho các câu hỏi thường gặp hoặc liên hệ trực tiếp với chúng tôi',
+        'contact.email.title': 'Gửi Email',
+        'contact.email.desc': 'taipv.swe@gmail.com',
+        'contact.github.title': 'Báo Lỗi',
+        'contact.github.desc': 'Tạo issue trên GitHub',
+        'contact.rate.title': 'Đánh Giá Ứng Dụng',
+        'contact.rate.desc': 'Viết đánh giá trên App Store',
+        'faq.title': 'Câu Hỏi Thường Gặp',
+        'faq.q1': 'Nhập giọng nói hoạt động như thế nào?',
+        'faq.a1': 'Nhấn nút micro trên màn hình chính và nói tự nhiên. Ví dụ: "Cà phê 45 nghìn hôm nay" hoặc "Ăn trưa 150k hôm qua". AI (được hỗ trợ bởi Google Gemini) sẽ tự động trích xuất số tiền, danh mục và ngày. Nhận dạng giọng nói diễn ra trên thiết bị, chỉ văn bản phiên âm được gửi đến AI để phân tích.',
+        'faq.q2': 'Dữ liệu tài chính của tôi có an toàn không?',
+        'faq.a2': 'Có. Tất cả giao dịch và dữ liệu tài chính được lưu trữ cục bộ trên thiết bị. Chúng tôi không vận hành máy chủ lưu trữ thông tin cá nhân của bạn. Nếu bạn bật đồng bộ iCloud, dữ liệu được lưu trong vùng chứa iCloud riêng tư được Apple mã hóa. Chúng tôi không bao giờ xem dữ liệu tài chính của bạn.',
+        'faq.q3': 'Sự khác biệt giữa Miễn Phí và Pro là gì?',
+        'faq.a3': 'Phiên bản miễn phí bao gồm 3 lần phân tích AI mỗi ngày, 3 mẫu định kỳ và báo cáo 7 ngày. Pro ($2.99/tháng hoặc $24.99/năm) mở khóa phân tích giọng nói không giới hạn, mẫu định kỳ không giới hạn, báo cáo và phân tích mọi thời điểm, và bỏ phiếu yêu cầu tính năng. Tất cả tính năng cốt lõi như nhập thủ công, danh mục và đa tiền tệ hoạt động ở cả hai phiên bản.',
+        'faq.q4': 'Đồng bộ iCloud có hoạt động trên nhiều thiết bị không?',
+        'faq.a4': 'Có. Khi đồng bộ iCloud được bật, giao dịch, danh mục và cài đặt tự động đồng bộ trên tất cả thiết bị Apple đăng nhập cùng tài khoản iCloud. Bạn có thể bật hoặc tắt tính năng này trong Cài đặt bất kỳ lúc nào.',
+        'faq.q5': 'Hỗ trợ những ngôn ngữ và tiền tệ nào?',
+        'faq.a5': 'QuickSpend hỗ trợ 4 ngôn ngữ: Tiếng Anh, Tiếng Việt, Tiếng Nhật (日本語) và Tiếng Tây Ban Nha (Español). Bạn có thể thay đổi ngôn ngữ độc lập với cài đặt thiết bị. Về tiền tệ, ứng dụng hỗ trợ tất cả các loại tiền tệ chính trên thế giới — bạn có thể đặt tiền tệ ưa thích trong Cài đặt.',
+        'faq.q6': 'Làm cách nào để xóa dữ liệu?',
+        'faq.a6': 'Bạn có thể xóa từng giao dịch bằng cách vuốt sang trái trong tab Giao dịch. Để xóa tất cả dữ liệu, chỉ cần gỡ cài đặt ứng dụng — điều này xóa tất cả dữ liệu cục bộ. Nếu bạn bật đồng bộ iCloud, quản lý bộ nhớ iCloud qua Cài đặt iOS > Apple ID > iCloud.',
+        'faq.q7': 'Làm cách nào để yêu cầu tính năng mới?',
+        'faq.a7': 'Người dùng Pro có thể bỏ phiếu cho yêu cầu tính năng trực tiếp trong ứng dụng. Bạn cũng có thể gửi email đến taipv.swe@gmail.com hoặc tạo yêu cầu tính năng trên GitHub. Chúng tôi đọc mọi đề xuất và ưu tiên dựa trên quan tâm của cộng đồng.',
+        'help.title': 'Vẫn Cần Hỗ Trợ?',
+        'help.desc': 'Không tìm thấy câu trả lời? Gửi email cho chúng tôi và chúng tôi sẽ phản hồi sớm nhất có thể.',
+        'help.cta': 'Liên Hệ',
+        'footer.privacy': 'Chính Sách Bảo Mật',
+        'footer.terms': 'Điều Khoản Dịch Vụ',
+        'footer.support': 'Hỗ Trợ',
+        'footer.home': 'Trang Chủ',
+        'footer.rights': 'Đã đăng ký bản quyền.',
+      },
+      ja: {
+        'nav.back': 'ホームに戻る',
+        'header.badge': 'お手伝いします',
+        'header.title': 'サポートセンター',
+        'header.subtitle': 'よくある質問の回答を見つけるか、直接お問い合わせください',
+        'contact.email.title': 'メールする',
+        'contact.email.desc': 'taipv.swe@gmail.com',
+        'contact.github.title': 'バグを報告',
+        'contact.github.desc': 'GitHubでissueを作成',
+        'contact.rate.title': 'アプリを評価',
+        'contact.rate.desc': 'App Storeでレビューを書く',
+        'faq.title': 'よくある質問',
+        'faq.q1': '音声入力はどのように機能しますか？',
+        'faq.a1': 'ホーム画面のマイクボタンをタップして自然に話してください。例えば「コーヒー450円今日」や「ランチ1500円昨日」と言います。AI（Google Gemini搭載）が自動的に金額、カテゴリ、日付を抽出します。音声認識はデバイス上で行われ、変換されたテキストのみがAI解析に送信されます。',
+        'faq.q2': '財務データは安全ですか？',
+        'faq.a2': 'はい。すべての取引と財務データはデバイスにローカル保存されます。個人情報を保存するサーバーは運用していません。iCloud同期を有効にすると、データはAppleが暗号化するプライベートiCloudコンテナに保存されます。私たちはお客様の財務データを見ることはありません。',
+        'faq.q3': '無料版とProの違いは何ですか？',
+        'faq.a3': '無料版は1日3回のAI音声解析、3つの定期テンプレート、7日間のレポートが含まれます。Pro（$2.99/月または$24.99/年）は無制限の音声解析、無制限の定期テンプレート、全期間のレポートと分析、機能リクエストの投票がアンロックされます。手動入力、カテゴリ、多通貨などのコア機能は両バージョンで動作します。',
+        'faq.q4': 'iCloud同期は複数のデバイスで動作しますか？',
+        'faq.a4': 'はい。iCloud同期が有効な場合、取引、カテゴリ、設定は同じiCloudアカウントにサインインしたすべてのAppleデバイス間で自動的に同期されます。設定からいつでも有効/無効を切り替えられます。',
+        'faq.q5': 'どの言語と通貨がサポートされていますか？',
+        'faq.a5': 'QuickSpendは4つの言語をサポート：英語、ベトナム語（Tiếng Việt）、日本語、スペイン語（Español）。デバイスの設定とは独立して言語を変更できます。通貨については、世界中の主要通貨をサポートしており、設定でお好みの通貨を設定できます。',
+        'faq.q6': 'データを削除するにはどうすればいいですか？',
+        'faq.a6': '取引タブで左にスワイプして個々の取引を削除できます。すべてのデータを削除するには、アプリをアンインストールするだけです。iCloud同期が有効な場合、iOS設定 > Apple ID > iCloudからiCloudストレージを管理してください。',
+        'faq.q7': '新機能をリクエストするにはどうすればいいですか？',
+        'faq.a7': 'Proユーザーはアプリ内で直接機能リクエストに投票できます。taipv.swe@gmail.comにメールするか、GitHubリポジトリで機能リクエストを作成することもできます。すべての提案を読み、コミュニティの関心に基づいて優先順位をつけています。',
+        'help.title': 'まだお困りですか？',
+        'help.desc': 'お探しの答えが見つかりませんか？メールをお送りいただければ、できるだけ早くお返事いたします。',
+        'help.cta': 'お問い合わせ',
+        'footer.privacy': 'プライバシーポリシー',
+        'footer.terms': '利用規約',
+        'footer.support': 'サポート',
+        'footer.home': 'ホーム',
+        'footer.rights': '全著作権所有。',
+      },
+      es: {
+        'nav.back': 'Volver al Inicio',
+        'header.badge': 'Estamos Aquí para Ayudarte',
+        'header.title': 'Centro de Soporte',
+        'header.subtitle': 'Encuentra respuestas a preguntas comunes o contáctanos directamente',
+        'contact.email.title': 'Envíanos un Email',
+        'contact.email.desc': 'taipv.swe@gmail.com',
+        'contact.github.title': 'Reportar un Error',
+        'contact.github.desc': 'Abre un issue en GitHub',
+        'contact.rate.title': 'Califica la App',
+        'contact.rate.desc': 'Deja una reseña en App Store',
+        'faq.title': 'Preguntas Frecuentes',
+        'faq.q1': '¿Cómo funciona la entrada de voz?',
+        'faq.a1': 'Toca el botón del micrófono en la pantalla principal y habla naturalmente. Por ejemplo, di "Café $4.50 hoy" o "Almuerzo 150 ayer". Nuestra IA (impulsada por Google Gemini) extraerá automáticamente el monto, categoría y fecha. El reconocimiento de voz ocurre en el dispositivo, y solo el texto transcrito se envía a la IA para su análisis.',
+        'faq.q2': '¿Están seguros mis datos financieros?',
+        'faq.a2': 'Sí. Todas tus transacciones y datos financieros se almacenan localmente en tu dispositivo. No operamos servidores que almacenen tu información personal. Si habilitas la sincronización iCloud, los datos se almacenan en tu contenedor privado de iCloud encriptado por Apple. Nunca vemos tus datos financieros.',
+        'faq.q3': '¿Cuál es la diferencia entre Gratis y Pro?',
+        'faq.a3': 'La versión gratuita incluye 3 análisis de voz IA por día, 3 plantillas recurrentes e informes de 7 días. Pro ($2.99/mes o $24.99/año) desbloquea análisis de voz ilimitados, plantillas recurrentes ilimitadas, informes y análisis de todo el tiempo, y votación de solicitudes de funciones. Todas las funciones principales como entrada manual, categorías y multi-moneda funcionan en ambas versiones.',
+        'faq.q4': '¿La sincronización iCloud funciona entre dispositivos?',
+        'faq.a4': 'Sí. Cuando la sincronización iCloud está habilitada, tus transacciones, categorías y configuraciones se sincronizan automáticamente en todos tus dispositivos Apple con la misma cuenta iCloud. Puedes habilitarla o deshabilitarla en Ajustes en cualquier momento.',
+        'faq.q5': '¿Qué idiomas y monedas son compatibles?',
+        'faq.a5': 'QuickSpend soporta 4 idiomas: inglés, vietnamita (Tiếng Việt), japonés (日本語) y español. Puedes cambiar el idioma independientemente de la configuración del dispositivo. En cuanto a monedas, la app soporta todas las monedas principales del mundo — puedes configurar tu moneda preferida en Ajustes.',
+        'faq.q6': '¿Cómo elimino mis datos?',
+        'faq.a6': 'Puedes eliminar transacciones individuales deslizando hacia la izquierda en la pestaña Transacciones. Para eliminar todos los datos, simplemente desinstala la app. Si tienes la sincronización iCloud habilitada, gestiona tu almacenamiento iCloud a través de Ajustes de iOS > Apple ID > iCloud.',
+        'faq.q7': '¿Cómo solicito una nueva función?',
+        'faq.a7': 'Los suscriptores Pro pueden votar solicitudes de funciones directamente en la app. También puedes enviarnos un email a taipv.swe@gmail.com o crear una solicitud de función en nuestro repositorio de GitHub. Leemos cada sugerencia y priorizamos según el interés de la comunidad.',
+        'help.title': '¿Aún Necesitas Ayuda?',
+        'help.desc': '¿No encuentras lo que buscas? Envíanos un email y te responderemos lo antes posible.',
+        'help.cta': 'Contáctanos',
+        'footer.privacy': 'Política de Privacidad',
+        'footer.terms': 'Términos de Servicio',
+        'footer.support': 'Soporte',
+        'footer.home': 'Inicio',
+        'footer.rights': 'Todos los derechos reservados.',
+      }
+    };
+
+    const langMeta = {
+      en: { flag: '\u{1F1FA}\u{1F1F8}', code: 'EN', htmlLang: 'en' },
+      vi: { flag: '\u{1F1FB}\u{1F1F3}', code: 'VI', htmlLang: 'vi' },
+      ja: { flag: '\u{1F1EF}\u{1F1F5}', code: 'JA', htmlLang: 'ja' },
+      es: { flag: '\u{1F1EA}\u{1F1F8}', code: 'ES', htmlLang: 'es' },
+    };
+
+    let currentLang = localStorage.getItem('qs-lang') || 'en';
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('qs-lang', lang);
+      document.documentElement.lang = langMeta[lang].htmlLang;
+      document.getElementById('lang-current-flag').textContent = langMeta[lang].flag;
+      document.getElementById('lang-current-code').textContent = langMeta[lang].code;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (T[lang] && T[lang][key]) el.innerHTML = T[lang][key];
+      });
+      document.getElementById('lang-dropdown').classList.remove('open');
+    }
+
+    document.getElementById('lang-toggle').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('lang-dropdown').classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+      document.getElementById('lang-dropdown').classList.remove('open');
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    setLang(currentLang);
+  </script>
+</body>
+</html>
