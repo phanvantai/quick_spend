@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickSpend — AI-Powered Expense Tracker</title>
+  <meta name="description" content="Track expenses with your voice. AI-powered parsing, beautiful reports, multi-currency support, and complete privacy. Available on iOS.">
+  <meta property="og:title" content="QuickSpend — Spend Smart, Speak Easy">
+  <meta property="og:description" content="Track expenses with your voice. AI-powered expense tracking for iOS.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/screenshots/01-hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/png" href="assets/app-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              50: '#F0FDF4',
+              100: '#DCFCE7',
+              200: '#BBF7D0',
+              300: '#86EFAC',
+              400: '#52B788',
+              500: '#2D6A4F',
+              600: '#1B4332',
+              700: '#143D29',
+              800: '#0D2818',
+              900: '#071510',
+            },
+            gold: { DEFAULT: '#B8860B', light: '#D4A017' },
+          },
+          fontFamily: {
+            heading: ['"Plus Jakarta Sans"', '"Noto Sans JP"', 'system-ui', 'sans-serif'],
+            body: ['Inter', '"Noto Sans JP"', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif; }
+
+    /* Scroll reveal */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .fade-up.delay-1 { transition-delay: 0.1s; }
+    .fade-up.delay-2 { transition-delay: 0.2s; }
+    .fade-up.delay-3 { transition-delay: 0.3s; }
+    .fade-up.delay-4 { transition-delay: 0.4s; }
+    .fade-up.delay-5 { transition-delay: 0.5s; }
+
+    /* Phone mockup */
+    .phone-mockup {
+      position: relative;
+      width: 280px;
+      background: linear-gradient(145deg, #2c2c2e, #1a1a1c);
+      border-radius: 44px;
+      padding: 12px;
+      box-shadow:
+        0 30px 80px rgba(0,0,0,0.2),
+        0 0 0 1px rgba(255,255,255,0.08),
+        inset 0 0 0 1px rgba(255,255,255,0.04);
+    }
+    .phone-mockup .screen {
+      border-radius: 34px;
+      overflow: hidden;
+      background: #000;
+    }
+    .phone-mockup .screen img {
+      width: 100%;
+      display: block;
+    }
+    .phone-mockup .dynamic-island {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 28px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 10;
+    }
+
+    /* Float animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    .phone-float { animation: float 6s ease-in-out infinite; }
+
+    /* Screenshots carousel */
+    .screenshots-scroll {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 1rem 0;
+    }
+    .screenshots-scroll::-webkit-scrollbar { display: none; }
+    .screenshots-scroll > * {
+      scroll-snap-align: center;
+      flex-shrink: 0;
+    }
+
+    /* Decorative blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* Language dropdown */
+    .lang-dropdown { display: none; }
+    .lang-dropdown.open { display: block; }
+
+    /* Mobile menu */
+    .mobile-menu { display: none; }
+    .mobile-menu.open { display: block; }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .fade-up { opacity: 1; transform: none; transition: none; }
+      .phone-float { animation: none; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body class="bg-white text-forest-600 font-body overflow-x-hidden">
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav class="fixed top-4 left-4 right-4 z-50 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg shadow-forest-600/5 border border-forest-100 px-4 lg:px-6 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5">
+        <img src="assets/app-icon.png" alt="QuickSpend" class="w-9 h-9 rounded-xl shadow-sm">
+        <span class="font-heading font-bold text-lg text-forest-600">QuickSpend</span>
+      </a>
+
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#features" class="text-sm font-medium text-forest-500 hover:text-forest-600 transition-colors cursor-pointer" data-i18n="nav.features">Features</a>
+        <a href="#screenshots" class="text-sm font-medium text-forest-500 hover:text-forest-600 transition-colors cursor-pointer" data-i18n="nav.screenshots">Screenshots</a>
+        <a href="#pricing" class="text-sm font-medium text-forest-500 hover:text-forest-600 transition-colors cursor-pointer" data-i18n="nav.pricing">Pricing</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Language Switcher -->
+        <div class="relative">
+          <button id="lang-toggle" class="flex items-center gap-1.5 text-sm font-medium text-forest-500 hover:text-forest-600 px-3 py-1.5 rounded-lg hover:bg-forest-50 transition-colors cursor-pointer" aria-label="Change language">
+            <span id="lang-current-flag">🇺🇸</span>
+            <span id="lang-current-code">EN</span>
+            <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="lang-dropdown" class="lang-dropdown absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-forest-100 py-1.5 min-w-[160px]">
+            <button onclick="setLang('en')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇺🇸 English</button>
+            <button onclick="setLang('vi')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇻🇳 Tiếng Việt</button>
+            <button onclick="setLang('ja')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇯🇵 日本語</button>
+            <button onclick="setLang('es')" class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 transition-colors cursor-pointer">🇪🇸 Español</button>
+          </div>
+        </div>
+
+        <a href="https://apps.apple.com/us/app/quickspend-instant-tracker/id6754815176" target="_blank" rel="noopener"
+           class="hidden sm:inline-flex items-center gap-2 bg-forest-600 hover:bg-forest-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          <span data-i18n="nav.download">Download</span>
+        </a>
+
+        <!-- Mobile menu toggle -->
+        <button id="mobile-toggle" class="md:hidden p-2 text-forest-500 hover:text-forest-600 cursor-pointer" aria-label="Toggle menu">
+          <svg id="menu-icon" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          <svg id="close-icon" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="mobile-menu fixed top-[72px] left-4 right-4 z-40 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-forest-100 p-5">
+    <div class="flex flex-col gap-3">
+      <a href="#features" class="text-forest-600 font-medium py-2 px-3 rounded-lg hover:bg-forest-50 transition-colors" data-i18n="nav.features" onclick="closeMobileMenu()">Features</a>
+      <a href="#screenshots" class="text-forest-600 font-medium py-2 px-3 rounded-lg hover:bg-forest-50 transition-colors" data-i18n="nav.screenshots" onclick="closeMobileMenu()">Screenshots</a>
+      <a href="#pricing" class="text-forest-600 font-medium py-2 px-3 rounded-lg hover:bg-forest-50 transition-colors" data-i18n="nav.pricing" onclick="closeMobileMenu()">Pricing</a>
+      <hr class="border-forest-100">
+      <a href="https://apps.apple.com/us/app/quickspend-instant-tracker/id6754815176" target="_blank" rel="noopener"
+         class="flex items-center justify-center gap-2 bg-forest-600 text-white font-semibold py-2.5 rounded-xl cursor-pointer">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <span data-i18n="nav.download">Download</span>
+      </a>
+    </div>
+  </div>
+
+
+  <!-- ============ HERO ============ -->
+  <section id="hero" class="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden">
+    <!-- Background -->
+    <div class="absolute inset-0 bg-gradient-to-br from-forest-50 via-white to-forest-100/50"></div>
+    <div class="blob w-[500px] h-[500px] bg-forest-200 top-[-100px] right-[-100px]"></div>
+    <div class="blob w-[300px] h-[300px] bg-forest-300/30 bottom-[10%] left-[-80px]"></div>
+    <div class="absolute top-[20%] right-[15%] w-20 h-20 rounded-full border-2 border-forest-200/40"></div>
+    <div class="absolute bottom-[30%] left-[8%] w-10 h-10 rounded-full bg-forest-200/30"></div>
+
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+        <!-- Left: Text -->
+        <div class="text-center lg:text-left">
+          <div class="fade-up inline-flex items-center gap-2 bg-forest-100 text-forest-600 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            <span data-i18n="hero.badge">AI-Powered Expense Tracker</span>
+          </div>
+
+          <h1 class="fade-up delay-1 font-heading font-extrabold text-5xl sm:text-6xl lg:text-7xl text-forest-700 leading-[1.1] mb-6" data-i18n="hero.title">
+            Spend Smart,<br>Speak Easy
+          </h1>
+
+          <p class="fade-up delay-2 text-lg sm:text-xl text-forest-500 max-w-lg mx-auto lg:mx-0 mb-8 leading-relaxed" data-i18n="hero.subtitle">
+            Track expenses with your voice. AI-powered parsing, beautiful reports, multi-currency support, and complete privacy.
+          </p>
+
+          <!-- App Store Button -->
+          <div class="fade-up delay-3 flex flex-col sm:flex-row items-center lg:items-start gap-4 mb-10">
+            <a href="https://apps.apple.com/us/app/quickspend-instant-tracker/id6754815176" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-3 bg-forest-700 hover:bg-forest-800 text-white px-6 py-3.5 rounded-2xl transition-all duration-200 hover:shadow-lg hover:shadow-forest-700/20 cursor-pointer">
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              <div class="text-left">
+                <div class="text-[10px] font-medium opacity-80" data-i18n="hero.downloadOn">Download on the</div>
+                <div class="text-lg font-semibold leading-tight">App Store</div>
+              </div>
+            </a>
+            <span class="text-sm text-forest-400" data-i18n="hero.free">Free to use</span>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="fade-up delay-4 flex items-center justify-center lg:justify-start gap-8">
+            <div class="text-center">
+              <div class="flex items-center justify-center gap-1 text-gold font-heading font-bold text-xl">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                4.9
+              </div>
+              <div class="text-xs text-forest-400 mt-1" data-i18n="hero.stat1">App Rating</div>
+            </div>
+            <div class="w-px h-8 bg-forest-200"></div>
+            <div class="text-center">
+              <div class="font-heading font-bold text-xl text-forest-600">4</div>
+              <div class="text-xs text-forest-400 mt-1" data-i18n="hero.stat2">Languages</div>
+            </div>
+            <div class="w-px h-8 bg-forest-200"></div>
+            <div class="text-center">
+              <div class="font-heading font-bold text-xl text-forest-600">100%</div>
+              <div class="text-xs text-forest-400 mt-1" data-i18n="hero.stat3">Private</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Phone Mockup -->
+        <div class="flex justify-center lg:justify-end">
+          <div class="phone-float">
+            <div class="phone-mockup">
+              <div class="dynamic-island"></div>
+              <div class="screen">
+                <img src="assets/screenshots/home-raw.png" alt="QuickSpend home screen showing income and expense overview" loading="eager">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ FEATURES ============ -->
+  <section id="features" class="relative py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <div class="fade-up inline-flex items-center gap-2 bg-forest-100 text-forest-600 text-sm font-medium px-4 py-1.5 rounded-full mb-4">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m13 2-2 2.5h3L12 7"/><path d="M10 14v-3"/><path d="M14 14v-3"/><path d="M12 14v-3"/><rect width="16" height="10" x="4" y="9" rx="2"/></svg>
+          <span data-i18n="features.badge">Why QuickSpend</span>
+        </div>
+        <h2 class="fade-up delay-1 font-heading font-extrabold text-4xl sm:text-5xl text-forest-700 mb-4" data-i18n="features.title">Everything You Need</h2>
+        <p class="fade-up delay-2 text-lg text-forest-400 max-w-2xl mx-auto" data-i18n="features.subtitle">Powerful features wrapped in a simple, beautiful interface</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Feature 1: Voice Input -->
+        <div class="fade-up group bg-white border border-forest-100 rounded-2xl p-6 hover:shadow-xl hover:shadow-forest-600/5 hover:border-forest-200 transition-all duration-300 cursor-default">
+          <div class="w-12 h-12 bg-gradient-to-br from-forest-500 to-forest-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-forest-700 mb-2" data-i18n="features.f1.title">Voice Input</h3>
+          <p class="text-sm text-forest-400 leading-relaxed" data-i18n="features.f1.desc">Just speak naturally. Our AI understands amounts, categories, and dates from your voice.</p>
+        </div>
+
+        <!-- Feature 2: Smart Dashboard -->
+        <div class="fade-up delay-1 group bg-white border border-forest-100 rounded-2xl p-6 hover:shadow-xl hover:shadow-forest-600/5 hover:border-forest-200 transition-all duration-300 cursor-default">
+          <div class="w-12 h-12 bg-gradient-to-br from-forest-500 to-forest-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-forest-700 mb-2" data-i18n="features.f2.title">Smart Dashboard</h3>
+          <p class="text-sm text-forest-400 leading-relaxed" data-i18n="features.f2.desc">Get a complete overview of your income and expenses at a glance with beautiful charts.</p>
+        </div>
+
+        <!-- Feature 3: Calendar View -->
+        <div class="fade-up delay-2 group bg-white border border-forest-100 rounded-2xl p-6 hover:shadow-xl hover:shadow-forest-600/5 hover:border-forest-200 transition-all duration-300 cursor-default">
+          <div class="w-12 h-12 bg-gradient-to-br from-forest-500 to-forest-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-forest-700 mb-2" data-i18n="features.f3.title">Calendar View</h3>
+          <p class="text-sm text-forest-400 leading-relaxed" data-i18n="features.f3.desc">Every transaction organized by date. See daily, weekly, and monthly totals at a glance.</p>
+        </div>
+
+        <!-- Feature 4: Smart Reports -->
+        <div class="fade-up delay-3 group bg-white border border-forest-100 rounded-2xl p-6 hover:shadow-xl hover:shadow-forest-600/5 hover:border-forest-200 transition-all duration-300 cursor-default">
+          <div class="w-12 h-12 bg-gradient-to-br from-forest-500 to-forest-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-forest-700 mb-2" data-i18n="features.f4.title">Smart Reports</h3>
+          <p class="text-sm text-forest-400 leading-relaxed" data-i18n="features.f4.desc">Detailed breakdowns, spending trends, and savings rate — all in beautiful interactive charts.</p>
+        </div>
+
+        <!-- Feature 5: Categories -->
+        <div class="fade-up delay-4 group bg-white border border-forest-100 rounded-2xl p-6 hover:shadow-xl hover:shadow-forest-600/5 hover:border-forest-200 transition-all duration-300 cursor-default">
+          <div class="w-12 h-12 bg-gradient-to-br from-forest-500 to-forest-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-forest-700 mb-2" data-i18n="features.f5.title">26+ Categories</h3>
+          <p class="text-sm text-forest-400 leading-relaxed" data-i18n="features.f5.desc">Built-in categories across 8 groups for both expenses and income, plus custom ones you create.</p>
+        </div>
+
+        <!-- Feature 6: Multi-Language -->
+        <div class="fade-up delay-5 group bg-white border border-forest-100 rounded-2xl p-6 hover:shadow-xl hover:shadow-forest-600/5 hover:border-forest-200 transition-all duration-300 cursor-default">
+          <div class="w-12 h-12 bg-gradient-to-br from-forest-500 to-forest-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-forest-700 mb-2" data-i18n="features.f6.title">Multi-Language</h3>
+          <p class="text-sm text-forest-400 leading-relaxed" data-i18n="features.f6.desc">Available in English, Vietnamese, Japanese, and Spanish. Multi-currency support included.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ SCREENSHOTS ============ -->
+  <section id="screenshots" class="relative py-24 bg-gradient-to-b from-forest-50/50 to-white overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <div class="fade-up inline-flex items-center gap-2 bg-forest-100 text-forest-600 text-sm font-medium px-4 py-1.5 rounded-full mb-4">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          <span data-i18n="screenshots.badge">See It in Action</span>
+        </div>
+        <h2 class="fade-up delay-1 font-heading font-extrabold text-4xl sm:text-5xl text-forest-700 mb-4" data-i18n="screenshots.title">Beautiful by Design</h2>
+        <p class="fade-up delay-2 text-lg text-forest-400 max-w-2xl mx-auto" data-i18n="screenshots.subtitle">Every screen crafted for clarity and ease of use</p>
+      </div>
+    </div>
+
+    <!-- Full-width Carousel -->
+    <div class="fade-up delay-2 screenshots-scroll px-4 sm:px-8 lg:px-16">
+      <div class="w-4 flex-shrink-0"></div>
+      <img src="assets/screenshots/01-hero.png" alt="QuickSpend hero - Spend Smart, Speak Easy" class="h-[480px] sm:h-[560px] lg:h-[640px] w-auto rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300" loading="lazy">
+      <img src="assets/screenshots/02-voice.png" alt="Voice input - Just Say It, We'll Log It" class="h-[480px] sm:h-[560px] lg:h-[640px] w-auto rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300" loading="lazy">
+      <img src="assets/screenshots/03-dashboard.png" alt="Dashboard - Your Money At a Glance" class="h-[480px] sm:h-[560px] lg:h-[640px] w-auto rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300" loading="lazy">
+      <img src="assets/screenshots/04-transactions.png" alt="Calendar - Every Day, Accounted For" class="h-[480px] sm:h-[560px] lg:h-[640px] w-auto rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300" loading="lazy">
+      <img src="assets/screenshots/05-reports.png" alt="Reports - Know Where It All Goes" class="h-[480px] sm:h-[560px] lg:h-[640px] w-auto rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300" loading="lazy">
+      <img src="assets/screenshots/06-categories.png" alt="Categories - Organized Your Way" class="h-[480px] sm:h-[560px] lg:h-[640px] w-auto rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300" loading="lazy">
+      <div class="w-4 flex-shrink-0"></div>
+    </div>
+  </section>
+
+
+  <!-- ============ PRICING ============ -->
+  <section id="pricing" class="relative py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <div class="fade-up inline-flex items-center gap-2 bg-forest-100 text-forest-600 text-sm font-medium px-4 py-1.5 rounded-full mb-4">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span data-i18n="pricing.badge">Simple Pricing</span>
+        </div>
+        <h2 class="fade-up delay-1 font-heading font-extrabold text-4xl sm:text-5xl text-forest-700 mb-4" data-i18n="pricing.title">Start Free, Go Pro</h2>
+        <p class="fade-up delay-2 text-lg text-forest-400 max-w-2xl mx-auto" data-i18n="pricing.subtitle">No account needed. Start tracking expenses in seconds.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        <!-- Free Plan -->
+        <div class="fade-up bg-white border-2 border-forest-100 rounded-3xl p-8 hover:border-forest-200 transition-colors duration-300">
+          <div class="mb-6">
+            <h3 class="font-heading font-bold text-xl text-forest-700 mb-1" data-i18n="pricing.free.name">Free</h3>
+            <p class="text-sm text-forest-400" data-i18n="pricing.free.desc">Perfect for getting started</p>
+          </div>
+          <div class="flex items-baseline gap-1 mb-8">
+            <span class="font-heading font-extrabold text-5xl text-forest-700">$0</span>
+            <span class="text-forest-400" data-i18n="pricing.forever">forever</span>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-500" data-i18n="pricing.free.f1">3 voice AI parses per day</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-500" data-i18n="pricing.free.f2">3 recurring templates</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-500" data-i18n="pricing.free.f3">7-day reports</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-500" data-i18n="pricing.free.f4">26 built-in categories</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-500" data-i18n="pricing.free.f5">Multi-currency support</span>
+            </li>
+          </ul>
+          <a href="https://apps.apple.com/us/app/quickspend-instant-tracker/id6754815176" target="_blank" rel="noopener"
+             class="block text-center bg-forest-50 hover:bg-forest-100 text-forest-600 font-semibold py-3 rounded-xl transition-colors duration-200 cursor-pointer" data-i18n="pricing.free.cta">Get Started Free</a>
+        </div>
+
+        <!-- Pro Plan -->
+        <div class="fade-up delay-1 relative bg-gradient-to-br from-forest-600 to-forest-700 rounded-3xl p-8 text-white shadow-xl shadow-forest-700/20">
+          <div class="absolute -top-3 right-6 bg-gold text-white text-xs font-bold px-3 py-1 rounded-full" data-i18n="pricing.pro.badge">BEST VALUE</div>
+          <div class="mb-6">
+            <h3 class="font-heading font-bold text-xl mb-1" data-i18n="pricing.pro.name">Pro</h3>
+            <p class="text-sm text-forest-200" data-i18n="pricing.pro.desc">Unlock everything</p>
+          </div>
+          <div class="flex items-baseline gap-1 mb-2">
+            <span class="font-heading font-extrabold text-5xl">$2.99</span>
+            <span class="text-forest-200" data-i18n="pricing.month">/month</span>
+          </div>
+          <p class="text-sm text-forest-300 mb-8" data-i18n="pricing.pro.yearly">or $24.99/year — save 30%</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-300 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-100" data-i18n="pricing.pro.f1">Unlimited voice AI parses</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-300 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-100" data-i18n="pricing.pro.f2">Unlimited recurring templates</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-300 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-100" data-i18n="pricing.pro.f3">All-time reports & analytics</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-300 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-100" data-i18n="pricing.pro.f4">Feature request voting</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-forest-300 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-sm text-forest-100" data-i18n="pricing.pro.f5">Everything in Free</span>
+            </li>
+          </ul>
+          <a href="https://apps.apple.com/us/app/quickspend-instant-tracker/id6754815176" target="_blank" rel="noopener"
+             class="block text-center bg-white hover:bg-forest-50 text-forest-700 font-semibold py-3 rounded-xl transition-colors duration-200 cursor-pointer" data-i18n="pricing.pro.cta">Upgrade to Pro</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ FINAL CTA ============ -->
+  <section id="download" class="relative py-24 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-forest-600 via-forest-700 to-forest-800"></div>
+    <div class="blob w-[400px] h-[400px] bg-forest-400/20 top-[-100px] right-[-50px]"></div>
+    <div class="blob w-[300px] h-[300px] bg-forest-500/20 bottom-[-80px] left-[-50px]"></div>
+    <div class="absolute top-[20%] left-[15%] w-16 h-16 rounded-full border border-white/10"></div>
+    <div class="absolute bottom-[25%] right-[10%] w-8 h-8 rounded-full bg-white/5"></div>
+
+    <div class="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="fade-up font-heading font-extrabold text-4xl sm:text-5xl text-white mb-6" data-i18n="cta.title">Start Tracking<br>in Seconds</h2>
+      <p class="fade-up delay-1 text-lg text-forest-200 mb-10 max-w-xl mx-auto" data-i18n="cta.subtitle">No account needed. No setup required. Just download and speak your first expense.</p>
+
+      <div class="fade-up delay-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="https://apps.apple.com/us/app/quickspend-instant-tracker/id6754815176" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-3 bg-white hover:bg-forest-50 text-forest-700 px-8 py-4 rounded-2xl transition-all duration-200 hover:shadow-lg font-semibold cursor-pointer">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          <div class="text-left">
+            <div class="text-[10px] font-medium opacity-60" data-i18n="hero.downloadOn">Download on the</div>
+            <div class="text-lg font-semibold leading-tight">App Store</div>
+          </div>
+        </a>
+      </div>
+
+      <p class="fade-up delay-3 text-sm text-forest-300 mt-6" data-i18n="cta.note">Free to download. No credit card required.</p>
+    </div>
+  </section>
+
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="bg-forest-800 text-forest-300 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <img src="assets/app-icon.png" alt="QuickSpend" class="w-8 h-8 rounded-lg">
+          <span class="font-heading font-bold text-white">QuickSpend</span>
+        </div>
+
+        <div class="flex items-center gap-6 text-sm">
+          <a href="privacy.html" class="hover:text-white transition-colors cursor-pointer" data-i18n="footer.privacy">Privacy Policy</a>
+          <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener" class="hover:text-white transition-colors cursor-pointer" data-i18n="footer.terms">Terms of Service</a>
+        </div>
+
+        <p class="text-sm text-forest-400">&copy; 2026 QuickSpend. <span data-i18n="footer.rights">All rights reserved.</span></p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ============ SCRIPTS ============ -->
+  <script>
+    // ======== TRANSLATIONS ========
+    const T = {
+      en: {
+        'nav.features': 'Features',
+        'nav.screenshots': 'Screenshots',
+        'nav.pricing': 'Pricing',
+        'nav.download': 'Download',
+        'hero.badge': 'AI-Powered Expense Tracker',
+        'hero.title': 'Spend Smart,<br>Speak Easy',
+        'hero.subtitle': 'Track expenses with your voice. AI-powered parsing, beautiful reports, multi-currency support, and complete privacy.',
+        'hero.downloadOn': 'Download on the',
+        'hero.free': 'Free to use',
+        'hero.stat1': 'App Rating',
+        'hero.stat2': 'Languages',
+        'hero.stat3': 'Private',
+        'features.badge': 'Why QuickSpend',
+        'features.title': 'Everything You Need',
+        'features.subtitle': 'Powerful features wrapped in a simple, beautiful interface',
+        'features.f1.title': 'Voice Input',
+        'features.f1.desc': 'Just speak naturally. Our AI understands amounts, categories, and dates from your voice.',
+        'features.f2.title': 'Smart Dashboard',
+        'features.f2.desc': 'Get a complete overview of your income and expenses at a glance with beautiful charts.',
+        'features.f3.title': 'Calendar View',
+        'features.f3.desc': 'Every transaction organized by date. See daily, weekly, and monthly totals at a glance.',
+        'features.f4.title': 'Smart Reports',
+        'features.f4.desc': 'Detailed breakdowns, spending trends, and savings rate — all in beautiful interactive charts.',
+        'features.f5.title': '26+ Categories',
+        'features.f5.desc': 'Built-in categories across 8 groups for both expenses and income, plus custom ones you create.',
+        'features.f6.title': 'Multi-Language',
+        'features.f6.desc': 'Available in English, Vietnamese, Japanese, and Spanish. Multi-currency support included.',
+        'screenshots.badge': 'See It in Action',
+        'screenshots.title': 'Beautiful by Design',
+        'screenshots.subtitle': 'Every screen crafted for clarity and ease of use',
+        'pricing.badge': 'Simple Pricing',
+        'pricing.title': 'Start Free, Go Pro',
+        'pricing.subtitle': 'No account needed. Start tracking expenses in seconds.',
+        'pricing.free.name': 'Free',
+        'pricing.free.desc': 'Perfect for getting started',
+        'pricing.forever': 'forever',
+        'pricing.free.f1': '3 voice AI parses per day',
+        'pricing.free.f2': '3 recurring templates',
+        'pricing.free.f3': '7-day reports',
+        'pricing.free.f4': '26 built-in categories',
+        'pricing.free.f5': 'Multi-currency support',
+        'pricing.free.cta': 'Get Started Free',
+        'pricing.pro.badge': 'BEST VALUE',
+        'pricing.pro.name': 'Pro',
+        'pricing.pro.desc': 'Unlock everything',
+        'pricing.month': '/month',
+        'pricing.pro.yearly': 'or $24.99/year — save 30%',
+        'pricing.pro.f1': 'Unlimited voice AI parses',
+        'pricing.pro.f2': 'Unlimited recurring templates',
+        'pricing.pro.f3': 'All-time reports & analytics',
+        'pricing.pro.f4': 'Feature request voting',
+        'pricing.pro.f5': 'Everything in Free',
+        'pricing.pro.cta': 'Upgrade to Pro',
+        'cta.title': 'Start Tracking<br>in Seconds',
+        'cta.subtitle': 'No account needed. No setup required. Just download and speak your first expense.',
+        'cta.note': 'Free to download. No credit card required.',
+        'footer.privacy': 'Privacy Policy',
+        'footer.terms': 'Terms of Service',
+        'footer.rights': 'All rights reserved.',
+      },
+      vi: {
+        'nav.features': 'Tính năng',
+        'nav.screenshots': 'Ảnh màn hình',
+        'nav.pricing': 'Bảng giá',
+        'nav.download': 'Tải xuống',
+        'hero.badge': 'Theo Dõi Chi Tiêu Bằng AI',
+        'hero.title': 'Chi Tiêu Thông Minh,<br>Nói Là Xong',
+        'hero.subtitle': 'Theo dõi chi tiêu bằng giọng nói. AI phân tích thông minh, báo cáo đẹp mắt, đa tiền tệ và bảo mật tuyệt đối.',
+        'hero.downloadOn': 'Tải xuống trên',
+        'hero.free': 'Miễn phí',
+        'hero.stat1': 'Đánh giá',
+        'hero.stat2': 'Ngôn ngữ',
+        'hero.stat3': 'Riêng tư',
+        'features.badge': 'Tại Sao Chọn QuickSpend',
+        'features.title': 'Tất Cả Những Gì Bạn Cần',
+        'features.subtitle': 'Tính năng mạnh mẽ trong giao diện đơn giản, đẹp mắt',
+        'features.f1.title': 'Nhập Giọng Nói',
+        'features.f1.desc': 'Chỉ cần nói tự nhiên. AI hiểu số tiền, danh mục và ngày tháng từ giọng nói của bạn.',
+        'features.f2.title': 'Bảng Điều Khiển',
+        'features.f2.desc': 'Xem tổng quan thu nhập và chi tiêu chỉ trong một cái nhìn với biểu đồ đẹp mắt.',
+        'features.f3.title': 'Xem Theo Lịch',
+        'features.f3.desc': 'Mọi giao dịch sắp xếp theo ngày. Xem tổng hàng ngày, tuần và tháng trong nháy mắt.',
+        'features.f4.title': 'Báo Cáo Thông Minh',
+        'features.f4.desc': 'Phân tích chi tiết, xu hướng chi tiêu và tỷ lệ tiết kiệm — tất cả trong biểu đồ tương tác.',
+        'features.f5.title': '26+ Danh Mục',
+        'features.f5.desc': 'Danh mục có sẵn trong 8 nhóm cho chi tiêu và thu nhập, cùng danh mục do bạn tạo.',
+        'features.f6.title': 'Đa Ngôn Ngữ',
+        'features.f6.desc': 'Hỗ trợ Tiếng Anh, Tiếng Việt, Tiếng Nhật và Tiếng Tây Ban Nha. Đa tiền tệ.',
+        'screenshots.badge': 'Xem Thực Tế',
+        'screenshots.title': 'Thiết Kế Đẹp Mắt',
+        'screenshots.subtitle': 'Mỗi màn hình được thiết kế cho sự rõ ràng và dễ sử dụng',
+        'pricing.badge': 'Bảng Giá Đơn Giản',
+        'pricing.title': 'Miễn Phí, Nâng Cấp Pro',
+        'pricing.subtitle': 'Không cần tài khoản. Bắt đầu theo dõi chi tiêu ngay lập tức.',
+        'pricing.free.name': 'Miễn Phí',
+        'pricing.free.desc': 'Hoàn hảo để bắt đầu',
+        'pricing.forever': 'mãi mãi',
+        'pricing.free.f1': '3 lần phân tích AI mỗi ngày',
+        'pricing.free.f2': '3 mẫu giao dịch định kỳ',
+        'pricing.free.f3': 'Báo cáo 7 ngày',
+        'pricing.free.f4': '26 danh mục có sẵn',
+        'pricing.free.f5': 'Hỗ trợ đa tiền tệ',
+        'pricing.free.cta': 'Bắt Đầu Miễn Phí',
+        'pricing.pro.badge': 'GIÁ TỐT NHẤT',
+        'pricing.pro.name': 'Pro',
+        'pricing.pro.desc': 'Mở khóa tất cả',
+        'pricing.month': '/tháng',
+        'pricing.pro.yearly': 'hoặc $24.99/năm — tiết kiệm 30%',
+        'pricing.pro.f1': 'Phân tích AI không giới hạn',
+        'pricing.pro.f2': 'Giao dịch định kỳ không giới hạn',
+        'pricing.pro.f3': 'Báo cáo & phân tích mọi thời điểm',
+        'pricing.pro.f4': 'Bỏ phiếu yêu cầu tính năng',
+        'pricing.pro.f5': 'Tất cả tính năng Miễn Phí',
+        'pricing.pro.cta': 'Nâng Cấp Pro',
+        'cta.title': 'Bắt Đầu Theo Dõi<br>Trong Tích Tắc',
+        'cta.subtitle': 'Không cần tài khoản. Không cần thiết lập. Chỉ cần tải và nói khoản chi tiêu đầu tiên.',
+        'cta.note': 'Tải miễn phí. Không cần thẻ tín dụng.',
+        'footer.privacy': 'Chính Sách Bảo Mật',
+        'footer.terms': 'Điều Khoản Dịch Vụ',
+        'footer.rights': 'Đã đăng ký bản quyền.',
+      },
+      ja: {
+        'nav.features': '機能',
+        'nav.screenshots': 'スクリーンショット',
+        'nav.pricing': '料金プラン',
+        'nav.download': 'ダウンロード',
+        'hero.badge': 'AI搭載の支出トラッカー',
+        'hero.title': '賢く使って、<br>声で記録',
+        'hero.subtitle': '音声で支出を記録。AI解析、美しいレポート、多通貨対応、完全なプライバシー保護。',
+        'hero.downloadOn': 'からダウンロード',
+        'hero.free': '無料で利用可能',
+        'hero.stat1': '評価',
+        'hero.stat2': '言語',
+        'hero.stat3': 'プライベート',
+        'features.badge': 'QuickSpendの特長',
+        'features.title': '必要なすべてが揃っています',
+        'features.subtitle': 'シンプルで美しいインターフェースに強力な機能を搭載',
+        'features.f1.title': '音声入力',
+        'features.f1.desc': '自然に話すだけ。AIが金額、カテゴリ、日付を音声から自動認識します。',
+        'features.f2.title': 'スマートダッシュボード',
+        'features.f2.desc': '美しいチャートで収入と支出の全体像を一目で把握できます。',
+        'features.f3.title': 'カレンダービュー',
+        'features.f3.desc': 'すべての取引を日付順に整理。日・週・月の合計を一目で確認。',
+        'features.f4.title': 'スマートレポート',
+        'features.f4.desc': '詳細な内訳、支出傾向、貯蓄率 — 美しいインタラクティブチャートで表示。',
+        'features.f5.title': '26以上のカテゴリ',
+        'features.f5.desc': '支出と収入の8グループにまたがる内蔵カテゴリ、さらにカスタムカテゴリも作成可能。',
+        'features.f6.title': '多言語対応',
+        'features.f6.desc': '英語、ベトナム語、日本語、スペイン語に対応。多通貨サポート付き。',
+        'screenshots.badge': '実際の画面',
+        'screenshots.title': '美しいデザイン',
+        'screenshots.subtitle': 'すべての画面が明確で使いやすくデザインされています',
+        'pricing.badge': 'シンプルな料金',
+        'pricing.title': '無料で始めて、Proへ',
+        'pricing.subtitle': 'アカウント不要。すぐに支出の追跡を開始できます。',
+        'pricing.free.name': '無料',
+        'pricing.free.desc': '始めるのに最適',
+        'pricing.forever': '永久無料',
+        'pricing.free.f1': '1日3回のAI音声解析',
+        'pricing.free.f2': '定期テンプレート3件',
+        'pricing.free.f3': '7日間のレポート',
+        'pricing.free.f4': '26の内蔵カテゴリ',
+        'pricing.free.f5': '多通貨サポート',
+        'pricing.free.cta': '無料で始める',
+        'pricing.pro.badge': 'おすすめ',
+        'pricing.pro.name': 'Pro',
+        'pricing.pro.desc': 'すべてをアンロック',
+        'pricing.month': '/月',
+        'pricing.pro.yearly': 'または年額$24.99 — 30%お得',
+        'pricing.pro.f1': '無制限のAI音声解析',
+        'pricing.pro.f2': '無制限の定期テンプレート',
+        'pricing.pro.f3': '全期間のレポートと分析',
+        'pricing.pro.f4': '機能リクエストの投票',
+        'pricing.pro.f5': '無料プランのすべての機能',
+        'pricing.pro.cta': 'Proにアップグレード',
+        'cta.title': '数秒で追跡を<br>開始しましょう',
+        'cta.subtitle': 'アカウント不要。設定不要。ダウンロードして最初の支出を声で記録するだけ。',
+        'cta.note': '無料ダウンロード。クレジットカード不要。',
+        'footer.privacy': 'プライバシーポリシー',
+        'footer.terms': '利用規約',
+        'footer.rights': '全著作権所有。',
+      },
+      es: {
+        'nav.features': 'Funciones',
+        'nav.screenshots': 'Capturas',
+        'nav.pricing': 'Precios',
+        'nav.download': 'Descargar',
+        'hero.badge': 'Rastreador de Gastos con IA',
+        'hero.title': 'Gasta Inteligente,<br>Habla Fácil',
+        'hero.subtitle': 'Registra gastos con tu voz. Análisis con IA, informes hermosos, soporte multi-moneda y privacidad total.',
+        'hero.downloadOn': 'Descargar en',
+        'hero.free': 'Gratis para usar',
+        'hero.stat1': 'Calificación',
+        'hero.stat2': 'Idiomas',
+        'hero.stat3': 'Privado',
+        'features.badge': 'Por Qué QuickSpend',
+        'features.title': 'Todo Lo Que Necesitas',
+        'features.subtitle': 'Funciones potentes en una interfaz simple y hermosa',
+        'features.f1.title': 'Entrada de Voz',
+        'features.f1.desc': 'Solo habla naturalmente. Nuestra IA entiende montos, categorías y fechas de tu voz.',
+        'features.f2.title': 'Panel Inteligente',
+        'features.f2.desc': 'Obtén una vista completa de tus ingresos y gastos de un vistazo con gráficos hermosos.',
+        'features.f3.title': 'Vista Calendario',
+        'features.f3.desc': 'Cada transacción organizada por fecha. Ve totales diarios, semanales y mensuales.',
+        'features.f4.title': 'Informes Inteligentes',
+        'features.f4.desc': 'Desgloses detallados, tendencias de gastos y tasa de ahorro — todo en gráficos interactivos.',
+        'features.f5.title': '26+ Categorías',
+        'features.f5.desc': 'Categorías integradas en 8 grupos para gastos e ingresos, más categorías personalizadas.',
+        'features.f6.title': 'Multi-Idioma',
+        'features.f6.desc': 'Disponible en inglés, vietnamita, japonés y español. Soporte multi-moneda incluido.',
+        'screenshots.badge': 'Míralo en Acción',
+        'screenshots.title': 'Hermoso por Diseño',
+        'screenshots.subtitle': 'Cada pantalla diseñada para claridad y facilidad de uso',
+        'pricing.badge': 'Precios Simples',
+        'pricing.title': 'Comienza Gratis, Hazte Pro',
+        'pricing.subtitle': 'Sin cuenta necesaria. Comienza a rastrear gastos en segundos.',
+        'pricing.free.name': 'Gratis',
+        'pricing.free.desc': 'Perfecto para empezar',
+        'pricing.forever': 'para siempre',
+        'pricing.free.f1': '3 análisis de voz IA por día',
+        'pricing.free.f2': '3 plantillas recurrentes',
+        'pricing.free.f3': 'Informes de 7 días',
+        'pricing.free.f4': '26 categorías integradas',
+        'pricing.free.f5': 'Soporte multi-moneda',
+        'pricing.free.cta': 'Comenzar Gratis',
+        'pricing.pro.badge': 'MEJOR VALOR',
+        'pricing.pro.name': 'Pro',
+        'pricing.pro.desc': 'Desbloquea todo',
+        'pricing.month': '/mes',
+        'pricing.pro.yearly': 'o $24.99/año — ahorra 30%',
+        'pricing.pro.f1': 'Análisis de voz IA ilimitados',
+        'pricing.pro.f2': 'Plantillas recurrentes ilimitadas',
+        'pricing.pro.f3': 'Informes y análisis de todo el tiempo',
+        'pricing.pro.f4': 'Votación de solicitudes de funciones',
+        'pricing.pro.f5': 'Todo lo incluido en Gratis',
+        'pricing.pro.cta': 'Actualizar a Pro',
+        'cta.title': 'Comienza a Rastrear<br>en Segundos',
+        'cta.subtitle': 'Sin cuenta necesaria. Sin configuración. Solo descarga y di tu primer gasto.',
+        'cta.note': 'Descarga gratuita. No se requiere tarjeta de crédito.',
+        'footer.privacy': 'Política de Privacidad',
+        'footer.terms': 'Términos de Servicio',
+        'footer.rights': 'Todos los derechos reservados.',
+      }
+    };
+
+    const langMeta = {
+      en: { flag: '\u{1F1FA}\u{1F1F8}', code: 'EN', htmlLang: 'en' },
+      vi: { flag: '\u{1F1FB}\u{1F1F3}', code: 'VI', htmlLang: 'vi' },
+      ja: { flag: '\u{1F1EF}\u{1F1F5}', code: 'JA', htmlLang: 'ja' },
+      es: { flag: '\u{1F1EA}\u{1F1F8}', code: 'ES', htmlLang: 'es' },
+    };
+
+    let currentLang = localStorage.getItem('qs-lang') || 'en';
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('qs-lang', lang);
+      document.documentElement.lang = langMeta[lang].htmlLang;
+      document.getElementById('lang-current-flag').textContent = langMeta[lang].flag;
+      document.getElementById('lang-current-code').textContent = langMeta[lang].code;
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (T[lang] && T[lang][key]) {
+          el.innerHTML = T[lang][key];
+        }
+      });
+
+      // Close dropdown
+      document.getElementById('lang-dropdown').classList.remove('open');
+    }
+
+    // ======== LANGUAGE DROPDOWN ========
+    document.getElementById('lang-toggle').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('lang-dropdown').classList.toggle('open');
+    });
+
+    document.addEventListener('click', () => {
+      document.getElementById('lang-dropdown').classList.remove('open');
+    });
+
+    // ======== MOBILE MENU ========
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+    const closeIcon = document.getElementById('close-icon');
+
+    function closeMobileMenu() {
+      mobileMenu.classList.remove('open');
+      menuIcon.classList.remove('hidden');
+      closeIcon.classList.add('hidden');
+    }
+
+    mobileToggle.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      menuIcon.classList.toggle('hidden', isOpen);
+      closeIcon.classList.toggle('hidden', !isOpen);
+    });
+
+    // ======== SCROLL REVEAL ========
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // ======== NAVBAR SCROLL EFFECT ========
+    const nav = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 20) {
+        nav.classList.add('shadow-xl');
+      } else {
+        nav.classList.remove('shadow-xl');
+      }
+    }, { passive: true });
+
+    // ======== SMOOTH SCROLL FOR NAV LINKS ========
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // ======== INIT ========
+    setLang(currentLang);
+  </script>
+</body>
+</html>
