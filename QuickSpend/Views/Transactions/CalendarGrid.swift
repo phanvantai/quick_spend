@@ -84,7 +84,7 @@ struct CalendarGrid: View {
                         comps.day = day
                         if let date = calendar.date(from: comps) {
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                selectedDate = date
+                                selectedDate = isSelected ? nil : date
                             }
                         }
                     }

@@ -108,3 +108,47 @@ This project follows **Test-Driven Development (TDD)**. Tests are not optional.
   ```
 
 - If a bug is fixed, add a regression test that reproduces the bug first.
+
+## Changelog & Release Notes
+
+- Changelog is tracked in `CHANGELOG.md` at the project root.
+- Every release entry must include App Store release notes in **all 4 languages: en, vi, ja, es**.
+- Format for each release:
+
+```
+## [version] - YYYY-MM-DD
+
+### What's New
+- Feature 1
+
+### Bug Fixes
+- Fix 1
+
+### Improvements
+- Improvement 1 (optional)
+
+### App Store Notes
+#### en
+What's New
+• ...
+Bug Fixes
+• ...
+
+#### vi
+Tính năng mới
+• ...
+Sửa lỗi
+• ...
+
+#### ja
+新機能
+• ...
+バグ修正
+• ...
+
+#### es
+Novedades
+• ...
+Correcciones
+• ...
+```

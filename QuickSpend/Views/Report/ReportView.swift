@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import Charts
 
 /// Date range options for reports
 enum ReportPeriod: CaseIterable {
@@ -83,24 +82,6 @@ struct ReportView: View {
         return max(Calendar.current.dateComponents([.day], from: range.start, to: range.end).day ?? 1, 1)
     }
 
-    // Trend data: 12 months ending at selected period
-    private var trendData: [MonthlyTrend] {
-        let calendar = Calendar.current
-        let endMonth = periodRange.end
-        return (0..<12).map { offset -> MonthlyTrend in
-            let month = calendar.date(byAdding: .month, value: -(11 - offset), to: endMonth)!
-            let transactions = allTransactions.filter {
-                calendar.isDate($0.date, equalTo: month, toGranularity: .month)
-            }
-            let income = transactions.filter(\.isIncome).reduce(0) { $0 + $1.amount }
-            let expense = transactions.filter(\.isExpense).reduce(0) { $0 + $1.amount }
-            let monthNum = calendar.component(.month, from: month)
-            let showYear = monthNum == 1 || offset == 0
-            let label = HomeStrings.monthAbbreviation(for: month, language: appConfig.language, showYear: showYear)
-            return MonthlyTrend(month: month, monthLabel: label, totalExpenses: expense, totalIncome: income)
-        }
-    }
-
     // MARK: - Body
 
     var body: some View {
@@ -119,19 +100,14 @@ struct ReportView: View {
                         expenseChangePercent: 0,
                         incomeChangePercent: 0,
                         language: appConfig.language,
-                        currency: appConfig.config.currency
+                        currency: appConfig.config.currency,
+                        periodTransactions: periodTransactions
                     )
                 }
 
                 if !topExpenses.isEmpty {
                     topExpensesSection
                 }
-
-                TrendsSection(
-                    trendData: trendData,
-                    language: appConfig.language,
-                    currency: appConfig.config.currency
-                )
             }
             .padding(.horizontal, AppTheme.spacing16)
             .padding(.vertical, AppTheme.spacing12)

@@ -119,11 +119,11 @@ final class CloudSyncService {
         importTimeoutTask = nil
     }
 
-    /// Safety net: if iCloud is available but no import event arrives within 5 seconds,
+    /// Safety net: if iCloud is available but no import event arrives within 15 seconds,
     /// assume there's nothing to import (e.g., empty iCloud container or data already local).
     private func startImportTimeout() {
         importTimeoutTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(5))
+            try? await Task.sleep(for: .seconds(15))
             guard !Task.isCancelled else { return }
             self?.markInitialImportComplete()
         }
