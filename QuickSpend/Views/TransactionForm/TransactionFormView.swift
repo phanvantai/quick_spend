@@ -459,6 +459,7 @@ struct TransactionFormView: View {
                                             .foregroundStyle(accentColor)
                                     }
                                 }
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                         }

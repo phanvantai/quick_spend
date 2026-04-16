@@ -124,12 +124,15 @@ struct SplashView: View {
         // Step 1: Wait for CloudKit initial import to complete
         await waitForCloudImport()
 
-        // Step 2: If onboarding not done, check if synced data allows skipping it
+        // Step 2: Remove any duplicate categories caused by seed + CloudKit race condition
+        CategoryService.deduplicateCategoriesIfNeeded(modelContext: modelContext)
+
+        // Step 3: If onboarding not done, check if synced data allows skipping it
         if !appConfig.isOnboardingComplete {
             checkSyncedDataAndSkipOnboarding()
         }
 
-        // Step 3: Generate recurring transactions if onboarding is complete
+        // Step 4: Generate recurring transactions if onboarding is complete
         if appConfig.isOnboardingComplete {
             let _ = RecurringService.generatePendingTransactions(modelContext: modelContext)
         }

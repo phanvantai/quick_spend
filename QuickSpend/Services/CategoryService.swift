@@ -42,6 +42,34 @@ struct CategoryService {
         print("[CategoryService] Updated \(categories.count) categories to language: \(language)")
     }
 
+    /// Remove duplicate categories that share the same `id`.
+    /// Keeps the earliest-created record; deletes the rest.
+    /// Safe to call at any time — transactions are linked by `categoryId` String so no reassignment needed.
+    @MainActor
+    static func deduplicateCategoriesIfNeeded(modelContext: ModelContext) {
+        let descriptor = FetchDescriptor<Category>()
+        guard let allCategories = try? modelContext.fetch(descriptor) else { return }
+
+        // Group by id
+        let grouped = Dictionary(grouping: allCategories, by: \.id)
+        var removedCount = 0
+
+        for (_, group) in grouped where group.count > 1 {
+            // Keep the oldest; delete the rest
+            let sorted = group.sorted { $0.createdAt < $1.createdAt }
+            for duplicate in sorted.dropFirst() {
+                modelContext.delete(duplicate)
+                removedCount += 1
+            }
+        }
+
+        if removedCount > 0 {
+            print("[CategoryService] ✅ Removed \(removedCount) duplicate categories")
+        } else {
+            print("[CategoryService] ✅ No duplicate categories found")
+        }
+    }
+
     /// Reassign all transactions from one category to another
     @MainActor
     static func reassignTransactions(
