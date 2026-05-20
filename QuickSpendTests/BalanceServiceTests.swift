@@ -25,6 +25,14 @@ struct BalanceServiceTests {
         try context.save()
     }
 
+    /// Isolated UserDefaults suite + BalanceCacheStore for cache-integration tests.
+    private func makeIsolatedCacheStore() -> (BalanceCacheStore, UserDefaults, String) {
+        let suite = "BalanceServiceTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return (BalanceCacheStore(defaults: defaults), defaults, suite)
+    }
+
     // MARK: - Test 1: Empty state
 
     @Test("Empty state — balance equals openingBalance when no transactions exist")
@@ -291,6 +299,78 @@ struct BalanceServiceTests {
     }
 
     // MARK: - Test 9: Debounce coalesces a burst of schedule calls
+
+    // MARK: - Test 10: Cache seed on init (cold start)
+
+    @Test("Cache seed — service init reads cachedBalance from store before computing")
+    func testInitSeedsCurrentBalanceFromCache() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let (cache, defaults, suite) = makeIsolatedCacheStore()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        // Pre-seed cache with a known stale value
+        cache.write(balance: 42, at: Date())
+
+        // No anchor in store + autoCompute=false → currentBalance must come from cache only
+        let service = BalanceService(
+            modelContext: context,
+            cacheStore: cache,
+            autoObserve: false,
+            autoCompute: false
+        )
+
+        #expect(service.currentBalance == 42)
+    }
+
+    // MARK: - Test 11: Cache write on successful recompute
+
+    @Test("Cache write — recompute persists the new balance to the cache store")
+    func testRecomputeWritesCache() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let (cache, defaults, suite) = makeIsolatedCacheStore()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let anchorDate = Calendar.current.startOfDay(for: Date())
+        try insertAnchor(openingBalance: 999, anchorDate: anchorDate, in: context)
+
+        let service = BalanceService(
+            modelContext: context,
+            cacheStore: cache,
+            autoObserve: false,
+            autoCompute: true
+        )
+
+        #expect(service.currentBalance == 999)
+        #expect(cache.cachedBalance == 999)
+        #expect(cache.lastComputedAt != nil)
+    }
+
+    // MARK: - Test 12: Cache cleared when anchor disappears
+
+    @Test("Cache clear — when no anchor exists, recompute clears the cache")
+    func testRecomputeWithoutAnchorClearsCache() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let (cache, defaults, suite) = makeIsolatedCacheStore()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        // Pre-seed cache as if a previous session had a balance
+        cache.write(balance: 5_000, at: Date())
+        #expect(cache.cachedBalance == 5_000)
+
+        // No anchor in store → recompute returns nil → cache must be cleared
+        let service = BalanceService(
+            modelContext: context,
+            cacheStore: cache,
+            autoObserve: false,
+            autoCompute: true
+        )
+
+        #expect(service.currentBalance == nil)
+        #expect(cache.cachedBalance == nil)
+    }
 
     @Test("Debounce — 5 rapid scheduleRecompute() calls coalesce to a single recompute")
     func testDebounceCoalescesBurst() async throws {

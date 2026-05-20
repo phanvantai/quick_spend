@@ -20,14 +20,24 @@ final class BalanceService {
     private(set) var recomputeCount: Int = 0
 
     @ObservationIgnored private let modelContext: ModelContext
+    @ObservationIgnored private let cacheStore: BalanceCacheStore
     @ObservationIgnored private var observerToken: NSObjectProtocol?
     @ObservationIgnored private var debounceTask: Task<Void, Never>?
 
     /// 200ms — coalesces notification bursts (CloudKit import, rapid CRUD).
     static let debounceInterval: Duration = .milliseconds(200)
 
-    init(modelContext: ModelContext, autoObserve: Bool = true, autoCompute: Bool = true) {
+    init(
+        modelContext: ModelContext,
+        cacheStore: BalanceCacheStore = BalanceCacheStore(),
+        autoObserve: Bool = true,
+        autoCompute: Bool = true
+    ) {
         self.modelContext = modelContext
+        self.cacheStore = cacheStore
+        // Seed instantly from cache so the UI doesn't flash an empty state while the
+        // first fresh compute runs (or never runs, in tests with autoCompute=false).
+        self.currentBalance = cacheStore.cachedBalance
         if autoCompute {
             try? recomputeNow()
         }
@@ -61,10 +71,18 @@ final class BalanceService {
         return anchor.openingBalance + delta
     }
 
-    /// Recompute immediately and update `currentBalance`. Idempotent.
+    /// Recompute immediately and update `currentBalance` + the per-device cache.
+    /// Idempotent. When `computeBalance()` returns `nil` (no anchor), the cache is
+    /// cleared so the UI doesn't show a stale value for a user who removed setup.
     func recomputeNow() throws {
-        currentBalance = try computeBalance()
+        let result = try computeBalance()
+        currentBalance = result
         recomputeCount += 1
+        if let value = result {
+            cacheStore.write(balance: value)
+        } else {
+            cacheStore.clear()
+        }
     }
 
     /// Schedule a debounced recompute. Subsequent calls within the 200ms window cancel
