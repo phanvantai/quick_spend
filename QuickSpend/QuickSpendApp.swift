@@ -18,6 +18,7 @@ struct QuickSpendApp: App {
             Transaction.self,
             Category.self,
             RecurringTemplate.self,
+            BalanceAnchor.self,
         ])
 
         let cloudConfig = ModelConfiguration(
@@ -94,6 +95,7 @@ struct QuickSpendApp: App {
                     Transaction.self,
                     Category.self,
                     RecurringTemplate.self,
+                    BalanceAnchor.self,
                 ]) {
                     let container = NSPersistentCloudKitContainer(name: "QuickSpend", managedObjectModel: mom)
                     container.persistentStoreDescriptions = [desc]
