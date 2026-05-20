@@ -20,11 +20,17 @@ struct AppConfig: Codable, Equatable {
 
     /// Locale used for currency formatting, derived from the user's language.
     var currencyLocale: Locale {
+        Locale(identifier: Self.localeIdentifier(for: language))
+    }
+
+    /// Canonical locale identifier for a given language code.
+    /// Used for both currency formatting and speech recognition.
+    static func localeIdentifier(for language: String) -> String {
         switch language {
-        case "vi": return Locale(identifier: "vi_VN")
-        case "ja": return Locale(identifier: "ja_JP")
-        case "es": return Locale(identifier: "es_ES")
-        default:   return Locale(identifier: "en_US")
+        case "vi": return "vi_VN"
+        case "ja": return "ja_JP"
+        case "es": return "es_ES"
+        default:   return "en_US"
         }
     }
 
@@ -44,6 +50,18 @@ struct AppConfig: Codable, Equatable {
         formatter.currencyCode = currency
         formatter.locale = currencyLocale
         return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+    }
+
+    /// Format amount without currency symbol (just the number with locale separators).
+    func formatNumber(_ amount: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currency
+        formatter.locale = currencyLocale
+        formatter.currencySymbol = ""
+        let result = formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+        return result.trimmingCharacters(in: .whitespaces)
+            .trimmingCharacters(in: .init(charactersIn: "\u{00A0}"))
     }
 
     // MARK: - Amount Parsing

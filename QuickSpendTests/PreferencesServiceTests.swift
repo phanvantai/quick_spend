@@ -154,6 +154,38 @@ struct PreferencesServiceTests {
         #expect(service2.getConfig().language == "ja")
     }
 
+    // MARK: - clearAll
+
+    @Test("clearAll resets config to defaults")
+    func testClearAllResetsConfig() {
+        let service = makeService()
+        service.setLanguage("vi")
+        service.setCurrency("VND")
+        service.setThemeMode("dark")
+        service.completeOnboarding()
+
+        service.clearAll()
+
+        let config = service.getConfig()
+        #expect(config.language == "en")
+        #expect(config.currency == "USD")
+        #expect(config.themeMode == "system")
+        #expect(config.isOnboardingComplete == false)
+    }
+
+    @Test("clearAll resets voice tutorial and recording count")
+    func testClearAllResetsVoiceState() {
+        let service = makeService()
+        service.markVoiceTutorialShown()
+        service.incrementVoiceRecordingCount()
+        service.incrementVoiceRecordingCount()
+
+        service.clearAll()
+
+        #expect(service.hasShownVoiceTutorial == false)
+        #expect(service.voiceRecordingCount == 0)
+    }
+
     @Test("Overwriting config replaces all values")
     func testOverwriteConfig() {
         let service = makeService()

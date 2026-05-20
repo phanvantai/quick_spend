@@ -467,6 +467,41 @@ struct RecurringServiceTests {
         }
     }
 
+    // MARK: - Deterministic ID Tests
+
+    @Test("deterministicId produces exact recurring_<templateId>_YYYY-MM-DD format")
+    func testDeterministicIdFormat() {
+        let date = Calendar.current.date(from: DateComponents(year: 2024, month: 3, day: 5))!
+        let id = RecurringService.deterministicId(templateId: "tmpl-99", date: date)
+        #expect(id == "recurring_tmpl-99_2024-03-05")
+    }
+
+    @Test("deterministicId is stable for the same inputs")
+    func testDeterministicIdIsDeterministic() {
+        let date = Calendar.current.date(from: DateComponents(year: 2024, month: 1, day: 15))!
+        let id1 = RecurringService.deterministicId(templateId: "abc", date: date)
+        let id2 = RecurringService.deterministicId(templateId: "abc", date: date)
+        #expect(id1 == id2)
+    }
+
+    @Test("deterministicId differs for different template IDs on the same date")
+    func testDeterministicIdDiffersForDifferentTemplates() {
+        let date = Calendar.current.date(from: DateComponents(year: 2024, month: 6, day: 1))!
+        let id1 = RecurringService.deterministicId(templateId: "template-A", date: date)
+        let id2 = RecurringService.deterministicId(templateId: "template-B", date: date)
+        #expect(id1 != id2)
+    }
+
+    @Test("deterministicId collapses different times on the same calendar day to the same ID")
+    func testDeterministicIdSameDayDifferentTimes() {
+        let calendar = Calendar.current
+        let morning = calendar.date(from: DateComponents(year: 2024, month: 8, day: 10, hour: 6))!
+        let evening = calendar.date(from: DateComponents(year: 2024, month: 8, day: 10, hour: 22))!
+        let id1 = RecurringService.deterministicId(templateId: "t1", date: morning)
+        let id2 = RecurringService.deterministicId(templateId: "t1", date: evening)
+        #expect(id1 == id2)
+    }
+
     // MARK: - lastGeneratedDate Resumption Tests
 
     @Test("Template with lastGeneratedDate resumes from next occurrence")

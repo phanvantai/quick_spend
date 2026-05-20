@@ -180,7 +180,6 @@ struct ColorPaletteTests {
     @Test("Gradients don't crash on creation")
     func testGradients() {
         let _ = AppTheme.primaryGradient
-        let _ = AppTheme.accentGradient
         let _ = AppTheme.summaryGradient
         let _ = AppTheme.backgroundGradient
         let _ = AppTheme.darkBackgroundGradient

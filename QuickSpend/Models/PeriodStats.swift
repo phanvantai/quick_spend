@@ -47,46 +47,49 @@ struct PeriodStats {
             return .empty(startDate: startDate, endDate: endDate)
         }
 
-        let incomeItems = transactions.filter(\.isIncome)
-        let expenseItems = transactions.filter(\.isExpense)
+        let calendar = Calendar.current
+        var totalIncome = 0.0
+        var totalExpenses = 0.0
+        var incomeCount = 0
+        var expenseCount = 0
+        var highestExpense: Transaction? = nil
+        var lowestExpense: Transaction? = nil
+        var highestIncome: Transaction? = nil
+        var lowestIncome: Transaction? = nil
+        var categoryTotals: [String: Double] = [:]
+        var categoryCounts: [String: Int] = [:]
+        var dailySpending: [Date: Double] = [:]
+        var dailyIncomeMap: [Date: Double] = [:]
 
-        let totalIncome = incomeItems.reduce(0.0) { $0 + $1.amount }
-        let totalExpenses = expenseItems.reduce(0.0) { $0 + $1.amount }
+        for transaction in transactions {
+            let day = calendar.startOfDay(for: transaction.date)
+            categoryTotals[transaction.categoryId, default: 0] += transaction.amount
+            categoryCounts[transaction.categoryId, default: 0] += 1
+
+            if transaction.isIncome {
+                totalIncome += transaction.amount
+                incomeCount += 1
+                dailyIncomeMap[day, default: 0] += transaction.amount
+                if highestIncome == nil || transaction.amount > highestIncome!.amount { highestIncome = transaction }
+                if lowestIncome == nil || transaction.amount < lowestIncome!.amount { lowestIncome = transaction }
+            } else {
+                totalExpenses += transaction.amount
+                expenseCount += 1
+                dailySpending[day, default: 0] += transaction.amount
+                if highestExpense == nil || transaction.amount > highestExpense!.amount { highestExpense = transaction }
+                if lowestExpense == nil || transaction.amount < lowestExpense!.amount { lowestExpense = transaction }
+            }
+        }
+
         let totalAmount = totalIncome + totalExpenses
         let netBalance = totalIncome - totalExpenses
         let savingsRate = totalIncome > 0 ? (netBalance / totalIncome) * 100 : 0.0
-
-        let calendar = Calendar.current
         let daysDifference = max(calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 1, 1)
         let averagePerDay = totalExpenses / Double(daysDifference)
-        let averagePerTransaction = transactions.isEmpty ? 0 : totalAmount / Double(transactions.count)
+        let averagePerTransaction = totalAmount / Double(transactions.count)
 
-        // Highest/lowest
-        let sortedExpenses = expenseItems.sorted { $0.amount > $1.amount }
-        let sortedIncome = incomeItems.sorted { $0.amount > $1.amount }
-
-        // Category breakdown
-        var categoryTotals: [String: Double] = [:]
-        var categoryCounts: [String: Int] = [:]
-        for transaction in transactions {
-            categoryTotals[transaction.categoryId, default: 0] += transaction.amount
-            categoryCounts[transaction.categoryId, default: 0] += 1
-        }
-
-        // Daily aggregations
-        var dailySpending: [Date: Double] = [:]
-        var dailyIncomeMap: [Date: Double] = [:]
-        for item in expenseItems {
-            let day = calendar.startOfDay(for: item.date)
-            dailySpending[day, default: 0] += item.amount
-        }
-        for item in incomeItems {
-            let day = calendar.startOfDay(for: item.date)
-            dailyIncomeMap[day, default: 0] += item.amount
-        }
         var dailyNet: [Date: Double] = [:]
-        let allDates = Set(dailySpending.keys).union(dailyIncomeMap.keys)
-        for date in allDates {
+        for date in Set(dailySpending.keys).union(dailyIncomeMap.keys) {
             dailyNet[date] = (dailyIncomeMap[date] ?? 0) - (dailySpending[date] ?? 0)
         }
 
@@ -97,14 +100,14 @@ struct PeriodStats {
             netBalance: netBalance,
             savingsRate: savingsRate,
             transactionCount: transactions.count,
-            incomeCount: incomeItems.count,
-            expenseCount: expenseItems.count,
+            incomeCount: incomeCount,
+            expenseCount: expenseCount,
             averagePerDay: averagePerDay,
             averagePerTransaction: averagePerTransaction,
-            highestExpense: sortedExpenses.first,
-            lowestExpense: sortedExpenses.last,
-            highestIncome: sortedIncome.first,
-            lowestIncome: sortedIncome.last,
+            highestExpense: highestExpense,
+            lowestExpense: lowestExpense,
+            highestIncome: highestIncome,
+            lowestIncome: lowestIncome,
             categoryBreakdown: [],
             dailySpending: dailySpending,
             dailyIncome: dailyIncomeMap,

@@ -170,7 +170,7 @@ struct TransactionsView: View {
     private var monthlySummarySection: some View {
         HStack(spacing: 0) {
             summaryColumn(
-                title: HomeStrings.income(appConfig.language),
+                title: L10n.tr("common.income", appConfig.language),
                 amount: totalIncome,
                 color: AppTheme.incomeColor
             )
@@ -179,7 +179,7 @@ struct TransactionsView: View {
                 .frame(height: 40)
 
             summaryColumn(
-                title: HomeStrings.expense(appConfig.language),
+                title: L10n.tr("common.expense", appConfig.language),
                 amount: totalExpense,
                 color: AppTheme.expenseColor
             )
@@ -188,7 +188,7 @@ struct TransactionsView: View {
                 .frame(height: 40)
 
             summaryColumn(
-                title: HomeStrings.balance(appConfig.language),
+                title: L10n.tr("common.balance", appConfig.language),
                 amount: netTotal,
                 color: netTotal >= 0 ? AppTheme.incomeColor : AppTheme.expenseColor,
                 showSign: true
