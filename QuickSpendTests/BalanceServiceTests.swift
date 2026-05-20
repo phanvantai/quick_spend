@@ -184,4 +184,131 @@ struct BalanceServiceTests {
         // 999_999 (before) excluded
         #expect(balance == 1_050_000)
     }
+
+    // MARK: - Test 6: Defensive multi-row recovery
+
+    @Test("Multi-row recovery — when >1 anchor exists, keep oldest createdAt and delete extras")
+    func testMultiRowRecovery() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let baseDate = Calendar.current.startOfDay(for: Date())
+
+        // Insert 3 anchors with distinct createdAt (oldest first)
+        let oldest = BalanceAnchor(
+            openingBalance: 100,
+            anchorDate: baseDate,
+            createdAt: baseDate.addingTimeInterval(-3600)
+        )
+        let middle = BalanceAnchor(
+            id: "00000000-0000-0000-0000-000000000002", // distinct id to bypass unique constraint
+            openingBalance: 200,
+            anchorDate: baseDate,
+            createdAt: baseDate.addingTimeInterval(-1800)
+        )
+        let newest = BalanceAnchor(
+            id: "00000000-0000-0000-0000-000000000003",
+            openingBalance: 300,
+            anchorDate: baseDate,
+            createdAt: baseDate
+        )
+        context.insert(oldest)
+        context.insert(middle)
+        context.insert(newest)
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+        let balance = try service.computeBalance()
+
+        // Oldest opening balance wins (100), and the other 2 should be deleted
+        #expect(balance == 100)
+
+        let remaining = try context.fetch(FetchDescriptor<BalanceAnchor>())
+        #expect(remaining.count == 1)
+        #expect(remaining.first?.openingBalance == 100)
+    }
+
+    // MARK: - Test 7: willSave hook triggers recompute on Transaction change
+
+    @Test("willSave hook — inserting a Transaction triggers a debounced recompute")
+    func testWillSaveTransactionTriggersRecompute() async throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let anchorDate = Calendar.current.startOfDay(for: Date())
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, in: context)
+
+        let service = BalanceService(modelContext: context)
+        // Initial autoCompute should have set currentBalance to 1_000
+        #expect(service.currentBalance == 1_000)
+        let initialCount = service.recomputeCount
+
+        let tx = Transaction(
+            amount: 250,
+            note: "Coffee",
+            categoryId: "food_drink",
+            type: .expense,
+            date: anchorDate.addingTimeInterval(60)
+        )
+        context.insert(tx)
+        try context.save()
+
+        // Wait long enough for the 200ms debounce to fire (+ generous slack for CI)
+        try await Task.sleep(for: .milliseconds(500))
+
+        #expect(service.currentBalance == 750)
+        #expect(service.recomputeCount > initialCount)
+    }
+
+    // MARK: - Test 8: willSave hook does NOT trigger recompute on non-Transaction change
+
+    @Test("willSave hook — Category-only changes do NOT trigger recompute")
+    func testWillSaveNonTransactionDoesNotTriggerRecompute() async throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let anchorDate = Calendar.current.startOfDay(for: Date())
+        try insertAnchor(openingBalance: 500, anchorDate: anchorDate, in: context)
+
+        let service = BalanceService(modelContext: context)
+        let countAfterInit = service.recomputeCount
+
+        let category = Category(
+            id: "test_cat",
+            name: "Test",
+            iconName: "circle",
+            colorHex: "#000000",
+            type: .expense,
+            group: .other,
+            sortOrder: 99
+        )
+        context.insert(category)
+        try context.save()
+
+        try await Task.sleep(for: .milliseconds(500))
+
+        #expect(service.recomputeCount == countAfterInit)
+    }
+
+    // MARK: - Test 9: Debounce coalesces a burst of schedule calls
+
+    @Test("Debounce — 5 rapid scheduleRecompute() calls coalesce to a single recompute")
+    func testDebounceCoalescesBurst() async throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let anchorDate = Calendar.current.startOfDay(for: Date())
+        try insertAnchor(openingBalance: 100, anchorDate: anchorDate, in: context)
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        let initialCount = service.recomputeCount
+
+        for _ in 0..<5 {
+            service.scheduleRecompute()
+        }
+
+        try await Task.sleep(for: .milliseconds(500))
+
+        #expect(service.recomputeCount - initialCount == 1)
+    }
 }
