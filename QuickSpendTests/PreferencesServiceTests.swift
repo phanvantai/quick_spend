@@ -23,6 +23,35 @@ struct PreferencesServiceTests {
         #expect(config.currency == "USD")
         #expect(config.themeMode == "system")
         #expect(config.isOnboardingComplete == false)
+        #expect(config.hasSeenBalanceWhatsNew == false)
+    }
+
+    @Test("completeOnboarding atomically sets both isOnboardingComplete AND hasSeenBalanceWhatsNew — fresh install never sees the WhatsNew modal")
+    func testCompleteOnboardingSetsBalanceWhatsNewAtomic() {
+        let service = makeService()
+
+        service.completeOnboarding()
+        let config = service.getConfig()
+
+        #expect(config.isOnboardingComplete == true)
+        #expect(config.hasSeenBalanceWhatsNew == true)
+    }
+
+    @Test("markBalanceWhatsNewSeen flips the flag without touching isOnboardingComplete")
+    func testMarkBalanceWhatsNewSeen() {
+        let service = makeService()
+
+        // Existing user state — onboarding already done from v2.4
+        var existing = AppConfig()
+        existing.isOnboardingComplete = true
+        existing.hasSeenBalanceWhatsNew = false
+        service.saveConfig(existing)
+
+        service.markBalanceWhatsNewSeen()
+        let after = service.getConfig()
+
+        #expect(after.hasSeenBalanceWhatsNew == true)
+        #expect(after.isOnboardingComplete == true)
     }
 
     @Test("saveConfig and getConfig round-trip")

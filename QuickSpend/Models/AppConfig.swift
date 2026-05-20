@@ -9,6 +9,35 @@ struct AppConfig: Codable, Equatable {
     var currency: String = "USD"
     var themeMode: String = "system"   // "light", "dark", "system"
     var isOnboardingComplete: Bool = false
+    /// Whether the user has dismissed the one-time WhatsNew modal that introduces the
+    /// Account Balance feature. Set atomically with `isOnboardingComplete` on fresh
+    /// installs so they never see the modal (the onboarding step already covers setup).
+    /// Existing users upgrading from v2.4 have no such field in their saved JSON, so
+    /// the forward-compat decoder defaults this to `false` and the modal fires once.
+    var hasSeenBalanceWhatsNew: Bool = false
+
+    /// Convenience init used by previews and on-the-fly currency formatting in views.
+    /// All params default to the same values as the stored properties, so `AppConfig()`
+    /// still works as a struct-default initializer.
+    init(language: String = "en", currency: String = "USD") {
+        self.language = language
+        self.currency = currency
+    }
+
+    /// Forward-compat decoder: every field uses `decodeIfPresent` with the struct
+    /// default as fallback. New optional fields added in future versions will decode
+    /// to their defaults when reading older saved JSON, instead of throwing and
+    /// silently wiping the user's saved preferences via the catch in
+    /// `PreferencesService.getConfig()`.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.language = try c.decodeIfPresent(String.self, forKey: .language) ?? "en"
+        self.speechLanguage = try c.decodeIfPresent(String.self, forKey: .speechLanguage)
+        self.currency = try c.decodeIfPresent(String.self, forKey: .currency) ?? "USD"
+        self.themeMode = try c.decodeIfPresent(String.self, forKey: .themeMode) ?? "system"
+        self.isOnboardingComplete = try c.decodeIfPresent(Bool.self, forKey: .isOnboardingComplete) ?? false
+        self.hasSeenBalanceWhatsNew = try c.decodeIfPresent(Bool.self, forKey: .hasSeenBalanceWhatsNew) ?? false
+    }
 
     /// The language used for speech recognition and AI parsing.
     /// Falls back to app language when not explicitly set.

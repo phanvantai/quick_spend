@@ -14,6 +14,49 @@ struct AppConfigTests {
         #expect(config.currency == "USD")
         #expect(config.themeMode == "system")
         #expect(config.isOnboardingComplete == false)
+        #expect(config.hasSeenBalanceWhatsNew == false)
+    }
+
+    @Test("Forward-compat decode — v2.4 JSON without hasSeenBalanceWhatsNew decodes to false (so the modal fires once for existing users)")
+    func testForwardCompatDecodeFromV24Json() throws {
+        // Realistic v2.4 payload as it would have been written before the field existed
+        let v24Json = """
+        {
+            "language": "vi",
+            "currency": "VND",
+            "themeMode": "dark",
+            "isOnboardingComplete": true
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: v24Json)
+
+        #expect(decoded.language == "vi")
+        #expect(decoded.currency == "VND")
+        #expect(decoded.themeMode == "dark")
+        #expect(decoded.isOnboardingComplete == true)
+        // The whole point: missing field decodes to false, not a thrown error.
+        #expect(decoded.hasSeenBalanceWhatsNew == false)
+    }
+
+    @Test("Forward-compat decode — empty JSON object decodes to full defaults")
+    func testForwardCompatDecodeFromEmptyJson() throws {
+        let emptyJson = "{}".data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: emptyJson)
+
+        #expect(decoded == AppConfig())
+    }
+
+    @Test("Codable roundtrip preserves hasSeenBalanceWhatsNew=true")
+    func testRoundtripPreservesHasSeenBalanceWhatsNew() throws {
+        var config = AppConfig()
+        config.hasSeenBalanceWhatsNew = true
+
+        let data = try JSONEncoder().encode(config)
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: data)
+
+        #expect(decoded.hasSeenBalanceWhatsNew == true)
     }
 
     @Test("AppConfig is Codable")
