@@ -54,6 +54,17 @@ struct SplashView: View {
                         lastSyncedLanguage = newLanguage
                     }
                 }
+                // Existing v2.4 users have isOnboardingComplete=true but never saw
+                // the balance step. AppConfig's forward-compat decoder defaults
+                // their hasSeenBalanceWhatsNew to false, so the modal fires once.
+                // Fresh installs flip both flags atomically in completeOnboarding,
+                // so they never see it.
+                .sheet(isPresented: Binding(
+                    get: { !appConfig.hasSeenBalanceWhatsNew },
+                    set: { _ in /* dismiss flows through markBalanceWhatsNewSeen */ }
+                )) {
+                    WhatsNewBalanceModal()
+                }
         } else {
             OnboardingView { }
         }
@@ -158,6 +169,11 @@ struct SplashView: View {
         if categoryCount > 0 || transactionCount > 0 {
             inferPreferencesFromSyncedData()
             appConfig.completeOnboarding()
+            // Seed the anchor here too — a device joining via CloudKit may have
+            // pulled categories/transactions but no anchor row (e.g. the other
+            // device hasn't run a recompute yet, or this user upgraded from v2.4
+            // on the other device). Always-on-by-end-of-launch is the invariant.
+            BalanceAnchorSeeder.seedIfNeeded(modelContext: modelContext)
         }
     }
 

@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import CoreData
+import Combine
 #if canImport(FirebaseCore)
 import FirebaseCore
 #endif
@@ -9,7 +10,8 @@ import FirebaseCore
 struct QuickSpendApp: App {
     @State private var appConfig = AppConfigViewModel()
     @State private var subscription = SubscriptionViewModel()
-    @State private var cloudSync = CloudSyncService()
+    @State private var cloudSync: CloudSyncService
+    @State private var balance: BalanceService
 
     let modelContainer: ModelContainer
 
@@ -35,19 +37,31 @@ struct QuickSpendApp: App {
         }
         #endif
 
+        let resolvedContainer: ModelContainer
         if let container = try? ModelContainer(for: schema, configurations: cloudConfig) {
-            modelContainer = container
+            resolvedContainer = container
             print("[QuickSpendApp] ModelContainer created with CloudKit sync")
         } else {
             // Fallback to local-only storage if CloudKit is unavailable
             let localConfig = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
             do {
-                modelContainer = try ModelContainer(for: schema, configurations: localConfig)
+                resolvedContainer = try ModelContainer(for: schema, configurations: localConfig)
                 print("[QuickSpendApp] ModelContainer created without CloudKit (fallback)")
             } catch {
                 fatalError("[QuickSpendApp] Failed to create ModelContainer: \(error)")
             }
         }
+        self.modelContainer = resolvedContainer
+
+        // CloudSyncService is shared with BalanceService via its didFinishImport
+        // publisher — local insert via willSave AND remote import via Combine both
+        // coalesce into the same 200ms debounce window inside BalanceService.
+        let cloudSyncService = CloudSyncService()
+        self._cloudSync = State(initialValue: cloudSyncService)
+        self._balance = State(initialValue: BalanceService(
+            modelContext: resolvedContainer.mainContext,
+            importEventPublisher: cloudSyncService.didFinishImport.eraseToAnyPublisher()
+        ))
 
         // Initialize SDKs after all stored properties are set
         #if canImport(FirebaseCore)
@@ -64,6 +78,7 @@ struct QuickSpendApp: App {
                 .environment(appConfig)
                 .environment(subscription)
                 .environment(cloudSync)
+                .environment(balance)
                 .preferredColorScheme(appConfig.colorScheme)
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                     appConfig.syncLanguageFromSystem()

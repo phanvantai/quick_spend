@@ -150,6 +150,11 @@ struct OnboardingView: View {
             modelContext: modelContext
         )
 
+        // Seed an empty BalanceAnchor (opening = 0, anchor = today) so the
+        // BalanceCard renders in display state instead of the setup CTA. Users
+        // can edit the opening balance from Home or Settings later.
+        BalanceAnchorSeeder.seedIfNeeded(modelContext: modelContext)
+
         onComplete()
     }
 }

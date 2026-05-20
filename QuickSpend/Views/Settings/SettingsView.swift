@@ -22,6 +22,7 @@ struct SettingsView: View {
     @State private var restoreSuccess = false
     @State private var isRestoring = false
     @State private var showDeleteAllConfirm = false
+    @State private var showBalanceEdit = false
 
     /// Currency cannot be changed once transactions exist to prevent data integrity issues
     private var isCurrencyLocked: Bool {
@@ -33,6 +34,18 @@ struct SettingsView: View {
             List {
                 // Core features
                 Section {
+                    Button {
+                        showBalanceEdit = true
+                    } label: {
+                        settingsRow(
+                            icon: "banknote.fill",
+                            iconColor: AppTheme.adaptiveAccent(colorScheme),
+                            title: L10n.tr("settings.balance", appConfig.language),
+                            subtitle: L10n.tr("settings.balance_subtitle", appConfig.language)
+                        )
+                    }
+                    .tint(.primary)
+
                     NavigationLink {
                         CategoriesView()
                     } label: {
@@ -256,6 +269,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showPremiumStatus) {
                 PremiumStatusSheet()
+            }
+            .sheet(isPresented: $showBalanceEdit) {
+                BalanceEditSheet()
             }
             .alert(
                 L10n.tr("paywall.restore", appConfig.language),
