@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import Observation
+import Combine
 
 /// Computes and tracks the user's current account balance from `BalanceAnchor` + `Transaction`
 /// history. Observes `ModelContext.willSave` and debounces recompute by 200ms to coalesce
@@ -23,6 +24,7 @@ final class BalanceService {
     @ObservationIgnored private let cacheStore: BalanceCacheStore
     @ObservationIgnored private var observerToken: NSObjectProtocol?
     @ObservationIgnored private var debounceTask: Task<Void, Never>?
+    @ObservationIgnored private var importSubscription: AnyCancellable?
 
     /// 200ms — coalesces notification bursts (CloudKit import, rapid CRUD).
     static let debounceInterval: Duration = .milliseconds(200)
@@ -30,6 +32,7 @@ final class BalanceService {
     init(
         modelContext: ModelContext,
         cacheStore: BalanceCacheStore = BalanceCacheStore(),
+        importEventPublisher: AnyPublisher<Void, Never>? = nil,
         autoObserve: Bool = true,
         autoCompute: Bool = true
     ) {
@@ -44,6 +47,16 @@ final class BalanceService {
         if autoObserve {
             startObserving()
         }
+        // Subscribe to CloudKit import-finish events. Each event coalesces into the
+        // same 200ms debounce window as willSave-driven recomputes — so a burst that
+        // includes both a local insert and a remote import settles into one recompute.
+        if let importEventPublisher {
+            self.importSubscription = importEventPublisher.sink { [weak self] in
+                Task { @MainActor [weak self] in
+                    self?.scheduleRecompute()
+                }
+            }
+        }
     }
 
     deinit {
@@ -51,6 +64,7 @@ final class BalanceService {
             NotificationCenter.default.removeObserver(token)
         }
         debounceTask?.cancel()
+        importSubscription?.cancel()
     }
 
     // MARK: - Compute

@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 import SwiftData
+import Combine
 @testable import QuickSpend
 
 @Suite("BalanceService Tests")
@@ -370,6 +371,53 @@ struct BalanceServiceTests {
 
         #expect(service.currentBalance == nil)
         #expect(cache.cachedBalance == nil)
+    }
+
+    // MARK: - Test 13: CloudKit import event triggers recompute
+
+    @Test("Import event — firing the importEventPublisher triggers a debounced recompute")
+    func testImportEventTriggersRecompute() async throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let (cache, defaults, suite) = makeIsolatedCacheStore()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let anchorDate = Calendar.current.startOfDay(for: Date())
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, in: context)
+
+        let importSubject = PassthroughSubject<Void, Never>()
+
+        // autoObserve=false isolates this to the import-event path only — no willSave
+        // observer can confound the recompute count.
+        let service = BalanceService(
+            modelContext: context,
+            cacheStore: cache,
+            importEventPublisher: importSubject.eraseToAnyPublisher(),
+            autoObserve: false,
+            autoCompute: true
+        )
+
+        let initialCount = service.recomputeCount
+
+        // Simulate CloudKit finishing an import after a remote device added a Transaction
+        let newTx = Transaction(
+            amount: 250,
+            note: "Remote add",
+            categoryId: "salary",
+            type: .income,
+            date: anchorDate.addingTimeInterval(120)
+        )
+        context.insert(newTx)
+        try context.save()
+
+        // willSave fires too, but autoObserve=false means the service ignores it.
+        // Only the import event should drive the recompute.
+        importSubject.send()
+
+        try await Task.sleep(for: .milliseconds(500))
+
+        #expect(service.recomputeCount == initialCount + 1)
+        #expect(service.currentBalance == 1_250)
     }
 
     @Test("Debounce — 5 rapid scheduleRecompute() calls coalesce to a single recompute")
