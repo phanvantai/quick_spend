@@ -731,4 +731,110 @@ struct GeminiParserServiceTests {
         )
         #expect(transaction.rawInput == nil)
     }
+
+    // MARK: - buildPrompt calendar context
+
+    @Test("buildPrompt includes last week date range")
+    func testBuildPromptIncludesLastWeek() {
+        let categories = [
+            AppCategory(id: "food_drink", name: "Food", iconName: "fork.knife", colorHex: "#FF0000", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "en")
+        #expect(prompt.contains("Last week"))
+        #expect(prompt.contains("This week's Monday"))
+    }
+
+    @Test("buildPrompt includes date range expansion rule")
+    func testBuildPromptIncludesDateRangeRule() {
+        let categories = [
+            AppCategory(id: "food_drink", name: "Food", iconName: "fork.knife", colorHex: "#FF0000", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "en")
+        #expect(prompt.contains("Date ranges with repetition"))
+        #expect(prompt.contains("ONE SEPARATE TRANSACTION"))
+    }
+
+    @Test("buildPrompt Vietnamese includes weekday names")
+    func testBuildPromptVietnameseWeekdays() {
+        let categories = [
+            AppCategory(id: "transport", name: "Di chuyển", iconName: "car", colorHex: "#0000FF", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "vi")
+        #expect(prompt.contains("thứ 2/thứ hai=Monday"))
+        #expect(prompt.contains("tuần trước"))
+        #expect(prompt.contains("mỗi ngày"))
+    }
+
+    @Test("buildPrompt Vietnamese includes date range example")
+    func testBuildPromptVietnameseDateRangeExample() {
+        let categories = [
+            AppCategory(id: "transport", name: "Di chuyển", iconName: "car", colorHex: "#0000FF", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "vi")
+        #expect(prompt.contains("thứ 2 đến thứ 6 tuần trước mỗi ngày 180000 tiền xe khách"))
+        #expect(prompt.contains("5 separate expenses"))
+    }
+
+    @Test("buildPrompt English includes date range example")
+    func testBuildPromptEnglishDateRangeExample() {
+        let categories = [
+            AppCategory(id: "food_drink", name: "Food", iconName: "fork.knife", colorHex: "#FF0000", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "en")
+        #expect(prompt.contains("last week Monday to Friday"))
+        #expect(prompt.contains("each day"))
+    }
+
+    @Test("buildPrompt Japanese includes weekday and repetition rules")
+    func testBuildPromptJapaneseWeekdays() {
+        let categories = [
+            AppCategory(id: "transport", name: "交通費", iconName: "car", colorHex: "#0000FF", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "ja")
+        #expect(prompt.contains("月曜日=Monday"))
+        #expect(prompt.contains("先週"))
+        #expect(prompt.contains("毎日"))
+    }
+
+    @Test("buildPrompt Spanish includes weekday and repetition rules")
+    func testBuildPromptSpanishWeekdays() {
+        let categories = [
+            AppCategory(id: "transport", name: "Transporte", iconName: "car", colorHex: "#0000FF", type: .expense, sortOrder: 0),
+        ]
+
+        let prompt = GeminiParserService.buildPrompt(input: "test", categories: categories, language: "es")
+        #expect(prompt.contains("lunes=Monday"))
+        #expect(prompt.contains("la semana pasada"))
+        #expect(prompt.contains("cada día"))
+    }
+
+    // MARK: - parseResponse handles multiple date-range transactions
+
+    @Test("parseResponse handles 5 daily transactions from date range")
+    func testParseResponseDateRangeExpansion() {
+        let json: [String: Any] = [
+            "detected_language": "vi",
+            "expenses": [
+                ["amount": 180000, "description": "tiền xe khách", "category": "transport", "type": "expense", "date": "2026-05-11", "confidence": 0.9] as [String: Any],
+                ["amount": 180000, "description": "tiền xe khách", "category": "transport", "type": "expense", "date": "2026-05-12", "confidence": 0.9] as [String: Any],
+                ["amount": 180000, "description": "tiền xe khách", "category": "transport", "type": "expense", "date": "2026-05-13", "confidence": 0.9] as [String: Any],
+                ["amount": 180000, "description": "tiền xe khách", "category": "transport", "type": "expense", "date": "2026-05-14", "confidence": 0.9] as [String: Any],
+                ["amount": 180000, "description": "tiền xe khách", "category": "transport", "type": "expense", "date": "2026-05-15", "confidence": 0.9] as [String: Any],
+            ]
+        ]
+
+        let results = GeminiParserService.parseResponse(jsonData: json, language: "vi")
+        #expect(results.count == 5)
+        for result in results {
+            #expect(result.amount == 180000)
+            #expect(result.note == "tiền xe khách")
+            #expect(result.categoryId == "transport")
+        }
+    }
 }

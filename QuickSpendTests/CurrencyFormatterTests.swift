@@ -2,15 +2,15 @@ import Testing
 import Foundation
 @testable import QuickSpend
 
-@Suite("CurrencyFormatter Tests")
+@Suite("AppConfig Currency Formatting Tests")
 struct CurrencyFormatterTests {
 
-    // MARK: - format with AppConfig
+    // MARK: - formatCurrency with AppConfig
 
     @Test("Format USD amount")
     func testFormatUSD() {
         let config = AppConfig(language: "en", currency: "USD")
-        let result = CurrencyFormatter.format(1234.56, config: config)
+        let result = config.formatCurrency(1234.56)
         #expect(result.contains("$"))
         #expect(result.contains("1,234.56"))
     }
@@ -20,7 +20,7 @@ struct CurrencyFormatterTests {
         var config = AppConfig()
         config.language = "vi"
         config.currency = "VND"
-        let result = CurrencyFormatter.format(1500000, config: config)
+        let result = config.formatCurrency(1500000)
         #expect(result.contains("₫"))
         #expect(result.contains("1.500.000"))
     }
@@ -28,7 +28,7 @@ struct CurrencyFormatterTests {
     @Test("Format JPY amount")
     func testFormatJPY() {
         let config = AppConfig(language: "ja", currency: "JPY")
-        let result = CurrencyFormatter.format(15000, config: config)
+        let result = config.formatCurrency(15000)
         #expect(result.contains("¥"))
         #expect(result.contains("15,000"))
     }
@@ -36,23 +36,23 @@ struct CurrencyFormatterTests {
     @Test("Format EUR amount")
     func testFormatEUR() {
         let config = AppConfig(language: "en", currency: "EUR")
-        let result = CurrencyFormatter.format(1234.56, config: config)
+        let result = config.formatCurrency(1234.56)
         #expect(result.contains("€"))
         #expect(result.contains("1,234.56"))
     }
 
-    // MARK: - format with explicit params
-
-    @Test("Format with explicit currency and language")
+    @Test("Format with explicit currency and language via init")
     func testFormatExplicit() {
-        let result = CurrencyFormatter.format(1000, currency: "USD", language: "en")
+        let config = AppConfig(language: "en", currency: "USD")
+        let result = config.formatCurrency(1000)
         #expect(result.contains("$"))
         #expect(result.contains("1,000.00"))
     }
 
-    @Test("Format VND with explicit params uses period separators")
+    @Test("Format VND with period separators")
     func testFormatVNDExplicit() {
-        let result = CurrencyFormatter.format(500000, currency: "VND", language: "vi")
+        let config = AppConfig(language: "vi", currency: "VND")
+        let result = config.formatCurrency(500000)
         #expect(result.contains("500.000"))
     }
 
@@ -60,55 +60,64 @@ struct CurrencyFormatterTests {
 
     @Test("formatNumber USD")
     func testFormatNumberUSD() {
-        let result = CurrencyFormatter.formatNumber(1234.56, currency: "USD", language: "en")
+        let config = AppConfig(language: "en", currency: "USD")
+        let result = config.formatNumber(1234.56)
         #expect(result == "1,234.56")
     }
 
     @Test("formatNumber VND no decimals")
     func testFormatNumberVND() {
-        let result = CurrencyFormatter.formatNumber(1500000, currency: "VND", language: "vi")
+        let config = AppConfig(language: "vi", currency: "VND")
+        let result = config.formatNumber(1500000)
         #expect(result == "1.500.000")
     }
 
     @Test("formatNumber JPY no decimals")
     func testFormatNumberJPY() {
-        let result = CurrencyFormatter.formatNumber(15000, currency: "JPY", language: "en")
+        let config = AppConfig(language: "en", currency: "JPY")
+        let result = config.formatNumber(15000)
         #expect(result == "15,000")
     }
 
     @Test("formatNumber KRW no decimals")
     func testFormatNumberKRW() {
-        let result = CurrencyFormatter.formatNumber(50000, currency: "KRW", language: "en")
+        let config = AppConfig(language: "en", currency: "KRW")
+        let result = config.formatNumber(50000)
         #expect(result == "50,000")
     }
 
     @Test("formatNumber with period separator for Vietnamese")
     func testFormatNumberVietnamese() {
-        let result = CurrencyFormatter.formatNumber(1234.56, currency: "USD", language: "vi")
+        let config = AppConfig(language: "vi", currency: "USD")
+        let result = config.formatNumber(1234.56)
         #expect(result == "1.234,56")
     }
 
     @Test("formatNumber with period separator for Spanish")
     func testFormatNumberSpanish() {
-        let result = CurrencyFormatter.formatNumber(1234.56, currency: "EUR", language: "es")
+        let config = AppConfig(language: "es", currency: "EUR")
+        let result = config.formatNumber(1234.56)
         #expect(result == "1234,56")
     }
 
     @Test("formatNumber zero amount")
     func testFormatNumberZero() {
-        let result = CurrencyFormatter.formatNumber(0, currency: "USD", language: "en")
+        let config = AppConfig(language: "en", currency: "USD")
+        let result = config.formatNumber(0)
         #expect(result == "0.00")
     }
 
     @Test("formatNumber large amount")
     func testFormatNumberLargeAmount() {
-        let result = CurrencyFormatter.formatNumber(999999999, currency: "VND", language: "vi")
+        let config = AppConfig(language: "vi", currency: "VND")
+        let result = config.formatNumber(999999999)
         #expect(result == "999.999.999")
     }
 
     @Test("formatNumber small decimal")
     func testFormatNumberSmallDecimal() {
-        let result = CurrencyFormatter.formatNumber(0.01, currency: "USD", language: "en")
+        let config = AppConfig(language: "en", currency: "USD")
+        let result = config.formatNumber(0.01)
         #expect(result == "0.01")
     }
 }

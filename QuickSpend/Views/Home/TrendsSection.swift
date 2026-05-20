@@ -29,7 +29,7 @@ struct TrendsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-            Text(HomeStrings.trendsTitle(language))
+            Text(L10n.tr("home.trends_title", language))
                 .font(.headline)
 
             VStack(spacing: AppTheme.spacing16) {
@@ -49,8 +49,8 @@ struct TrendsSection: View {
 
                 // Legend
                 HStack(spacing: AppTheme.spacing24) {
-                    legendItem(color: AppTheme.dashboardExpenseLine, label: HomeStrings.expense(language))
-                    legendItem(color: AppTheme.dashboardIncomeLine, label: HomeStrings.income(language))
+                    legendItem(color: AppTheme.dashboardExpenseLine, label: L10n.tr("common.expense", language))
+                    legendItem(color: AppTheme.dashboardIncomeLine, label: L10n.tr("common.income", language))
                 }
                 .frame(maxWidth: .infinity)
             }

@@ -1,7 +1,6 @@
 import Foundation
 import CloudKit
 import CoreData
-import SwiftData
 import Combine
 
 /// Monitors iCloud account status and CloudKit sync events.
@@ -59,6 +58,9 @@ final class CloudSyncService {
                         self.markInitialImportComplete()
                     case .temporarilyUnavailable:
                         self.iCloudStatus = .temporarilyUnavailable
+                        self.markInitialImportComplete()
+                    case .couldNotDetermine:
+                        self.iCloudStatus = .unknown
                         self.markInitialImportComplete()
                     @unknown default:
                         self.iCloudStatus = .unknown

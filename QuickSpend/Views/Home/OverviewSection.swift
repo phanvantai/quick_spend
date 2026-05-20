@@ -24,12 +24,12 @@ struct OverviewSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             // Header
-            Text(HomeStrings.overviewTitle(language))
+            Text(L10n.tr("home.overview_title", language))
                 .font(.headline)
 
             if hasData {
                 // Balance subtitle
-                Text("\(HomeStrings.balance(language)): \(AmountAbbreviator.abbreviate(netBalance, currency: currency, language: language))")
+                Text("\(L10n.tr("common.balance", language)): \(AmountAbbreviator.abbreviate(netBalance, currency: currency, language: language))")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -39,13 +39,13 @@ struct OverviewSection: View {
                     barColumn(
                         amount: totalExpenses,
                         changePercent: expenseChangePercent,
-                        label: HomeStrings.expense(language),
+                        label: L10n.tr("common.expense", language),
                         color: AppTheme.dashboardExpenseBar
                     )
                     barColumn(
                         amount: totalIncome,
                         changePercent: incomeChangePercent,
-                        label: HomeStrings.income(language),
+                        label: L10n.tr("common.income", language),
                         color: AppTheme.dashboardIncomeBar
                     )
                     Spacer()

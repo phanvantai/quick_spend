@@ -71,6 +71,26 @@ enum GeminiParserService {
         #endif
     }
 
+    // MARK: - Cached Regex Patterns
+
+    private static let fillerRegexes: [NSRegularExpression] = [
+        try! NSRegularExpression(pattern: "^(uh+|um+|ah+|er+|hmm+)$", options: .caseInsensitive),
+        try! NSRegularExpression(pattern: "^(ờ+|à+|ư+|ừ+|ơ+)$", options: .caseInsensitive),
+    ]
+
+    private static let daysAgoRegexes: [(NSRegularExpression, Int)] = {
+        let patterns = [
+            #"(\d+)\s*days?\s*ago"#,
+            #"(\d+)\s*ngày\s*trước"#,
+            #"cách\s*đây\s*(\d+)\s*ngày"#,
+            #"hace\s*(\d+)\s*días?"#,
+        ]
+        return patterns.compactMap { pattern in
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else { return nil }
+            return (regex, 1)
+        }
+    }()
+
     // MARK: - Input Validation
 
     static func isValidInput(_ input: String) -> Bool {
@@ -103,15 +123,10 @@ enum GeminiParserService {
             return false
         }
 
-        // Filter filler words
-        let fillerPatterns = [
-            "^(uh+|um+|ah+|er+|hmm+)$",
-            "^(ờ+|à+|ư+|ừ+|ơ+)$",
-        ]
+        // Filter filler words using cached regex
         let lowered = trimmed.lowercased()
-        for pattern in fillerPatterns {
-            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
-               regex.firstMatch(in: lowered, range: NSRange(lowered.startIndex..., in: lowered)) != nil {
+        for regex in fillerRegexes {
+            if regex.firstMatch(in: lowered, range: NSRange(lowered.startIndex..., in: lowered)) != nil {
                 print("[GeminiParser] Rejected: filler word detected: \"\(trimmed)\"")
                 return false
             }
@@ -135,6 +150,7 @@ enum GeminiParserService {
 
     static func buildPrompt(input: String, categories: [Category], language: String, currency: String = "USD") -> String {
         let now = Date.now
+        let calendar = Calendar.current
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let currentDate = formatter.string(from: now)
@@ -142,6 +158,20 @@ enum GeminiParserService {
         let weekdayFormatter = DateFormatter()
         weekdayFormatter.dateFormat = "EEEE"
         let currentWeekday = weekdayFormatter.string(from: now)
+
+        let weekdayNumber = calendar.component(.weekday, from: now)
+
+        let thisMonday = calendar.date(byAdding: .day, value: -(weekdayNumber == 1 ? 6 : weekdayNumber - 2), to: now)!
+        let lastMonday = calendar.date(byAdding: .day, value: -7, to: thisMonday)!
+        let lastFriday = calendar.date(byAdding: .day, value: 4, to: lastMonday)!
+        let lastSunday = calendar.date(byAdding: .day, value: 6, to: lastMonday)!
+
+        let calendarContext = """
+        - Today is: \(currentDate) (\(currentWeekday))
+        - This week's Monday: \(formatter.string(from: thisMonday))
+        - Last week: \(formatter.string(from: lastMonday)) (Mon) to \(formatter.string(from: lastSunday)) (Sun)
+        - Last week's Friday: \(formatter.string(from: lastFriday))
+        """
 
         let incomeCategories = categories.filter(\.isIncomeCategory)
         let expenseCategories = categories.filter(\.isExpenseCategory)
@@ -163,15 +193,23 @@ enum GeminiParserService {
             languageHint = "Expected language: Vietnamese. However, the input may contain other languages — auto-detect and parse accordingly."
             languageSpecificRules = """
             **Vietnamese-specific rules:**
-            - Amount abbreviations: "ca"/"k"=thousand (×1,000), "củ"/"cọc"=million (×1,000,000), "1m5"=1,500,000
+            - Amount abbreviations: "ca"/"k"=thousand (×1,000), "củ"/"cọc"/"triệu"=million (×1,000,000), "1m5"=1,500,000
             - Income keywords: nhận, lương, thưởng, thu nhập
             - Fix common voice recognition errors: "tiền cơ"→"tiền cơm", "xă"→"xăng", "gửi xe"→"gửi xe"
-            - Date words: "hôm nay"=today, "hôm qua"=yesterday
+            - **Weekday names:** thứ 2/thứ hai=Monday, thứ 3/thứ ba=Tuesday, thứ 4/thứ tư=Wednesday, thứ 5/thứ năm=Thursday, thứ 6/thứ sáu=Friday, thứ 7/thứ bảy=Saturday, chủ nhật=Sunday
+            - **Relative dates:** "hôm nay"=today, "hôm qua"=yesterday, "hôm kia"=day before yesterday
+            - **Relative weeks:** "tuần trước"/"tuần rồi"=last week, "tuần này"=this week, "tuần sau"=next week
+            - **Relative months:** "tháng trước"/"tháng rồi"=last month, "tháng này"=this month
+            - **Date ranges:** "thứ 2 đến thứ 6"=Monday to Friday, "từ ngày X đến ngày Y"=from day X to day Y
+            - **Repetition:** "mỗi ngày"=each day (create one transaction per day in range), "hàng ngày"=daily
             """
             examples = """
             Examples:
-            "45 ca tiền cơm" → amount=45000, description="tiền cơm", category="food_drink", type="expense"
-            "nhận lương 15 triệu" → amount=15000000, description="lương", category="salary", type="income"
+            "45 ca tiền cơm" → amount=45000, description="tiền cơm", category="food_drink", type="expense", date=today
+            "nhận lương 15 triệu" → amount=15000000, description="lương", category="salary", type="income", date=today
+            "thứ 2 đến thứ 6 tuần trước mỗi ngày 180000 tiền xe khách" → 5 separate expenses, one per day (Mon-Fri of last week), each amount=180000, description="tiền xe khách", category="transport"
+            "tuần trước thứ 4 ăn phở 60 nghìn" → amount=60000, description="ăn phở", category="food_drink", date=last Wednesday
+            "3 ngày trước cafe 35k" → amount=35000, description="cafe", category="food_drink", date=3 days ago
             """
         case "ja":
             languageHint = "Expected language: Japanese. However, the input may contain other languages — auto-detect and parse accordingly."
@@ -179,12 +217,18 @@ enum GeminiParserService {
             **Japanese-specific rules:**
             - Amount units: "万"(man)=×10,000, "千"(sen)=×1,000, "億"(oku)=×100,000,000
             - Income keywords: 給料, 受け取り, ボーナス, 収入
-            - Date words: "今日"=today, "昨日"=yesterday
+            - **Weekday names:** 月曜日=Monday, 火曜日=Tuesday, 水曜日=Wednesday, 木曜日=Thursday, 金曜日=Friday, 土曜日=Saturday, 日曜日=Sunday
+            - **Relative dates:** "今日"=today, "昨日"=yesterday, "一昨日"=day before yesterday
+            - **Relative weeks:** "先週"=last week, "今週"=this week, "来週"=next week
+            - **Relative months:** "先月"=last month, "今月"=this month
+            - **Date ranges:** "月曜から金曜"=Monday to Friday
+            - **Repetition:** "毎日"=each day (create one transaction per day in range)
             """
             examples = """
             Examples:
             "コーヒー500円" → amount=500, description="コーヒー", category="food_drink", type="expense"
             "給料25万円" → amount=250000, description="給料", category="salary", type="income"
+            "先週月曜から金曜まで毎日交通費500円" → 5 separate expenses (Mon-Fri last week), each amount=500, description="交通費", category="transport"
             """
         case "es":
             languageHint = "Expected language: Spanish. However, the input may contain other languages — auto-detect and parse accordingly."
@@ -192,12 +236,18 @@ enum GeminiParserService {
             **Spanish-specific rules:**
             - Amount format: period for thousands (1.000), comma for decimals (1,50)
             - Income keywords: salario, ingreso, recibido, sueldo, nómina
-            - Date words: "hoy"=today, "ayer"=yesterday
+            - **Weekday names:** lunes=Monday, martes=Tuesday, miércoles=Wednesday, jueves=Thursday, viernes=Friday, sábado=Saturday, domingo=Sunday
+            - **Relative dates:** "hoy"=today, "ayer"=yesterday, "anteayer"=day before yesterday
+            - **Relative weeks:** "la semana pasada"=last week, "esta semana"=this week
+            - **Relative months:** "el mes pasado"=last month, "este mes"=this month
+            - **Date ranges:** "de lunes a viernes"=Monday to Friday
+            - **Repetition:** "cada día"/"todos los días"=each day (create one transaction per day in range)
             """
             examples = """
             Examples:
             "café 5 euros" → amount=5, description="café", category="food_drink", type="expense"
             "salario 2000 euros" → amount=2000, description="salario", category="salary", type="income"
+            "la semana pasada de lunes a viernes transporte 3 euros cada día" → 5 separate expenses (Mon-Fri last week), each amount=3, description="transporte", category="transport"
             """
         default:
             languageHint = "Expected language: English. However, the input may contain other languages — auto-detect and parse accordingly."
@@ -205,12 +255,18 @@ enum GeminiParserService {
             **English-specific rules:**
             - Amount abbreviations: "k"=×1,000, "m"=×1,000,000
             - Income keywords: received, salary, earned, paid, income
-            - Date words: "today", "yesterday"
+            - **Weekday names:** Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+            - **Relative dates:** "today", "yesterday", "day before yesterday"
+            - **Relative weeks:** "last week", "this week", "next week"
+            - **Relative months:** "last month", "this month"
+            - **Date ranges:** "Monday to Friday", "from X to Y"
+            - **Repetition:** "every day"/"each day"/"daily" (create one transaction per day in range)
             """
             examples = """
             Examples:
             "50k coffee" → amount=50000, description="coffee", category="food_drink", type="expense"
             "received salary 1.5 million" → amount=1500000, description="salary", category="salary", type="income"
+            "last week Monday to Friday 20 dollars each day for lunch" → 5 separate expenses (Mon-Fri last week), each amount=20, description="lunch", category="food_drink"
             """
         }
 
@@ -224,18 +280,21 @@ enum GeminiParserService {
         - User's currency: \(currency)
         - Interpret amounts in this currency context (e.g., "50k" in VND = 50,000 VND for a coffee, "50k" in USD = $50,000)
 
-        **CURRENT DATE CONTEXT:**
-        - Today is: \(currentDate) (\(currentWeekday))
-        - Use this to calculate all relative dates accurately
+        **CURRENT DATE CONTEXT (use for all date calculations):**
+        \(calendarContext)
+        - Use these dates to resolve weekday names, "last week", "this week", etc.
 
         **GENERAL RULES:**
         1. First, auto-detect the actual language of the input. It may differ from the expected language.
-        2. Extract ALL transactions (can be multiple per input)
-        3. Classify as EXPENSE or INCOME (default = expense)
+        2. Extract ALL transactions (can be multiple per input).
+        3. Classify as EXPENSE or INCOME (default = expense).
         4. Parse dates: Return YYYY-MM-DD format only. Use CURRENT DATE CONTEXT for relative dates.
-        5. Categorize using the categories listed below (match keywords, fallback to "other_expense" or "other_income")
-        6. Multiple transactions: "50k coffee and 30k parking" = 2 separate expenses
+        5. Categorize using the categories listed below (match keywords, fallback to "other_expense" or "other_income").
+        6. Multiple transactions: "50k coffee and 30k parking" = 2 separate expenses.
         7. If the input language doesn't match the expected language, still parse correctly. Set "detected_language" to the actual language code.
+        8. **Date ranges with repetition:** When the user specifies a date range (e.g., "Monday to Friday") combined with "each day"/"every day"/"mỗi ngày"/"毎日"/"cada día", create ONE SEPARATE TRANSACTION for EACH day in that range with the SAME amount and description. Each transaction gets its own correct date.
+        9. **Relative weekday resolution:** "last Monday" or "thứ 2 tuần trước" = the Monday of last week. Use the CURRENT DATE CONTEXT to calculate the exact YYYY-MM-DD.
+        10. **Always produce output.** If you can extract any amount + description, return it. Only return empty expenses array if the input is truly unrelated to finances.
 
         \(languageSpecificRules)
 
@@ -378,19 +437,8 @@ enum GeminiParserService {
 
     /// Parse "N days ago" patterns in multiple languages
     static func parseDaysAgo(_ text: String) -> Int? {
-        // English: "3 days ago", "1 day ago"
-        let enPattern = #"(\d+)\s*days?\s*ago"#
-        // Vietnamese: "3 ngày trước", "cách đây 3 ngày"
-        let viPattern1 = #"(\d+)\s*ngày\s*trước"#
-        let viPattern2 = #"cách\s*đây\s*(\d+)\s*ngày"#
-        // Spanish: "hace 3 días"
-        let esPattern = #"hace\s*(\d+)\s*días?"#
-
-        let patterns = [enPattern, viPattern1, viPattern2, esPattern]
-        for pattern in patterns {
-            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
-               let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) {
-                // Find the capture group with the number
+        for (regex, _) in daysAgoRegexes {
+            if let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) {
                 for i in 1..<match.numberOfRanges {
                     if let range = Range(match.range(at: i), in: text),
                        let days = Int(text[range]), days > 0 && days <= 365 {

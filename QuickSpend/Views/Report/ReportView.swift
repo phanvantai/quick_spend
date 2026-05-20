@@ -163,7 +163,7 @@ struct ReportView: View {
                 statItem(
                     icon: "arrow.up.circle.fill",
                     color: AppTheme.incomeColor,
-                    label: HomeStrings.income(appConfig.language),
+                    label: L10n.tr("common.income", appConfig.language),
                     amount: stats.totalIncome,
                     count: stats.incomeCount
                 )
@@ -171,7 +171,7 @@ struct ReportView: View {
                 statItem(
                     icon: "arrow.down.circle.fill",
                     color: AppTheme.expenseColor,
-                    label: HomeStrings.expense(appConfig.language),
+                    label: L10n.tr("common.expense", appConfig.language),
                     amount: stats.totalExpenses,
                     count: stats.expenseCount
                 )

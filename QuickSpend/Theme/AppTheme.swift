@@ -51,12 +51,6 @@ enum AppTheme {
         endPoint: .bottomTrailing
     )
 
-    static let accentGradient = LinearGradient(
-        colors: [accentPink, accentOrange],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
-
     static let summaryGradient = LinearGradient(
         colors: [Color(hex: "143D29"), Color(hex: "2D6A4F")],
         startPoint: .topLeading,

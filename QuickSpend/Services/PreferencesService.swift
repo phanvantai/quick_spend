@@ -33,30 +33,16 @@ final class PreferencesService {
         defaults.set(data, forKey: configKey)
     }
 
-    func setLanguage(_ language: String) {
+    func setLanguage(_ language: String) { updateConfig { $0.language = language } }
+    func setCurrency(_ currency: String) { updateConfig { $0.currency = currency } }
+    func setThemeMode(_ themeMode: String) { updateConfig { $0.themeMode = themeMode } }
+    func completeOnboarding() { updateConfig { $0.isOnboardingComplete = true } }
+
+    private func updateConfig(_ update: (inout AppConfig) -> Void) {
         var config = getConfig()
-        config.language = language
+        update(&config)
         saveConfig(config)
     }
-
-    func setCurrency(_ currency: String) {
-        var config = getConfig()
-        config.currency = currency
-        saveConfig(config)
-    }
-
-    func setThemeMode(_ themeMode: String) {
-        var config = getConfig()
-        config.themeMode = themeMode
-        saveConfig(config)
-    }
-
-    func completeOnboarding() {
-        var config = getConfig()
-        config.isOnboardingComplete = true
-        saveConfig(config)
-    }
-
 
 
     // MARK: - Voice Tutorial
@@ -79,8 +65,12 @@ final class PreferencesService {
 
     // MARK: - Reset
 
+    /// Clears all preferences managed by this service.
+    /// Removes keys directly from the underlying UserDefaults instance so it works
+    /// correctly for both the standard suite (production) and custom test suites.
     func clearAll() {
-        let domain = Bundle.main.bundleIdentifier ?? ""
-        defaults.removePersistentDomain(forName: domain)
+        defaults.removeObject(forKey: configKey)
+        defaults.removeObject(forKey: voiceTutorialShownKey)
+        defaults.removeObject(forKey: voiceRecordingCountKey)
     }
 }
