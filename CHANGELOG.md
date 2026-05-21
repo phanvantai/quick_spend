@@ -5,6 +5,9 @@
 ## [2.4] - 2026-05-20
 
 ### What's New
+- Account balance card on Home — see your total balance at a glance, separate from the monthly stats below
+- Balance updates automatically with every transaction and syncs across all your iCloud devices
+- Edit your opening balance any time from Settings or by tapping the balance card
 - Voice input now understands date ranges with repetition: say "Monday to Friday last week, 20 for lunch each day" and get five separate expenses, each on the correct day
 - Voice input understands relative weekdays and weeks in all four languages: "last Monday", "thứ 4 tuần trước", "先週月曜", "lunes pasado"
 - Vietnamese voice input recognizes "triệu" as million (e.g. "5 triệu" = 5,000,000)
@@ -16,11 +19,14 @@
 ### Changed
 - Voice recording UI extracted into its own layer so the rest of the home screen stays responsive while parsing
 - Removed redundant CurrencyFormatter wrapper; all currency formatting now goes through AppConfig
+- Saved app preferences are now decoded forward-compatibly — adding new fields in future versions no longer risks wiping language/currency/theme settings
 
 ### App Store Notes
 
 #### en
 What's New
+• Account balance on Home: total balance at a glance, updates with every transaction, syncs across iCloud
+• Edit your opening balance any time from Settings or by tapping the balance card
 • Date ranges that repeat: say "Monday to Friday last week, 20 for lunch each day" and get five expenses, one per day
 • Recognizes relative weekdays and weeks in all four languages
 • Vietnamese "triệu" now correctly parsed as million
@@ -31,6 +37,8 @@ Improvements
 
 #### vi
 Tính năng mới
+• Số dư tài khoản trên màn hình chính: xem tổng số dư mọi lúc, tự cập nhật theo từng giao dịch, đồng bộ qua iCloud
+• Chỉnh sửa số dư ban đầu bất kỳ lúc nào trong Cài đặt hoặc chạm vào thẻ số dư
 • Hiểu khoảng ngày lặp lại: nói "thứ 2 đến thứ 6 tuần trước mỗi ngày 180k tiền xe" và nhận đủ 5 giao dịch theo ngày
 • Nhận diện thứ và tuần tương đối ở cả bốn ngôn ngữ
 • "triệu" được hiểu chính xác là 1.000.000 đồng
@@ -41,6 +49,8 @@ Cải tiến
 
 #### ja
 新機能
+• ホーム画面の口座残高：累計残高をひと目で確認、取引ごとに自動更新、iCloudで同期
+• 開始残高は設定からいつでも編集可能
 • 繰り返しのある期間指定に対応：「先週月曜から金曜まで毎日500円交通費」で5件の取引を作成
 • 4言語すべてで相対的な曜日・週の表現を認識
 • より自然な日本語の音声入力
@@ -51,6 +61,8 @@ Cải tiến
 
 #### es
 Novedades
+• Saldo de la cuenta en Inicio: saldo total de un vistazo, se actualiza con cada transacción, se sincroniza por iCloud
+• Edita tu saldo inicial en cualquier momento desde Ajustes o tocando la tarjeta de saldo
 • Rangos de fechas con repetición: di "de lunes a viernes la semana pasada, 3 euros cada día para transporte" y obtén cinco gastos
 • Reconocimiento de días de la semana relativos en los cuatro idiomas
 • Análisis de voz más natural
