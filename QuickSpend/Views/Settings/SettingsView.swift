@@ -9,6 +9,7 @@ struct SettingsView: View {
 
     @Environment(SubscriptionViewModel.self) private var subscription
     @Environment(CloudSyncService.self) private var cloudSync
+    @Environment(BalanceService.self) private var balanceService
 
     @Query private var transactions: [Transaction]
 
@@ -22,6 +23,7 @@ struct SettingsView: View {
     @State private var restoreSuccess = false
     @State private var isRestoring = false
     @State private var showDeleteAllConfirm = false
+    @State private var showBalanceEdit = false
 
     /// Currency cannot be changed once transactions exist to prevent data integrity issues
     private var isCurrencyLocked: Bool {
@@ -33,6 +35,18 @@ struct SettingsView: View {
             List {
                 // Core features
                 Section {
+                    Button {
+                        showBalanceEdit = true
+                    } label: {
+                        settingsRow(
+                            icon: "banknote.fill",
+                            iconColor: AppTheme.adaptiveAccent(colorScheme),
+                            title: L10n.tr("settings.balance", appConfig.language),
+                            subtitle: L10n.tr("settings.balance_subtitle", appConfig.language)
+                        )
+                    }
+                    .tint(.primary)
+
                     NavigationLink {
                         CategoriesView()
                     } label: {
@@ -257,6 +271,9 @@ struct SettingsView: View {
             .sheet(isPresented: $showPremiumStatus) {
                 PremiumStatusSheet()
             }
+            .sheet(isPresented: $showBalanceEdit) {
+                BalanceEditSheet()
+            }
             .alert(
                 L10n.tr("paywall.restore", appConfig.language),
                 isPresented: $showRestoreAlert
@@ -323,10 +340,15 @@ struct SettingsView: View {
             try modelContext.delete(model: Transaction.self)
             try modelContext.delete(model: Category.self)
             try modelContext.delete(model: RecurringTemplate.self)
+            try modelContext.delete(model: BalanceAnchor.self)
         } catch {
             print("[Settings] Failed to delete data: \(error)")
         }
         appConfig.resetAll()
+        // `ModelContext.delete(model:)` bypasses the willSave pending-changes
+        // path, so the BalanceService observer won't catch this. Wipe its cache
+        // and currentBalance directly so the card matches the now-empty store.
+        balanceService.clearAll()
     }
 
     // MARK: - iCloud Status

@@ -15,6 +15,7 @@ final class AppConfigViewModel {
     var currency: String { config.currency }
     var themeMode: String { config.themeMode }
     var isOnboardingComplete: Bool { config.isOnboardingComplete }
+    var hasSeenBalanceWhatsNew: Bool { config.hasSeenBalanceWhatsNew }
 
     var colorScheme: ColorScheme? { config.colorScheme }
 
@@ -88,8 +89,20 @@ final class AppConfigViewModel {
         preferences.saveConfig(config)
     }
 
+    /// Atomically marks onboarding complete AND the Balance WhatsNew modal as seen.
+    /// See `PreferencesService.completeOnboarding` for the reasoning — the fresh-install
+    /// onboarding step already introduces the balance feature, so the catch-up modal
+    /// must never fire for them.
     func completeOnboarding() {
         config.isOnboardingComplete = true
+        config.hasSeenBalanceWhatsNew = true
+        preferences.saveConfig(config)
+    }
+
+    /// Called from the WhatsNew modal's dismiss action for users upgrading from v2.4
+    /// who never saw the in-onboarding balance step.
+    func markBalanceWhatsNewSeen() {
+        config.hasSeenBalanceWhatsNew = true
         preferences.saveConfig(config)
     }
 
@@ -100,7 +113,15 @@ final class AppConfigViewModel {
             Self.setSystemLanguage(language)
         }
         if let currency { config.currency = currency }
-        if let isOnboardingComplete { config.isOnboardingComplete = isOnboardingComplete }
+        if let isOnboardingComplete {
+            config.isOnboardingComplete = isOnboardingComplete
+            // Mirror the atomicity guarantee in completeOnboarding(): when the bulk
+            // path lands on isOnboardingComplete=true, also flip the catch-up modal
+            // off so fresh installs don't see it.
+            if isOnboardingComplete {
+                config.hasSeenBalanceWhatsNew = true
+            }
+        }
         preferences.saveConfig(config)
     }
 

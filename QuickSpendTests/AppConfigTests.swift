@@ -14,6 +14,78 @@ struct AppConfigTests {
         #expect(config.currency == "USD")
         #expect(config.themeMode == "system")
         #expect(config.isOnboardingComplete == false)
+        #expect(config.hasSeenBalanceWhatsNew == false)
+    }
+
+    @Test("Forward-compat decode — v2.4 JSON without hasSeenBalanceWhatsNew decodes to false (so the modal fires once for existing users)")
+    func testForwardCompatDecodeFromV24Json() throws {
+        // Realistic v2.4 payload as it would have been written before the field existed
+        let v24Json = """
+        {
+            "language": "vi",
+            "currency": "VND",
+            "themeMode": "dark",
+            "isOnboardingComplete": true
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: v24Json)
+
+        #expect(decoded.language == "vi")
+        #expect(decoded.currency == "VND")
+        #expect(decoded.themeMode == "dark")
+        #expect(decoded.isOnboardingComplete == true)
+        // The whole point: missing field decodes to false, not a thrown error.
+        #expect(decoded.hasSeenBalanceWhatsNew == false)
+    }
+
+    @Test("Forward-compat decode — empty JSON object decodes to full defaults")
+    func testForwardCompatDecodeFromEmptyJson() throws {
+        let emptyJson = "{}".data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: emptyJson)
+
+        #expect(decoded == AppConfig())
+    }
+
+    @Test("formatAmountInput preserves a leading minus so overdrawn users can type a negative opening balance")
+    func testFormatAmountInputAllowsNegativeEnglish() {
+        var config = AppConfig()
+        config.language = "en"
+
+        #expect(config.formatAmountInput("-") == "-")
+        #expect(config.formatAmountInput("-100") == "-100")
+        #expect(config.formatAmountInput("-1234567") == "-1,234,567")
+        #expect(config.formatAmountInput("-1234.56") == "-1,234.56")
+    }
+
+    @Test("formatAmountInput preserves a leading minus with VND grouping (period thousands)")
+    func testFormatAmountInputAllowsNegativeVietnamese() {
+        var config = AppConfig()
+        config.language = "vi"
+
+        #expect(config.formatAmountInput("-1234567") == "-1.234.567")
+    }
+
+    @Test("parseAmount handles negative inputs across all locales")
+    func testParseAmountNegative() {
+        for lang in ["en", "vi", "ja", "es"] {
+            var config = AppConfig()
+            config.language = lang
+            let formatted = config.formatAmountInput("-50000")
+            #expect(config.parseAmount(formatted) == -50_000, "lang=\(lang)")
+        }
+    }
+
+    @Test("Codable roundtrip preserves hasSeenBalanceWhatsNew=true")
+    func testRoundtripPreservesHasSeenBalanceWhatsNew() throws {
+        var config = AppConfig()
+        config.hasSeenBalanceWhatsNew = true
+
+        let data = try JSONEncoder().encode(config)
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: data)
+
+        #expect(decoded.hasSeenBalanceWhatsNew == true)
     }
 
     @Test("AppConfig is Codable")

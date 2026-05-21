@@ -150,6 +150,12 @@ struct OnboardingView: View {
             modelContext: modelContext
         )
 
+        // No anchor seed — BalanceCard's "Set up balance" CTA is the natural
+        // empty state. The user enters their starting amount from Home or
+        // Settings when ready. Auto-seeding to 0 caused multi-row conflicts
+        // when a second device synced a real anchor from a different setup
+        // moment, and CloudKit can't enforce `@Attribute(.unique)`.
+
         onComplete()
     }
 }
