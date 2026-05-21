@@ -204,6 +204,7 @@ struct HomeView: View {
             .sheet(isPresented: $showAddTransaction) {
                 TransactionFormView(categories: categories) { transaction in
                     modelContext.insert(transaction)
+                    balance.applyOptimisticInsert(transaction)
                 }
             }
             .sheet(isPresented: $showBalanceEdit) {

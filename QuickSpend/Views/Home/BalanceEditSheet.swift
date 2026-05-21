@@ -102,7 +102,12 @@ struct BalanceEditSheet: View {
                 }
             }
             .onAppear {
-                if let anchor = existingAnchor {
+                // Pre-fill with the live running balance (opening + transactions since
+                // anchor), not the stored openingBalance — otherwise after the user
+                // logs transactions the sheet shows the stale anchor value.
+                if let current = balanceService.currentBalance {
+                    amountText = appConfig.config.formatNumber(current)
+                } else if let anchor = existingAnchor {
                     amountText = appConfig.config.formatNumber(anchor.openingBalance)
                 }
                 amountFocused = true

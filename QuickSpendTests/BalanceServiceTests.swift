@@ -504,4 +504,159 @@ struct BalanceServiceTests {
 
         #expect(service.recomputeCount - initialCount == 1)
     }
+
+    // MARK: - Optimistic updates
+
+    @Test("Optimistic insert — income increases currentBalance immediately, before any recompute")
+    func testOptimisticInsertIncome() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let anchorDate = Date().addingTimeInterval(-3600)
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, in: context)
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        #expect(service.currentBalance == 1_000)
+
+        let tx = Transaction(amount: 250, note: "", categoryId: "x", type: .income, date: .now)
+        context.insert(tx)
+        let before = service.recomputeCount
+        service.applyOptimisticInsert(tx)
+
+        #expect(service.currentBalance == 1_250)
+        #expect(service.recomputeCount == before) // optimistic update did NOT trigger recompute
+    }
+
+    @Test("Optimistic insert — expense decreases currentBalance immediately")
+    func testOptimisticInsertExpense() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        try insertAnchor(openingBalance: 1_000, anchorDate: Date().addingTimeInterval(-3600), in: context)
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        let tx = Transaction(amount: 150, note: "", categoryId: "x", type: .expense, date: .now)
+        context.insert(tx)
+        service.applyOptimisticInsert(tx)
+
+        #expect(service.currentBalance == 850)
+    }
+
+    @Test("Optimistic insert — no-op when no anchor exists")
+    func testOptimisticInsertWithoutAnchor() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        #expect(service.currentBalance == nil)
+
+        let tx = Transaction(amount: 500, note: "", categoryId: "x", type: .income, date: .now)
+        context.insert(tx)
+        service.applyOptimisticInsert(tx)
+
+        #expect(service.currentBalance == nil)
+    }
+
+    @Test("Optimistic insert — no-op when tx.createdAt predates anchor (excluded from compute predicate)")
+    func testOptimisticInsertPredatingAnchor() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let anchorDate = Date()
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, in: context)
+        let service = BalanceService(modelContext: context, autoObserve: false)
+
+        // Construct a tx with createdAt before the anchor.
+        let tx = Transaction(amount: 500, note: "", categoryId: "x", type: .income, date: .now)
+        tx.createdAt = anchorDate.addingTimeInterval(-60)
+        context.insert(tx)
+        service.applyOptimisticInsert(tx)
+
+        #expect(service.currentBalance == 1_000)
+    }
+
+    @Test("Optimistic insert — result matches authoritative recompute")
+    func testOptimisticInsertMatchesRecompute() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        try insertAnchor(openingBalance: 1_000, anchorDate: Date().addingTimeInterval(-3600), in: context)
+        let service = BalanceService(modelContext: context, autoObserve: false)
+
+        let tx = Transaction(amount: 250, note: "", categoryId: "x", type: .income, date: .now)
+        context.insert(tx)
+        try context.save()
+        service.applyOptimisticInsert(tx)
+        let optimistic = service.currentBalance
+
+        try service.recomputeNow()
+        #expect(service.currentBalance == optimistic)
+    }
+
+    @Test("Optimistic delete — subtracts the transaction's signed amount")
+    func testOptimisticDelete() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let anchorDate = Date().addingTimeInterval(-3600)
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, in: context)
+
+        let tx = Transaction(amount: 200, note: "", categoryId: "x", type: .expense, date: .now)
+        context.insert(tx)
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        #expect(service.currentBalance == 800)
+
+        service.applyOptimisticDelete(tx)
+        #expect(service.currentBalance == 1_000)
+    }
+
+    @Test("Optimistic edit — applies delta between old and new signed amounts")
+    func testOptimisticEditAmountChange() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let anchorDate = Date().addingTimeInterval(-3600)
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, in: context)
+
+        let tx = Transaction(amount: 100, note: "", categoryId: "x", type: .expense, date: .now)
+        context.insert(tx)
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        #expect(service.currentBalance == 900)
+
+        // User edits the amount from 100 → 250 (still expense).
+        service.applyOptimisticEdit(
+            createdAt: tx.createdAt,
+            oldAmount: 100, oldType: .expense,
+            newAmount: 250, newType: .expense
+        )
+        #expect(service.currentBalance == 750)
+    }
+
+    @Test("Optimistic edit — type flip from expense to income inverts the contribution")
+    func testOptimisticEditTypeFlip() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let anchorDate = Date().addingTimeInterval(-3600)
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, in: context)
+
+        let tx = Transaction(amount: 100, note: "", categoryId: "x", type: .expense, date: .now)
+        context.insert(tx)
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        #expect(service.currentBalance == 900)
+
+        // Flip 100 expense → 100 income: balance moves by +200.
+        service.applyOptimisticEdit(
+            createdAt: tx.createdAt,
+            oldAmount: 100, oldType: .expense,
+            newAmount: 100, newType: .income
+        )
+        #expect(service.currentBalance == 1_100)
+    }
 }

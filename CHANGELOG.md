@@ -2,6 +2,51 @@
 
 ---
 
+## [2.4.1] - 2026-05-21
+
+### Improvements
+- Balance card now updates instantly when you add, edit, or delete a transaction — no more waiting for the recompute to catch up
+- The "Edit Balance" sheet now pre-fills with your current running balance instead of the original opening balance
+
+### Bug Fixes
+- Filled missing localizations in Vietnamese, Japanese, and Spanish for common UI strings (Cancel, Delete, Edit, Amount, Month, Day, Status, Type, etc.)
+
+### App Store Notes
+
+#### en
+What's New
+• Balance updates instantly when you add, edit, or delete a transaction — no waiting
+
+Bug Fixes
+• Edit Balance now pre-fills with your current balance, not the original opening value
+• Filled in missing translations for common UI strings
+
+#### vi
+Tính năng mới
+• Số dư cập nhật ngay khi bạn thêm, sửa hoặc xoá giao dịch — không cần chờ
+
+Sửa lỗi
+• Sửa số dư hiện điền sẵn số dư hiện tại, thay vì giá trị mở ban đầu
+• Bổ sung các bản dịch còn thiếu cho các chuỗi giao diện thông dụng
+
+#### ja
+新機能
+• 取引の追加・編集・削除と同時に残高が即座に更新されます — 待ち時間なし
+
+バグ修正
+• 残高編集画面に、開始残高ではなく現在の残高が初期表示されるようになりました
+• 共通UI文字列の不足していた翻訳を追加
+
+#### es
+Novedades
+• El saldo se actualiza al instante al añadir, editar o eliminar una transacción — sin esperas
+
+Correcciones
+• Editar saldo ahora se rellena con tu saldo actual, no con el valor inicial
+• Se completaron las traducciones faltantes en cadenas de UI comunes
+
+---
+
 ## [2.4] - 2026-05-20
 
 ### What's New

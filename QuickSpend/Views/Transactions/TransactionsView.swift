@@ -6,6 +6,7 @@ struct TransactionsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
+    @Environment(BalanceService.self) private var balance
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Category.name) private var categories: [Category]
 
@@ -116,16 +117,27 @@ struct TransactionsView: View {
             .sheet(isPresented: $showingAddTransaction) {
                 TransactionFormView(categories: categories) { transaction in
                     modelContext.insert(transaction)
+                    balance.applyOptimisticInsert(transaction)
                 }
             }
             .sheet(item: $editingTransaction) { transaction in
                 TransactionFormView(categories: categories, expense: transaction) { updated in
+                    let oldAmount = transaction.amount
+                    let oldType = transaction.type
+                    let createdAt = transaction.createdAt
                     transaction.amount = updated.amount
                     transaction.note = updated.note
                     transaction.categoryId = updated.categoryId
                     transaction.date = updated.date
                     transaction.type = updated.type
                     transaction.updatedAt = .now
+                    balance.applyOptimisticEdit(
+                        createdAt: createdAt,
+                        oldAmount: oldAmount,
+                        oldType: oldType,
+                        newAmount: updated.amount,
+                        newType: updated.type
+                    )
                 }
             }
             .onChange(of: selectedMonth) {
@@ -291,6 +303,7 @@ struct TransactionsView: View {
 
     private func deleteTransaction(_ transaction: Transaction) {
         withAnimation {
+            balance.applyOptimisticDelete(transaction)
             modelContext.delete(transaction)
         }
     }
