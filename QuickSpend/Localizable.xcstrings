@@ -7305,6 +7305,35 @@
         }
       }
     },
+    "balance.edit_toggle_sign" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle negative balance"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alternar saldo negativo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "残高の符号を切り替え"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đảo dấu số dư"
+          }
+        }
+      }
+    },
     "balance.edit_title" : {
       "extractionState" : "manual",
       "localizations" : {

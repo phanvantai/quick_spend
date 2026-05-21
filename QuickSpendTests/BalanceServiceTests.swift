@@ -146,7 +146,7 @@ struct BalanceServiceTests {
 
     // MARK: - Test 5: Anchor date >= boundary inclusive
 
-    @Test("Anchor date boundary — transactions before anchor excluded, on/after included")
+    @Test("Anchor boundary uses Transaction.createdAt (creation instant), not .date — so the user-picked date doesn't change whether a transaction is included in the running balance")
     func testAnchorDateBoundaryInclusive() throws {
         let container = try makeContainer()
         let context = container.mainContext
@@ -154,43 +154,52 @@ struct BalanceServiceTests {
         let anchorDate = Calendar.current.startOfDay(for: Date())
         try insertAnchor(openingBalance: 1_000_000, anchorDate: anchorDate, in: context)
 
-        // Transaction BEFORE anchor — must be excluded
+        // Transaction logged BEFORE the anchor moment (createdAt < anchorDate).
+        // `.date` is set in the future, but it's user-picked metadata — it
+        // doesn't change inclusion. Must be excluded.
         let before = Transaction(
             amount: 999_999,
-            note: "Before anchor",
+            note: "Logged before anchor",
             categoryId: "salary",
             type: .income,
-            date: anchorDate.addingTimeInterval(-1) // 1 second before
+            date: anchorDate.addingTimeInterval(7200), // future user date
+            createdAt: anchorDate.addingTimeInterval(-1) // logged 1s before anchor
         )
         context.insert(before)
 
-        // Transaction EXACTLY ON anchor — must be included (>= boundary)
+        // Transaction logged EXACTLY at the anchor instant — included (>= boundary).
         let onBoundary = Transaction(
             amount: 100_000,
-            note: "On anchor",
+            note: "Logged at anchor",
             categoryId: "salary",
             type: .income,
-            date: anchorDate // exactly at anchor
+            date: anchorDate.addingTimeInterval(-86_400), // user-picked yesterday
+            createdAt: anchorDate
         )
         context.insert(onBoundary)
 
-        // Transaction AFTER anchor — must be included
+        // Transaction logged AFTER anchor with a noon-of-today .date — included
+        // even though `.date` precedes the anchor instant. This is the specific
+        // case Codex flagged: TransactionFormView defaults selectedDate to
+        // noon-today, so a 3pm balance edit + 4pm new expense would have
+        // .date < anchor under the old predicate.
         let after = Transaction(
             amount: 50_000,
-            note: "After anchor",
+            note: "Logged after anchor, noon-today date",
             categoryId: "food_drink",
             type: .expense,
-            date: anchorDate.addingTimeInterval(7200)
+            date: anchorDate.addingTimeInterval(43_200), // noon-today (anchor < this)
+            createdAt: anchorDate.addingTimeInterval(54_000) // 3pm-today (after anchor)
         )
         context.insert(after)
 
         try context.save()
 
-        let service = BalanceService(modelContext: context)
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
         let balance = try service.computeBalance()
 
         // 1_000_000 opening + 100_000 (on) − 50_000 (after) = 1_050_000
-        // 999_999 (before) excluded
+        // before (createdAt < anchor) excluded regardless of its user-picked date
         #expect(balance == 1_050_000)
     }
 

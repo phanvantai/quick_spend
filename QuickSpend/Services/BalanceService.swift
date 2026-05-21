@@ -70,10 +70,21 @@ final class BalanceService {
     // MARK: - Compute
 
     /// Stateless compute against the current model context. Returns `nil` if no anchor exists.
+    ///
+    /// Predicate uses `Transaction.createdAt` (immutable creation instant) rather than
+    /// `Transaction.date` (user-picked, defaults to noon-of-day in TransactionFormView).
+    /// `.date` is for display/grouping; `.createdAt` is for inclusion. This means:
+    ///   - User sets balance at 3pm → anchor = 3pm.
+    ///   - User logs an expense at 4pm (date defaults to noon-today) → createdAt = 4pm
+    ///     ≥ anchor → INCLUDED. The noon `.date` would have been excluded under the
+    ///     old `date >= anchorDate` predicate.
+    ///   - User backfills yesterday's coffee at 4pm → createdAt = 4pm ≥ anchor →
+    ///     INCLUDED. The user-stated date doesn't change whether the entry reduces
+    ///     the running balance: it's still real money out, just logged late.
     func computeBalance() throws -> Double? {
         guard let anchor = try fetchAnchor() else { return nil }
         let anchorDate = anchor.anchorDate
-        let predicate = #Predicate<Transaction> { $0.date >= anchorDate }
+        let predicate = #Predicate<Transaction> { $0.createdAt >= anchorDate }
         let descriptor = FetchDescriptor<Transaction>(predicate: predicate)
         let transactions = try modelContext.fetch(descriptor)
         let delta = transactions.reduce(0.0) { acc, tx in

@@ -60,6 +60,19 @@ struct BalanceEditSheet: View {
                                 amountText = formatted
                             }
                         }
+                        // ± toggle — `.decimalPad` doesn't have a minus key on iOS,
+                        // so overdrawn users need a button to flip the sign.
+                        Button(action: toggleSign) {
+                            Text("\u{00B1}") // ±
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(amountText.hasPrefix("-") ? AppTheme.expenseColor : .secondary)
+                                .frame(width: 32, height: 32)
+                                .background {
+                                    Circle().fill(Color(.tertiarySystemFill))
+                                }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(L10n.tr("balance.edit_toggle_sign", appConfig.language))
                     }
                 } header: {
                     Text(L10n.tr("balance.edit_label", appConfig.language))
@@ -106,6 +119,16 @@ struct BalanceEditSheet: View {
             } message: { error in
                 Text(error)
             }
+        }
+    }
+
+    private func toggleSign() {
+        if amountText.hasPrefix("-") {
+            amountText = String(amountText.dropFirst())
+        } else if !amountText.isEmpty {
+            amountText = "-" + amountText
+        } else {
+            amountText = "-"
         }
     }
 
