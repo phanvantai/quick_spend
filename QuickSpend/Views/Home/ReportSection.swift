@@ -29,12 +29,12 @@ struct ReportSection: View {
     }
 
     private var centerLabel: String {
-        selectedTab == .expense ? HomeStrings.spent(language) : HomeStrings.earned(language)
+        selectedTab == .expense ? L10n.tr("home.spent", language) : L10n.tr("home.earned", language)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-            Text(HomeStrings.reportTitle(language))
+            Text(L10n.tr("home.report_title", language))
                 .font(.headline)
 
             VStack(spacing: AppTheme.spacing16) {
@@ -158,7 +158,7 @@ struct ReportSection: View {
                         Spacer()
 
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text(CurrencyFormatter.format(stat.totalAmount, currency: currency, language: language))
+                            Text(AppConfig(language: language, currency: currency).formatCurrency(stat.totalAmount))
                                 .font(.subheadline.weight(.semibold).monospacedDigit())
                                 .foregroundStyle(stat.type == .expense ? AppTheme.expenseColor : AppTheme.incomeColor)
                             Text(String(format: "%.1f%%", stat.percentage))
@@ -218,7 +218,7 @@ private struct CategoryTransactionsSheet: View {
                         )
                         Text(category.categoryName)
                             .font(.title3.bold())
-                        Text(CurrencyFormatter.format(category.totalAmount, currency: currency, language: language))
+                        Text(AppConfig(language: language, currency: currency).formatCurrency(category.totalAmount))
                             .font(.title2.bold().monospacedDigit())
                             .foregroundStyle(category.type == .expense ? AppTheme.expenseColor : AppTheme.incomeColor)
                         Text(L10n.tr("transactions.count", language, category.count))
@@ -269,7 +269,7 @@ private struct CategoryTransactionsSheet: View {
 
             Spacer()
 
-            Text("\(transaction.isIncome ? "+" : "-")\(CurrencyFormatter.format(transaction.amount, currency: currency, language: language))")
+            Text("\(transaction.isIncome ? "+" : "-")\(AppConfig(language: language, currency: currency).formatCurrency(transaction.amount))")
                 .font(.body.weight(.semibold).monospacedDigit())
                 .foregroundStyle(transaction.isIncome ? AppTheme.incomeColor : AppTheme.expenseColor)
         }

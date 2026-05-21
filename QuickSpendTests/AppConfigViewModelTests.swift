@@ -116,6 +116,28 @@ struct AppConfigViewModelTests {
         #expect(vm.isOnboardingComplete == true)
     }
 
+    @Test("completeOnboarding atomically marks the Balance WhatsNew modal as seen — fresh installs never see it (the onboarding step already covers balance setup)")
+    func testCompleteOnboardingMarksBalanceWhatsNewSeen() {
+        let vm = makeViewModel()
+
+        #expect(vm.hasSeenBalanceWhatsNew == false)
+        vm.completeOnboarding()
+
+        #expect(vm.isOnboardingComplete == true)
+        #expect(vm.hasSeenBalanceWhatsNew == true)
+    }
+
+    @Test("markBalanceWhatsNewSeen flips the flag without affecting onboarding state")
+    func testMarkBalanceWhatsNewSeen() {
+        let vm = makeViewModel()
+
+        #expect(vm.hasSeenBalanceWhatsNew == false)
+        vm.markBalanceWhatsNewSeen()
+
+        #expect(vm.hasSeenBalanceWhatsNew == true)
+        #expect(vm.isOnboardingComplete == false)
+    }
+
     // MARK: - Bulk Update
 
     @Test("updatePreferences updates multiple fields")

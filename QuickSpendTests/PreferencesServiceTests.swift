@@ -23,6 +23,35 @@ struct PreferencesServiceTests {
         #expect(config.currency == "USD")
         #expect(config.themeMode == "system")
         #expect(config.isOnboardingComplete == false)
+        #expect(config.hasSeenBalanceWhatsNew == false)
+    }
+
+    @Test("completeOnboarding atomically sets both isOnboardingComplete AND hasSeenBalanceWhatsNew — fresh install never sees the WhatsNew modal")
+    func testCompleteOnboardingSetsBalanceWhatsNewAtomic() {
+        let service = makeService()
+
+        service.completeOnboarding()
+        let config = service.getConfig()
+
+        #expect(config.isOnboardingComplete == true)
+        #expect(config.hasSeenBalanceWhatsNew == true)
+    }
+
+    @Test("markBalanceWhatsNewSeen flips the flag without touching isOnboardingComplete")
+    func testMarkBalanceWhatsNewSeen() {
+        let service = makeService()
+
+        // Existing user state — onboarding already done from v2.4
+        var existing = AppConfig()
+        existing.isOnboardingComplete = true
+        existing.hasSeenBalanceWhatsNew = false
+        service.saveConfig(existing)
+
+        service.markBalanceWhatsNewSeen()
+        let after = service.getConfig()
+
+        #expect(after.hasSeenBalanceWhatsNew == true)
+        #expect(after.isOnboardingComplete == true)
     }
 
     @Test("saveConfig and getConfig round-trip")
@@ -152,6 +181,38 @@ struct PreferencesServiceTests {
 
         #expect(service1.getConfig().language == "vi")
         #expect(service2.getConfig().language == "ja")
+    }
+
+    // MARK: - clearAll
+
+    @Test("clearAll resets config to defaults")
+    func testClearAllResetsConfig() {
+        let service = makeService()
+        service.setLanguage("vi")
+        service.setCurrency("VND")
+        service.setThemeMode("dark")
+        service.completeOnboarding()
+
+        service.clearAll()
+
+        let config = service.getConfig()
+        #expect(config.language == "en")
+        #expect(config.currency == "USD")
+        #expect(config.themeMode == "system")
+        #expect(config.isOnboardingComplete == false)
+    }
+
+    @Test("clearAll resets voice tutorial and recording count")
+    func testClearAllResetsVoiceState() {
+        let service = makeService()
+        service.markVoiceTutorialShown()
+        service.incrementVoiceRecordingCount()
+        service.incrementVoiceRecordingCount()
+
+        service.clearAll()
+
+        #expect(service.hasShownVoiceTutorial == false)
+        #expect(service.voiceRecordingCount == 0)
     }
 
     @Test("Overwriting config replaces all values")

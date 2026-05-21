@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 import SwiftData
+import Combine
 @testable import QuickSpend
 
 // Type alias to disambiguate from objc_category
@@ -43,6 +44,39 @@ struct CloudSyncTests {
     func testInitialAccountStatusNotChecked() {
         let service = CloudSyncService()
         #expect(service.hasCheckedAccountStatus == false)
+    }
+
+    @Test("didFinishImport publisher delivers manual sends to subscribers")
+    func testDidFinishImportPublisherDeliversEvents() async throws {
+        let service = CloudSyncService()
+        let received = ReceivedCounter()
+        let subscription = service.didFinishImport.sink {
+            received.increment()
+        }
+        defer { subscription.cancel() }
+
+        service.didFinishImport.send()
+        service.didFinishImport.send()
+
+        // Combine sinks fire synchronously on send(), but yield once to let any
+        // queued runloop work settle before asserting.
+        try await Task.sleep(for: .milliseconds(50))
+
+        #expect(received.value == 2)
+    }
+}
+
+/// Thread-safe counter so the sink closure can mutate without Sendable warnings.
+private final class ReceivedCounter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _value: Int = 0
+    var value: Int {
+        lock.lock(); defer { lock.unlock() }
+        return _value
+    }
+    func increment() {
+        lock.lock(); defer { lock.unlock() }
+        _value += 1
     }
 }
 

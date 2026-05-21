@@ -33,30 +33,30 @@ final class PreferencesService {
         defaults.set(data, forKey: configKey)
     }
 
-    func setLanguage(_ language: String) {
-        var config = getConfig()
-        config.language = language
-        saveConfig(config)
-    }
+    func setLanguage(_ language: String) { updateConfig { $0.language = language } }
+    func setCurrency(_ currency: String) { updateConfig { $0.currency = currency } }
+    func setThemeMode(_ themeMode: String) { updateConfig { $0.themeMode = themeMode } }
 
-    func setCurrency(_ currency: String) {
-        var config = getConfig()
-        config.currency = currency
-        saveConfig(config)
-    }
-
-    func setThemeMode(_ themeMode: String) {
-        var config = getConfig()
-        config.themeMode = themeMode
-        saveConfig(config)
-    }
-
+    /// Atomically marks onboarding complete AND the Balance WhatsNew modal as seen.
+    /// Fresh installs go through the onboarding balance step, so the modal — which
+    /// exists to surface the feature to existing v2.4 users — must never fire for them.
     func completeOnboarding() {
-        var config = getConfig()
-        config.isOnboardingComplete = true
-        saveConfig(config)
+        updateConfig {
+            $0.isOnboardingComplete = true
+            $0.hasSeenBalanceWhatsNew = true
+        }
     }
 
+    /// Marks the Balance WhatsNew modal as seen. Called from the modal's dismiss action.
+    func markBalanceWhatsNewSeen() {
+        updateConfig { $0.hasSeenBalanceWhatsNew = true }
+    }
+
+    private func updateConfig(_ update: (inout AppConfig) -> Void) {
+        var config = getConfig()
+        update(&config)
+        saveConfig(config)
+    }
 
 
     // MARK: - Voice Tutorial
@@ -79,8 +79,12 @@ final class PreferencesService {
 
     // MARK: - Reset
 
+    /// Clears all preferences managed by this service.
+    /// Removes keys directly from the underlying UserDefaults instance so it works
+    /// correctly for both the standard suite (production) and custom test suites.
     func clearAll() {
-        let domain = Bundle.main.bundleIdentifier ?? ""
-        defaults.removePersistentDomain(forName: domain)
+        defaults.removeObject(forKey: configKey)
+        defaults.removeObject(forKey: voiceTutorialShownKey)
+        defaults.removeObject(forKey: voiceRecordingCountKey)
     }
 }

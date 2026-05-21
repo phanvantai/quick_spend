@@ -5,11 +5,13 @@ import SwiftData
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
+    @Environment(BalanceService.self) private var balance
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedMonth = Date()
     @State private var showAddTransaction = false
+    @State private var showBalanceEdit = false
 
     // MARK: - Selected Month Data
 
@@ -118,6 +120,15 @@ struct HomeView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: AppTheme.spacing16) {
+                    // All-time account balance — sits above the month picker so it's
+                    // visually separate from the month-scoped numbers below.
+                    BalanceCard(
+                        currentBalance: balance.currentBalance,
+                        language: appConfig.language,
+                        currency: appConfig.config.currency,
+                        onTap: { showBalanceEdit = true }
+                    )
+
                     // Month selector + currency badge (pinned via LazyVStack below)
                     HomeAppBar(
                         selectedMonth: $selectedMonth,
@@ -195,12 +206,20 @@ struct HomeView: View {
                     modelContext.insert(transaction)
                 }
             }
+            .sheet(isPresented: $showBalanceEdit) {
+                BalanceEditSheet()
+            }
         }
     }
 }
 
 #Preview {
-    HomeView()
-        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
+    let container = try! ModelContainer(
+        for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+    )
+    return HomeView()
+        .modelContainer(container)
         .environment(AppConfigViewModel())
+        .environment(BalanceService(modelContext: container.mainContext, autoObserve: false))
 }

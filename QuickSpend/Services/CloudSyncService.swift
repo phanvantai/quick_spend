@@ -1,7 +1,6 @@
 import Foundation
 import CloudKit
 import CoreData
-import SwiftData
 import Combine
 
 /// Monitors iCloud account status and CloudKit sync events.
@@ -19,6 +18,11 @@ final class CloudSyncService {
 
     /// True once the iCloud account status check has finished (regardless of result).
     private(set) var hasCheckedAccountStatus: Bool = false
+
+    /// Fires every time a CloudKit `.import` event finishes (not just the first one).
+    /// Downstream services (e.g. BalanceService) subscribe to recompute derived state
+    /// without registering their own duplicate NSPersistentCloudKitContainer observer.
+    let didFinishImport = PassthroughSubject<Void, Never>()
 
     private var eventSubscription: AnyCancellable?
     private var importTimeoutTask: Task<Void, Never>?
@@ -59,6 +63,9 @@ final class CloudSyncService {
                         self.markInitialImportComplete()
                     case .temporarilyUnavailable:
                         self.iCloudStatus = .temporarilyUnavailable
+                        self.markInitialImportComplete()
+                    case .couldNotDetermine:
+                        self.iCloudStatus = .unknown
                         self.markInitialImportComplete()
                     @unknown default:
                         self.iCloudStatus = .unknown
@@ -105,6 +112,9 @@ final class CloudSyncService {
                 // An import event finished — the initial data pull is done
                 if event.type == .import {
                     self.markInitialImportComplete()
+                    // Fan out to subscribers (e.g. BalanceService) so they can refresh
+                    // derived state. Fires for every import, not just the first.
+                    self.didFinishImport.send()
                 }
             }
         }
