@@ -8,6 +8,7 @@ struct VoiceFABLayer: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(SubscriptionViewModel.self) private var subscription
+    @Environment(BalanceService.self) private var balance
     @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var voiceService = VoiceService()
@@ -127,7 +128,10 @@ struct VoiceFABLayer: View {
                 parsedExpenses: parsedTransactions,
                 categories: categories,
                 onSave: { transactions in
-                    for transaction in transactions { modelContext.insert(transaction) }
+                    for transaction in transactions {
+                        modelContext.insert(transaction)
+                        balance.applyOptimisticInsert(transaction)
+                    }
                     parsedTransactions = []
                 }
             )
@@ -138,6 +142,7 @@ struct VoiceFABLayer: View {
                 initialNote: fallbackTranscription.isEmpty ? nil : fallbackTranscription
             ) { transaction in
                 modelContext.insert(transaction)
+                balance.applyOptimisticInsert(transaction)
                 fallbackTranscription = ""
             }
         }

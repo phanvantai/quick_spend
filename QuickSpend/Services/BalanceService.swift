@@ -25,6 +25,9 @@ final class BalanceService {
     @ObservationIgnored private var observerToken: NSObjectProtocol?
     @ObservationIgnored private var debounceTask: Task<Void, Never>?
     @ObservationIgnored private var importSubscription: AnyCancellable?
+    /// Cached anchor date from the last successful compute. Lets `applyOptimistic*`
+    /// decide inclusion without a SwiftData fetch on every CRUD call.
+    @ObservationIgnored private var cachedAnchorDate: Date?
 
     /// 200ms — coalesces notification bursts (CloudKit import, rapid CRUD).
     static let debounceInterval: Duration = .milliseconds(200)
@@ -82,8 +85,12 @@ final class BalanceService {
     ///     INCLUDED. The user-stated date doesn't change whether the entry reduces
     ///     the running balance: it's still real money out, just logged late.
     func computeBalance() throws -> Double? {
-        guard let anchor = try fetchAnchor() else { return nil }
+        guard let anchor = try fetchAnchor() else {
+            cachedAnchorDate = nil
+            return nil
+        }
         let anchorDate = anchor.anchorDate
+        cachedAnchorDate = anchorDate
         let predicate = #Predicate<Transaction> { $0.createdAt >= anchorDate }
         let descriptor = FetchDescriptor<Transaction>(predicate: predicate)
         let transactions = try modelContext.fetch(descriptor)
@@ -94,6 +101,59 @@ final class BalanceService {
             }
         }
         return anchor.openingBalance + delta
+    }
+
+    // MARK: - Optimistic updates
+
+    /// Apply a newly inserted transaction to the running balance in O(1).
+    /// Call right after `modelContext.insert(tx)`. The willSave observer still
+    /// schedules a debounced full recompute as a reconciliation backstop.
+    ///
+    /// No-op when no anchor exists (balance feature isn't set up) or when the
+    /// transaction predates the anchor (excluded by the compute predicate).
+    func applyOptimisticInsert(_ tx: Transaction) {
+        guard let current = currentBalance, let anchorDate = cachedAnchorDate else { return }
+        guard tx.createdAt >= anchorDate else { return }
+        let signed = signedAmount(amount: tx.amount, type: tx.type)
+        currentBalance = current + signed
+        cacheStore.write(balance: current + signed)
+    }
+
+    /// Apply a pending deletion to the running balance in O(1).
+    /// Call *before* `modelContext.delete(tx)` (or pass a snapshot of its fields)
+    /// so the values are still readable.
+    func applyOptimisticDelete(_ tx: Transaction) {
+        guard let current = currentBalance, let anchorDate = cachedAnchorDate else { return }
+        guard tx.createdAt >= anchorDate else { return }
+        let signed = signedAmount(amount: tx.amount, type: tx.type)
+        currentBalance = current - signed
+        cacheStore.write(balance: current - signed)
+    }
+
+    /// Apply an in-place edit. Pass the *old* amount/type captured before mutation
+    /// and the *new* amount/type after mutation, along with the transaction's
+    /// `createdAt` (which doesn't change on edit).
+    func applyOptimisticEdit(
+        createdAt: Date,
+        oldAmount: Double,
+        oldType: TransactionType,
+        newAmount: Double,
+        newType: TransactionType
+    ) {
+        guard let current = currentBalance, let anchorDate = cachedAnchorDate else { return }
+        guard createdAt >= anchorDate else { return }
+        let delta = signedAmount(amount: newAmount, type: newType)
+            - signedAmount(amount: oldAmount, type: oldType)
+        guard delta != 0 else { return }
+        currentBalance = current + delta
+        cacheStore.write(balance: current + delta)
+    }
+
+    private func signedAmount(amount: Double, type: TransactionType) -> Double {
+        switch type {
+        case .income:  return amount
+        case .expense: return -amount
+        }
     }
 
     /// Recompute immediately and update `currentBalance` + the per-device cache.
@@ -119,6 +179,7 @@ final class BalanceService {
     /// pending-changes path), so SettingsView calls this directly after the wipe.
     func clearAll() {
         currentBalance = nil
+        cachedAnchorDate = nil
         cacheStore.clear()
         recomputeCount += 1
     }
