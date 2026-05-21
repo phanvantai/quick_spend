@@ -9,6 +9,7 @@ struct SettingsView: View {
 
     @Environment(SubscriptionViewModel.self) private var subscription
     @Environment(CloudSyncService.self) private var cloudSync
+    @Environment(BalanceService.self) private var balanceService
 
     @Query private var transactions: [Transaction]
 
@@ -339,10 +340,15 @@ struct SettingsView: View {
             try modelContext.delete(model: Transaction.self)
             try modelContext.delete(model: Category.self)
             try modelContext.delete(model: RecurringTemplate.self)
+            try modelContext.delete(model: BalanceAnchor.self)
         } catch {
             print("[Settings] Failed to delete data: \(error)")
         }
         appConfig.resetAll()
+        // `ModelContext.delete(model:)` bypasses the willSave pending-changes
+        // path, so the BalanceService observer won't catch this. Wipe its cache
+        // and currentBalance directly so the card matches the now-empty store.
+        balanceService.clearAll()
     }
 
     // MARK: - iCloud Status

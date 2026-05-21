@@ -227,14 +227,70 @@ struct BalanceServiceTests {
         try context.save()
 
         let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
-        let balance = try service.computeBalance()
+        // recomputeNow() runs the duplicate-anchor recovery before computing.
+        // computeBalance() is a pure read after the refactor — no side effects.
+        try service.recomputeNow()
 
         // Oldest opening balance wins (100), and the other 2 should be deleted
-        #expect(balance == 100)
+        #expect(service.currentBalance == 100)
 
         let remaining = try context.fetch(FetchDescriptor<BalanceAnchor>())
         #expect(remaining.count == 1)
         #expect(remaining.first?.openingBalance == 100)
+    }
+
+    // MARK: - Test 6b: BalanceAnchor inserts trigger recompute (regression)
+
+    @Test("willSave hook — inserting a BalanceAnchor triggers a debounced recompute (so the Setup CTA flips to display state without an explicit refresh)")
+    func testWillSaveBalanceAnchorInsertTriggersRecompute() async throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        // No anchor yet — service starts in nil-balance state
+        let service = BalanceService(modelContext: context)
+        let initialCount = service.recomputeCount
+        #expect(service.currentBalance == nil)
+
+        // Mimic the BalanceEditSheet first-time path: insert + save
+        let anchor = BalanceAnchor(
+            openingBalance: 1_500_000,
+            anchorDate: Date()
+        )
+        context.insert(anchor)
+        try context.save()
+
+        try await Task.sleep(for: .milliseconds(500))
+
+        #expect(service.recomputeCount > initialCount)
+        #expect(service.currentBalance == 1_500_000)
+    }
+
+    // MARK: - Test 6c: clearAll wipes cache + currentBalance (deleteAllData path)
+
+    @Test("clearAll() — wipes cache + currentBalance so SettingsView's delete-all path matches the now-empty store")
+    func testClearAllWipesState() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let (cache, defaults, suite) = makeIsolatedCacheStore()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let anchorDate = Calendar.current.startOfDay(for: Date())
+        try insertAnchor(openingBalance: 5_000, anchorDate: anchorDate, in: context)
+
+        let service = BalanceService(
+            modelContext: context,
+            cacheStore: cache,
+            autoObserve: false,
+            autoCompute: true
+        )
+
+        #expect(service.currentBalance == 5_000)
+        #expect(cache.cachedBalance == 5_000)
+
+        service.clearAll()
+
+        #expect(service.currentBalance == nil)
+        #expect(cache.cachedBalance == nil)
     }
 
     // MARK: - Test 7: willSave hook triggers recompute on Transaction change
@@ -269,10 +325,10 @@ struct BalanceServiceTests {
         #expect(service.recomputeCount > initialCount)
     }
 
-    // MARK: - Test 8: willSave hook does NOT trigger recompute on non-Transaction change
+    // MARK: - Test 8: willSave hook does NOT trigger recompute on unrelated model change
 
-    @Test("willSave hook — Category-only changes do NOT trigger recompute")
-    func testWillSaveNonTransactionDoesNotTriggerRecompute() async throws {
+    @Test("willSave hook — Category-only changes do NOT trigger recompute (unrelated to balance inputs)")
+    func testWillSaveCategoryOnlyDoesNotTriggerRecompute() async throws {
         let container = try makeContainer()
         let context = container.mainContext
 

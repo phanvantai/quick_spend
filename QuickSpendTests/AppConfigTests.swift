@@ -48,6 +48,35 @@ struct AppConfigTests {
         #expect(decoded == AppConfig())
     }
 
+    @Test("formatAmountInput preserves a leading minus so overdrawn users can type a negative opening balance")
+    func testFormatAmountInputAllowsNegativeEnglish() {
+        var config = AppConfig()
+        config.language = "en"
+
+        #expect(config.formatAmountInput("-") == "-")
+        #expect(config.formatAmountInput("-100") == "-100")
+        #expect(config.formatAmountInput("-1234567") == "-1,234,567")
+        #expect(config.formatAmountInput("-1234.56") == "-1,234.56")
+    }
+
+    @Test("formatAmountInput preserves a leading minus with VND grouping (period thousands)")
+    func testFormatAmountInputAllowsNegativeVietnamese() {
+        var config = AppConfig()
+        config.language = "vi"
+
+        #expect(config.formatAmountInput("-1234567") == "-1.234.567")
+    }
+
+    @Test("parseAmount handles negative inputs across all locales")
+    func testParseAmountNegative() {
+        for lang in ["en", "vi", "ja", "es"] {
+            var config = AppConfig()
+            config.language = lang
+            let formatted = config.formatAmountInput("-50000")
+            #expect(config.parseAmount(formatted) == -50_000, "lang=\(lang)")
+        }
+    }
+
     @Test("Codable roundtrip preserves hasSeenBalanceWhatsNew=true")
     func testRoundtripPreservesHasSeenBalanceWhatsNew() throws {
         var config = AppConfig()

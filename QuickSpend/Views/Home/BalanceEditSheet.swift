@@ -16,9 +16,15 @@ struct BalanceEditSheet: View {
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(BalanceService.self) private var balanceService
 
-    @Query private var anchors: [BalanceAnchor]
+    /// Sort by createdAt ascending to match `BalanceService.fetchAnchor` — under
+    /// a CloudKit-induced multi-row state, both must agree on which anchor is
+    /// "the" anchor or the user can edit one row and have the recovery sweep
+    /// delete it on next recompute.
+    @Query(sort: \BalanceAnchor.createdAt, order: .forward)
+    private var anchors: [BalanceAnchor]
 
     @State private var amountText: String = ""
+    @State private var saveError: String?
     @FocusState private var amountFocused: Bool
 
     private var existingAnchor: BalanceAnchor? { anchors.first }
@@ -88,12 +94,29 @@ struct BalanceEditSheet: View {
                 }
                 amountFocused = true
             }
+            .alert(
+                L10n.tr("balance.edit_error_title", appConfig.language),
+                isPresented: Binding(
+                    get: { saveError != nil },
+                    set: { if !$0 { saveError = nil } }
+                ),
+                presenting: saveError
+            ) { _ in
+                Button(L10n.tr("common.close", appConfig.language)) { saveError = nil }
+            } message: { error in
+                Text(error)
+            }
         }
     }
 
     private func save() {
         guard let amount = parsedAmount else { return }
-        let newAnchorDate = Calendar.current.startOfDay(for: Date())
+        // Use the exact moment the user confirmed their balance, not start-of-day.
+        // startOfDay double-counts today's earlier transactions: a user logging
+        // lunch at noon then setting balance at 3pm would have lunch subtracted
+        // again from the new opening. `Date()` makes the predicate exclude any
+        // transaction logged before this confirmation.
+        let newAnchorDate = Date()
 
         if let existing = existingAnchor {
             existing.openingBalance = amount
@@ -108,15 +131,13 @@ struct BalanceEditSheet: View {
 
         do {
             try modelContext.save()
-            // willSave fires for BalanceAnchor too — but our observer filters for
-            // Transaction-only changes. Trigger an explicit recompute so the
-            // BalanceCard updates immediately instead of waiting for the next save.
             try? balanceService.recomputeNow()
+            dismiss()
         } catch {
-            print("[BalanceEditSheet] Failed to save anchor: \(error)")
+            // Surface the failure instead of silently dismissing — otherwise the
+            // user thinks their balance was saved when CloudKit/disk write failed.
+            saveError = error.localizedDescription
         }
-
-        dismiss()
     }
 }
 

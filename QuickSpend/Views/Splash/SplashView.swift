@@ -169,11 +169,11 @@ struct SplashView: View {
         if categoryCount > 0 || transactionCount > 0 {
             inferPreferencesFromSyncedData()
             appConfig.completeOnboarding()
-            // Seed the anchor here too — a device joining via CloudKit may have
-            // pulled categories/transactions but no anchor row (e.g. the other
-            // device hasn't run a recompute yet, or this user upgraded from v2.4
-            // on the other device). Always-on-by-end-of-launch is the invariant.
-            BalanceAnchorSeeder.seedIfNeeded(modelContext: modelContext)
+            // No anchor seed: if CloudKit eventually syncs an anchor from the
+            // other device, the BalanceService observer (which now filters for
+            // BalanceAnchor changes too) will recompute. Until then the card
+            // shows the Setup CTA — better than a zero seed racing against
+            // delayed CloudKit batches.
         }
     }
 

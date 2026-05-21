@@ -88,7 +88,10 @@ final class BalanceService {
     /// Recompute immediately and update `currentBalance` + the per-device cache.
     /// Idempotent. When `computeBalance()` returns `nil` (no anchor), the cache is
     /// cleared so the UI doesn't show a stale value for a user who removed setup.
+    ///
+    /// Runs duplicate-anchor recovery first so the compute path stays a pure read.
     func recomputeNow() throws {
+        try recoverDuplicateAnchorsIfNeeded()
         let result = try computeBalance()
         currentBalance = result
         recomputeCount += 1
@@ -97,6 +100,16 @@ final class BalanceService {
         } else {
             cacheStore.clear()
         }
+    }
+
+    /// Explicit wipe used by "Delete All Data" so the cache + observable state
+    /// match the now-empty SwiftData store. The willSave observer can't catch
+    /// `ModelContext.delete(model:)` batch deletes (they bypass the normal
+    /// pending-changes path), so SettingsView calls this directly after the wipe.
+    func clearAll() {
+        currentBalance = nil
+        cacheStore.clear()
+        recomputeCount += 1
     }
 
     /// Schedule a debounced recompute. Subsequent calls within the 200ms window cancel
@@ -125,7 +138,7 @@ final class BalanceService {
             // by which point `insertedModelsArray` etc. are empty.
             MainActor.assumeIsolated {
                 guard let self else { return }
-                guard self.contextAffectsTransactions() else { return }
+                guard self.contextAffectsBalanceInputs() else { return }
                 self.scheduleRecompute()
             }
         }
@@ -138,32 +151,46 @@ final class BalanceService {
         }
     }
 
-    /// Inspect the model context's pending changes for Transaction inserts/updates/deletes.
+    /// Inspect the model context's pending changes for Transaction OR BalanceAnchor
+    /// inserts/updates/deletes. Both affect the running balance: Transaction changes
+    /// shift the sum, BalanceAnchor changes shift the opening value or anchor moment.
     /// Must be called on MainActor (the context is MainActor-isolated in our setup).
-    private func contextAffectsTransactions() -> Bool {
-        let inserted = modelContext.insertedModelsArray
-        if inserted.contains(where: { $0 is Transaction }) { return true }
-        let changed = modelContext.changedModelsArray
-        if changed.contains(where: { $0 is Transaction }) { return true }
-        let deleted = modelContext.deletedModelsArray
-        if deleted.contains(where: { $0 is Transaction }) { return true }
+    private func contextAffectsBalanceInputs() -> Bool {
+        func matches(_ model: any PersistentModel) -> Bool {
+            model is Transaction || model is BalanceAnchor
+        }
+        if modelContext.insertedModelsArray.contains(where: matches) { return true }
+        if modelContext.changedModelsArray.contains(where: matches) { return true }
+        if modelContext.deletedModelsArray.contains(where: matches) { return true }
         return false
     }
 
-    // MARK: - Anchor fetch (with multi-row recovery)
+    // MARK: - Anchor fetch (pure read)
 
+    /// Pure read — returns the oldest anchor by `createdAt`. No side effects, no
+    /// saves. Duplicate-row recovery is a separate step run from `recomputeNow`.
     private func fetchAnchor() throws -> BalanceAnchor? {
         let descriptor = FetchDescriptor<BalanceAnchor>(
             sortBy: [SortDescriptor(\.createdAt, order: .forward)]
         )
         let anchors = try modelContext.fetch(descriptor)
-        guard let oldest = anchors.first else { return nil }
-        if anchors.count > 1 {
-            for extra in anchors.dropFirst() {
-                modelContext.delete(extra)
-            }
-            try? modelContext.save()
+        return anchors.first
+    }
+
+    // MARK: - Duplicate-anchor recovery
+
+    /// If more than one BalanceAnchor row exists (CloudKit last-writer-wins race),
+    /// keep the oldest by `createdAt` and delete the rest. `@Attribute(.unique)`
+    /// can't be used with CloudKit-synced models, so we deconflict at the app layer.
+    private func recoverDuplicateAnchorsIfNeeded() throws {
+        let descriptor = FetchDescriptor<BalanceAnchor>(
+            sortBy: [SortDescriptor(\.createdAt, order: .forward)]
+        )
+        let anchors = try modelContext.fetch(descriptor)
+        guard anchors.count > 1 else { return }
+        for extra in anchors.dropFirst() {
+            modelContext.delete(extra)
         }
-        return oldest
+        try modelContext.save()
     }
 }

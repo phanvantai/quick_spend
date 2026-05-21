@@ -123,15 +123,21 @@ struct AppConfig: Codable, Equatable {
     // MARK: - Live Amount Formatting
 
     /// Format raw keyboard input with locale-appropriate grouping separators as the user types.
-    /// Accepts digits plus the locale's decimal separator ("." for en/ja, "," for vi/es).
-    /// Returns the formatted string suitable for display in a TextField.
+    /// Accepts digits, the locale's decimal separator ("." for en/ja, "," for vi/es),
+    /// and a leading "-" sign so users with an overdrawn account can enter a
+    /// negative opening balance.
     func formatAmountInput(_ text: String) -> String {
         let usesPeriodForThousands = (language == "vi" || language == "es")
         let decimalSep: Character = usesPeriodForThousands ? "," : "."
         let thousandsSep: Character = usesPeriodForThousands ? "." : ","
 
+        // Preserve a single leading minus sign — the rest of the formatter only
+        // sees the magnitude.
+        let isNegative = text.hasPrefix("-")
+        let withoutSign = isNegative ? String(text.dropFirst()) : text
+
         // Strip everything except digits and the locale-appropriate decimal separator
-        var digits = String(text.filter { $0.isNumber || $0 == decimalSep })
+        var digits = String(withoutSign.filter { $0.isNumber || $0 == decimalSep })
 
         // Ensure at most one decimal separator
         if let first = digits.firstIndex(of: decimalSep) {
@@ -146,10 +152,13 @@ struct AppConfig: Codable, Equatable {
 
         // Remove leading zeros (but keep at least one "0")
         integerPart = String(integerPart.drop(while: { $0 == "0" }))
-        if integerPart.isEmpty { integerPart = digits.contains(decimalSep) || !text.isEmpty ? "0" : "" }
+        if integerPart.isEmpty { integerPart = digits.contains(decimalSep) || !withoutSign.isEmpty ? "0" : "" }
 
-        // Guard empty
-        if integerPart.isEmpty && decimalPart == nil { return "" }
+        // Guard empty — if only "-" was typed, surface it so the user sees the
+        // sign as they continue to type.
+        if integerPart.isEmpty && decimalPart == nil {
+            return isNegative ? "-" : ""
+        }
 
         // Insert thousands separators
         var result = ""
@@ -167,7 +176,7 @@ struct AppConfig: Codable, Equatable {
             result.append(contentsOf: dec)
         }
 
-        return result
+        return isNegative ? "-" + result : result
     }
 
     // MARK: - Language
