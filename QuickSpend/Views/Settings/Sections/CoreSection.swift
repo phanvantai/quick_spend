@@ -3,19 +3,16 @@ import SwiftData
 
 /// Core actions: balance, categories, recurring templates, Siri shortcut, currency.
 struct CoreSection: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
 
     let isCurrencyLocked: Bool
-
-    @State private var showCurrencyPicker = false
-    @State private var showBalanceEdit = false
+    @Binding var activeSheet: SettingsSheet?
 
     var body: some View {
         Section {
             Button {
-                showBalanceEdit = true
+                activeSheet = .balanceEdit
             } label: {
                 SettingsRow(
                     icon: "banknote.fill",
@@ -64,7 +61,7 @@ struct CoreSection: View {
 
             Button {
                 if !isCurrencyLocked {
-                    showCurrencyPicker = true
+                    activeSheet = .currencyPicker
                 }
             } label: {
                 HStack {
@@ -91,25 +88,6 @@ struct CoreSection: View {
                     Text(L10n.tr("settings.currency_locked_hint", appConfig.language))
                 }
             }
-        }
-        .sheet(isPresented: $showBalanceEdit) {
-            BalanceEditSheet()
-        }
-        .sheet(isPresented: $showCurrencyPicker) {
-            PickerSheet(
-                title: L10n.tr("settings.currency", appConfig.language),
-                doneText: L10n.tr("common.done", appConfig.language),
-                items: CurrencyOption.options,
-                selectedId: appConfig.currency,
-                icon: { $0.symbol },
-                iconStyle: .plain(AppTheme.accentOrange),
-                label: { $0.code },
-                onSelect: { option in
-                    appConfig.setCurrency(option.code)
-                    showCurrencyPicker = false
-                },
-                onDone: { showCurrencyPicker = false }
-            )
         }
     }
 }

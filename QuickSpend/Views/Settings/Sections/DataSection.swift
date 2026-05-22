@@ -1,15 +1,13 @@
 import SwiftUI
-import SwiftData
 
-/// iCloud sync status + destructive delete-all action.
+/// iCloud sync status + destructive delete-all action. The confirm alert
+/// lives on the parent SettingsView; this section only triggers the binding.
 struct DataSection: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(CloudSyncService.self) private var cloudSync
-    @Environment(BalanceService.self) private var balanceService
 
-    @State private var showDeleteAllConfirm = false
+    @Binding var showDeleteAllConfirm: Bool
 
     var body: some View {
         Section {
@@ -58,17 +56,6 @@ struct DataSection: View {
         } header: {
             Text(L10n.tr("settings.data", appConfig.language))
         }
-        .alert(
-            L10n.tr("settings.delete_all_data_confirm_title", appConfig.language),
-            isPresented: $showDeleteAllConfirm
-        ) {
-            Button(L10n.tr("common.cancel", appConfig.language), role: .cancel) { }
-            Button(L10n.tr("common.delete", appConfig.language), role: .destructive) {
-                deleteAllData()
-            }
-        } message: {
-            Text(L10n.tr("settings.delete_all_data_confirm_message", appConfig.language))
-        }
     }
 
     private var iCloudStatusText: String {
@@ -90,18 +77,5 @@ struct DataSection: View {
         case .unknown:
             return L10n.tr("settings.icloud_unknown", appConfig.language)
         }
-    }
-
-    private func deleteAllData() {
-        do {
-            try modelContext.delete(model: Transaction.self)
-            try modelContext.delete(model: Category.self)
-            try modelContext.delete(model: RecurringTemplate.self)
-            try modelContext.delete(model: BalanceAnchor.self)
-        } catch {
-            print("[Settings] Failed to delete data: \(error)")
-        }
-        appConfig.resetAll()
-        balanceService.clearAll()
     }
 }

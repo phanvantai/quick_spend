@@ -6,20 +6,16 @@ struct SubscriptionSection: View {
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(SubscriptionViewModel.self) private var subscription
 
-    @State private var showPaywall = false
-    @State private var showPremiumStatus = false
-    @State private var showRestoreAlert = false
-    @State private var restoreSuccess = false
-    @State private var isRestoring = false
-
-    /// Bound to parent so the loading overlay can sit on the whole screen.
-    @Binding var globalIsRestoring: Bool
+    @Binding var isRestoring: Bool
+    @Binding var showRestoreAlert: Bool
+    @Binding var restoreSuccess: Bool
+    @Binding var activeSheet: SettingsSheet?
 
     var body: some View {
         Section(L10n.tr("settings.subscription", appConfig.language)) {
             if subscription.isPremium {
                 Button {
-                    showPremiumStatus = true
+                    activeSheet = .premiumStatus
                 } label: {
                     SettingsRow(
                         icon: "star.fill",
@@ -31,7 +27,7 @@ struct SubscriptionSection: View {
                 .tint(.primary)
             } else {
                 Button {
-                    showPaywall = true
+                    activeSheet = .paywall
                 } label: {
                     SettingsRow(
                         icon: "star.fill",
@@ -45,10 +41,8 @@ struct SubscriptionSection: View {
                 Button {
                     Task {
                         isRestoring = true
-                        globalIsRestoring = true
                         await subscription.restorePurchases()
                         isRestoring = false
-                        globalIsRestoring = false
                         restoreSuccess = subscription.isPremium
                         showRestoreAlert = true
                     }
@@ -73,24 +67,6 @@ struct SubscriptionSection: View {
                     title: L10n.tr("feature_request.title", appConfig.language),
                     subtitle: L10n.tr("settings.feature_request_subtitle", appConfig.language)
                 )
-            }
-        }
-        .sheet(isPresented: $showPaywall) {
-            PaywallView()
-        }
-        .sheet(isPresented: $showPremiumStatus) {
-            PremiumStatusSheet()
-        }
-        .alert(
-            L10n.tr("paywall.restore", appConfig.language),
-            isPresented: $showRestoreAlert
-        ) {
-            Button(L10n.tr("common.close", appConfig.language), role: .cancel) { }
-        } message: {
-            if restoreSuccess {
-                Text(L10n.tr("settings.restore_success", appConfig.language))
-            } else {
-                Text(L10n.tr("paywall.restore_no_purchases", appConfig.language))
             }
         }
     }

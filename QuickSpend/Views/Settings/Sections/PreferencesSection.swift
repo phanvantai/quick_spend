@@ -1,19 +1,16 @@
 import SwiftUI
-import SwiftData
 
 /// Language + theme preferences (footer carries the app version).
 struct PreferencesSection: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
 
-    @State private var showLanguagePicker = false
-    @State private var showThemePicker = false
+    @Binding var activeSheet: SettingsSheet?
 
     var body: some View {
         Section {
             Button {
-                showLanguagePicker = true
+                activeSheet = .languagePicker
             } label: {
                 SettingsRow(
                     icon: "globe",
@@ -25,7 +22,7 @@ struct PreferencesSection: View {
             .tint(.primary)
 
             Button {
-                showThemePicker = true
+                activeSheet = .themePicker
             } label: {
                 SettingsRow(
                     icon: "paintpalette.fill",
@@ -41,42 +38,6 @@ struct PreferencesSection: View {
             Text(L10n.tr("settings.version", appConfig.language) + " \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
                 .frame(maxWidth: .infinity)
                 .padding(.top, AppTheme.spacing8)
-        }
-        .sheet(isPresented: $showLanguagePicker) {
-            PickerSheet(
-                title: L10n.tr("settings.language", appConfig.language),
-                doneText: L10n.tr("common.done", appConfig.language),
-                items: LanguageOption.options,
-                selectedId: appConfig.language,
-                icon: { $0.flag },
-                iconStyle: .custom,
-                label: { $0.displayName },
-                onSelect: { option in
-                    appConfig.setLanguage(option.code)
-                    CategoryService.updateCategoryNames(
-                        language: option.code,
-                        modelContext: modelContext
-                    )
-                    showLanguagePicker = false
-                },
-                onDone: { showLanguagePicker = false }
-            )
-        }
-        .sheet(isPresented: $showThemePicker) {
-            PickerSheet(
-                title: L10n.tr("settings.theme", appConfig.language),
-                doneText: L10n.tr("common.done", appConfig.language),
-                items: ThemeOption.options(language: appConfig.language),
-                selectedId: appConfig.themeMode,
-                icon: { $0.icon },
-                iconStyle: .sfSymbol(.primary),
-                label: { $0.title },
-                onSelect: { option in
-                    appConfig.setThemeMode(option.code)
-                    showThemePicker = false
-                },
-                onDone: { showThemePicker = false }
-            )
         }
     }
 
