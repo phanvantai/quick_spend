@@ -24,6 +24,10 @@ struct AppConfig: Codable, Equatable {
     /// auto-flipped during onboarding — fresh installs and upgrades both see it once
     /// because it's an opt-in feature that lives outside the app.
     var hasSeenVoiceShortcutPromo: Bool = false
+    /// The Home FocalChartCard's currently selected view — "donut" (by category)
+    /// or "bar" (income vs expense). Persisted so the user's pick survives app
+    /// relaunch. Unknown values from older builds decode to "donut".
+    var focalChartPreference: String = FocalChartPreference.donut.rawValue
 
     /// Convenience init used by previews and on-the-fly currency formatting in views.
     /// All params default to the same values as the stored properties, so `AppConfig()`
@@ -47,6 +51,9 @@ struct AppConfig: Codable, Equatable {
         self.hasSeenBalanceWhatsNew = try c.decodeIfPresent(Bool.self, forKey: .hasSeenBalanceWhatsNew) ?? false
         self.hasSeenSiriPromo = try c.decodeIfPresent(Bool.self, forKey: .hasSeenSiriPromo) ?? false
         self.hasSeenVoiceShortcutPromo = try c.decodeIfPresent(Bool.self, forKey: .hasSeenVoiceShortcutPromo) ?? false
+        let storedFocal = try c.decodeIfPresent(String.self, forKey: .focalChartPreference)
+        self.focalChartPreference = FocalChartPreference(rawValue: storedFocal ?? "")?.rawValue
+            ?? FocalChartPreference.donut.rawValue
     }
 
     // MARK: - Currency
@@ -208,6 +215,16 @@ struct AppConfig: Codable, Equatable {
         default: return nil // system
         }
     }
+}
+
+// MARK: - Focal Chart Preference
+
+/// The Home screen's FocalChartCard supports two views; the user's choice is
+/// persisted via `AppConfig.focalChartPreference`. New chart types added later
+/// can extend this enum; unknown raw values decode safely to `.donut`.
+enum FocalChartPreference: String, CaseIterable {
+    case donut
+    case bar
 }
 
 // MARK: - Language Option

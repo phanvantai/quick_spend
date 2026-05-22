@@ -15,6 +15,49 @@ struct AppConfigTests {
         #expect(config.themeMode == "system")
         #expect(config.isOnboardingComplete == false)
         #expect(config.hasSeenBalanceWhatsNew == false)
+        #expect(config.hasSeenSiriPromo == false)
+        #expect(config.hasSeenVoiceShortcutPromo == false)
+        #expect(config.focalChartPreference == FocalChartPreference.donut.rawValue)
+    }
+
+    @Test("Forward-compat decode — JSON missing focalChartPreference falls back to donut")
+    func testForwardCompatDecodeMissingFocalChartPreference() throws {
+        let json = """
+        {
+            "language": "en",
+            "currency": "USD",
+            "themeMode": "system",
+            "isOnboardingComplete": true,
+            "hasSeenBalanceWhatsNew": true
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: json)
+        #expect(decoded.focalChartPreference == FocalChartPreference.donut.rawValue)
+    }
+
+    @Test("Forward-compat decode — unknown focalChartPreference value falls back to donut")
+    func testForwardCompatDecodeUnknownFocalChartPreference() throws {
+        // Future build wrote an enum case this build doesn't know about. We must not
+        // surface the unknown value (UI would render an empty chart) or throw
+        // (would wipe the whole saved config). Falling back to donut keeps Home usable.
+        let json = """
+        { "focalChartPreference": "line" }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: json)
+        #expect(decoded.focalChartPreference == FocalChartPreference.donut.rawValue)
+    }
+
+    @Test("Encoded focalChartPreference round-trips through JSON")
+    func testFocalChartPreferenceRoundtrip() throws {
+        var config = AppConfig()
+        config.focalChartPreference = FocalChartPreference.bar.rawValue
+
+        let data = try JSONEncoder().encode(config)
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: data)
+
+        #expect(decoded.focalChartPreference == FocalChartPreference.bar.rawValue)
     }
 
     @Test("Forward-compat decode — v2.4 JSON without hasSeenBalanceWhatsNew decodes to false (so the modal fires once for existing users)")

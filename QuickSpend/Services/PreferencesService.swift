@@ -62,6 +62,11 @@ final class PreferencesService {
         updateConfig { $0.hasSeenVoiceShortcutPromo = true }
     }
 
+    /// Persists the Home FocalChartCard's selected view.
+    func setFocalChartPreference(_ value: FocalChartPreference) {
+        updateConfig { $0.focalChartPreference = value.rawValue }
+    }
+
     private func updateConfig(_ update: (inout AppConfig) -> Void) {
         var config = getConfig()
         update(&config)

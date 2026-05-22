@@ -17,6 +17,11 @@ final class AppConfigViewModel {
     var hasSeenBalanceWhatsNew: Bool { config.hasSeenBalanceWhatsNew }
     var hasSeenSiriPromo: Bool { config.hasSeenSiriPromo }
     var hasSeenVoiceShortcutPromo: Bool { config.hasSeenVoiceShortcutPromo }
+    /// Decoded form of `config.focalChartPreference`. Unknown raw values fall
+    /// back to `.donut` (mirrors the AppConfig decoder).
+    var focalChartPreference: FocalChartPreference {
+        FocalChartPreference(rawValue: config.focalChartPreference) ?? .donut
+    }
 
     var colorScheme: ColorScheme? { config.colorScheme }
 
@@ -104,6 +109,12 @@ final class AppConfigViewModel {
     /// shortcut or chooses "Maybe later".
     func markVoiceShortcutPromoSeen() {
         config.hasSeenVoiceShortcutPromo = true
+        preferences.saveConfig(config)
+    }
+
+    /// Persists the Home FocalChartCard's selected view (Donut vs Bar).
+    func setFocalChartPreference(_ value: FocalChartPreference) {
+        config.focalChartPreference = value.rawValue
         preferences.saveConfig(config)
     }
 
