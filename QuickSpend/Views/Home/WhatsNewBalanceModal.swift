@@ -88,7 +88,7 @@ struct WhatsNewBalanceModal: View {
             .frame(height: 260)
             .blur(radius: 28)
 
-            BalanceCard(
+            BalanceHero(
                 currentBalance: previewBalance,
                 language: appConfig.language,
                 currency: appConfig.config.currency,

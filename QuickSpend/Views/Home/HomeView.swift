@@ -1,7 +1,14 @@
 import SwiftUI
 import SwiftData
 
-/// Home screen: monthly summary card + transaction list grouped by date
+/// v3.0 Home screen.
+///
+/// Three vertical layers from top to bottom: BalanceHero (all-time balance),
+/// HomeAppBar (month picker + currency badge), SummaryPills (income / expense
+/// totals), FocalChartCard (donut by category or income-vs-expense bar). A
+/// "View full report" link below opens ReportDetailView for the period-picker
+/// drill-down. The Voice FAB is overlaid by MainTabView; the toolbar carries
+/// the Settings (leading) and Add Manual (trailing) entry points.
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
@@ -29,10 +36,6 @@ struct HomeView: View {
 
     private var totalExpenses: Double {
         monthTransactions.filter(\.isExpense).reduce(0) { $0 + $1.amount }
-    }
-
-    private var netBalance: Double {
-        totalIncome - totalExpenses
     }
 
     // MARK: - Previous Month (for % change)
@@ -63,18 +66,10 @@ struct HomeView: View {
         return ((totalIncome - previousTotalIncome) / previousTotalIncome) * 100
     }
 
-    // MARK: - Category Breakdown (for pie chart)
+    // MARK: - Category Breakdown (expense, for FocalChartCard donut)
 
     private var expenseBreakdown: [CategoryStats] {
-        buildCategoryBreakdown(for: .expense)
-    }
-
-    private var incomeBreakdown: [CategoryStats] {
-        buildCategoryBreakdown(for: .income)
-    }
-
-    private func buildCategoryBreakdown(for type: TransactionType) -> [CategoryStats] {
-        let typed = monthTransactions.filter { $0.type == type }
+        let typed = monthTransactions.filter(\.isExpense)
         let total = typed.reduce(0) { $0 + $1.amount }
         guard total > 0 else { return [] }
 
@@ -90,29 +85,10 @@ struct HomeView: View {
                 percentage: (amount / total) * 100,
                 colorHex: category.colorHex,
                 iconName: category.iconName,
-                type: type
+                type: .expense
             )
         }
         .sorted { $0.totalAmount > $1.totalAmount }
-    }
-
-    // MARK: - 12-Month Trend Data (always from current date)
-
-    private var trendData: [MonthlyTrend] {
-        let calendar = Calendar.current
-        let now = Date()
-        return (0..<12).reversed().map { offset -> MonthlyTrend in
-            let month = calendar.date(byAdding: .month, value: -offset, to: now)!
-            let monthTx = allTransactions.filter {
-                calendar.isDate($0.date, equalTo: month, toGranularity: .month)
-            }
-            return MonthlyTrend(
-                month: month,
-                monthLabel: HomeStrings.monthAbbreviation(for: month, language: appConfig.language),
-                totalExpenses: monthTx.filter(\.isExpense).reduce(0) { $0 + $1.amount },
-                totalIncome: monthTx.filter(\.isIncome).reduce(0) { $0 + $1.amount }
-            )
-        }
     }
 
     // MARK: - Body
@@ -121,52 +97,46 @@ struct HomeView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: AppTheme.spacing16) {
-                    // All-time account balance — sits above the month picker so it's
-                    // visually separate from the month-scoped numbers below.
-                    BalanceCard(
+                    BalanceHero(
                         currentBalance: balance.currentBalance,
                         language: appConfig.language,
                         currency: appConfig.config.currency,
                         onTap: { showBalanceEdit = true }
                     )
 
-                    // Month selector + currency badge (pinned via LazyVStack below)
                     HomeAppBar(
                         selectedMonth: $selectedMonth,
                         language: appConfig.language,
                         currency: appConfig.config.currency
                     )
 
-                    // Overview: vertical bar chart (income vs expense)
-                    OverviewSection(
-                        totalExpenses: totalExpenses,
+                    SummaryPills(
                         totalIncome: totalIncome,
-                        netBalance: netBalance,
-                        expenseChangePercent: expenseChangePercent,
+                        totalExpense: totalExpenses,
                         incomeChangePercent: incomeChangePercent,
+                        expenseChangePercent: expenseChangePercent,
                         language: appConfig.language,
                         currency: appConfig.config.currency
                     )
 
-                    // Report: pie/donut chart by category
-                    ReportSection(
+                    FocalChartCard(
+                        selection: appConfig.focalChartPreference,
+                        onSelectionChange: { appConfig.setFocalChartPreference($0) },
                         expenseBreakdown: expenseBreakdown,
-                        incomeBreakdown: incomeBreakdown,
-                        totalExpenses: totalExpenses,
                         totalIncome: totalIncome,
-                        expenseChangePercent: expenseChangePercent,
+                        totalExpense: totalExpenses,
                         incomeChangePercent: incomeChangePercent,
+                        expenseChangePercent: expenseChangePercent,
                         language: appConfig.language,
                         currency: appConfig.config.currency
                     )
 
-                    // View Report button
                     NavigationLink {
-                        ReportView()
+                        ReportDetailView()
                     } label: {
                         HStack {
                             Text(L10n.tr("home.view_report", appConfig.language))
-                                .font(.subheadline.weight(.medium))
+                                .font(Typography.bodyEmphasized)
                             Image(systemName: "arrow.right")
                                 .font(.subheadline)
                         }
@@ -178,13 +148,6 @@ struct HomeView: View {
                                 .stroke(AppTheme.primaryDark, lineWidth: 1)
                         }
                     }
-
-                    // Trends: 12-month line chart (always from current date)
-                    TrendsSection(
-                        trendData: trendData,
-                        language: appConfig.language,
-                        currency: appConfig.config.currency
-                    )
                 }
                 .padding(.horizontal, AppTheme.spacing16)
                 .padding(.top, AppTheme.spacing12)

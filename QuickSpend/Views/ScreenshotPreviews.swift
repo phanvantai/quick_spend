@@ -167,7 +167,7 @@ private func screenshotAppConfig() -> AppConfigViewModel {
     let container = try! screenshotContainer()
     let sub = SubscriptionViewModel(provider: MockPremiumProvider())
     NavigationStack {
-        ReportView()
+        ReportDetailView()
     }
     .modelContainer(container)
     .environment(screenshotAppConfig())
