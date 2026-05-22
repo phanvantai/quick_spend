@@ -104,7 +104,9 @@ struct TransactionsView: View {
                 .scrollContentBackground(.hidden)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle(L10n.tr("transactions.title", appConfig.language))
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {

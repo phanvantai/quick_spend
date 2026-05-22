@@ -154,7 +154,9 @@ struct HomeView: View {
                 .padding(.bottom, AppTheme.spacing12)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle(L10n.tr("home.title", appConfig.language))
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
