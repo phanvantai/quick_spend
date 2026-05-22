@@ -15,41 +15,36 @@ struct QuickSpendApp: App {
 
     let modelContainer: ModelContainer
 
+    /// Set to `true` ONLY when you need to push a new SwiftData schema to
+    /// CloudKit's development environment (e.g. after adding/removing a model
+    /// or changing a field). Build, run once on a DEBUG simulator/device, see
+    /// "CloudKit development schema initialized" in the log, then set this back
+    /// to `false` and commit.
+    ///
+    /// Why not gated by UserDefaults: a UserDefaults flag gets wiped on app
+    /// uninstall, so reinstalling triggered the schema init again — and the
+    /// container teardown after init crashes ("Illegal attempt to save to a
+    /// file that was never opened") in iOS 18+. A source-controlled constant
+    /// can't be wiped accidentally.
+    private static let cloudKitSchemaInitEnabled = false
+
     init() {
-        let schema = Schema([
-            Transaction.self,
-            Category.self,
-            RecurringTemplate.self,
-            BalanceAnchor.self,
-        ])
-
-        let cloudConfig = ModelConfiguration(
-            schema: schema,
-            cloudKitDatabase: .private("iCloud.com.randomtech.quickSpend")
-        )
-
-        // Initialize CloudKit schema once during development, then skip on subsequent launches.
         #if DEBUG
-        let schemaInitKey = "hasInitializedCloudKitSchema"
-        if !UserDefaults.standard.bool(forKey: schemaInitKey) {
+        if Self.cloudKitSchemaInitEnabled {
+            let cloudConfig = ModelConfiguration(
+                schema: AppSchema.schema,
+                cloudKitDatabase: .private(AppSchema.cloudKitContainerId)
+            )
             Self._initializeCloudKitSchema(config: cloudConfig)
-            UserDefaults.standard.set(true, forKey: schemaInitKey)
         }
         #endif
 
         let resolvedContainer: ModelContainer
-        if let container = try? ModelContainer(for: schema, configurations: cloudConfig) {
-            resolvedContainer = container
-            print("[QuickSpendApp] ModelContainer created with CloudKit sync")
-        } else {
-            // Fallback to local-only storage if CloudKit is unavailable
-            let localConfig = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
-            do {
-                resolvedContainer = try ModelContainer(for: schema, configurations: localConfig)
-                print("[QuickSpendApp] ModelContainer created without CloudKit (fallback)")
-            } catch {
-                fatalError("[QuickSpendApp] Failed to create ModelContainer: \(error)")
-            }
+        do {
+            resolvedContainer = try AppSchema.makeModelContainer()
+            print("[QuickSpendApp] ModelContainer ready")
+        } catch {
+            fatalError("[QuickSpendApp] Failed to create ModelContainer: \(error)")
         }
         self.modelContainer = resolvedContainer
 
@@ -106,12 +101,7 @@ struct QuickSpendApp: App {
                 desc.cloudKitContainerOptions = opts
                 desc.shouldAddStoreAsynchronously = false
 
-                if let mom = NSManagedObjectModel.makeManagedObjectModel(for: [
-                    Transaction.self,
-                    Category.self,
-                    RecurringTemplate.self,
-                    BalanceAnchor.self,
-                ]) {
+                if let mom = NSManagedObjectModel.makeManagedObjectModel(for: AppSchema.models) {
                     let container = NSPersistentCloudKitContainer(name: "QuickSpend", managedObjectModel: mom)
                     container.persistentStoreDescriptions = [desc]
                     container.loadPersistentStores { _, error in
