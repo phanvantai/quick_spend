@@ -20,7 +20,7 @@ struct TypeToggle: View {
 
     private func button(_ type: TransactionType, label: String) -> some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(.easeQuick) {
                 selectedType = type
             }
         } label: {

@@ -281,7 +281,7 @@ struct PaywallView: View {
         let isSelected = selectedPlan == plan
 
         return Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(.easeQuick) {
                 selectedPlan = plan
             }
         } label: {
