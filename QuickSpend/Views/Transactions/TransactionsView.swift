@@ -186,7 +186,7 @@ struct TransactionsView: View {
             MonthNavigator(selectedMonth: $selectedMonth, language: appConfig.language)
 
             Text(monthDateRange)
-                .font(.caption)
+                .font(Typography.caption)
                 .foregroundStyle(.secondary)
         }
     }
@@ -226,11 +226,11 @@ struct TransactionsView: View {
     private func summaryColumn(title: String, amount: Double, color: Color, showSign: Bool = false) -> some View {
         VStack(spacing: AppTheme.spacing4) {
             Text(title)
-                .font(.caption)
+                .font(Typography.caption)
                 .foregroundStyle(.secondary)
 
             Text("\(showSign && amount >= 0 ? "+" : "")\(appConfig.config.formatCurrency(amount))")
-                .font(.caption.weight(.bold).monospacedDigit())
+                .font(Typography.captionEmphasized.monospacedDigit())
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
@@ -301,13 +301,13 @@ struct TransactionsView: View {
 
         return HStack {
             Text(date.formatted(.dateTime.day(.twoDigits).month(.twoDigits).year().locale(locale)))
-                .font(.subheadline.bold())
+                .font(Typography.bodyEmphasized)
                 .foregroundStyle(.primary)
 
             Spacer()
 
             Text("\(dayTotal >= 0 ? "+" : "-")\(appConfig.config.formatCurrency(abs(dayTotal)))")
-                .font(.subheadline.weight(.semibold).monospacedDigit())
+                .font(Typography.bodyEmphasized.monospacedDigit())
                 .foregroundStyle(dayTotal >= 0 ? AppTheme.incomeColor : AppTheme.expenseColor)
         }
         .padding(.leading, AppTheme.spacing4)
@@ -316,7 +316,7 @@ struct TransactionsView: View {
     // MARK: - Actions
 
     private func deleteTransaction(_ transaction: Transaction) {
-        withAnimation {
+        withAnimation(.springSmooth) {
             balance.applyOptimisticDelete(transaction)
             modelContext.delete(transaction)
         }
