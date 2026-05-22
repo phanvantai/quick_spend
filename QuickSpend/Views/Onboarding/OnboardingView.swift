@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// Two-step onboarding: language/currency, then "Try Siri" demo.
+/// Three-step onboarding: language/currency → starting balance → Try Siri demo.
 struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
@@ -10,6 +10,7 @@ struct OnboardingView: View {
     @State private var step: Int = 0
     @State private var selectedLanguage = "en"
     @State private var selectedCurrency = "USD"
+    @State private var balanceText: String = ""
     @State private var showLanguagePicker = false
     @State private var showCurrencyPicker = false
 
@@ -21,15 +22,26 @@ struct OnboardingView: View {
         LanguageOption.options.first { $0.code == selectedLanguage } ?? LanguageOption.options[0]
     }
 
+    /// Working config used to format/parse the amount in the balance step before
+    /// the real `AppConfig` is committed by completeOnboarding.
+    private var draftConfig: AppConfig {
+        AppConfig(language: selectedLanguage, currency: selectedCurrency)
+    }
+
+    private var parsedBalance: Double? {
+        let trimmed = balanceText.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return nil }
+        return draftConfig.parseAmount(trimmed)
+    }
+
     let onComplete: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
             TabView(selection: $step) {
-                preferencesStep
-                    .tag(0)
-                trySiriStep
-                    .tag(1)
+                preferencesStep.tag(0)
+                balanceStep.tag(1)
+                trySiriStep.tag(2)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .indexViewStyle(.page(backgroundDisplayMode: .always))
@@ -47,7 +59,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Step 1: Preferences
+    // MARK: - Step 0: Preferences
 
     private var preferencesStep: some View {
         ScrollView {
@@ -92,6 +104,73 @@ struct OnboardingView: View {
                 .padding(.horizontal, AppTheme.spacing24)
 
                 Spacer(minLength: AppTheme.spacing40)
+            }
+        }
+    }
+
+    // MARK: - Step 1: Starting Balance
+
+    private var balanceStep: some View {
+        ScrollView {
+            VStack(spacing: AppTheme.spacing24) {
+                Spacer(minLength: AppTheme.spacing24)
+
+                Circle()
+                    .fill(AppTheme.primaryGradient)
+                    .frame(width: 120, height: 120)
+                    .overlay {
+                        Image(systemName: "banknote.fill")
+                            .font(.system(size: 56))
+                            .foregroundStyle(.white)
+                    }
+
+                VStack(spacing: AppTheme.spacing8) {
+                    Text(L10n.tr("onboarding.balance_title", selectedLanguage))
+                        .font(Typography.title)
+                        .multilineTextAlignment(.center)
+                    Text(L10n.tr("onboarding.balance_subtitle", selectedLanguage))
+                        .font(Typography.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, AppTheme.spacing24)
+                }
+
+                HStack {
+                    TextField(
+                        L10n.tr("balance.edit_placeholder", selectedLanguage),
+                        text: $balanceText
+                    )
+                    .keyboardType(.decimalPad)
+                    .font(Typography.title)
+                    .multilineTextAlignment(.center)
+
+                    Text(draftConfig.currency)
+                        .font(Typography.headline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, AppTheme.spacing24)
+                .padding(.vertical, AppTheme.spacing16)
+                .background(
+                    RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
+                        .fill(Color(.secondarySystemGroupedBackground))
+                )
+                .padding(.horizontal, AppTheme.spacing24)
+
+                Button {
+                    balanceText = ""
+                    withAnimation(.springSmooth) { step = 2 }
+                } label: {
+                    Text(L10n.tr("onboarding.balance_skip", selectedLanguage))
+                        .font(Typography.body.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+
+                Spacer(minLength: AppTheme.spacing24)
+            }
+            .onChange(of: balanceText) {
+                let formatted = draftConfig.formatAmountInput(balanceText)
+                if formatted != balanceText { balanceText = formatted }
             }
         }
     }
@@ -175,16 +254,19 @@ struct OnboardingView: View {
 
     private var primaryButton: some View {
         Button {
-            if step == 0 {
+            switch step {
+            case 0:
                 withAnimation(.springSmooth) { step = 1 }
-            } else {
+            case 1:
+                withAnimation(.springSmooth) { step = 2 }
+            default:
                 completeOnboarding()
             }
         } label: {
             HStack {
-                Text(step == 0
-                     ? L10n.tr("onboarding.continue", selectedLanguage)
-                     : L10n.tr("onboarding.get_started", selectedLanguage))
+                Text(step == 2
+                     ? L10n.tr("onboarding.get_started", selectedLanguage)
+                     : L10n.tr("onboarding.continue", selectedLanguage))
                 Image(systemName: "arrow.forward")
             }
             .font(Typography.headline)
@@ -248,12 +330,23 @@ struct OnboardingView: View {
             modelContext: modelContext
         )
 
+        // Seed a BalanceAnchor if the user entered an amount on step 1. Skipped
+        // step leaves no anchor, which makes BalanceHero render its setup CTA.
+        if let amount = parsedBalance {
+            let anchor = BalanceAnchor(
+                openingBalance: amount,
+                anchorDate: Date()
+            )
+            modelContext.insert(anchor)
+            try? modelContext.save()
+        }
+
         onComplete()
     }
 }
 
 #Preview {
     OnboardingView(onComplete: {})
-        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self], inMemory: true)
         .environment(AppConfigViewModel())
 }
