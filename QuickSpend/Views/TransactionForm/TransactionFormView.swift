@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// Full-screen form for adding or editing a transaction
+/// Full-screen form for adding or editing a transaction.
 struct TransactionFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
@@ -17,15 +17,11 @@ struct TransactionFormView: View {
     @State private var selectedDate: Date
     @State private var selectedType: TransactionType
 
-    // Validation states
     @State private var amountError: String?
     @State private var categoryError: String?
     @State private var noteError: String?
     @State private var dateError: String?
     @State private var hasAttemptedSave = false
-
-    @State private var showCategoryPicker = false
-    @State private var showDatePicker = false
 
     private var isEditMode: Bool { existingTransaction != nil }
 
@@ -33,37 +29,12 @@ struct TransactionFormView: View {
         colorScheme == .dark ? AppTheme.darkBackgroundGradient : AppTheme.backgroundGradient
     }
 
-    private var fieldBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemGroupedBackground) : Color(.systemBackground)
-    }
-
-    private var fieldBorder: Color {
-        colorScheme == .dark ? Color(.systemGray4) : Color(.systemGray5)
-    }
-
     private var accentColor: Color {
-        colorScheme == .dark ? AppTheme.primaryLight : AppTheme.primaryMint
+        FormFieldStyle.accent(colorScheme)
     }
 
     private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType && !$0.isHidden }
-    }
-
-    private var selectedCategory: Category? {
-        guard let id = selectedCategoryId else { return nil }
-        return categories.first { $0.id == id }
-    }
-
-    /// Categories grouped by CategoryGroup for the picker sheet
-    private var groupedCategories: [(group: CategoryGroup, categories: [Category])] {
-        let grouped = Dictionary(grouping: filteredCategories) { $0.group ?? .other }
-        let groupOrder: [CategoryGroup] = selectedType == .expense
-            ? [.dailyLiving, .personal, .social, .financial, .other]
-            : [.earned, .passive, .received, .other]
-        return groupOrder.compactMap { group in
-            guard let cats = grouped[group], !cats.isEmpty else { return nil }
-            return (group: group, categories: cats.sorted { $0.sortOrder < $1.sortOrder })
-        }
     }
 
     init(
@@ -95,11 +66,33 @@ struct TransactionFormView: View {
                 VStack(spacing: 0) {
                     ScrollView {
                         VStack(alignment: .leading, spacing: AppTheme.spacing24) {
-                            typeToggle
-                            amountField
-                            categoryField
-                            dateField
-                            noteField
+                            TypeToggle(
+                                selectedType: $selectedType,
+                                language: appConfig.language
+                            )
+                            AmountInputField(
+                                amountText: $amountText,
+                                currency: appConfig.config.currency,
+                                error: amountError,
+                                language: appConfig.language
+                            )
+                            CategoryPickerField(
+                                selectedCategoryId: $selectedCategoryId,
+                                categories: categories,
+                                selectedType: selectedType,
+                                error: categoryError,
+                                language: appConfig.language
+                            )
+                            DateRow(
+                                selectedDate: $selectedDate,
+                                error: dateError,
+                                language: appConfig.language
+                            )
+                            NoteField(
+                                noteText: $noteText,
+                                error: noteError,
+                                language: appConfig.language
+                            )
                         }
                         .padding(.horizontal, AppTheme.spacing16)
                         .padding(.top, AppTheme.spacing16)
@@ -125,7 +118,6 @@ struct TransactionFormView: View {
                 }
             }
             .onChange(of: selectedType) {
-                // Reset category when type changes
                 if let id = selectedCategoryId,
                    !filteredCategories.contains(where: { $0.id == id }) {
                     selectedCategoryId = nil
@@ -146,224 +138,8 @@ struct TransactionFormView: View {
             .onChange(of: selectedDate) {
                 if hasAttemptedSave { validateDate() }
             }
-            .sheet(isPresented: $showCategoryPicker) {
-                categoryPickerSheet
-            }
-            .sheet(isPresented: $showDatePicker) {
-                datePickerSheet
-            }
         }
     }
-
-    // MARK: - Type Toggle
-
-    private var typeToggle: some View {
-        HStack(spacing: 0) {
-            typeButton(.expense, label: L10n.tr("common.expense", appConfig.language))
-            typeButton(.income, label: L10n.tr("common.income", appConfig.language))
-        }
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.radiusXLarge)
-                .fill(Color(.systemGray6))
-        )
-    }
-
-    private func typeButton(_ type: TransactionType, label: String) -> some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                selectedType = type
-            }
-        } label: {
-            Text(label)
-                .font(.subheadline.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, AppTheme.spacing12)
-                .background {
-                    if selectedType == type {
-                        Capsule()
-                            .fill(accentColor)
-                    }
-                }
-                .foregroundStyle(selectedType == type ? .white : .secondary)
-        }
-        .buttonStyle(.plain)
-    }
-
-    // MARK: - Amount Field
-
-    private var amountField: some View {
-        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-            Text(L10n.tr("expense_form.transaction_amount", appConfig.language))
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.primary)
-
-            HStack {
-                TextField(
-                    L10n.tr("expense_form.enter_amount", appConfig.language),
-                    text: $amountText
-                )
-                .keyboardType(.decimalPad)
-                .font(.body)
-
-                Text(appConfig.config.currency)
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, AppTheme.spacing16)
-            .padding(.vertical, AppTheme.spacing16)
-            .background(
-                RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .fill(fieldBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .stroke(amountError != nil ? Color.red : fieldBorder, lineWidth: 1)
-            )
-
-            if let error = amountError {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
-        }
-    }
-
-    // MARK: - Category Field
-
-    private var categoryField: some View {
-        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-            Text(selectedType == .expense
-                 ? L10n.tr("expense_form.expense_category", appConfig.language)
-                 : L10n.tr("expense_form.income_category", appConfig.language))
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.primary)
-
-            Button {
-                showCategoryPicker = true
-            } label: {
-                HStack {
-                    if let category = selectedCategory {
-                        HStack(spacing: AppTheme.spacing8) {
-                            Image(systemName: category.iconName)
-                                .foregroundStyle(category.color)
-                            Text(category.name)
-                                .foregroundStyle(.primary)
-                        }
-                    } else {
-                        Text(L10n.tr("expense_form.select_category", appConfig.language))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .font(.body)
-                .padding(.horizontal, AppTheme.spacing16)
-                .padding(.vertical, AppTheme.spacing16)
-                .background(
-                    RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                        .fill(fieldBackground)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                        .stroke(categoryError != nil ? Color.red : fieldBorder, lineWidth: 1)
-                )
-            }
-            .buttonStyle(.plain)
-
-            if let error = categoryError {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
-        }
-    }
-
-    // MARK: - Date Field
-
-    private var dateField: some View {
-        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-            Text(L10n.tr("expense_form.transaction_date", appConfig.language))
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.primary)
-
-            Button {
-                showDatePicker = true
-            } label: {
-                HStack {
-                    Text(formattedDate)
-                        .font(.body)
-                        .foregroundStyle(.primary)
-
-                    Spacer()
-
-                    Image(systemName: "calendar")
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, AppTheme.spacing16)
-                .padding(.vertical, AppTheme.spacing16)
-                .background(
-                    RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                        .fill(fieldBackground)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                        .stroke(dateError != nil ? Color.red : fieldBorder, lineWidth: 1)
-                )
-            }
-            .buttonStyle(.plain)
-
-            if let error = dateError {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
-        }
-    }
-
-    private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd/MM/yyyy"
-        return formatter.string(from: selectedDate)
-    }
-
-    // MARK: - Note Field
-
-    private var noteField: some View {
-        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-            Text(L10n.tr("expense_form.note", appConfig.language))
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.primary)
-
-            TextField(
-                L10n.tr("expense_form.enter_note", appConfig.language),
-                text: $noteText
-            )
-            .textInputAutocapitalization(.sentences)
-            .font(.body)
-            .padding(.horizontal, AppTheme.spacing16)
-            .padding(.vertical, AppTheme.spacing16)
-            .background(
-                RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .fill(fieldBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
-                    .stroke(noteError != nil ? Color.red : fieldBorder, lineWidth: 1)
-            )
-
-            if let error = noteError {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
-        }
-    }
-
-    // MARK: - Bottom Buttons
 
     private var bottomButtons: some View {
         HStack(spacing: AppTheme.spacing16) {
@@ -399,102 +175,6 @@ struct TransactionFormView: View {
         }
         .padding(.horizontal, AppTheme.spacing16)
         .padding(.vertical, AppTheme.spacing16)
-    }
-
-    // MARK: - Date Picker Sheet
-
-    private var datePickerSheet: some View {
-        NavigationStack {
-            DatePicker(
-                "",
-                selection: $selectedDate,
-                in: ...Date(),
-                displayedComponents: [.date]
-            )
-            .datePickerStyle(.graphical)
-            .tint(accentColor)
-            .labelsHidden()
-            .padding()
-            .navigationTitle(L10n.tr("expense_form.transaction_date", appConfig.language))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.tr("common.done", appConfig.language)) {
-                        showDatePicker = false
-                    }
-                    .fontWeight(.semibold)
-                }
-            }
-        }
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
-    }
-
-    // MARK: - Category Picker Sheet
-
-    private var categoryPickerSheet: some View {
-        NavigationStack {
-            List {
-                ForEach(groupedCategories, id: \.group) { section in
-                    Section(groupName(for: section.group)) {
-                        ForEach(section.categories, id: \.id) { category in
-                            Button {
-                                selectedCategoryId = category.id
-                                showCategoryPicker = false
-                            } label: {
-                                HStack(spacing: AppTheme.spacing12) {
-                                    Image(systemName: category.iconName)
-                                        .font(.title3)
-                                        .foregroundStyle(category.color)
-                                        .frame(width: 32, alignment: .center)
-
-                                    Text(category.name)
-                                        .font(.body)
-                                        .foregroundStyle(.primary)
-
-                                    Spacer()
-
-                                    if category.id == selectedCategoryId {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(accentColor)
-                                    }
-                                }
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-            }
-            .navigationTitle(selectedType == .expense
-                ? L10n.tr("expense_form.expense_category", appConfig.language)
-                : L10n.tr("expense_form.income_category", appConfig.language))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(L10n.tr("common.done", appConfig.language)) {
-                        showCategoryPicker = false
-                    }
-                }
-            }
-        }
-        .presentationDetents([.medium, .large])
-    }
-
-    /// Localized group name
-    private func groupName(for group: CategoryGroup) -> String {
-        let key: String
-        switch group {
-        case .dailyLiving: key = "category_group.daily_living"
-        case .personal: key = "category_group.personal"
-        case .social: key = "category_group.social"
-        case .financial: key = "category_group.financial"
-        case .earned: key = "category_group.earned"
-        case .passive: key = "category_group.passive"
-        case .received: key = "category_group.received"
-        case .other: key = "category_group.other"
-        }
-        return L10n.tr(key, appConfig.language)
     }
 
     // MARK: - Validation
@@ -546,7 +226,6 @@ struct TransactionFormView: View {
     }
 
     private func validateAll() -> Bool {
-        // Run all validations (don't short-circuit so all errors show)
         let results = [
             validateAmount(),
             validateCategory(),
@@ -555,8 +234,6 @@ struct TransactionFormView: View {
         ]
         return results.allSatisfy { $0 }
     }
-
-    // MARK: - Save
 
     private func save() {
         hasAttemptedSave = true
