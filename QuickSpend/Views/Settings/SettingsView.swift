@@ -1,10 +1,14 @@
 import SwiftUI
 import SwiftData
 
-/// Settings screen with grouped sections
+/// Settings screen with grouped sections.
+///
+/// v3.0: presented as a sheet from the Home/Transactions toolbar gear icon,
+/// not a root tab. A Done button in the toolbar closes the sheet.
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @Environment(AppConfigViewModel.self) private var appConfig
 
     @Environment(SubscriptionViewModel.self) private var subscription
@@ -254,6 +258,13 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle(L10n.tr("settings.title", appConfig.language))
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.tr("common.done", appConfig.language)) {
+                        dismiss()
+                    }
+                }
+            }
             .sheet(isPresented: $showLanguagePicker) {
                 languagePickerSheet
             }

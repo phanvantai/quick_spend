@@ -538,9 +538,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QuickSpend/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QuickSpend;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Quick Spend uses the microphone to record your voice for expense input.";
-				INFOPLIST_KEY_CFBundleDisplayName = "QuickSpend";
 				INFOPLIST_KEY_NSSiriUsageDescription = "Quick Spend uses Siri so you can log expenses by voice without opening the app.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Quick Spend uses speech recognition to convert your voice into expense entries.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -578,9 +578,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QuickSpend/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QuickSpend;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Quick Spend uses the microphone to record your voice for expense input.";
-				INFOPLIST_KEY_CFBundleDisplayName = "QuickSpend";
 				INFOPLIST_KEY_NSSiriUsageDescription = "Quick Spend uses Siri so you can log expenses by voice without opening the app.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Quick Spend uses speech recognition to convert your voice into expense entries.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

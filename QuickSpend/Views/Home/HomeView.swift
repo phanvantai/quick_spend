@@ -12,6 +12,7 @@ struct HomeView: View {
     @State private var selectedMonth = Date()
     @State private var showAddTransaction = false
     @State private var showBalanceEdit = false
+    @State private var showSettings = false
 
     // MARK: - Selected Month Data
 
@@ -192,6 +193,14 @@ struct HomeView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle(L10n.tr("home.title", appConfig.language))
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title3)
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showAddTransaction = true
@@ -209,6 +218,11 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showBalanceEdit) {
                 BalanceEditSheet()
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }

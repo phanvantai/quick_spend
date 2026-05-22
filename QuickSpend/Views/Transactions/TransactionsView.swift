@@ -15,6 +15,7 @@ struct TransactionsView: View {
     @State private var editingTransaction: Transaction?
     @State private var deletingTransaction: Transaction?
     @State private var showingAddTransaction = false
+    @State private var showSettings = false
 
     /// Transactions filtered to the selected month
     private var monthTransactions: [Transaction] {
@@ -105,6 +106,14 @@ struct TransactionsView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle(L10n.tr("transactions.title", appConfig.language))
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title3)
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showingAddTransaction = true
@@ -119,6 +128,11 @@ struct TransactionsView: View {
                     modelContext.insert(transaction)
                     balance.applyOptimisticInsert(transaction)
                 }
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
             .sheet(item: $editingTransaction) { transaction in
                 TransactionFormView(categories: categories, expense: transaction) { updated in
