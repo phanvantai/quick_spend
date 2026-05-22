@@ -174,54 +174,6 @@ struct AppConfigViewModelTests {
         #expect(vm.currency == "VND")
     }
 
-    // MARK: - Speech Language
-
-    @Test("speechLanguage defaults to app language")
-    func testSpeechLanguageDefault() {
-        let vm = makeViewModel()
-        #expect(vm.speechLanguage == "en")
-    }
-
-    @Test("setSpeechLanguage updates speechLanguage")
-    func testSetSpeechLanguage() {
-        let vm = makeViewModel()
-
-        vm.setSpeechLanguage("es")
-        #expect(vm.speechLanguage == "es")
-    }
-
-    @Test("setSpeechLanguage to nil falls back to app language")
-    func testSetSpeechLanguageNil() {
-        let vm = makeViewModel()
-
-        vm.setLanguage("ja")
-        vm.setSpeechLanguage(nil)
-        #expect(vm.speechLanguage == "ja")
-    }
-
-    @Test("setLanguage resets speechLanguage when it matches new language")
-    func testSetLanguageResetsSpeechLanguage() {
-        let vm = makeViewModel()
-
-        vm.setSpeechLanguage("vi")
-        #expect(vm.speechLanguage == "vi")
-
-        // Change app language to "vi" — speechLanguage should reset to follow
-        vm.setLanguage("vi")
-        #expect(vm.config.speechLanguage == nil)
-        #expect(vm.speechLanguage == "vi")
-    }
-
-    @Test("setLanguage preserves speechLanguage when different")
-    func testSetLanguagePreservesSpeechLanguage() {
-        let vm = makeViewModel()
-
-        vm.setSpeechLanguage("es")
-        vm.setLanguage("ja")
-        // speechLanguage is "es", app language changed to "ja" — should keep "es"
-        #expect(vm.speechLanguage == "es")
-    }
-
     // MARK: - formatCurrency
 
     @Test("formatCurrency uses current config")

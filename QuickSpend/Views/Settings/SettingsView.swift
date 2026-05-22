@@ -14,7 +14,6 @@ struct SettingsView: View {
     @Query private var transactions: [Transaction]
 
     @State private var showLanguagePicker = false
-    @State private var showSpeechLanguagePicker = false
     @State private var showCurrencyPicker = false
     @State private var showThemePicker = false
     @State private var showPaywall = false
@@ -70,13 +69,15 @@ struct SettingsView: View {
                     }
 
                     Button {
-                        showSpeechLanguagePicker = true
+                        if let url = VoiceShortcut.installURL(for: appConfig.language) {
+                            UIApplication.shared.open(url)
+                        }
                     } label: {
                         settingsRow(
-                            icon: "mic.fill",
+                            icon: "waveform.badge.plus",
                             iconColor: AppTheme.adaptiveAccent(colorScheme),
-                            title: L10n.tr("settings.speech_language", appConfig.language),
-                            subtitle: appConfig.config.speechLanguageDisplayName
+                            title: L10n.tr("voice_shortcut.settings_title", appConfig.language),
+                            subtitle: L10n.tr("voice_shortcut.settings_subtitle", appConfig.language)
                         )
                     }
                     .tint(.primary)
@@ -256,9 +257,6 @@ struct SettingsView: View {
             .sheet(isPresented: $showLanguagePicker) {
                 languagePickerSheet
             }
-            .sheet(isPresented: $showSpeechLanguagePicker) {
-                speechLanguagePickerSheet
-            }
             .sheet(isPresented: $showCurrencyPicker) {
                 currencyPickerSheet
             }
@@ -404,30 +402,6 @@ struct SettingsView: View {
                 showLanguagePicker = false
             },
             onDone: { showLanguagePicker = false }
-        )
-    }
-
-    // MARK: - Speech Language Picker
-
-    private var speechLanguagePickerSheet: some View {
-        PickerSheet(
-            title: L10n.tr("settings.speech_language", appConfig.language),
-            doneText: L10n.tr("common.done", appConfig.language),
-            items: LanguageOption.options,
-            selectedId: appConfig.speechLanguage,
-            icon: { $0.flag },
-            iconStyle: .custom,
-            label: { $0.displayName },
-            onSelect: { option in
-                // If same as app language, store nil (follow app language)
-                if option.code == appConfig.language {
-                    appConfig.setSpeechLanguage(nil)
-                } else {
-                    appConfig.setSpeechLanguage(option.code)
-                }
-                showSpeechLanguagePicker = false
-            },
-            onDone: { showSpeechLanguagePicker = false }
         )
     }
 

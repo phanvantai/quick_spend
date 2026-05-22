@@ -194,7 +194,7 @@ struct VoiceFABLayer: View {
 
         let workItem = DispatchWorkItem { [self] in
             do {
-                try voiceService.startListening(language: appConfig.speechLanguage)
+                try voiceService.startListening(language: appConfig.language)
                 isRecordingActive = true
             } catch {
                 print("[VoiceFABLayer] Failed to start voice: \(error)")
@@ -266,7 +266,7 @@ struct VoiceFABLayer: View {
             let results = await GeminiParserService.parse(
                 input: inputText,
                 categories: categories,
-                language: appConfig.speechLanguage,
+                language: appConfig.language,
                 currency: appConfig.config.currency,
                 usageLimitService: usageLimitService
             )

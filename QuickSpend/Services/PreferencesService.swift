@@ -52,6 +52,16 @@ final class PreferencesService {
         updateConfig { $0.hasSeenBalanceWhatsNew = true }
     }
 
+    /// Marks the Siri promo modal as seen.
+    func markSiriPromoSeen() {
+        updateConfig { $0.hasSeenSiriPromo = true }
+    }
+
+    /// Marks the Voice Shortcut promo modal as seen.
+    func markVoiceShortcutPromoSeen() {
+        updateConfig { $0.hasSeenVoiceShortcutPromo = true }
+    }
+
     private func updateConfig(_ update: (inout AppConfig) -> Void) {
         var config = getConfig()
         update(&config)

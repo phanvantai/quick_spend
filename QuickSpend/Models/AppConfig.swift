@@ -5,7 +5,6 @@ import SwiftUI
 /// Stored in UserDefaults as JSON
 struct AppConfig: Codable, Equatable {
     var language: String = "en"
-    var speechLanguage: String?  // nil = same as app language
     var currency: String = "USD"
     var themeMode: String = "system"   // "light", "dark", "system"
     var isOnboardingComplete: Bool = false
@@ -15,6 +14,16 @@ struct AppConfig: Codable, Equatable {
     /// Existing users upgrading from v2.4 have no such field in their saved JSON, so
     /// the forward-compat decoder defaults this to `false` and the modal fires once.
     var hasSeenBalanceWhatsNew: Bool = false
+    /// Whether the user has dismissed the one-time modal that teaches the Siri
+    /// "Hey Siri, …" trigger phrases. Fires AFTER the Balance modal and BEFORE
+    /// the Voice Shortcut promo, since Siri works out of the box and the
+    /// shortcut is an upgrade on top.
+    var hasSeenSiriPromo: Bool = false
+    /// Whether the user has dismissed the one-time WhatsNew modal that introduces the
+    /// Siri/Shortcuts voice expense feature. Unlike the Balance modal, this is NOT
+    /// auto-flipped during onboarding — fresh installs and upgrades both see it once
+    /// because it's an opt-in feature that lives outside the app.
+    var hasSeenVoiceShortcutPromo: Bool = false
 
     /// Convenience init used by previews and on-the-fly currency formatting in views.
     /// All params default to the same values as the stored properties, so `AppConfig()`
@@ -32,17 +41,12 @@ struct AppConfig: Codable, Equatable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         self.language = try c.decodeIfPresent(String.self, forKey: .language) ?? "en"
-        self.speechLanguage = try c.decodeIfPresent(String.self, forKey: .speechLanguage)
         self.currency = try c.decodeIfPresent(String.self, forKey: .currency) ?? "USD"
         self.themeMode = try c.decodeIfPresent(String.self, forKey: .themeMode) ?? "system"
         self.isOnboardingComplete = try c.decodeIfPresent(Bool.self, forKey: .isOnboardingComplete) ?? false
         self.hasSeenBalanceWhatsNew = try c.decodeIfPresent(Bool.self, forKey: .hasSeenBalanceWhatsNew) ?? false
-    }
-
-    /// The language used for speech recognition and AI parsing.
-    /// Falls back to app language when not explicitly set.
-    var effectiveSpeechLanguage: String {
-        speechLanguage ?? language
+        self.hasSeenSiriPromo = try c.decodeIfPresent(Bool.self, forKey: .hasSeenSiriPromo) ?? false
+        self.hasSeenVoiceShortcutPromo = try c.decodeIfPresent(Bool.self, forKey: .hasSeenVoiceShortcutPromo) ?? false
     }
 
     // MARK: - Currency
@@ -183,10 +187,6 @@ struct AppConfig: Codable, Equatable {
 
     var languageDisplayName: String {
         Self.displayName(for: language)
-    }
-
-    var speechLanguageDisplayName: String {
-        Self.displayName(for: effectiveSpeechLanguage)
     }
 
     static func displayName(for code: String) -> String {
