@@ -43,6 +43,7 @@ struct BalanceHero: View {
 
     private func balanceContent(_ balance: Double) -> some View {
         let isNegative = balance < 0
+        let amountColor: Color = isNegative ? AppTheme.expenseColor : .primary
 
         return VStack(alignment: .leading, spacing: AppTheme.spacing8) {
             Text(L10n.tr("balance.title", language))
@@ -51,9 +52,8 @@ struct BalanceHero: View {
                 .textCase(.uppercase)
                 .tracking(0.8)
 
-            heroAmount(balance, isNegative: isNegative)
+            heroAmount(balance, color: amountColor)
                 .animatedNumber(balance)
-                .animation(.springSmooth, value: balance)
 
             if isNegative {
                 Text(L10n.tr("balance.negative_hint", language))
@@ -62,50 +62,40 @@ struct BalanceHero: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardBackground(radius: AppTheme.radiusLarge, padding: AppTheme.spacing20, shadow: true)
-    }
-
-    /// Gradient text fill for positive balances; flat expense color for negatives.
-    private func amountStyle(isNegative: Bool) -> AnyShapeStyle {
-        if isNegative {
-            return AnyShapeStyle(AppTheme.expenseColor)
+        .padding(AppTheme.spacing20)
+        .background {
+            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
+                .fill(Color(.secondarySystemGroupedBackground))
         }
-        return AnyShapeStyle(
-            LinearGradient(
-                colors: [AppTheme.primaryGreen, AppTheme.primaryMint, Color(hex: "5EEAD4")],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
+        .shadow(.card)
     }
 
     /// Renders the balance with a smaller inline currency symbol. The number
     /// uses Typography.display (rounded, 40pt) so it dominates the screen.
-    private func heroAmount(_ balance: Double, isNegative: Bool) -> some View {
+    private func heroAmount(_ balance: Double, color: Color) -> some View {
         let formatted = config.formatNumber(balance)
         let symbol = config.currencySymbol
         let placeBefore = symbolGoesBefore(language: language, currency: currency)
-        let style = amountStyle(isNegative: isNegative)
 
         return HStack(alignment: .firstTextBaseline, spacing: AppTheme.spacing4) {
             if placeBefore {
                 Text(symbol)
                     .font(.system(size: 24, weight: .medium, design: .rounded))
-                    .foregroundStyle(style)
-                heroNumber(formatted, style: style)
+                    .foregroundStyle(color)
+                heroNumber(formatted, color: color)
             } else {
-                heroNumber(formatted, style: style)
+                heroNumber(formatted, color: color)
                 Text(symbol)
                     .font(.system(size: 24, weight: .medium, design: .rounded))
-                    .foregroundStyle(style)
+                    .foregroundStyle(color)
             }
         }
     }
 
-    private func heroNumber(_ text: String, style: AnyShapeStyle) -> some View {
+    private func heroNumber(_ text: String, color: Color) -> some View {
         Text(text)
             .font(Typography.display)
-            .foregroundStyle(style)
+            .foregroundStyle(color)
             .lineLimit(1)
             .minimumScaleFactor(0.5)
             .monospacedDigit()
@@ -146,7 +136,12 @@ struct BalanceHero: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardBackground(radius: AppTheme.radiusLarge, padding: AppTheme.spacing20, shadow: true)
+        .padding(AppTheme.spacing20)
+        .background {
+            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
+                .fill(Color(.secondarySystemGroupedBackground))
+        }
+        .shadow(.card)
     }
 }
 

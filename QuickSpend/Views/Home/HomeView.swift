@@ -153,7 +153,7 @@ struct HomeView: View {
                 .padding(.top, AppTheme.spacing12)
                 .padding(.bottom, AppTheme.spacing12)
             }
-            .background(AuroraBackground())
+            .background(Color(.systemGroupedBackground))
             .navigationTitle(L10n.tr("home.title", appConfig.language))
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

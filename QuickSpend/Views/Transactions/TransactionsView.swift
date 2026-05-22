@@ -103,7 +103,7 @@ struct TransactionsView: View {
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
             }
-            .background(AuroraBackground())
+            .background(Color(.systemGroupedBackground))
             .navigationTitle(L10n.tr("transactions.title", appConfig.language))
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

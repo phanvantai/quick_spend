@@ -54,8 +54,12 @@ struct SummaryPills: View {
                 .minimumScaleFactor(0.6)
                 .animatedNumber(amount)
         }
+        .padding(AppTheme.spacing12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardBackground(radius: AppTheme.radiusMedium, padding: AppTheme.spacing12)
+        .background {
+            RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
+                .fill(Color(.secondarySystemGroupedBackground))
+        }
     }
 }
 

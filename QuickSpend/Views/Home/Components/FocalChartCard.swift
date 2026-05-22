@@ -30,7 +30,12 @@ struct FocalChartCard: View {
             chartContent
                 .transition(.scale.combined(with: .opacity))
         }
-        .cardBackground(radius: AppTheme.radiusLarge, padding: AppTheme.spacing16, shadow: true)
+        .padding(AppTheme.spacing16)
+        .background {
+            RoundedRectangle(cornerRadius: AppTheme.radiusLarge)
+                .fill(Color(.secondarySystemGroupedBackground))
+        }
+        .shadow(.card)
         .animation(.springSmooth, value: selection)
     }
 
