@@ -116,15 +116,17 @@ struct AppConfigViewModelTests {
         #expect(vm.isOnboardingComplete == true)
     }
 
-    @Test("completeOnboarding atomically marks the Balance WhatsNew modal as seen — fresh installs never see it (the onboarding step already covers balance setup)")
-    func testCompleteOnboardingMarksBalanceWhatsNewSeen() {
+    @Test("completeOnboarding atomically marks Balance WhatsNew + Siri promo as seen — fresh installs never see them (onboarding already covers balance setup and the Try Siri step)")
+    func testCompleteOnboardingMarksPromosSeen() {
         let vm = makeViewModel()
 
         #expect(vm.hasSeenBalanceWhatsNew == false)
+        #expect(vm.hasSeenSiriPromo == false)
         vm.completeOnboarding()
 
         #expect(vm.isOnboardingComplete == true)
         #expect(vm.hasSeenBalanceWhatsNew == true)
+        #expect(vm.hasSeenSiriPromo == true)
     }
 
     @Test("markBalanceWhatsNewSeen flips the flag without affecting onboarding state")

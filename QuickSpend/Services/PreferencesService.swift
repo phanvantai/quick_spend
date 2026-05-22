@@ -37,13 +37,15 @@ final class PreferencesService {
     func setCurrency(_ currency: String) { updateConfig { $0.currency = currency } }
     func setThemeMode(_ themeMode: String) { updateConfig { $0.themeMode = themeMode } }
 
-    /// Atomically marks onboarding complete AND the Balance WhatsNew modal as seen.
-    /// Fresh installs go through the onboarding balance step, so the modal — which
-    /// exists to surface the feature to existing v2.4 users — must never fire for them.
+    /// Atomically marks onboarding complete AND the catch-up promo modals (Balance,
+    /// Siri) as seen. Fresh installs go through the onboarding balance + Try Siri
+    /// steps, so those modals — which exist to surface the features to existing v2.x
+    /// users — must never fire for them.
     func completeOnboarding() {
         updateConfig {
             $0.isOnboardingComplete = true
             $0.hasSeenBalanceWhatsNew = true
+            $0.hasSeenSiriPromo = true
         }
     }
 

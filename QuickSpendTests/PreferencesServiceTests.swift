@@ -26,8 +26,8 @@ struct PreferencesServiceTests {
         #expect(config.hasSeenBalanceWhatsNew == false)
     }
 
-    @Test("completeOnboarding atomically sets both isOnboardingComplete AND hasSeenBalanceWhatsNew — fresh install never sees the WhatsNew modal")
-    func testCompleteOnboardingSetsBalanceWhatsNewAtomic() {
+    @Test("completeOnboarding atomically sets isOnboardingComplete + hasSeenBalanceWhatsNew + hasSeenSiriPromo — fresh install never sees the catch-up modals")
+    func testCompleteOnboardingSetsPromoFlagsAtomic() {
         let service = makeService()
 
         service.completeOnboarding()
@@ -35,6 +35,7 @@ struct PreferencesServiceTests {
 
         #expect(config.isOnboardingComplete == true)
         #expect(config.hasSeenBalanceWhatsNew == true)
+        #expect(config.hasSeenSiriPromo == true)
     }
 
     @Test("markBalanceWhatsNewSeen flips the flag without touching isOnboardingComplete")

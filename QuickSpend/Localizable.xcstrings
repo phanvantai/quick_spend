@@ -172,6 +172,7 @@
       }
     },
     "%@: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4089,35 +4090,6 @@
         }
       }
     },
-    "home.daily_average" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Daily Average"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Promedio diario"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1日の平均"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trung bình/ngày"
-          }
-        }
-      }
-    },
     "home.chart.bar" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4172,6 +4144,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Theo danh mục"
+          }
+        }
+      }
+    },
+    "home.daily_average" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Average"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Promedio diario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1日の平均"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trung bình/ngày"
           }
         }
       }
@@ -4669,238 +4670,6 @@
         }
       }
     },
-    "siri_promo.example_1" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\"Hey Siri, add expense in QuickSpend\""
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\"Oye Siri, añadir gasto en Gasto Rápido\""
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "「Hey Siri、クイック支出に支出を追加」"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\"Hey Siri, Thêm chi tiêu vào Chi tiêu nhanh\""
-          }
-        }
-      }
-    },
-    "siri_promo.example_2" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\"Hey Siri, log expense in QuickSpend\""
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\"Oye Siri, registrar gasto en Gasto Rápido\""
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "「Hey Siri、クイック支出で支出を記録」"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\"Hey Siri, Ghi chi tiêu vào Chi tiêu nhanh\""
-          }
-        }
-      }
-    },
-    "siri_promo.footnote" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siri's speech recognition follows your iPhone's language. For the smoothest experience, install the Shortcut next — it lets you pick the speech language separately."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El reconocimiento de voz de Siri sigue el idioma de tu iPhone. Para una experiencia óptima, instala el Atajo a continuación — te permite elegir el idioma del dictado por separado."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siriの音声認識はiPhoneの言語に従います。最も快適な体験のため、次のショートカットもインストールしてください — 認識言語を別に指定できます。"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nhận diện giọng nói của Siri theo ngôn ngữ iPhone. Để dùng mượt nhất, cài thêm Shortcut ở bước sau — Shortcut cho phép chọn ngôn ngữ ghi âm riêng."
-          }
-        }
-      }
-    },
-    "siri_promo.got_it_cta" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Got it"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entendido"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "わかりました"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đã hiểu"
-          }
-        }
-      }
-    },
-    "siri_promo.subtitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Speak a phrase. QuickSpend parses, confirms, saves — no app open needed."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Di una frase. Gasto Rápido analiza, confirma y guarda — sin abrir la app."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "声をかけるだけ。クイック支出が解析・確認・保存します — アプリを開く必要なし。"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chỉ cần nói một câu. Chi tiêu nhanh phân tích, xác nhận, lưu — không cần mở app."
-          }
-        }
-      }
-    },
-    "siri_promo.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hands-free with Siri"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Manos libres con Siri"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siriでハンズフリー"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rảnh tay với Siri"
-          }
-        }
-      }
-    },
-    "voice_shortcut.siri_tip_body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "After installing, say \"Hey Siri, [your shortcut name]\" (e.g. \"Hey Siri, QuickSpend\") to trigger it by voice."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Después de instalarlo, di \"Oye Siri, [nombre de tu atajo]\" (p. ej. \"Oye Siri, Gasto Rápido\") para activarlo por voz."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "インストール後、「Hey Siri、[ショートカット名]」（例：「Hey Siri、クイック支出」）と話しかけて音声で起動できます。"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sau khi cài, nói \"Hey Siri, [tên shortcut]\" (ví dụ \"Hey Siri, Chi tiêu nhanh\") để kích hoạt bằng giọng nói."
-          }
-        }
-      }
-    },
-    "voice_shortcut.siri_tip_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Also triggers from Siri"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "También se activa con Siri"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siriからも起動可能"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kích hoạt được bằng Siri"
-          }
-        }
-      }
-    },
     "intent.confirm_many" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5192,35 +4961,6 @@
         }
       }
     },
-    "onboarding.currency" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Currency"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Moneda"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通貨"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiền tệ"
-          }
-        }
-      }
-    },
     "onboarding.continue" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5246,6 +4986,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tiếp tục"
+          }
+        }
+      }
+    },
+    "onboarding.currency" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Currency"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通貨"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiền tệ"
           }
         }
       }
@@ -8324,6 +8093,180 @@
         }
       }
     },
+    "siri_promo.example_1" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"Hey Siri, add expense in QuickSpend\""
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"Oye Siri, añadir gasto en Gasto Rápido\""
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「Hey Siri、クイック支出に支出を追加」"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"Hey Siri, Thêm chi tiêu vào Chi tiêu nhanh\""
+          }
+        }
+      }
+    },
+    "siri_promo.example_2" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"Hey Siri, log expense in QuickSpend\""
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"Oye Siri, registrar gasto en Gasto Rápido\""
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「Hey Siri、クイック支出で支出を記録」"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"Hey Siri, Ghi chi tiêu vào Chi tiêu nhanh\""
+          }
+        }
+      }
+    },
+    "siri_promo.footnote" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri's speech recognition follows your iPhone's language. For the smoothest experience, install the Shortcut next — it lets you pick the speech language separately."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El reconocimiento de voz de Siri sigue el idioma de tu iPhone. Para una experiencia óptima, instala el Atajo a continuación — te permite elegir el idioma del dictado por separado."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siriの音声認識はiPhoneの言語に従います。最も快適な体験のため、次のショートカットもインストールしてください — 認識言語を別に指定できます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhận diện giọng nói của Siri theo ngôn ngữ iPhone. Để dùng mượt nhất, cài thêm Shortcut ở bước sau — Shortcut cho phép chọn ngôn ngữ ghi âm riêng."
+          }
+        }
+      }
+    },
+    "siri_promo.got_it_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got it"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entendido"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "わかりました"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã hiểu"
+          }
+        }
+      }
+    },
+    "siri_promo.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speak a phrase. QuickSpend parses, confirms, saves — no app open needed."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di una frase. Gasto Rápido analiza, confirma y guarda — sin abrir la app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "声をかけるだけ。クイック支出が解析・確認・保存します — アプリを開く必要なし。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ cần nói một câu. Chi tiêu nhanh phân tích, xác nhận, lưu — không cần mở app."
+          }
+        }
+      }
+    },
+    "siri_promo.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hands-free with Siri"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manos libres con Siri"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siriでハンズフリー"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rảnh tay với Siri"
+          }
+        }
+      }
+    },
     "Status" : {
       "comment" : "A section header that lists the possible statuses for a request.",
       "isCommentAutoGenerated" : true,
@@ -9045,6 +8988,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Phím tắt giọng nói"
+          }
+        }
+      }
+    },
+    "voice_shortcut.siri_tip_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After installing, say \"Hey Siri, [your shortcut name]\" (e.g. \"Hey Siri, QuickSpend\") to trigger it by voice."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Después de instalarlo, di \"Oye Siri, [nombre de tu atajo]\" (p. ej. \"Oye Siri, Gasto Rápido\") para activarlo por voz."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストール後、「Hey Siri、[ショートカット名]」（例：「Hey Siri、クイック支出」）と話しかけて音声で起動できます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sau khi cài, nói \"Hey Siri, [tên shortcut]\" (ví dụ \"Hey Siri, Chi tiêu nhanh\") để kích hoạt bằng giọng nói."
+          }
+        }
+      }
+    },
+    "voice_shortcut.siri_tip_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Also triggers from Siri"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "También se activa con Siri"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siriからも起動可能"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kích hoạt được bằng Siri"
           }
         }
       }
