@@ -11,11 +11,17 @@ final class AppConfigViewModel {
     private static let supportedLanguages: Set<String> = ["en", "vi", "ja", "es"]
 
     var language: String { config.language }
-    var speechLanguage: String { config.effectiveSpeechLanguage }
     var currency: String { config.currency }
     var themeMode: String { config.themeMode }
     var isOnboardingComplete: Bool { config.isOnboardingComplete }
     var hasSeenBalanceWhatsNew: Bool { config.hasSeenBalanceWhatsNew }
+    var hasSeenSiriPromo: Bool { config.hasSeenSiriPromo }
+    var hasSeenVoiceShortcutPromo: Bool { config.hasSeenVoiceShortcutPromo }
+    /// Decoded form of `config.focalChartPreference`. Unknown raw values fall
+    /// back to `.donut` (mirrors the AppConfig decoder).
+    var focalChartPreference: FocalChartPreference {
+        FocalChartPreference(rawValue: config.focalChartPreference) ?? .donut
+    }
 
     var colorScheme: ColorScheme? { config.colorScheme }
 
@@ -31,10 +37,6 @@ final class AppConfigViewModel {
 
     func setLanguage(_ language: String) {
         config.language = language
-        // Reset speech language when app language changes, so it follows by default
-        if config.speechLanguage == language {
-            config.speechLanguage = nil
-        }
         preferences.saveConfig(config)
         // Sync to iOS per-app language setting
         Self.setSystemLanguage(language)
@@ -46,10 +48,6 @@ final class AppConfigViewModel {
         guard let systemLanguage = Self.detectSystemLanguage() else { return }
         if systemLanguage != config.language {
             config.language = systemLanguage
-            // Reset speech language so it follows the new app language
-            if config.speechLanguage == systemLanguage {
-                config.speechLanguage = nil
-            }
             preferences.saveConfig(config)
         }
     }
@@ -74,11 +72,6 @@ final class AppConfigViewModel {
         UserDefaults.standard.set([language], forKey: "AppleLanguages")
     }
 
-    func setSpeechLanguage(_ speechLanguage: String?) {
-        config.speechLanguage = speechLanguage
-        preferences.saveConfig(config)
-    }
-
     func setCurrency(_ currency: String) {
         config.currency = currency
         preferences.saveConfig(config)
@@ -89,13 +82,13 @@ final class AppConfigViewModel {
         preferences.saveConfig(config)
     }
 
-    /// Atomically marks onboarding complete AND the Balance WhatsNew modal as seen.
-    /// See `PreferencesService.completeOnboarding` for the reasoning — the fresh-install
-    /// onboarding step already introduces the balance feature, so the catch-up modal
-    /// must never fire for them.
+    /// Atomically marks onboarding complete AND the catch-up promo modals (Balance,
+    /// Siri) as seen. The fresh-install onboarding already introduces both features
+    /// (Balance whatsnew + Try Siri step), so those modals must never fire for them.
     func completeOnboarding() {
         config.isOnboardingComplete = true
         config.hasSeenBalanceWhatsNew = true
+        config.hasSeenSiriPromo = true
         preferences.saveConfig(config)
     }
 
@@ -103,6 +96,25 @@ final class AppConfigViewModel {
     /// who never saw the in-onboarding balance step.
     func markBalanceWhatsNewSeen() {
         config.hasSeenBalanceWhatsNew = true
+        preferences.saveConfig(config)
+    }
+
+    /// Called from the Siri promo modal when the user dismisses.
+    func markSiriPromoSeen() {
+        config.hasSeenSiriPromo = true
+        preferences.saveConfig(config)
+    }
+
+    /// Called from the Voice Shortcut promo modal when the user installs the
+    /// shortcut or chooses "Maybe later".
+    func markVoiceShortcutPromoSeen() {
+        config.hasSeenVoiceShortcutPromo = true
+        preferences.saveConfig(config)
+    }
+
+    /// Persists the Home FocalChartCard's selected view (Donut vs Bar).
+    func setFocalChartPreference(_ value: FocalChartPreference) {
+        config.focalChartPreference = value.rawValue
         preferences.saveConfig(config)
     }
 
@@ -116,10 +128,12 @@ final class AppConfigViewModel {
         if let isOnboardingComplete {
             config.isOnboardingComplete = isOnboardingComplete
             // Mirror the atomicity guarantee in completeOnboarding(): when the bulk
-            // path lands on isOnboardingComplete=true, also flip the catch-up modal
-            // off so fresh installs don't see it.
+            // path lands on isOnboardingComplete=true, also flip the catch-up modals
+            // off so fresh installs don't see Balance WhatsNew or the Siri promo
+            // (the Try Siri onboarding step already covers it).
             if isOnboardingComplete {
                 config.hasSeenBalanceWhatsNew = true
+                config.hasSeenSiriPromo = true
             }
         }
         preferences.saveConfig(config)

@@ -65,6 +65,28 @@ struct SplashView: View {
                 )) {
                     WhatsNewBalanceModal()
                 }
+                // Siri promo fires after Balance, before the Voice Shortcut
+                // promo. Siri works zero-setup so we teach the universal phrase
+                // trigger first; the Shortcut is a power-user upgrade on top.
+                .sheet(isPresented: Binding(
+                    get: { appConfig.hasSeenBalanceWhatsNew && !appConfig.hasSeenSiriPromo },
+                    set: { _ in /* dismiss flows through markSiriPromoSeen */ }
+                )) {
+                    SiriPromoModal()
+                }
+                // Voice Shortcut promo fires last. Defaults to false for everyone —
+                // fresh installs and upgrades both see it, since the shortcut lives
+                // outside the app and onboarding doesn't cover it.
+                .sheet(isPresented: Binding(
+                    get: {
+                        appConfig.hasSeenBalanceWhatsNew
+                            && appConfig.hasSeenSiriPromo
+                            && !appConfig.hasSeenVoiceShortcutPromo
+                    },
+                    set: { _ in /* dismiss flows through markVoiceShortcutPromoSeen */ }
+                )) {
+                    VoiceShortcutPromoModal()
+                }
         } else {
             OnboardingView { }
         }

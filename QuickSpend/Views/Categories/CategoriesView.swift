@@ -161,7 +161,7 @@ struct CategoriesView: View {
         return VStack(spacing: 0) {
             // Group header
             Button {
-                withAnimation(.easeInOut(duration: 0.25)) {
+                withAnimation(.springFast) {
                     if isCollapsed {
                         collapsedGroups.remove(group)
                     } else {

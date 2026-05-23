@@ -89,7 +89,9 @@ struct MonthNavigator: View {
         guard let newMonth = calendar.date(byAdding: .month, value: value, to: selectedMonth) else { return }
         // Don't go past current month (compare at month granularity)
         if value < 0 || calendar.compare(newMonth, to: .now, toGranularity: .month) != .orderedDescending {
-            selectedMonth = newMonth
+            withAnimation(.springSmooth) {
+                selectedMonth = newMonth
+            }
         }
     }
 }

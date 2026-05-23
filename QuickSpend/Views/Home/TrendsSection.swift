@@ -62,7 +62,7 @@ struct TrendsSection: View {
 
     private func periodButton(label: String, tag: Int) -> some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(.easeQuick) {
                 selectedHalf = tag
                 selectedMonth = nil
             }

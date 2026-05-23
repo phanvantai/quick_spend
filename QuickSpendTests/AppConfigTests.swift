@@ -15,6 +15,49 @@ struct AppConfigTests {
         #expect(config.themeMode == "system")
         #expect(config.isOnboardingComplete == false)
         #expect(config.hasSeenBalanceWhatsNew == false)
+        #expect(config.hasSeenSiriPromo == false)
+        #expect(config.hasSeenVoiceShortcutPromo == false)
+        #expect(config.focalChartPreference == FocalChartPreference.donut.rawValue)
+    }
+
+    @Test("Forward-compat decode — JSON missing focalChartPreference falls back to donut")
+    func testForwardCompatDecodeMissingFocalChartPreference() throws {
+        let json = """
+        {
+            "language": "en",
+            "currency": "USD",
+            "themeMode": "system",
+            "isOnboardingComplete": true,
+            "hasSeenBalanceWhatsNew": true
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: json)
+        #expect(decoded.focalChartPreference == FocalChartPreference.donut.rawValue)
+    }
+
+    @Test("Forward-compat decode — unknown focalChartPreference value falls back to donut")
+    func testForwardCompatDecodeUnknownFocalChartPreference() throws {
+        // Future build wrote an enum case this build doesn't know about. We must not
+        // surface the unknown value (UI would render an empty chart) or throw
+        // (would wipe the whole saved config). Falling back to donut keeps Home usable.
+        let json = """
+        { "focalChartPreference": "line" }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: json)
+        #expect(decoded.focalChartPreference == FocalChartPreference.donut.rawValue)
+    }
+
+    @Test("Encoded focalChartPreference round-trips through JSON")
+    func testFocalChartPreferenceRoundtrip() throws {
+        var config = AppConfig()
+        config.focalChartPreference = FocalChartPreference.bar.rawValue
+
+        let data = try JSONEncoder().encode(config)
+        let decoded = try JSONDecoder().decode(AppConfig.self, from: data)
+
+        #expect(decoded.focalChartPreference == FocalChartPreference.bar.rawValue)
     }
 
     @Test("Forward-compat decode — v2.4 JSON without hasSeenBalanceWhatsNew decodes to false (so the modal fires once for existing users)")
@@ -361,76 +404,18 @@ struct AppConfigTests {
         #expect(config1 != config2)
     }
 
-    // MARK: - Speech Language
-
-    @Test("speechLanguage defaults to nil")
-    func testSpeechLanguageDefault() {
-        let config = AppConfig()
-        #expect(config.speechLanguage == nil)
-    }
-
-    @Test("effectiveSpeechLanguage falls back to app language when nil")
-    func testEffectiveSpeechLanguageFallback() {
-        var config = AppConfig()
-        config.language = "vi"
-        config.speechLanguage = nil
-        #expect(config.effectiveSpeechLanguage == "vi")
-    }
-
-    @Test("effectiveSpeechLanguage returns explicit value when set")
-    func testEffectiveSpeechLanguageExplicit() {
-        var config = AppConfig()
-        config.language = "en"
-        config.speechLanguage = "es"
-        #expect(config.effectiveSpeechLanguage == "es")
-    }
-
-    @Test("speechLanguageDisplayName matches effectiveSpeechLanguage")
-    func testSpeechLanguageDisplayName() {
-        var config = AppConfig()
-        config.language = "en"
-        config.speechLanguage = "ja"
-        #expect(config.speechLanguageDisplayName == "日本語")
-    }
-
-    @Test("speechLanguageDisplayName falls back to app language display name")
-    func testSpeechLanguageDisplayNameFallback() {
-        var config = AppConfig()
-        config.language = "vi"
-        config.speechLanguage = nil
-        #expect(config.speechLanguageDisplayName == "Tiếng Việt")
-    }
-
-    @Test("speechLanguage survives Codable round-trip")
-    func testSpeechLanguageCodable() throws {
-        var config = AppConfig()
-        config.speechLanguage = "ja"
-
-        let data = try JSONEncoder().encode(config)
-        let decoded = try JSONDecoder().decode(AppConfig.self, from: data)
-        #expect(decoded.speechLanguage == "ja")
-    }
-
-    @Test("speechLanguage nil survives Codable round-trip")
-    func testSpeechLanguageNilCodable() throws {
-        var config = AppConfig()
-        config.speechLanguage = nil
-
-        let data = try JSONEncoder().encode(config)
-        let decoded = try JSONDecoder().decode(AppConfig.self, from: data)
-        #expect(decoded.speechLanguage == nil)
-        #expect(decoded.effectiveSpeechLanguage == "en")
-    }
-
-    @Test("Decoding old config without speechLanguage field defaults to nil")
-    func testBackwardCompatibility() throws {
+    @Test("Decoding old config with legacy speechLanguage field is ignored")
+    func testLegacySpeechLanguageIgnored() throws {
+        // Older saved configs carried `speechLanguage`. After removal the field
+        // is silently dropped on decode — JSON with the extra key still parses
+        // and yields a valid AppConfig.
         let json = """
-        {"language":"vi","currency":"VND","themeMode":"dark","isOnboardingComplete":true}
+        {"language":"vi","speechLanguage":"ja","currency":"VND","themeMode":"dark","isOnboardingComplete":true}
         """
         let data = json.data(using: .utf8)!
         let decoded = try JSONDecoder().decode(AppConfig.self, from: data)
-        #expect(decoded.speechLanguage == nil)
-        #expect(decoded.effectiveSpeechLanguage == "vi")
+        #expect(decoded.language == "vi")
+        #expect(decoded.currency == "VND")
     }
 
     // MARK: - parseAmount

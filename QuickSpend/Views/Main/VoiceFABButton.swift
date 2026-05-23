@@ -16,11 +16,20 @@ struct VoiceFABButton: View {
     var onDragCancelStateChange: ((Bool) -> Void)?
 
     @Environment(\.colorScheme) private var colorScheme
-    @State private var isPulsing = false
     @State private var isPressed = false
     @State private var isDragCancelling = false
     @State private var dragOffset: CGSize = .zero
     @State private var tutorialVisible = false
+
+    private var visualContext: VoiceFABVisualContext {
+        VoiceFABVisualContext(
+            isRecording: isRecording,
+            isDragCancelling: isDragCancelling,
+            isPressed: isPressed,
+            soundLevel: soundLevel,
+            accent: AppTheme.adaptiveAccent(colorScheme)
+        )
+    }
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -35,26 +44,16 @@ struct VoiceFABButton: View {
                     .onTapGesture { dismissTutorial() }
             }
 
-            // FAB button
+            // FAB button — visual variant chosen by `style`.
             fabContent
-                .scaleEffect(isPressed ? 0.92 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
                 .gesture(holdGesture)
                 .onAppear {
-                    withAnimation(
-                        .easeInOut(duration: 2.0)
-                        .repeatForever(autoreverses: true)
-                    ) {
-                        isPulsing = true
-                    }
-                    // Show tutorial after a short delay
                     if showTutorial {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            withAnimation(.springSmooth) {
                                 tutorialVisible = true
                             }
                         }
-                        // Auto-dismiss after 6 seconds
                         DispatchQueue.main.asyncAfter(deadline: .now() + 7.0) {
                             dismissTutorial()
                         }
@@ -63,9 +62,13 @@ struct VoiceFABButton: View {
                 .accessibilityLabel(L10n.tr("voice.input", language))
                 .accessibilityHint(L10n.tr("voice.hint", language))
         }
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isRecording)
-        .animation(.easeInOut(duration: 0.15), value: isDragCancelling)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: tutorialVisible)
+        .animation(.springFast, value: isRecording)
+        .animation(.easeQuick, value: isDragCancelling)
+        .animation(.springSmooth, value: tutorialVisible)
+    }
+
+    private var fabContent: some View {
+        VoiceFABListeningOrb(ctx: visualContext)
     }
 
     private func dismissTutorial() {
@@ -74,98 +77,6 @@ struct VoiceFABButton: View {
             tutorialVisible = false
         }
         onTutorialDismissed()
-    }
-
-    // MARK: - FAB Content
-
-    private var fabContent: some View {
-        ZStack {
-            pulseRings
-            mainCircle
-            iconContent
-        }
-    }
-
-    // MARK: - Pulse Rings
-
-    @ViewBuilder
-    private var pulseRings: some View {
-        if isRecording {
-            Circle()
-                .fill(buttonAccentColor.opacity(0.12))
-                .frame(width: 100, height: 100)
-                .scaleEffect(1.0 + CGFloat(soundLevel) * 0.5)
-                .animation(.easeOut(duration: 0.1), value: soundLevel)
-
-            Circle()
-                .fill(buttonAccentColor.opacity(0.25))
-                .frame(width: 84, height: 84)
-                .scaleEffect(1.0 + CGFloat(soundLevel) * 0.3)
-                .animation(.easeOut(duration: 0.1), value: soundLevel)
-        } else {
-            Circle()
-                .fill(AppTheme.primaryMint.opacity(0.08))
-                .frame(width: 88, height: 88)
-                .scaleEffect(isPulsing ? 1.08 : 1.0)
-
-            Circle()
-                .stroke(AppTheme.primaryMint.opacity(0.2), lineWidth: 1.5)
-                .frame(width: 80, height: 80)
-        }
-    }
-
-    // MARK: - Main Circle
-
-    private var mainCircle: some View {
-        Circle()
-            .fill(mainCircleFill)
-            .frame(width: 68, height: 68)
-            .shadow(
-                color: mainCircleShadowColor,
-                radius: 12,
-                x: 0,
-                y: 6
-            )
-    }
-
-    private var mainCircleFill: some ShapeStyle {
-        if isRecording {
-            return AnyShapeStyle(isDragCancelling ? AppTheme.error : buttonAccentColor)
-        }
-        return AnyShapeStyle(AppTheme.primaryGradient)
-    }
-
-    private var mainCircleShadowColor: Color {
-        (isDragCancelling ? AppTheme.error : AppTheme.primaryMint).opacity(0.35)
-    }
-
-    // MARK: - Icon
-
-    @ViewBuilder
-    private var iconContent: some View {
-        if isRecording {
-            Image(systemName: isDragCancelling ? "xmark" : "mic.fill")
-                .font(.title.weight(.semibold))
-                .foregroundStyle(.white)
-        } else {
-            idleMicIcon
-        }
-    }
-
-    private var idleMicIcon: some View {
-        HStack(spacing: 4) {
-            RoundedRectangle(cornerRadius: 1.5)
-                .fill(.white.opacity(0.5))
-                .frame(width: 2.5, height: isPulsing ? 18 : 12)
-
-            Image(systemName: "mic.fill")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.white)
-
-            RoundedRectangle(cornerRadius: 1.5)
-                .fill(.white.opacity(0.5))
-                .frame(width: 2.5, height: isPulsing ? 12 : 18)
-        }
     }
 
     // MARK: - Tutorial Tooltip

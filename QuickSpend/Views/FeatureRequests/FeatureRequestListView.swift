@@ -281,7 +281,7 @@ struct FeatureRequestListView: View {
             requestRow(request)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.25)) {
+                    withAnimation(.springFast) {
                         expandedRequestId = expandedRequestId == request.id ? nil : request.id
                     }
                 }

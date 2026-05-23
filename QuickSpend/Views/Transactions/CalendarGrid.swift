@@ -50,7 +50,7 @@ struct CalendarGrid: View {
             LazyVGrid(columns: columns, spacing: 4) {
                 ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
-                        .font(.caption2.bold())
+                        .font(Typography.captionEmphasized)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
                 }
@@ -83,7 +83,7 @@ struct CalendarGrid: View {
                         var comps = calendar.dateComponents([.year, .month], from: selectedMonth)
                         comps.day = day
                         if let date = calendar.date(from: comps) {
-                            withAnimation(.easeInOut(duration: 0.2)) {
+                            withAnimation(.springFast) {
                                 selectedDate = isSelected ? nil : date
                             }
                         }
@@ -128,7 +128,7 @@ private struct CalendarDayCell: View {
         Button(action: action) {
             VStack(spacing: 1) {
                 Text("\(day)")
-                    .font(.caption.weight(isToday ? .bold : .medium))
+                    .font(Typography.caption.weight(isToday ? .bold : .medium))
                     .foregroundStyle(isToday ? AppTheme.adaptiveAccent(colorScheme) : hasData ? Color.primary : Color.secondary.opacity(0.5))
 
                 if hasData {

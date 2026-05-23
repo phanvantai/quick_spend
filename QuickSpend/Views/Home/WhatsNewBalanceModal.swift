@@ -9,72 +9,52 @@ import SwiftData
 /// - "Set up balance now" → opens BalanceEditSheet, then dismisses + marks seen
 /// - "Set up later"       → dismisses + marks seen
 ///
-/// Visual treatment uses the actual `BalanceCard` as the hero, so the user sees
-/// exactly what they'll get on Home. A soft radial green blob sits behind it for
-/// depth, and the elements stagger in with a spring entrance (skipped under
-/// Reduce Motion).
+/// Custom hero: a non-interactive BalanceHero preview so the user sees exactly
+/// what they'll get on Home. ModalTemplate handles the rest of the chrome.
 struct WhatsNewBalanceModal: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(AppConfigViewModel.self) private var appConfig
 
     @State private var showEditSheet = false
-    @State private var heroAppeared = false
-    @State private var contentAppeared = false
 
-    /// Culturally-plausible preview balance per locale so the hero looks like a
-    /// real account, not a demo placeholder.
+    /// Culturally-plausible preview balance per locale so the hero looks like
+    /// a real account, not a demo placeholder.
     private var previewBalance: Double {
         switch appConfig.config.currency {
         case "VND": return 12_500_000
         case "JPY": return 125_000
         case "EUR": return 2_345.67
-        default:    return 2_345.67   // USD + fallback
+        default:    return 2_345.67
         }
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: AppTheme.spacing32) {
-                    Spacer(minLength: AppTheme.spacing32)
-
-                    heroPreview
-
-                    titleBlock
-                        .opacity(contentAppeared ? 1 : 0)
-                        .offset(y: contentAppeared ? 0 : 16)
-
-                    benefitsBlock
-                        .opacity(contentAppeared ? 1 : 0)
-                        .offset(y: contentAppeared ? 0 : 20)
-
-                    Spacer(minLength: AppTheme.spacing16)
-                }
-            }
-
-            ctaBlock
-                .opacity(contentAppeared ? 1 : 0)
-        }
-        .interactiveDismissDisabled() // make the choice intentional
-        .onAppear(perform: runEntranceAnimation)
+        ModalTemplate(
+            title: L10n.tr("balance.whatsnew_title", appConfig.language),
+            subtitle: L10n.tr("balance.whatsnew_subtitle", appConfig.language),
+            primary: ModalCTA(
+                label: L10n.tr("balance.whatsnew_setup_cta", appConfig.language),
+                icon: "arrow.right.circle.fill",
+                action: { showEditSheet = true }
+            ),
+            secondary: ModalCTA(
+                label: L10n.tr("balance.whatsnew_later_cta", appConfig.language),
+                action: dismissAndMarkSeen
+            ),
+            hero: { hero },
+            content: { benefits }
+        )
         .sheet(isPresented: $showEditSheet, onDismiss: {
-            // Mark-seen runs only after the edit sheet closes — if the user opens
-            // the setup flow we still consider the WhatsNew "delivered" whether or
-            // not they save (they made an intentional choice either way).
+            // Mark-seen runs only after the edit sheet closes. The user made
+            // an intentional choice whether or not they actually saved.
             dismissAndMarkSeen()
         }) {
             BalanceEditSheet()
         }
     }
 
-    // MARK: - Hero
-
-    /// Mini BalanceCard preview with a soft primaryGreen radial blob behind it.
-    /// `allowsHitTesting(false)` makes the card non-interactive — it's there as a
-    /// visual showcase of the feature, not a real entry point.
-    private var heroPreview: some View {
+    private var hero: some View {
         ZStack {
             RadialGradient(
                 colors: [
@@ -88,8 +68,9 @@ struct WhatsNewBalanceModal: View {
             .frame(height: 260)
             .blur(radius: 28)
 
-            BalanceCard(
+            BalanceHero(
                 currentBalance: previewBalance,
+                monthlyNet: nil,
                 language: appConfig.language,
                 currency: appConfig.config.currency,
                 onTap: {}
@@ -102,32 +83,11 @@ struct WhatsNewBalanceModal: View {
                 y: 6
             )
         }
-        .scaleEffect(heroAppeared ? 1.0 : 0.9)
-        .opacity(heroAppeared ? 1 : 0)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(L10n.tr("balance.whatsnew_title", appConfig.language))
     }
 
-    // MARK: - Title
-
-    private var titleBlock: some View {
-        VStack(spacing: AppTheme.spacing8) {
-            Text(L10n.tr("balance.whatsnew_title", appConfig.language))
-                .font(.largeTitle.bold())
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.primary)
-
-            Text(L10n.tr("balance.whatsnew_subtitle", appConfig.language))
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, AppTheme.spacing16)
-        }
-    }
-
-    // MARK: - Benefits
-
-    private var benefitsBlock: some View {
+    private var benefits: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             benefitRow(key: "balance.whatsnew_benefit_1")
             benefitRow(key: "balance.whatsnew_benefit_2")
@@ -140,73 +100,18 @@ struct WhatsNewBalanceModal: View {
     private func benefitRow(key: String) -> some View {
         HStack(alignment: .top, spacing: AppTheme.spacing12) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.body.weight(.semibold))
+                .font(Typography.bodyEmphasized)
                 .foregroundStyle(AppTheme.primaryGreen)
                 .frame(width: 22, height: 22)
                 .padding(.top, 1)
 
             Text(L10n.tr(key, appConfig.language))
-                .font(.subheadline)
+                .font(Typography.body)
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-
-    // MARK: - CTA
-
-    private var ctaBlock: some View {
-        VStack(spacing: AppTheme.spacing8) {
-            Button {
-                showEditSheet = true
-            } label: {
-                HStack(spacing: AppTheme.spacing8) {
-                    Image(systemName: "arrow.right.circle.fill")
-                        .font(.headline)
-                    Text(L10n.tr("balance.whatsnew_setup_cta", appConfig.language))
-                        .font(.headline)
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(AppTheme.adaptiveAccent(colorScheme))
-
-            Button {
-                dismissAndMarkSeen()
-            } label: {
-                Text(L10n.tr("balance.whatsnew_later_cta", appConfig.language))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, AppTheme.spacing8)
-            }
-        }
-        .padding(.horizontal, AppTheme.spacing24)
-        .padding(.bottom, AppTheme.spacing16)
-    }
-
-    // MARK: - Animation
-
-    private func runEntranceAnimation() {
-        if reduceMotion {
-            // No spring, no offset — just a quick fade so the change is still
-            // visually anchored without movement.
-            withAnimation(.easeIn(duration: 0.2)) {
-                heroAppeared = true
-                contentAppeared = true
-            }
-            return
-        }
-        withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) {
-            heroAppeared = true
-        }
-        withAnimation(.easeOut(duration: 0.4).delay(0.18)) {
-            contentAppeared = true
-        }
-    }
-
-    // MARK: - Actions
 
     private func dismissAndMarkSeen() {
         appConfig.markBalanceWhatsNewSeen()

@@ -1,31 +1,41 @@
 import SwiftUI
 import SwiftData
 
-/// Settings screen with grouped sections
+/// One enum represents every modal that can present from Settings. Routing
+/// through a single `.sheet(item:)` modifier on the NavigationStack avoids
+/// the "two sheets both vanish" bug we hit when each section owned its own
+/// `.sheet` modifier on a `Section` deep inside the list.
+enum SettingsSheet: Hashable, Identifiable {
+    case balanceEdit
+    case currencyPicker
+    case languagePicker
+    case themePicker
+    case paywall
+    case premiumStatus
+
+    var id: Self { self }
+}
+
+/// Settings screen with grouped sections.
+///
+/// v3.0: presented as a sheet from the Home/Transactions toolbar gear icon,
+/// not a root tab. A Done button in the toolbar closes the sheet.
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @Environment(AppConfigViewModel.self) private var appConfig
-
     @Environment(SubscriptionViewModel.self) private var subscription
-    @Environment(CloudSyncService.self) private var cloudSync
     @Environment(BalanceService.self) private var balanceService
 
     @Query private var transactions: [Transaction]
 
-    @State private var showLanguagePicker = false
-    @State private var showSpeechLanguagePicker = false
-    @State private var showCurrencyPicker = false
-    @State private var showThemePicker = false
-    @State private var showPaywall = false
-    @State private var showPremiumStatus = false
+    @State private var activeSheet: SettingsSheet?
     @State private var showRestoreAlert = false
     @State private var restoreSuccess = false
     @State private var isRestoring = false
     @State private var showDeleteAllConfirm = false
-    @State private var showBalanceEdit = false
 
-    /// Currency cannot be changed once transactions exist to prevent data integrity issues
+    /// Currency cannot be changed once transactions exist to prevent data integrity issues.
     private var isCurrencyLocked: Bool {
         !transactions.isEmpty
     }
@@ -33,246 +43,40 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Core features
-                Section {
-                    Button {
-                        showBalanceEdit = true
-                    } label: {
-                        settingsRow(
-                            icon: "banknote.fill",
-                            iconColor: AppTheme.adaptiveAccent(colorScheme),
-                            title: L10n.tr("settings.balance", appConfig.language),
-                            subtitle: L10n.tr("settings.balance_subtitle", appConfig.language)
-                        )
-                    }
-                    .tint(.primary)
-
-                    NavigationLink {
-                        CategoriesView()
-                    } label: {
-                        settingsRow(
-                            icon: "square.grid.2x2.fill",
-                            iconColor: AppTheme.accentTeal,
-                            title: L10n.tr("settings.categories", appConfig.language),
-                            subtitle: L10n.tr("settings.categories_subtitle", appConfig.language)
-                        )
-                    }
-
-                    NavigationLink {
-                        RecurringListView()
-                    } label: {
-                        settingsRow(
-                            icon: "repeat",
-                            iconColor: AppTheme.accentPink,
-                            title: L10n.tr("settings.recurring", appConfig.language),
-                            subtitle: L10n.tr("settings.recurring_subtitle", appConfig.language)
-                        )
-                    }
-
-                    Button {
-                        showSpeechLanguagePicker = true
-                    } label: {
-                        settingsRow(
-                            icon: "mic.fill",
-                            iconColor: AppTheme.adaptiveAccent(colorScheme),
-                            title: L10n.tr("settings.speech_language", appConfig.language),
-                            subtitle: appConfig.config.speechLanguageDisplayName
-                        )
-                    }
-                    .tint(.primary)
-
-                    Button {
-                        if !isCurrencyLocked {
-                            showCurrencyPicker = true
-                        }
-                    } label: {
-                        HStack {
-                            settingsRow(
-                                icon: "dollarsign.circle.fill",
-                                iconColor: isCurrencyLocked ? .gray : AppTheme.accentOrange,
-                                title: L10n.tr("settings.currency", appConfig.language),
-                                subtitle: "\(appConfig.config.currencySymbol) \(appConfig.currency)"
-                            )
-                            if isCurrencyLocked {
-                                Spacer()
-                                Image(systemName: "lock.fill")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    .tint(.primary)
-                    .disabled(isCurrencyLocked)
-                } footer: {
-                    VStack(alignment: .leading, spacing: AppTheme.spacing4) {
-                        Text(L10n.tr("settings.language_hint", appConfig.language))
-                        if isCurrencyLocked {
-                            Text(L10n.tr("settings.currency_locked_hint", appConfig.language))
-                        }
-                    }
-                }
-
-                // Subscription
-                Section(L10n.tr("settings.subscription", appConfig.language)) {
-                    if subscription.isPremium {
-                        Button {
-                            showPremiumStatus = true
-                        } label: {
-                            settingsRow(
-                                icon: "star.fill",
-                                iconColor: AppTheme.accentOrange,
-                                title: L10n.tr("paywall.title", appConfig.language),
-                                subtitle: L10n.tr("settings.premium_active", appConfig.language)
-                            )
-                        }
-                        .tint(.primary)
-                    } else {
-                        Button {
-                            showPaywall = true
-                        } label: {
-                            settingsRow(
-                                icon: "star.fill",
-                                iconColor: AppTheme.accentOrange,
-                                title: L10n.tr("common.upgrade_premium", appConfig.language),
-                                subtitle: L10n.tr("settings.unlock_features", appConfig.language)
-                            )
-                        }
-                        .tint(.primary)
-
-                        Button {
-                            Task {
-                                isRestoring = true
-                                await subscription.restorePurchases()
-                                isRestoring = false
-                                restoreSuccess = subscription.isPremium
-                                showRestoreAlert = true
-                            }
-                        } label: {
-                            settingsRow(
-                                icon: "arrow.clockwise",
-                                iconColor: AppTheme.adaptiveAccent(colorScheme),
-                                title: L10n.tr("paywall.restore", appConfig.language),
-                                subtitle: L10n.tr("settings.restore_subtitle", appConfig.language)
-                            )
-                        }
-                        .tint(.primary)
-                        .disabled(isRestoring)
-                    }
-
-                    NavigationLink {
-                        FeatureRequestListView()
-                    } label: {
-                        settingsRow(
-                            icon: "lightbulb.fill",
-                            iconColor: AppTheme.adaptiveAccent(colorScheme),
-                            title: L10n.tr("feature_request.title", appConfig.language),
-                            subtitle: L10n.tr("settings.feature_request_subtitle", appConfig.language)
-                        )
-                    }
-                }
-
-                // iCloud Sync
-                Section {
-                    HStack(spacing: AppTheme.spacing12) {
-                        CategoryIconBadge(
-                            iconName: cloudSync.isEnabled ? "icloud.fill" : "icloud.slash.fill",
-                            color: cloudSync.isEnabled ? AppTheme.adaptiveAccent(colorScheme) : .gray,
-                            size: 36,
-                            iconFont: .body
-                        )
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(L10n.tr("settings.icloud_sync", appConfig.language))
-                                .font(.body)
-                            HStack(spacing: 4) {
-                                if cloudSync.isSyncing {
-                                    ProgressView()
-                                        .scaleEffect(0.6)
-                                }
-                                Text(iCloudStatusText)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-
-                        Spacer()
-
-                        if cloudSync.isEnabled {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
-                                .font(.body)
-                        }
-                    }
-                    .padding(.vertical, 2)
-
-                    Button(role: .destructive) {
-                        showDeleteAllConfirm = true
-                    } label: {
-                        settingsRow(
-                            icon: "trash.fill",
-                            iconColor: .red,
-                            title: L10n.tr("settings.delete_all_data", appConfig.language),
-                            subtitle: L10n.tr("settings.delete_all_data_subtitle", appConfig.language)
-                        )
-                    }
-                } header: {
-                    Text(L10n.tr("settings.data", appConfig.language))
-                }
-
-                // Preferences
-                Section {
-                    Button {
-                        showLanguagePicker = true
-                    } label: {
-                        settingsRow(
-                            icon: "globe",
-                            iconColor: AppTheme.adaptiveAccent(colorScheme),
-                            title: L10n.tr("settings.language", appConfig.language),
-                            subtitle: appConfig.config.languageDisplayName
-                        )
-                    }
-                    .tint(.primary)
-
-                    Button {
-                        showThemePicker = true
-                    } label: {
-                        settingsRow(
-                            icon: "paintpalette.fill",
-                            iconColor: AppTheme.accentPink,
-                            title: L10n.tr("settings.theme", appConfig.language),
-                            subtitle: themeDisplayName
-                        )
-                    }
-                    .tint(.primary)
-                } header: {
-                    Text(L10n.tr("settings.preferences", appConfig.language))
-                } footer: {
-                    Text(L10n.tr("settings.version", appConfig.language) + " \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, AppTheme.spacing8)
-                }
+                CoreSection(
+                    isCurrencyLocked: isCurrencyLocked,
+                    activeSheet: $activeSheet
+                )
+                SubscriptionSection(
+                    isRestoring: $isRestoring,
+                    showRestoreAlert: $showRestoreAlert,
+                    restoreSuccess: $restoreSuccess,
+                    activeSheet: $activeSheet
+                )
+                DataSection(showDeleteAllConfirm: $showDeleteAllConfirm)
+                PreferencesSection(activeSheet: $activeSheet)
             }
             .navigationTitle(L10n.tr("settings.title", appConfig.language))
-            .sheet(isPresented: $showLanguagePicker) {
-                languagePickerSheet
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.tr("common.done", appConfig.language)) {
+                        dismiss()
+                    }
+                }
             }
-            .sheet(isPresented: $showSpeechLanguagePicker) {
-                speechLanguagePickerSheet
+            .overlay {
+                if isRestoring {
+                    ZStack {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(.white)
+                    }
+                }
             }
-            .sheet(isPresented: $showCurrencyPicker) {
-                currencyPickerSheet
-            }
-            .sheet(isPresented: $showThemePicker) {
-                themePickerSheet
-            }
-            .sheet(isPresented: $showPaywall) {
-                PaywallView()
-            }
-            .sheet(isPresented: $showPremiumStatus) {
-                PremiumStatusSheet()
-            }
-            .sheet(isPresented: $showBalanceEdit) {
-                BalanceEditSheet()
+            .sheet(item: $activeSheet) { sheet in
+                sheetContent(for: sheet)
             }
             .alert(
                 L10n.tr("paywall.restore", appConfig.language),
@@ -297,43 +101,69 @@ struct SettingsView: View {
             } message: {
                 Text(L10n.tr("settings.delete_all_data_confirm_message", appConfig.language))
             }
-            .overlay {
-                if isRestoring {
-                    ZStack {
-                        Color.black.opacity(0.3)
-                            .ignoresSafeArea()
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(.white)
-                    }
-                }
-            }
         }
     }
 
-    // MARK: - Settings Row
-
-    private func settingsRow(icon: String, iconColor: Color, title: String, subtitle: String) -> some View {
-        HStack(spacing: AppTheme.spacing12) {
-            CategoryIconBadge(
-                iconName: icon,
-                color: iconColor,
-                size: 36,
-                iconFont: .body
+    @ViewBuilder
+    private func sheetContent(for sheet: SettingsSheet) -> some View {
+        switch sheet {
+        case .balanceEdit:
+            BalanceEditSheet()
+        case .currencyPicker:
+            PickerSheet(
+                title: L10n.tr("settings.currency", appConfig.language),
+                doneText: L10n.tr("common.done", appConfig.language),
+                items: CurrencyOption.options,
+                selectedId: appConfig.currency,
+                icon: { $0.symbol },
+                iconStyle: .plain(AppTheme.accentOrange),
+                label: { $0.code },
+                onSelect: { option in
+                    appConfig.setCurrency(option.code)
+                    activeSheet = nil
+                },
+                onDone: { activeSheet = nil }
             )
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+        case .languagePicker:
+            PickerSheet(
+                title: L10n.tr("settings.language", appConfig.language),
+                doneText: L10n.tr("common.done", appConfig.language),
+                items: LanguageOption.options,
+                selectedId: appConfig.language,
+                icon: { $0.flag },
+                iconStyle: .custom,
+                label: { $0.displayName },
+                onSelect: { option in
+                    appConfig.setLanguage(option.code)
+                    CategoryService.updateCategoryNames(
+                        language: option.code,
+                        modelContext: modelContext
+                    )
+                    activeSheet = nil
+                },
+                onDone: { activeSheet = nil }
+            )
+        case .themePicker:
+            PickerSheet(
+                title: L10n.tr("settings.theme", appConfig.language),
+                doneText: L10n.tr("common.done", appConfig.language),
+                items: ThemeOption.options(language: appConfig.language),
+                selectedId: appConfig.themeMode,
+                icon: { $0.icon },
+                iconStyle: .sfSymbol(.primary),
+                label: { $0.title },
+                onSelect: { option in
+                    appConfig.setThemeMode(option.code)
+                    activeSheet = nil
+                },
+                onDone: { activeSheet = nil }
+            )
+        case .paywall:
+            PaywallView()
+        case .premiumStatus:
+            PremiumStatusSheet()
         }
-        .padding(.vertical, 2)
     }
-
-    // MARK: - Delete All Data
 
     private func deleteAllData() {
         do {
@@ -345,130 +175,8 @@ struct SettingsView: View {
             print("[Settings] Failed to delete data: \(error)")
         }
         appConfig.resetAll()
-        // `ModelContext.delete(model:)` bypasses the willSave pending-changes
-        // path, so the BalanceService observer won't catch this. Wipe its cache
-        // and currentBalance directly so the card matches the now-empty store.
         balanceService.clearAll()
     }
-
-    // MARK: - iCloud Status
-
-    private var iCloudStatusText: String {
-        switch cloudSync.iCloudStatus {
-        case .available:
-            if cloudSync.isSyncing {
-                return L10n.tr("settings.icloud_syncing", appConfig.language)
-            } else if cloudSync.lastSyncDate != nil {
-                return L10n.tr("settings.icloud_synced", appConfig.language)
-            } else {
-                return L10n.tr("settings.icloud_connected", appConfig.language)
-            }
-        case .noAccount:
-            return L10n.tr("settings.icloud_no_account", appConfig.language)
-        case .restricted:
-            return L10n.tr("settings.icloud_restricted", appConfig.language)
-        case .temporarilyUnavailable:
-            return L10n.tr("settings.icloud_unavailable", appConfig.language)
-        case .unknown:
-            return L10n.tr("settings.icloud_unknown", appConfig.language)
-        }
-    }
-
-    // MARK: - Theme
-
-    private var themeDisplayName: String {
-        switch appConfig.themeMode {
-        case "light": return L10n.tr("settings.theme_light", appConfig.language)
-        case "dark": return L10n.tr("settings.theme_dark", appConfig.language)
-        default: return L10n.tr("settings.theme_system", appConfig.language)
-        }
-    }
-
-    // MARK: - Language Picker
-
-    private var languagePickerSheet: some View {
-        PickerSheet(
-            title: L10n.tr("settings.language", appConfig.language),
-            doneText: L10n.tr("common.done", appConfig.language),
-            items: LanguageOption.options,
-            selectedId: appConfig.language,
-            icon: { $0.flag },
-            iconStyle: .custom,
-            label: { $0.displayName },
-            onSelect: { option in
-                appConfig.setLanguage(option.code)
-                CategoryService.updateCategoryNames(
-                    language: option.code,
-                    modelContext: modelContext
-                )
-                showLanguagePicker = false
-            },
-            onDone: { showLanguagePicker = false }
-        )
-    }
-
-    // MARK: - Speech Language Picker
-
-    private var speechLanguagePickerSheet: some View {
-        PickerSheet(
-            title: L10n.tr("settings.speech_language", appConfig.language),
-            doneText: L10n.tr("common.done", appConfig.language),
-            items: LanguageOption.options,
-            selectedId: appConfig.speechLanguage,
-            icon: { $0.flag },
-            iconStyle: .custom,
-            label: { $0.displayName },
-            onSelect: { option in
-                // If same as app language, store nil (follow app language)
-                if option.code == appConfig.language {
-                    appConfig.setSpeechLanguage(nil)
-                } else {
-                    appConfig.setSpeechLanguage(option.code)
-                }
-                showSpeechLanguagePicker = false
-            },
-            onDone: { showSpeechLanguagePicker = false }
-        )
-    }
-
-    // MARK: - Currency Picker
-
-    private var currencyPickerSheet: some View {
-        PickerSheet(
-            title: L10n.tr("settings.currency", appConfig.language),
-            doneText: L10n.tr("common.done", appConfig.language),
-            items: CurrencyOption.options,
-            selectedId: appConfig.currency,
-            icon: { $0.symbol },
-            iconStyle: .plain(AppTheme.accentOrange),
-            label: { $0.code },
-            onSelect: { option in
-                appConfig.setCurrency(option.code)
-                showCurrencyPicker = false
-            },
-            onDone: { showCurrencyPicker = false }
-        )
-    }
-
-    // MARK: - Theme Picker
-
-    private var themePickerSheet: some View {
-        PickerSheet(
-            title: L10n.tr("settings.theme", appConfig.language),
-            doneText: L10n.tr("common.done", appConfig.language),
-            items: ThemeOption.options(language: appConfig.language),
-            selectedId: appConfig.themeMode,
-            icon: { $0.icon },
-            iconStyle: .sfSymbol(.primary),
-            label: { $0.title },
-            onSelect: { option in
-                appConfig.setThemeMode(option.code)
-                showThemePicker = false
-            },
-            onDone: { showThemePicker = false }
-        )
-    }
-
 }
 
 #Preview {
