@@ -4699,6 +4699,65 @@
         }
       }
     },
+    "intent.auto_saved_many" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %d expenses"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se añadieron %d gastos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d件の取引を追加しました"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã thêm %d giao dịch"
+          }
+        }
+      }
+    },
+    "intent.auto_saved_one" : {
+      "comment" : "Format: amount, then description. e.g. \"Added $4.50 for Coffee\"",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %@ for %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadido %@ por %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@（%@）を追加しました"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã thêm %@ cho %@"
+          }
+        }
+      }
+    },
     "intent.confirm_many" : {
       "extractionState" : "manual",
       "localizations" : {
