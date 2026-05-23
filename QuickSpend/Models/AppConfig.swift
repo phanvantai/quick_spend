@@ -28,9 +28,6 @@ struct AppConfig: Codable, Equatable {
     /// or "bar" (income vs expense). Persisted so the user's pick survives app
     /// relaunch. Unknown values from older builds decode to "donut".
     var focalChartPreference: String = FocalChartPreference.donut.rawValue
-    /// Voice FAB visual style. Lets the user A/B four redesigns during
-    /// preview without recompiling. Unknown values decode to .audioBurst.
-    var voiceFabStyle: String = VoiceFABStyle.audioBurst.rawValue
 
     /// Convenience init used by previews and on-the-fly currency formatting in views.
     /// All params default to the same values as the stored properties, so `AppConfig()`
@@ -57,9 +54,6 @@ struct AppConfig: Codable, Equatable {
         let storedFocal = try c.decodeIfPresent(String.self, forKey: .focalChartPreference)
         self.focalChartPreference = FocalChartPreference(rawValue: storedFocal ?? "")?.rawValue
             ?? FocalChartPreference.donut.rawValue
-        let storedFab = try c.decodeIfPresent(String.self, forKey: .voiceFabStyle)
-        self.voiceFabStyle = VoiceFABStyle(rawValue: storedFab ?? "")?.rawValue
-            ?? VoiceFABStyle.audioBurst.rawValue
     }
 
     // MARK: - Currency

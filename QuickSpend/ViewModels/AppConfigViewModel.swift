@@ -22,11 +22,6 @@ final class AppConfigViewModel {
     var focalChartPreference: FocalChartPreference {
         FocalChartPreference(rawValue: config.focalChartPreference) ?? .donut
     }
-    /// Decoded form of `config.voiceFabStyle`. Unknown raw values fall back
-    /// to `.audioBurst` (mirrors the AppConfig decoder).
-    var voiceFabStyle: VoiceFABStyle {
-        VoiceFABStyle(rawValue: config.voiceFabStyle) ?? .audioBurst
-    }
 
     var colorScheme: ColorScheme? { config.colorScheme }
 
@@ -118,11 +113,6 @@ final class AppConfigViewModel {
     }
 
     /// Persists the Home FocalChartCard's selected view (Donut vs Bar).
-    func setVoiceFabStyle(_ value: VoiceFABStyle) {
-        config.voiceFabStyle = value.rawValue
-        preferences.saveConfig(config)
-    }
-
     func setFocalChartPreference(_ value: FocalChartPreference) {
         config.focalChartPreference = value.rawValue
         preferences.saveConfig(config)

@@ -1,39 +1,58 @@
 import SwiftUI
 
-/// Style C — Circle with a conic-gradient sweep around the rim.
-/// Rotates slowly (8s/rev) when idle, accelerates (2s/rev) when
-/// recording. Soft outer halo reacts to soundLevel.
+/// The Voice FAB visual: a circle with a conic-gradient sweep around the
+/// rim that rotates continuously. 8s/rev when idle, 2s/rev when recording.
+///
+/// Rotation is driven by `TimelineView(.animation)` rather than a
+/// `repeatForever` animation on a `@State` value. The reason: when the
+/// recording flag flips, we don't want the sweep to snap back to 0° and
+/// restart — we want the same angle to keep going at the new speed.
+///
+/// To get speed changes without discontinuity we remember (phase,
+/// timestamp) every time the speed changes. The angle at any frame is
+/// then `phase + elapsedSinceChange * currentSpeed`. When the speed
+/// changes again we freeze the phase using the OUTGOING speed so the
+/// curve is C0 continuous.
 struct VoiceFABListeningOrb: View {
     let ctx: VoiceFABVisualContext
 
-    @State private var rotation: Double = 0
+    /// Cumulative angle at the most recent speed change (in degrees, 0…360).
+    @State private var phaseAtChange: Double = 0
+    /// Wall-clock moment the current speed regime started.
+    @State private var changedAt: Date = .now
 
     private let outerSize: CGFloat = 76
     private let innerSize: CGFloat = 60
 
+    /// Angular speed in deg/sec for each regime.
+    private func speed(recording: Bool) -> Double {
+        recording ? 180 : 45  // 360/2s vs 360/8s
+    }
+
     var body: some View {
-        ZStack {
-            outerHalo
-            sweepRing
-            innerCircle
-            iconContent
+        TimelineView(.animation) { context in
+            let elapsed = context.date.timeIntervalSince(changedAt)
+            let angle = (phaseAtChange + elapsed * speed(recording: ctx.isRecording))
+                .truncatingRemainder(dividingBy: 360)
+
+            ZStack {
+                outerHalo
+                sweepRing(angle: angle)
+                innerCircle
+                iconContent
+            }
         }
         .scaleEffect(ctx.isPressed ? 0.93 : 1.0)
         .animation(.springFast, value: ctx.isPressed)
-        .onAppear { startRotation(fast: false) }
-        .onChange(of: ctx.isRecording) { _, recording in
-            startRotation(fast: recording)
-        }
-    }
-
-    /// Restart the angular animation with the speed for the new mode.
-    /// SwiftUI doesn't change the duration of a `repeatForever` mid-run,
-    /// so we reset the state then re-apply.
-    private func startRotation(fast: Bool) {
-        rotation = 0
-        let duration = fast ? 2.0 : 8.0
-        withAnimation(.linear(duration: duration).repeatForever(autoreverses: false)) {
-            rotation = 360
+        .onChange(of: ctx.isRecording) { oldValue, _ in
+            // Freeze the visible angle using the OUTGOING speed so the
+            // sweep keeps going from exactly where it was, just at the
+            // new tempo. Without this we'd see a jump every time.
+            let elapsed = Date().timeIntervalSince(changedAt)
+            let frozen = (phaseAtChange + elapsed * speed(recording: oldValue))
+                .truncatingRemainder(dividingBy: 360)
+            phaseAtChange = frozen
+            changedAt = Date()
         }
     }
 
@@ -55,7 +74,7 @@ struct VoiceFABListeningOrb: View {
 
     // MARK: - Conic sweep ring
 
-    private var sweepRing: some View {
+    private func sweepRing(angle: Double) -> some View {
         Circle()
             .strokeBorder(
                 AngularGradient(
@@ -70,7 +89,7 @@ struct VoiceFABListeningOrb: View {
                 lineWidth: 4
             )
             .frame(width: outerSize, height: outerSize)
-            .rotationEffect(.degrees(rotation))
+            .rotationEffect(.degrees(angle))
     }
 
     // MARK: - Inner circle

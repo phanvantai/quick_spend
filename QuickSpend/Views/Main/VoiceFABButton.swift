@@ -9,7 +9,6 @@ struct VoiceFABButton: View {
     let soundLevel: Float
     let transcription: String
     let showTutorial: Bool
-    let style: VoiceFABStyle
     let onRecordStart: () -> Void
     let onRecordEnd: () -> Void
     let onRecordCancel: () -> Void
@@ -68,20 +67,8 @@ struct VoiceFABButton: View {
         .animation(.springSmooth, value: tutorialVisible)
     }
 
-    /// Dispatch to whichever visual style the user picked. Each variant
-    /// owns its own idle + recording + drag-cancel choreography.
-    @ViewBuilder
     private var fabContent: some View {
-        switch style {
-        case .audioBurst:
-            VoiceFABAudioBurst(ctx: visualContext)
-        case .squircleHalo:
-            VoiceFABSquircleHalo(ctx: visualContext)
-        case .listeningOrb:
-            VoiceFABListeningOrb(ctx: visualContext)
-        case .holdPill:
-            VoiceFABHoldPill(ctx: visualContext, language: language)
-        }
+        VoiceFABListeningOrb(ctx: visualContext)
     }
 
     private func dismissTutorial() {

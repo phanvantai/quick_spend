@@ -9340,35 +9340,6 @@
         }
       }
     },
-    "voice.hold_label" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hold"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "押し続ける"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Giữ"
-          }
-        }
-      }
-    },
     "voice.tutorial_title" : {
       "extractionState" : "manual",
       "localizations" : {
