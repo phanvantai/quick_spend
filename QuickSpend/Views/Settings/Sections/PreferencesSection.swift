@@ -32,6 +32,23 @@ struct PreferencesSection: View {
                 )
             }
             .tint(.primary)
+
+            Picker(selection: Binding(
+                get: { appConfig.voiceFabStyle },
+                set: { appConfig.setVoiceFabStyle($0) }
+            )) {
+                ForEach(VoiceFABStyle.allCases) { style in
+                    Text(style.displayName).tag(style)
+                }
+            } label: {
+                SettingsRow(
+                    icon: "mic.circle.fill",
+                    iconColor: AppTheme.adaptiveAccent(colorScheme),
+                    title: "Voice FAB style",
+                    subtitle: appConfig.voiceFabStyle.displayName
+                )
+            }
+            .tint(.primary)
         } header: {
             Text(L10n.tr("settings.preferences", appConfig.language))
         } footer: {

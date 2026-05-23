@@ -29,6 +29,7 @@ struct VoiceFABLayer: View {
                 soundLevel: vm.voiceService.soundLevel,
                 transcription: vm.voiceService.transcription,
                 showTutorial: !preferences.hasShownVoiceTutorial,
+                style: appConfig.voiceFabStyle,
                 onRecordStart: { vm.handleRecordStart() },
                 onRecordEnd: { vm.handleRecordEnd() },
                 onRecordCancel: { vm.handleRecordCancel() },
