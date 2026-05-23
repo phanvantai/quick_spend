@@ -6,6 +6,7 @@
 
 ### What's New
 - **App Intents + Siri shortcut** — say "Hey Siri, add expense 50k coffee" from anywhere to log an expense without opening the app
+- **Auto-save high-confidence Siri parses** — when the AI is at least 90% confident, the expense saves instantly with just a quick confirmation snippet; ambiguous parses still ask before logging
 - **3-step onboarding** — language/currency → starting balance (with skip) → Try Siri demo. Fresh installs now seed a BalanceAnchor when you enter an amount
 - **Home v3.0** — new BalanceHero with accent stripe, dot pattern background, and inline "this month" delta chip
 - **Focal chart card** — toggle between donut (by category) and bar (income vs expense) on Home; selection persists across launches
@@ -34,6 +35,7 @@
 #### en
 What's New
 • Hey Siri, add expense — log spending from anywhere without opening the app
+• High-confidence Siri parses save instantly — no tap needed when the AI is sure
 • Redesigned home with a bigger balance hero, monthly delta chip, and a focal chart you can flip between donut and bar
 • Onboarding now sets your starting balance and teaches the Siri shortcut in three quick steps
 • Brand new Listening Orb voice button with a smooth conic-gradient sweep
@@ -50,6 +52,7 @@ Bug Fixes
 #### vi
 Tính năng mới
 • Hey Siri, thêm chi tiêu — ghi chi phí từ bất cứ đâu mà không cần mở app
+• Lệnh Siri được phân tích chắc chắn sẽ tự lưu ngay — không cần bấm xác nhận khi AI đã chắc
 • Trang chính được thiết kế lại với BalanceHero lớn hơn, chip biến động trong tháng, và biểu đồ tiêu điểm chuyển giữa donut và bar
 • Onboarding 3 bước: thiết lập số dư ban đầu và hướng dẫn dùng Siri shortcut
 • Nút voice "Listening Orb" mới với hiệu ứng conic-gradient mượt mà
@@ -66,6 +69,7 @@ Sửa lỗi
 #### ja
 新機能
 • 「Hey Siri、出費を追加して」— アプリを開かずにどこからでも記録
+• AIの確信度が高い場合はSiri解析が即座に保存 — 確認タップ不要
 • 大きな残高ヒーロー、今月の増減チップ、ドーナツ/棒グラフ切替の焦点チャートで再設計されたホーム
 • 開始残高の設定とSiriショートカットの紹介を含む3ステップのオンボーディング
 • 滑らかなコニックグラデーション・スイープを持つ新しい「Listening Orb」音声ボタン
@@ -82,6 +86,7 @@ Sửa lỗi
 #### es
 Novedades
 • Oye Siri, añade gasto — registra gastos desde cualquier lugar sin abrir la app
+• Los análisis de Siri con alta confianza se guardan al instante — sin necesidad de tocar para confirmar
 • Inicio rediseñado con un hero de saldo más grande, chip de variación mensual y gráfico focal alternable entre dona y barras
 • Onboarding en 3 pasos: configura tu saldo inicial y aprende el atajo de Siri
 • Nuevo botón de voz "Listening Orb" con barrido cónico-degradado suave
