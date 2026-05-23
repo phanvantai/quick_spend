@@ -70,6 +70,7 @@ struct WhatsNewBalanceModal: View {
 
             BalanceHero(
                 currentBalance: previewBalance,
+                monthlyNet: nil,
                 language: appConfig.language,
                 currency: appConfig.config.currency,
                 onTap: {}

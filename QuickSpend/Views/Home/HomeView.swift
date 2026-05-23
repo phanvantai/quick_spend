@@ -99,6 +99,7 @@ struct HomeView: View {
                 VStack(spacing: AppTheme.spacing16) {
                     BalanceHero(
                         currentBalance: balance.currentBalance,
+                        monthlyNet: (totalIncome == 0 && totalExpenses == 0) ? nil : (totalIncome - totalExpenses),
                         language: appConfig.language,
                         currency: appConfig.config.currency,
                         onTap: { showBalanceEdit = true }
