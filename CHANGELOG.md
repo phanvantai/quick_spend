@@ -2,6 +2,101 @@
 
 ---
 
+## [3.0] - 2026-05-23
+
+### What's New
+- **App Intents + Siri shortcut** — say "Hey Siri, add expense 50k coffee" from anywhere to log an expense without opening the app
+- **3-step onboarding** — language/currency → starting balance (with skip) → Try Siri demo. Fresh installs now seed a BalanceAnchor when you enter an amount
+- **Home v3.0** — new BalanceHero with accent stripe, dot pattern background, and inline "this month" delta chip
+- **Focal chart card** — toggle between donut (by category) and bar (income vs expense) on Home; selection persists across launches
+- **Voice FAB redesign** — Listening Orb with conic-gradient sweep that rotates slowly when idle, fast while recording. Soundlevel-reactive halo glow
+- **Settings as a sheet** — opens from the gear icon in the toolbar; large detent with drag-to-dismiss
+
+### Improvements
+- Tabs reduced from 3 to 2 (Home, Transactions). Settings + Add Manual moved to toolbar icons
+- New design system tokens: Typography scale, AnimationPreset (springFast/Smooth/Gentle, easeQuick), AppShadow, Motion
+- Onboarding paginated with smooth TabView spring transitions
+- Transactions polish: typography tokens applied across calendar grid, month navigator, summary section, and date headers
+- Calendar day select and month-chevron transitions now use spring animations
+- Voice FAB rotation stays continuous across record/idle transitions — no more snap back to 12 o'clock
+- TransactionFormView refactored from 591 LOC into focused components (TypeToggle, AmountInputField, CategoryPickerField, DateRow, NoteField)
+- SettingsView refactored from 454 LOC into section subviews (Core, Subscription, Data, Preferences) with a centralized sheet router
+- VoiceCaptureViewModel extracted from VoiceFABLayer for testability — 9 new unit tests
+- Modal screens consolidated via reusable ModalTemplate + ModalGradientHero
+
+### Bug Fixes
+- Opening a sheet from inside Settings (BalanceEdit, picker, paywall) no longer dismisses both sheets
+- Fresh installs no longer see the Siri promo modal after completing the Try Siri onboarding step
+- VoiceFAB sweep animation now keeps moving smoothly when you release the record gesture
+
+### App Store Notes
+
+#### en
+What's New
+• Hey Siri, add expense — log spending from anywhere without opening the app
+• Redesigned home with a bigger balance hero, monthly delta chip, and a focal chart you can flip between donut and bar
+• Onboarding now sets your starting balance and teaches the Siri shortcut in three quick steps
+• Brand new Listening Orb voice button with a smooth conic-gradient sweep
+
+Improvements
+• Cleaner 2-tab layout with Settings and Add Manual as toolbar icons
+• Spring-based motion throughout the app
+• Big internal refactor — smaller, faster, easier to maintain
+
+Bug Fixes
+• Settings sheets no longer dismiss accidentally when opening a sub-sheet
+• Fresh installs no longer see duplicate Siri prompts
+
+#### vi
+Tính năng mới
+• Hey Siri, thêm chi tiêu — ghi chi phí từ bất cứ đâu mà không cần mở app
+• Trang chính được thiết kế lại với BalanceHero lớn hơn, chip biến động trong tháng, và biểu đồ tiêu điểm chuyển giữa donut và bar
+• Onboarding 3 bước: thiết lập số dư ban đầu và hướng dẫn dùng Siri shortcut
+• Nút voice "Listening Orb" mới với hiệu ứng conic-gradient mượt mà
+
+Cải tiến
+• Bố cục 2 tab gọn hơn, Settings và Thêm thủ công chuyển vào toolbar
+• Animation kiểu spring xuyên suốt app
+• Refactor nội bộ lớn — nhỏ hơn, nhanh hơn, dễ bảo trì hơn
+
+Sửa lỗi
+• Sheet trong Settings không còn vô tình đóng khi mở sub-sheet
+• Người mới cài không còn thấy lời nhắc Siri trùng lặp
+
+#### ja
+新機能
+• 「Hey Siri、出費を追加して」— アプリを開かずにどこからでも記録
+• 大きな残高ヒーロー、今月の増減チップ、ドーナツ/棒グラフ切替の焦点チャートで再設計されたホーム
+• 開始残高の設定とSiriショートカットの紹介を含む3ステップのオンボーディング
+• 滑らかなコニックグラデーション・スイープを持つ新しい「Listening Orb」音声ボタン
+
+改善
+• 設定と手動追加をツールバーアイコンに移動した、よりすっきりした2タブ構成
+• アプリ全体でスプリングベースのモーション
+• 大規模な内部リファクタ — より小さく、速く、保守しやすく
+
+バグ修正
+• 設定内でサブシートを開いたときに誤って閉じることがなくなりました
+• 新規インストール後にSiriプロンプトが重複表示されることがなくなりました
+
+#### es
+Novedades
+• Oye Siri, añade gasto — registra gastos desde cualquier lugar sin abrir la app
+• Inicio rediseñado con un hero de saldo más grande, chip de variación mensual y gráfico focal alternable entre dona y barras
+• Onboarding en 3 pasos: configura tu saldo inicial y aprende el atajo de Siri
+• Nuevo botón de voz "Listening Orb" con barrido cónico-degradado suave
+
+Mejoras
+• Diseño más limpio de 2 pestañas con Ajustes y Añadir manual en la barra de herramientas
+• Animaciones tipo resorte en toda la app
+• Gran refactor interno — más pequeño, más rápido, más fácil de mantener
+
+Correcciones
+• Las hojas de Ajustes ya no se cierran accidentalmente al abrir una sub-hoja
+• Las instalaciones nuevas ya no ven indicaciones duplicadas de Siri
+
+---
+
 ## [2.4.1] - 2026-05-21
 
 ### Improvements
