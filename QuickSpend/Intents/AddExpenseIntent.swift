@@ -44,7 +44,7 @@ struct AddExpenseIntent: AppIntent {
     var expenseDescription: String
 
     @MainActor
-    func perform() async throws -> some IntentResult & ShowsSnippetView & ProvidesDialog {
+    func perform() async throws -> some IntentResult & ProvidesDialog {
         IntentEnvironment.ensureParserReady()
 
         let container = try IntentEnvironment.container()
@@ -61,18 +61,20 @@ struct AddExpenseIntent: AppIntent {
             usage: usage
         )
 
-        let categories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
-        let snippet = ParsedExpenseSnippetView(items: parsed, categories: categories, config: config)
-
-        // High-confidence parses skip the confirm card entirely — Siri reads
-        // the success line and shows the snippet for a beat, then dismisses.
+        // High-confidence parses skip the confirm card entirely. Return ONLY a
+        // dialog (no snippet view) so iOS dismisses the success indicator in
+        // ~1-2s instead of holding a card on screen for 5-7s.
         if Self.shouldAutoSave(parsed) {
             try saveOrThrow(parsed: parsed, in: context, language: config.language)
             UINotificationFeedbackGenerator().notificationOccurred(.success)
-            return .result(dialog: autoSavedDialog(for: parsed, config: config)) {
-                snippet
-            }
+            return .result(dialog: autoSavedDialog(for: parsed, config: config))
         }
+
+        // Confirm-card path: snippet is shown DURING `requestConfirmation` so
+        // the user can review before saving. After they tap Log we only need
+        // to speak the success line — no need to re-show the snippet.
+        let categories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
+        let snippet = ParsedExpenseSnippetView(items: parsed, categories: categories, config: config)
 
         do {
             try await requestConfirmation(
@@ -83,14 +85,12 @@ struct AddExpenseIntent: AppIntent {
             }
         } catch {
             // User cancelled the confirmation card — exit silently, no extra popup.
-            return .result(dialog: IntentDialog("")) { EmptyView() }
+            return .result(dialog: IntentDialog(""))
         }
 
         try saveOrThrow(parsed: parsed, in: context, language: config.language)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        return .result(dialog: autoSavedDialog(for: parsed, config: config)) {
-            snippet
-        }
+        return .result(dialog: autoSavedDialog(for: parsed, config: config))
     }
 
     /// True when every parsed transaction meets the auto-save threshold.
