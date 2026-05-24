@@ -67,6 +67,12 @@ final class AppConfigViewModel {
         return nil
     }
 
+    /// Initial language for first-run onboarding: use the device/per-app language
+    /// when supported, otherwise fall back to English.
+    static func initialOnboardingLanguage() -> String {
+        detectSystemLanguage() ?? "en"
+    }
+
     /// Write the language to the iOS per-app language UserDefaults key.
     private static func setSystemLanguage(_ language: String) {
         UserDefaults.standard.set([language], forKey: "AppleLanguages")

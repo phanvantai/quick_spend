@@ -13,6 +13,7 @@ struct OnboardingView: View {
     @State private var balanceText: String = ""
     @State private var showLanguagePicker = false
     @State private var showCurrencyPicker = false
+    @State private var hasInitializedPreferences = false
 
     private var selectedCurrencySymbol: String {
         CurrencyOption.options.first { $0.code == selectedCurrency }?.symbol ?? "$"
@@ -56,6 +57,9 @@ struct OnboardingView: View {
         }
         .sheet(isPresented: $showCurrencyPicker) {
             currencyPickerSheet
+        }
+        .onAppear {
+            initializePreferencesIfNeeded()
         }
     }
 
@@ -342,6 +346,15 @@ struct OnboardingView: View {
         }
 
         onComplete()
+    }
+
+    private func initializePreferencesIfNeeded() {
+        guard !hasInitializedPreferences else { return }
+        hasInitializedPreferences = true
+
+        let language = AppConfigViewModel.initialOnboardingLanguage()
+        selectedLanguage = language
+        selectedCurrency = LanguageOption.defaultCurrency(for: language)
     }
 }
 

@@ -32,9 +32,24 @@ final class BalanceService {
     /// 200ms — coalesces notification bursts (CloudKit import, rapid CRUD).
     static let debounceInterval: Duration = .milliseconds(200)
 
+    convenience init(
+        modelContext: ModelContext,
+        importEventPublisher: AnyPublisher<Void, Never>? = nil,
+        autoObserve: Bool = true,
+        autoCompute: Bool = true
+    ) {
+        self.init(
+            modelContext: modelContext,
+            cacheStore: BalanceCacheStore(),
+            importEventPublisher: importEventPublisher,
+            autoObserve: autoObserve,
+            autoCompute: autoCompute
+        )
+    }
+
     init(
         modelContext: ModelContext,
-        cacheStore: BalanceCacheStore = BalanceCacheStore(),
+        cacheStore: BalanceCacheStore,
         importEventPublisher: AnyPublisher<Void, Never>? = nil,
         autoObserve: Bool = true,
         autoCompute: Bool = true

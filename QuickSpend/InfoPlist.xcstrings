@@ -40,6 +40,24 @@
             "state" : "new",
             "value" : "QuickSpend"
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto Rápido"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイック支出"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chi tiêu nhanh"
+          }
         }
       }
     },
@@ -51,6 +69,24 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Quick Spend uses the microphone to record your voice for expense input."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto Rápido usa el micrófono para grabar tu voz al ingresar gastos."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイック支出は、支出入力のために音声を録音する目的でマイクを使用します。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chi tiêu nhanh sử dụng micrô để ghi âm giọng nói của bạn khi nhập khoản chi."
           }
         }
       }
@@ -64,6 +100,24 @@
             "state" : "new",
             "value" : "Quick Spend uses Siri so you can log expenses by voice without opening the app."
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto Rápido usa Siri para que puedas registrar gastos por voz sin abrir la app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイック支出は、アプリを開かずに音声で支出を記録できるようにSiriを使用します。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chi tiêu nhanh sử dụng Siri để bạn có thể ghi lại khoản chi bằng giọng nói mà không cần mở ứng dụng."
+          }
         }
       }
     },
@@ -75,6 +129,24 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Quick Spend uses speech recognition to convert your voice into expense entries."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto Rápido usa el reconocimiento de voz para convertir tu voz en registros de gastos."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイック支出は、音声を支出記録に変換するために音声認識を使用します。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chi tiêu nhanh sử dụng nhận dạng giọng nói để chuyển giọng nói của bạn thành các khoản chi."
           }
         }
       }
