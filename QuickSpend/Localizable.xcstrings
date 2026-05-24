@@ -9057,25 +9057,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tap once, speak the expense, done. No need to open QuickSpend."
+            "value" : "Install once, then say \"Hey Siri, QuickSpend\" to log expenses by voice."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toca una vez, di el gasto, listo. Sin abrir Gasto Rápido."
+            "value" : "Instálalo una vez y di \"Oye Siri, Gasto Rápido\" para registrar gastos por voz."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1タップで支出を声に出して登録。クイック支出を開く必要なし。"
+            "value" : "一度インストールしたら、「Hey Siri、クイック支出」と話して音声で記録できます。"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Một chạm, nói khoản chi, xong. Không cần mở Chi tiêu nhanh."
+            "value" : "Cài một lần, rồi nói \"Hey Siri, Chi tiêu nhanh\" để ghi chi tiêu bằng giọng nói."
           }
         }
       }
@@ -9115,25 +9115,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open Shortcuts to add the voice shortcut"
+            "value" : "Add it, then say \"Hey Siri, QuickSpend\""
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abre Atajos para añadir el atajo de voz"
+            "value" : "Añádelo y di \"Oye Siri, Gasto Rápido\""
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ショートカットを開いて音声ショートカットを追加"
+            "value" : "追加したら「Hey Siri、クイック支出」と話しかけます"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mở Phím tắt để thêm phím tắt giọng nói"
+            "value" : "Thêm xong, nói \"Hey Siri, Chi tiêu nhanh\""
           }
         }
       }
@@ -9173,25 +9173,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "After installing, say \"Hey Siri, [your shortcut name]\" (e.g. \"Hey Siri, QuickSpend\") to trigger it by voice."
+            "value" : "After installing, say \"Hey Siri, QuickSpend\" to trigger it by voice."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Después de instalarlo, di \"Oye Siri, [nombre de tu atajo]\" (p. ej. \"Oye Siri, Gasto Rápido\") para activarlo por voz."
+            "value" : "Después de instalarlo, di \"Oye Siri, Gasto Rápido\" para activarlo por voz."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "インストール後、「Hey Siri、[ショートカット名]」（例：「Hey Siri、クイック支出」）と話しかけて音声で起動できます。"
+            "value" : "インストール後、「Hey Siri、クイック支出」と話しかけて音声で起動できます。"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sau khi cài, nói \"Hey Siri, [tên shortcut]\" (ví dụ \"Hey Siri, Chi tiêu nhanh\") để kích hoạt bằng giọng nói."
+            "value" : "Sau khi cài, nói \"Hey Siri, Chi tiêu nhanh\" để kích hoạt bằng giọng nói."
           }
         }
       }

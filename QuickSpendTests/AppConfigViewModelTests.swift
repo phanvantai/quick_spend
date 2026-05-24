@@ -229,6 +229,14 @@ struct AppConfigViewModelTests {
         // nil is acceptable if the system language is none of the supported ones
     }
 
+    @Test("initialOnboardingLanguage always resolves to a supported language")
+    func testInitialOnboardingLanguage() {
+        let language = AppConfigViewModel.initialOnboardingLanguage()
+        let supported: Set<String> = ["en", "vi", "ja", "es"]
+
+        #expect(supported.contains(language))
+    }
+
     @Test("syncLanguageFromSystem does not overwrite when system matches config")
     func testSyncLanguageFromSystemNoChange() {
         let vm = makeViewModel()

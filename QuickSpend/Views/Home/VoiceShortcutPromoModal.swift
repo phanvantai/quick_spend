@@ -33,8 +33,8 @@ struct VoiceShortcutPromoModal: View {
             },
             content: {
                 VStack(spacing: AppTheme.spacing24) {
-                    benefits
                     siriTip
+                    benefits
                 }
             }
         )
