@@ -88,4 +88,24 @@ struct WalletServiceTests {
         #expect(wallets.filter { $0.id == Wallet.personalID }.count == 1)
         #expect(transaction.walletId == custom.id)
     }
+
+    @Test("bootstrap converts legacy personal balance anchor to wallet-scoped anchor ID")
+    func bootstrapConvertsLegacyAnchorId() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let preferences = makePreferences()
+        let anchor = BalanceAnchor(
+            id: BalanceAnchor.legacySingletonID,
+            walletId: "",
+            openingBalance: 100,
+            anchorDate: Date()
+        )
+        context.insert(anchor)
+        try context.save()
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+
+        #expect(anchor.walletId == Wallet.personalID)
+        #expect(anchor.id == BalanceAnchor.id(for: Wallet.personalID))
+    }
 }

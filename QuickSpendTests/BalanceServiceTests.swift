@@ -508,6 +508,30 @@ struct BalanceServiceTests {
         #expect(service.currentBalance == 1_250)
     }
 
+    @Test("Import event — backfills remote legacy records missing walletId before recompute")
+    func testImportEventBackfillsLegacyWalletIds() async throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let importSubject = PassthroughSubject<Void, Never>()
+        let service = BalanceService(
+            modelContext: context,
+            importEventPublisher: importSubject.eraseToAnyPublisher(),
+            autoObserve: false,
+            autoCompute: false
+        )
+        _ = service
+
+        let remoteLegacy = Transaction(amount: 25, note: "Remote legacy", categoryId: "food", type: .expense)
+        remoteLegacy.walletId = ""
+        context.insert(remoteLegacy)
+        try context.save()
+
+        importSubject.send()
+        try await Task.sleep(for: .milliseconds(500))
+
+        #expect(remoteLegacy.walletId == Wallet.personalID)
+    }
+
     @Test("Debounce — 5 rapid scheduleRecompute() calls coalesce to a single recompute")
     func testDebounceCoalescesBurst() async throws {
         let container = try makeContainer()

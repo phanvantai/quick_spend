@@ -71,7 +71,9 @@ final class BalanceService {
         if let importEventPublisher {
             self.importSubscription = importEventPublisher.sink { [weak self] in
                 Task { @MainActor [weak self] in
-                    self?.scheduleRecompute()
+                    guard let self else { return }
+                    _ = try? WalletService.bootstrapIfNeeded(modelContext: self.modelContext)
+                    self.scheduleRecompute()
                 }
             }
         }

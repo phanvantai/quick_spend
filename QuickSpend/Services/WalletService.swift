@@ -38,9 +38,16 @@ enum WalletService {
         }
 
         let anchors = try modelContext.fetch(FetchDescriptor<BalanceAnchor>())
-        for anchor in anchors where anchor.walletId.isEmpty {
-            anchor.walletId = Wallet.personalID
-            didMigrateLegacyData = true
+        for anchor in anchors {
+            if anchor.walletId.isEmpty {
+                anchor.walletId = Wallet.personalID
+                didMigrateLegacyData = true
+            }
+            let expectedId = BalanceAnchor.id(for: anchor.walletId)
+            if anchor.id == BalanceAnchor.legacySingletonID || anchor.id.isEmpty {
+                anchor.id = expectedId
+                didMigrateLegacyData = true
+            }
         }
 
         if preferences.defaultWalletId.isEmpty {
