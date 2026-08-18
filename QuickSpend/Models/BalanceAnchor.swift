@@ -12,17 +12,20 @@ final class BalanceAnchor {
     static let singletonID = "00000000-0000-0000-0000-000000000001"
 
     var id: String = BalanceAnchor.singletonID
+    var walletId: String = Wallet.personalID
     var openingBalance: Double = 0
     var anchorDate: Date = Date.now
     var createdAt: Date = Date.now
 
     init(
         id: String = BalanceAnchor.singletonID,
+        walletId: String = Wallet.personalID,
         openingBalance: Double,
         anchorDate: Date,
         createdAt: Date = .now
     ) {
         self.id = id
+        self.walletId = walletId
         self.openingBalance = openingBalance
         self.anchorDate = anchorDate
         self.createdAt = createdAt

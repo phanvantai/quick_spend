@@ -9,6 +9,7 @@ struct TransactionsView: View {
     @Environment(BalanceService.self) private var balance
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Category.name) private var categories: [Category]
+    @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     @State private var selectedMonth = Date()
     @State private var selectedDate: Date?
@@ -56,6 +57,16 @@ struct TransactionsView: View {
 
     private var netTotal: Double {
         totalIncome - totalExpense
+    }
+
+    private var activeWallets: [Wallet] {
+        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    private var defaultWalletId: String {
+        activeWallets.contains(where: { $0.id == appConfig.defaultWalletId })
+            ? appConfig.defaultWalletId
+            : Wallet.personalID
     }
 
     // MARK: - Month Date Range Label
@@ -126,7 +137,11 @@ struct TransactionsView: View {
                 }
             }
             .sheet(isPresented: $showingAddTransaction) {
-                TransactionFormView(categories: categories) { transaction in
+                TransactionFormView(
+                    categories: categories,
+                    wallets: activeWallets,
+                    defaultWalletId: defaultWalletId
+                ) { transaction in
                     modelContext.insert(transaction)
                     balance.applyOptimisticInsert(transaction)
                 }
@@ -137,13 +152,19 @@ struct TransactionsView: View {
                     .presentationDragIndicator(.visible)
             }
             .sheet(item: $editingTransaction) { transaction in
-                TransactionFormView(categories: categories, expense: transaction) { updated in
+                TransactionFormView(
+                    categories: categories,
+                    wallets: activeWallets,
+                    defaultWalletId: transaction.walletId,
+                    expense: transaction
+                ) { updated in
                     let oldAmount = transaction.amount
                     let oldType = transaction.type
                     let createdAt = transaction.createdAt
                     transaction.amount = updated.amount
                     transaction.note = updated.note
                     transaction.categoryId = updated.categoryId
+                    transaction.walletId = updated.walletId
                     transaction.date = updated.date
                     transaction.type = updated.type
                     transaction.updatedAt = .now

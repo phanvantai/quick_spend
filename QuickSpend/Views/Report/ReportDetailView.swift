@@ -54,9 +54,11 @@ struct ReportDetailView: View {
     @Environment(SubscriptionViewModel.self) private var subscription
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Category.name) private var categories: [Category]
+    @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     @State private var selectedPeriod: ReportPeriod = .thisMonth
     @State private var selectedType: TransactionType = .expense
+    @State private var selectedWalletScope: WalletScope = .wallet(Wallet.personalID)
     @State private var selectedCategory: CategoryStats?
     @State private var showPaywall = false
 
@@ -68,7 +70,33 @@ struct ReportDetailView: View {
 
     private var periodTransactions: [Transaction] {
         let range = periodRange
-        return allTransactions.filter { $0.date >= range.start && $0.date < range.end }
+        return scopedTransactions.filter { $0.date >= range.start && $0.date < range.end }
+    }
+
+    private var activeWallets: [Wallet] {
+        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    private var effectiveWalletScope: WalletScope {
+        guard activeWallets.count > 1 else {
+            return .wallet(activeWallets.first?.id ?? Wallet.personalID)
+        }
+        switch selectedWalletScope {
+        case .all:
+            return .all
+        case .wallet(let walletId):
+            return activeWallets.contains(where: { $0.id == walletId }) ? selectedWalletScope : .wallet(activeWallets.first?.id ?? Wallet.personalID)
+        }
+    }
+
+    private var scopedTransactions: [Transaction] {
+        switch effectiveWalletScope {
+        case .all:
+            let activeIds = Set(activeWallets.map(\.id))
+            return allTransactions.filter { activeIds.contains($0.walletId) }
+        case .wallet(let walletId):
+            return allTransactions.filter { $0.walletId == walletId }
+        }
     }
 
     private var stats: PeriodStats {
@@ -103,6 +131,9 @@ struct ReportDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AppTheme.spacing20) {
+                if activeWallets.count > 1 {
+                    walletScopePicker
+                }
                 periodPicker
                 summaryStats
                 breakdownSection
@@ -133,6 +164,9 @@ struct ReportDetailView: View {
                 currency: appConfig.config.currency
             )
         }
+        .onAppear {
+            selectedWalletScope = appConfig.selectedWalletScope
+        }
     }
 
     // MARK: - Period picker
@@ -145,6 +179,16 @@ struct ReportDetailView: View {
                 } else {
                     Text(period.label(language: appConfig.language)).tag(period)
                 }
+            }
+        }
+        .pickerStyle(.segmented)
+    }
+
+    private var walletScopePicker: some View {
+        Picker("Wallet", selection: $selectedWalletScope) {
+            Text("All Wallets").tag(WalletScope.all)
+            ForEach(activeWallets, id: \.id) { wallet in
+                Text(wallet.name).tag(WalletScope.wallet(wallet.id))
             }
         }
         .pickerStyle(.segmented)

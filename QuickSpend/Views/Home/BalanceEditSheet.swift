@@ -16,6 +16,8 @@ struct BalanceEditSheet: View {
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(BalanceService.self) private var balanceService
 
+    let walletId: String
+
     /// Sort by createdAt ascending to match `BalanceService.fetchAnchor` — under
     /// a CloudKit-induced multi-row state, both must agree on which anchor is
     /// "the" anchor or the user can edit one row and have the recovery sweep
@@ -27,7 +29,13 @@ struct BalanceEditSheet: View {
     @State private var saveError: String?
     @FocusState private var amountFocused: Bool
 
-    private var existingAnchor: BalanceAnchor? { anchors.first }
+    init(walletId: String = Wallet.personalID) {
+        self.walletId = walletId
+    }
+
+    private var existingAnchor: BalanceAnchor? {
+        anchors.first { $0.walletId == walletId }
+    }
 
     private var hasExistingAnchor: Bool { existingAnchor != nil }
 
@@ -151,6 +159,7 @@ struct BalanceEditSheet: View {
             existing.anchorDate = newAnchorDate
         } else {
             let anchor = BalanceAnchor(
+                walletId: walletId,
                 openingBalance: amount,
                 anchorDate: newAnchorDate
             )

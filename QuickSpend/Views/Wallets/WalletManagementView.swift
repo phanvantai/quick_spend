@@ -1,0 +1,90 @@
+import SwiftUI
+import SwiftData
+
+struct WalletManagementView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AppConfigViewModel.self) private var appConfig
+    @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
+
+    @State private var showCreateWallet = false
+
+    private var activeWallets: [Wallet] {
+        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if activeWallets.count == 1 {
+                    Section {
+                        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
+                            Text("Separate money streams")
+                                .font(Typography.bodyEmphasized)
+                            Text("Create another wallet when you want to track side income, project costs, travel, or shared expenses separately.")
+                                .font(Typography.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, AppTheme.spacing8)
+                    }
+                }
+
+                Section("Wallets") {
+                    ForEach(activeWallets, id: \.id) { wallet in
+                        HStack(spacing: AppTheme.spacing12) {
+                            CategoryIconBadge(iconName: wallet.iconName, color: wallet.color, size: 36, iconFont: .body)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(wallet.name)
+                                if wallet.id == appConfig.defaultWalletId {
+                                    Text("Default")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer()
+                            if wallet.id != appConfig.defaultWalletId {
+                                Button("Make Default") {
+                                    appConfig.setDefaultWalletId(wallet.id)
+                                }
+                                .font(.caption)
+                            }
+                        }
+                        .swipeActions {
+                            if wallet.id != Wallet.personalID {
+                                Button(role: .destructive) {
+                                    archive(wallet)
+                                } label: {
+                                    Label("Archive", systemImage: "archivebox.fill")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Wallets")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showCreateWallet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                    }
+                }
+            }
+            .sheet(isPresented: $showCreateWallet) {
+                WalletFormView()
+            }
+        }
+    }
+
+    private func archive(_ wallet: Wallet) {
+        wallet.isArchived = true
+        wallet.updatedAt = Date()
+        if appConfig.defaultWalletId == wallet.id {
+            appConfig.setDefaultWalletId(Wallet.personalID)
+        }
+        if appConfig.selectedWalletScope == .wallet(wallet.id) {
+            appConfig.setSelectedWalletScope(.wallet(Wallet.personalID))
+        }
+        try? modelContext.save()
+    }
+}

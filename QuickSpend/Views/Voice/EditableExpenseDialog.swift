@@ -7,6 +7,8 @@ struct EditableExpenseDialog: View {
 
     let parsedTransactions: [ParsedTransaction]
     let categories: [Category]
+    let wallets: [Wallet]
+    let defaultWalletId: String
     let onSave: ([Transaction]) -> Void
 
     @State private var editableExpenses: [EditableExpenseData]
@@ -14,12 +16,16 @@ struct EditableExpenseDialog: View {
     init(
         parsedExpenses: [ParsedTransaction],
         categories: [Category],
+        wallets: [Wallet] = [],
+        defaultWalletId: String = Wallet.personalID,
         onSave: @escaping ([Transaction]) -> Void
     ) {
         self.parsedTransactions = parsedExpenses
         self.categories = categories
+        self.wallets = wallets
+        self.defaultWalletId = defaultWalletId
         self.onSave = onSave
-        _editableExpenses = State(initialValue: parsedExpenses.map { EditableExpenseData(from: $0) })
+        _editableExpenses = State(initialValue: parsedExpenses.map { EditableExpenseData(from: $0, walletId: defaultWalletId) })
     }
 
     var body: some View {
@@ -76,6 +82,15 @@ struct EditableExpenseDialog: View {
             let filtered = categories.filter { $0.type == editableExpenses[index].type }
             if !filtered.contains(where: { $0.id == editableExpenses[index].categoryId }) {
                 editableExpenses[index].categoryId = filtered.first?.id ?? "other_expense"
+            }
+        }
+
+        if wallets.count > 1 {
+            Picker("Wallet", selection: $editableExpenses[index].walletId) {
+                ForEach(wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }, id: \.id) { wallet in
+                    Label(wallet.name, systemImage: wallet.iconName)
+                        .tag(wallet.id)
+                }
             }
         }
 
@@ -144,6 +159,7 @@ struct EditableExpenseDialog: View {
                 amount: clampedAmount,
                 note: data.note.trimmingCharacters(in: .whitespaces),
                 categoryId: data.categoryId,
+                walletId: data.walletId,
                 type: data.type,
                 date: data.date,
                 rawInput: data.rawInput,
@@ -167,15 +183,17 @@ struct EditableExpenseData {
     var note: String
     var amountText: String
     var categoryId: String
+    var walletId: String
     var type: TransactionType
     var date: Date
     var confidence: Double
     var rawInput: String
 
-    init(from parsed: ParsedTransaction) {
+    init(from parsed: ParsedTransaction, walletId: String = Wallet.personalID) {
         self.note = parsed.note
         self.amountText = String(format: parsed.amount == floor(parsed.amount) ? "%.0f" : "%.2f", parsed.amount)
         self.categoryId = parsed.categoryId
+        self.walletId = walletId
         self.type = parsed.type
         self.date = parsed.date
         self.confidence = parsed.confidence

@@ -15,18 +15,67 @@ struct HomeView: View {
     @Environment(BalanceService.self) private var balance
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Category.name) private var categories: [Category]
+    @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     @State private var selectedMonth = Date()
+    @State private var selectedWalletScope: WalletScope = .wallet(Wallet.personalID)
     @State private var showAddTransaction = false
     @State private var showBalanceEdit = false
     @State private var showSettings = false
+    @State private var showWalletsWhatsNew = false
 
     // MARK: - Selected Month Data
 
     private var monthTransactions: [Transaction] {
         let calendar = Calendar.current
-        return allTransactions.filter {
+        return scopedTransactions.filter {
             calendar.isDate($0.date, equalTo: selectedMonth, toGranularity: .month)
+        }
+    }
+
+    private var activeWallets: [Wallet] {
+        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    private var effectiveWalletScope: WalletScope {
+        guard activeWallets.count > 1 else {
+            return .wallet(activeWallets.first?.id ?? Wallet.personalID)
+        }
+        switch selectedWalletScope {
+        case .all:
+            return .all
+        case .wallet(let walletId):
+            return activeWallets.contains(where: { $0.id == walletId }) ? selectedWalletScope : .wallet(activeWallets.first?.id ?? Wallet.personalID)
+        }
+    }
+
+    private var scopedTransactions: [Transaction] {
+        switch effectiveWalletScope {
+        case .all:
+            let activeIds = Set(activeWallets.map(\.id))
+            return allTransactions.filter { activeIds.contains($0.walletId) }
+        case .wallet(let walletId):
+            return allTransactions.filter { $0.walletId == walletId }
+        }
+    }
+
+    private var displayedBalance: Double? {
+        switch effectiveWalletScope {
+        case .all:
+            return try? balance.computeTotalBalance(walletIds: activeWallets.map(\.id))
+        case .wallet(let walletId):
+            return balance.currentBalance(for: walletId)
+        }
+    }
+
+    private var defaultWalletIdForNewTransaction: String {
+        switch effectiveWalletScope {
+        case .all:
+            return activeWallets.contains(where: { $0.id == appConfig.defaultWalletId })
+                ? appConfig.defaultWalletId
+                : Wallet.personalID
+        case .wallet(let walletId):
+            return walletId
         }
     }
 
@@ -43,7 +92,7 @@ struct HomeView: View {
     private var previousMonthTransactions: [Transaction] {
         let calendar = Calendar.current
         guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: selectedMonth) else { return [] }
-        return allTransactions.filter {
+        return scopedTransactions.filter {
             calendar.isDate($0.date, equalTo: prevMonth, toGranularity: .month)
         }
     }
@@ -98,12 +147,16 @@ struct HomeView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: AppTheme.spacing16) {
                     BalanceHero(
-                        currentBalance: balance.currentBalance,
+                        currentBalance: displayedBalance,
                         monthlyNet: (totalIncome == 0 && totalExpenses == 0) ? nil : (totalIncome - totalExpenses),
                         language: appConfig.language,
                         currency: appConfig.config.currency,
                         onTap: { showBalanceEdit = true }
                     )
+
+                    if activeWallets.count > 1 {
+                        walletScopePicker
+                    }
 
                     HomeAppBar(
                         selectedMonth: $selectedMonth,
@@ -177,26 +230,62 @@ struct HomeView: View {
                 }
             }
             .sheet(isPresented: $showAddTransaction) {
-                TransactionFormView(categories: categories) { transaction in
+                TransactionFormView(
+                    categories: categories,
+                    wallets: activeWallets,
+                    defaultWalletId: defaultWalletIdForNewTransaction
+                ) { transaction in
                     modelContext.insert(transaction)
                     balance.applyOptimisticInsert(transaction)
                 }
             }
             .sheet(isPresented: $showBalanceEdit) {
-                BalanceEditSheet()
+                BalanceEditSheet(walletId: defaultWalletIdForNewTransaction)
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
+            .sheet(isPresented: $showWalletsWhatsNew) {
+                WalletWhatsNewModal(
+                    onCreateWallet: {
+                        appConfig.markWalletsWhatsNewSeen()
+                        showWalletsWhatsNew = false
+                        showSettings = true
+                    },
+                    onDismiss: {
+                        appConfig.markWalletsWhatsNewSeen()
+                        showWalletsWhatsNew = false
+                    }
+                )
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+            }
+            .onAppear {
+                selectedWalletScope = appConfig.selectedWalletScope
+                showWalletsWhatsNew = appConfig.shouldShowWalletsWhatsNew
+            }
+            .onChange(of: selectedWalletScope) { _, newScope in
+                appConfig.setSelectedWalletScope(newScope)
+            }
         }
+    }
+
+    private var walletScopePicker: some View {
+        Picker("Wallet", selection: $selectedWalletScope) {
+            Text("All Wallets").tag(WalletScope.all)
+            ForEach(activeWallets, id: \.id) { wallet in
+                Text(wallet.name).tag(WalletScope.wallet(wallet.id))
+            }
+        }
+        .pickerStyle(.segmented)
     }
 }
 
 #Preview {
     let container = try! ModelContainer(
-        for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self,
+        for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     )
     return HomeView()

@@ -17,6 +17,11 @@ final class AppConfigViewModel {
     var hasSeenBalanceWhatsNew: Bool { config.hasSeenBalanceWhatsNew }
     var hasSeenSiriPromo: Bool { config.hasSeenSiriPromo }
     var hasSeenVoiceShortcutPromo: Bool { config.hasSeenVoiceShortcutPromo }
+    var defaultWalletId: String { preferences.defaultWalletId }
+    var selectedWalletScope: WalletScope {
+        WalletScope(rawValue: preferences.selectedWalletScopeRawValue) ?? .wallet(Wallet.personalID)
+    }
+    var shouldShowWalletsWhatsNew: Bool { preferences.shouldShowWalletsWhatsNew }
     /// Decoded form of `config.focalChartPreference`. Unknown raw values fall
     /// back to `.donut` (mirrors the AppConfig decoder).
     var focalChartPreference: FocalChartPreference {
@@ -122,6 +127,18 @@ final class AppConfigViewModel {
     func setFocalChartPreference(_ value: FocalChartPreference) {
         config.focalChartPreference = value.rawValue
         preferences.saveConfig(config)
+    }
+
+    func setDefaultWalletId(_ walletId: String) {
+        preferences.setDefaultWalletId(walletId)
+    }
+
+    func setSelectedWalletScope(_ scope: WalletScope) {
+        preferences.setSelectedWalletScope(scope)
+    }
+
+    func markWalletsWhatsNewSeen() {
+        preferences.setShouldShowWalletsWhatsNew(false)
     }
 
     /// Bulk update (useful during onboarding)

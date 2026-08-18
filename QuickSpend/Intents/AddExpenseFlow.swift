@@ -48,7 +48,8 @@ enum AddExpenseFlow {
     static func save(
         parsed: [ParsedTransaction],
         rawInput: String,
-        in context: ModelContext
+        in context: ModelContext,
+        walletId: String = Wallet.personalID
     ) throws -> [Transaction] {
         var saved: [Transaction] = []
         for item in parsed {
@@ -56,6 +57,7 @@ enum AddExpenseFlow {
                 amount: item.amount,
                 note: item.note,
                 categoryId: item.categoryId,
+                walletId: walletId,
                 type: item.type,
                 date: item.date,
                 rawInput: rawInput,

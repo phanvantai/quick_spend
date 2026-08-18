@@ -49,6 +49,7 @@ struct AddExpenseIntent: AppIntent {
 
         let container = try IntentEnvironment.container()
         let context = ModelContext(container)
+        _ = try? WalletService.bootstrapIfNeeded(modelContext: context)
         let config = IntentEnvironment.currentConfig()
         let usage = await IntentEnvironment.makeUsageLimitService()
 
@@ -104,7 +105,12 @@ struct AddExpenseIntent: AppIntent {
     @MainActor
     private func saveOrThrow(parsed: [ParsedTransaction], in context: ModelContext, language: String) throws {
         do {
-            try AddExpenseFlow.save(parsed: parsed, rawInput: expenseDescription, in: context)
+            try AddExpenseFlow.save(
+                parsed: parsed,
+                rawInput: expenseDescription,
+                in: context,
+                walletId: PreferencesService.shared.defaultWalletId
+            )
         } catch {
             throw AddExpenseError.saveFailed(language: language)
         }

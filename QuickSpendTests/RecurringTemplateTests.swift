@@ -27,6 +27,7 @@ struct RecurringTemplateTests {
         #expect(template.isActive == true)
         #expect(template.lastGeneratedDate == nil)
         #expect(!template.id.isEmpty)
+        #expect(template.walletId == Wallet.personalID)
     }
 
     @Test("RecurringTemplate supports all recurrence patterns")
@@ -76,5 +77,20 @@ struct RecurringTemplateTests {
         )
 
         #expect(template.type == .income)
+    }
+
+    @Test("RecurringTemplate stores custom wallet ID")
+    func testCustomWalletId() {
+        let template = RecurringTemplate(
+            amount: 15000000,
+            note: "Monthly retainer",
+            categoryId: "salary",
+            walletId: "wallet_side_work",
+            type: .income,
+            pattern: .monthly,
+            startDate: Date()
+        )
+
+        #expect(template.walletId == "wallet_side_work")
     }
 }

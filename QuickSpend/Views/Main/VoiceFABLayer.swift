@@ -16,9 +16,20 @@ struct VoiceFABLayer: View {
     @Environment(SubscriptionViewModel.self) private var subscription
     @Environment(BalanceService.self) private var balance
     @Query(sort: \Category.name) private var categories: [Category]
+    @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     @State private var vm = VoiceCaptureViewModel()
     private let preferences = PreferencesService.shared
+
+    private var activeWallets: [Wallet] {
+        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    private var defaultWalletId: String {
+        activeWallets.contains(where: { $0.id == appConfig.defaultWalletId })
+            ? appConfig.defaultWalletId
+            : Wallet.personalID
+    }
 
     var body: some View {
         @Bindable var vm = vm
@@ -122,6 +133,8 @@ struct VoiceFABLayer: View {
             EditableExpenseDialog(
                 parsedExpenses: vm.parsedTransactions,
                 categories: categories,
+                wallets: activeWallets,
+                defaultWalletId: defaultWalletId,
                 onSave: { transactions in
                     for transaction in transactions {
                         modelContext.insert(transaction)
@@ -134,6 +147,8 @@ struct VoiceFABLayer: View {
         .sheet(isPresented: $vm.showManualFallback) {
             TransactionFormView(
                 categories: categories,
+                wallets: activeWallets,
+                defaultWalletId: defaultWalletId,
                 initialNote: vm.fallbackTranscription.isEmpty ? nil : vm.fallbackTranscription
             ) { transaction in
                 modelContext.insert(transaction)

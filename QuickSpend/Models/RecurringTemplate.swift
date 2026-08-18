@@ -9,6 +9,7 @@ final class RecurringTemplate {
     var amount: Double = 0
     var note: String = ""
     var categoryId: String = ""
+    var walletId: String = Wallet.personalID
     var type: TransactionType = TransactionType.expense
     var pattern: RecurrencePattern = RecurrencePattern.monthly
     var startDate: Date = Date.now
@@ -23,6 +24,7 @@ final class RecurringTemplate {
         amount: Double,
         note: String,
         categoryId: String,
+        walletId: String = Wallet.personalID,
         type: TransactionType = .expense,
         pattern: RecurrencePattern = .monthly,
         startDate: Date = .now,
@@ -36,6 +38,7 @@ final class RecurringTemplate {
         self.amount = amount
         self.note = note
         self.categoryId = categoryId
+        self.walletId = walletId
         self.type = type
         self.pattern = pattern
         self.startDate = startDate

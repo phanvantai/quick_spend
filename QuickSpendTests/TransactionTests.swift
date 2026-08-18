@@ -24,6 +24,7 @@ struct TransactionTests {
         #expect(transaction.rawInput == nil)
         #expect(transaction.confidence == nil)
         #expect(!transaction.id.isEmpty)
+        #expect(transaction.walletId == Wallet.personalID)
     }
 
     @Test("isIncome returns true for income type")
@@ -68,6 +69,20 @@ struct TransactionTests {
 
         #expect(transaction.rawInput == "I spent 100k on groceries")
         #expect(transaction.confidence == 0.95)
+    }
+
+    @Test("Transaction stores custom wallet ID")
+    func testCustomWalletId() {
+        let transaction = Transaction(
+            amount: 125000,
+            note: "Client lunch",
+            categoryId: "meals",
+            walletId: "wallet_side_work",
+            type: .expense,
+            date: Date()
+        )
+
+        #expect(transaction.walletId == "wallet_side_work")
     }
 
     @Test("Transaction generates unique IDs")

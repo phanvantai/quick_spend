@@ -47,6 +47,7 @@ struct QuickSpendApp: App {
             fatalError("[QuickSpendApp] Failed to create ModelContainer: \(error)")
         }
         self.modelContainer = resolvedContainer
+        try? WalletService.bootstrapIfNeeded(modelContext: resolvedContainer.mainContext)
 
         // CloudSyncService is shared with BalanceService via its didFinishImport
         // publisher — local insert via willSave AND remote import via Combine both

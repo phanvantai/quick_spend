@@ -33,6 +33,18 @@ struct PreferencesSection: View {
             }
             .tint(.primary)
 
+            Button {
+                activeSheet = .wallets
+            } label: {
+                SettingsRow(
+                    icon: "wallet.pass.fill",
+                    iconColor: AppTheme.incomeColor,
+                    title: "Wallets",
+                    subtitle: "Separate personal and side money"
+                )
+            }
+            .tint(.primary)
+
         } header: {
             Text(L10n.tr("settings.preferences", appConfig.language))
         } footer: {

@@ -7,6 +7,7 @@ enum AppSchema {
         Category.self,
         RecurringTemplate.self,
         BalanceAnchor.self,
+        Wallet.self,
     ]
 
     static let schema = Schema(models)

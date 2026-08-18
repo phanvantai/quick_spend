@@ -11,7 +11,7 @@ struct BalanceServiceTests {
     private func makeContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try ModelContainer(
-            for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self,
+            for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self,
             configurations: config
         )
     }
@@ -19,9 +19,10 @@ struct BalanceServiceTests {
     private func insertAnchor(
         openingBalance: Double,
         anchorDate: Date,
+        walletId: String = Wallet.personalID,
         in context: ModelContext
     ) throws {
-        let anchor = BalanceAnchor(openingBalance: openingBalance, anchorDate: anchorDate)
+        let anchor = BalanceAnchor(walletId: walletId, openingBalance: openingBalance, anchorDate: anchorDate)
         context.insert(anchor)
         try context.save()
     }
@@ -74,6 +75,28 @@ struct BalanceServiceTests {
         let balance = try service.computeBalance()
 
         #expect(balance == 700_000)
+    }
+
+    @Test("Wallet balance includes only matching wallet transactions")
+    func testWalletBalanceFiltersTransactionsByWallet() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let anchorDate = Calendar.current.startOfDay(for: Date())
+
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, walletId: Wallet.personalID, in: context)
+        try insertAnchor(openingBalance: 500, anchorDate: anchorDate, walletId: "wallet_side_work", in: context)
+
+        context.insert(Transaction(amount: 200, note: "Personal income", categoryId: "salary", walletId: Wallet.personalID, type: .income, createdAt: anchorDate.addingTimeInterval(10)))
+        context.insert(Transaction(amount: 75, note: "Personal expense", categoryId: "food", walletId: Wallet.personalID, type: .expense, createdAt: anchorDate.addingTimeInterval(20)))
+        context.insert(Transaction(amount: 400, note: "Side income", categoryId: "salary", walletId: "wallet_side_work", type: .income, createdAt: anchorDate.addingTimeInterval(30)))
+        context.insert(Transaction(amount: 50, note: "Side expense", categoryId: "tools", walletId: "wallet_side_work", type: .expense, createdAt: anchorDate.addingTimeInterval(40)))
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+
+        #expect(try service.computeBalance(walletId: Wallet.personalID) == 1_125)
+        #expect(try service.computeBalance(walletId: "wallet_side_work") == 850)
+        #expect(try service.computeTotalBalance(walletIds: [Wallet.personalID, "wallet_side_work"]) == 1_975)
     }
 
     // MARK: - Test 3: Expense subtracts from balance

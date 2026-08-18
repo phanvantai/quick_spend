@@ -100,13 +100,19 @@ final class BalanceService {
     ///     INCLUDED. The user-stated date doesn't change whether the entry reduces
     ///     the running balance: it's still real money out, just logged late.
     func computeBalance() throws -> Double? {
-        guard let anchor = try fetchAnchor() else {
+        try computeBalance(walletId: Wallet.personalID)
+    }
+
+    func computeBalance(walletId: String) throws -> Double? {
+        guard let anchor = try fetchAnchor(walletId: walletId) else {
             cachedAnchorDate = nil
             return nil
         }
         let anchorDate = anchor.anchorDate
         cachedAnchorDate = anchorDate
-        let predicate = #Predicate<Transaction> { $0.createdAt >= anchorDate }
+        let predicate = #Predicate<Transaction> {
+            $0.createdAt >= anchorDate && $0.walletId == walletId
+        }
         let descriptor = FetchDescriptor<Transaction>(predicate: predicate)
         let transactions = try modelContext.fetch(descriptor)
         let delta = transactions.reduce(0.0) { acc, tx in
@@ -118,6 +124,25 @@ final class BalanceService {
         return anchor.openingBalance + delta
     }
 
+    func computeTotalBalance(walletIds: [String]) throws -> Double? {
+        var total = 0.0
+        var hasAnyBalance = false
+        for walletId in walletIds {
+            if let walletBalance = try computeBalance(walletId: walletId) {
+                total += walletBalance
+                hasAnyBalance = true
+            }
+        }
+        return hasAnyBalance ? total : nil
+    }
+
+    func currentBalance(for walletId: String) -> Double? {
+        if walletId == Wallet.personalID {
+            return currentBalance
+        }
+        return try? computeBalance(walletId: walletId)
+    }
+
     // MARK: - Optimistic updates
 
     /// Apply a newly inserted transaction to the running balance in O(1).
@@ -127,6 +152,7 @@ final class BalanceService {
     /// No-op when no anchor exists (balance feature isn't set up) or when the
     /// transaction predates the anchor (excluded by the compute predicate).
     func applyOptimisticInsert(_ tx: Transaction) {
+        guard tx.walletId == Wallet.personalID else { return }
         guard let current = currentBalance, let anchorDate = cachedAnchorDate else { return }
         guard tx.createdAt >= anchorDate else { return }
         let signed = signedAmount(amount: tx.amount, type: tx.type)
@@ -138,6 +164,7 @@ final class BalanceService {
     /// Call *before* `modelContext.delete(tx)` (or pass a snapshot of its fields)
     /// so the values are still readable.
     func applyOptimisticDelete(_ tx: Transaction) {
+        guard tx.walletId == Wallet.personalID else { return }
         guard let current = currentBalance, let anchorDate = cachedAnchorDate else { return }
         guard tx.createdAt >= anchorDate else { return }
         let signed = signedAmount(amount: tx.amount, type: tx.type)
@@ -257,7 +284,12 @@ final class BalanceService {
     /// Pure read — returns the oldest anchor by `createdAt`. No side effects, no
     /// saves. Duplicate-row recovery is a separate step run from `recomputeNow`.
     private func fetchAnchor() throws -> BalanceAnchor? {
+        try fetchAnchor(walletId: Wallet.personalID)
+    }
+
+    private func fetchAnchor(walletId: String) throws -> BalanceAnchor? {
         let descriptor = FetchDescriptor<BalanceAnchor>(
+            predicate: #Predicate { $0.walletId == walletId },
             sortBy: [SortDescriptor(\.createdAt, order: .forward)]
         )
         let anchors = try modelContext.fetch(descriptor)
@@ -270,14 +302,16 @@ final class BalanceService {
     /// keep the oldest by `createdAt` and delete the rest. `@Attribute(.unique)`
     /// can't be used with CloudKit-synced models, so we deconflict at the app layer.
     private func recoverDuplicateAnchorsIfNeeded() throws {
-        let descriptor = FetchDescriptor<BalanceAnchor>(
-            sortBy: [SortDescriptor(\.createdAt, order: .forward)]
-        )
+        let descriptor = FetchDescriptor<BalanceAnchor>(sortBy: [SortDescriptor(\.createdAt, order: .forward)])
         let anchors = try modelContext.fetch(descriptor)
-        guard anchors.count > 1 else { return }
-        for extra in anchors.dropFirst() {
-            modelContext.delete(extra)
+        let grouped = Dictionary(grouping: anchors) { $0.walletId }
+        for walletAnchors in grouped.values where walletAnchors.count > 1 {
+            for extra in walletAnchors.dropFirst() {
+                modelContext.delete(extra)
+            }
         }
-        try modelContext.save()
+        if modelContext.hasChanges {
+            try modelContext.save()
+        }
     }
 }
