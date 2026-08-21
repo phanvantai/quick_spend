@@ -1041,6 +1041,15 @@
         }
       }
     },
+    "balance.not_set" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not set" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sin configurar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "未設定" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chưa thiết lập" } }
+      }
+    },
     "balance.whatsnew_benefit_1" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7253,6 +7262,15 @@
         }
       }
     },
+    "settings.balance_wallets_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Set balances per wallet" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Configura saldos por billetera" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ウォレットごとに残高を設定" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chỉnh số dư theo từng ví" } }
+      }
+    },
     "settings.categories" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9456,6 +9474,168 @@
             "value" : "Bạn chi cho việc gì? Nhớ kèm số tiền."
           }
         }
+      }
+    },
+    "wallets.all" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "All Wallets" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Todas las billeteras" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "すべてのウォレット" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tất cả ví" } }
+      }
+    },
+    "wallets.archive" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Archive" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Archivar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "アーカイブ" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Lưu trữ" } }
+      }
+    },
+    "wallets.color" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Color" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Color" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "色" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Màu" } }
+      }
+    },
+    "wallets.create" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create Wallet" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Crear billetera" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ウォレットを作成" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tạo ví" } }
+      }
+    },
+    "wallets.default" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Default" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Predeterminada" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "デフォルト" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Mặc định" } }
+      }
+    },
+    "wallets.education_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create another wallet when you want to track side income, project costs, travel, or shared expenses separately." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Crea otra billetera cuando quieras controlar por separado ingresos extra, costes de proyectos, viajes o gastos compartidos." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "副収入、プロジェクト費用、旅行、共有費用を別々に管理したいときは別のウォレットを作成できます。" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tạo ví khác khi bạn muốn theo dõi riêng thu nhập làm thêm, chi phí dự án, du lịch hoặc chi phí chung." } }
+      }
+    },
+    "wallets.education_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Separate money streams" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Separa tus fuentes de dinero" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "お金の流れを分ける" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tách riêng các nguồn tiền" } }
+      }
+    },
+    "wallets.icon" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Icon" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Icono" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "アイコン" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Biểu tượng" } }
+      }
+    },
+    "wallets.make_default" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Make Default" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Usar por defecto" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "デフォルトにする" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Đặt mặc định" } }
+      }
+    },
+    "wallets.name_placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Wallet name" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nombre de la billetera" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ウォレット名" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tên ví" } }
+      }
+    },
+    "wallets.new" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Wallet" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nueva billetera" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "新しいウォレット" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Ví mới" } }
+      }
+    },
+    "wallets.not_now" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not Now" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ahora no" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "後で" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Để sau" } }
+      }
+    },
+    "wallets.personal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Personal" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Personal" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "個人" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Cá nhân" } }
+      }
+    },
+    "wallets.settings_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Separate personal and side money" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Separa dinero personal e ingresos extra" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "個人用と副収入のお金を分ける" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tách tiền cá nhân và tiền làm thêm" } }
+      }
+    },
+    "wallets.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Wallets" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Billeteras" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ウォレット" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Ví" } }
+      }
+    },
+    "wallets.wallet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Wallet" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Billetera" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ウォレット" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Ví" } }
+      }
+    },
+    "wallets.whats_new.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your existing data is safely in Personal. Create another wallet when you want to separate side income, project costs, or travel money." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tus datos existentes están seguros en Personal. Crea otra billetera cuando quieras separar ingresos extra, costes de proyectos o dinero para viajes." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "既存のデータは安全に「個人」に保存されています。副収入、プロジェクト費用、旅行用のお金を分けたいときは別のウォレットを作成できます。" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Dữ liệu hiện có của bạn đã được lưu trong ví Cá nhân. Tạo ví khác khi bạn muốn tách thu nhập làm thêm, chi phí dự án hoặc tiền du lịch." } }
+      }
+    },
+    "wallets.whats_new.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Wallets are here" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Las billeteras ya están aquí" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ウォレットが利用できます" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Ví đã sẵn sàng" } }
       }
     },
     "What expense should I add?" : {

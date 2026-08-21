@@ -16,7 +16,7 @@ struct RecurringServiceTests {
     private func makeContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try ModelContainer(
-            for: Transaction.self, AppCategory.self, RecurringTemplate.self,
+            for: Transaction.self, AppCategory.self, RecurringTemplate.self, Wallet.self,
             configurations: config
         )
     }
@@ -84,6 +84,30 @@ struct RecurringServiceTests {
             #expect(transaction.type == .expense)
             #expect(transaction.rawInput == "Recurring: Morning coffee")
         }
+    }
+
+    @Test("Generated recurring transactions copy template wallet")
+    func testGeneratedTransactionsCopyTemplateWallet() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let template = RecurringTemplate(
+            amount: 500,
+            note: "Side work tool",
+            categoryId: "tools",
+            walletId: "wallet_side_work",
+            type: .expense,
+            pattern: .daily,
+            startDate: Date.now
+        )
+        context.insert(template)
+        try context.save()
+
+        let generated = RecurringService.generatePendingTransactions(modelContext: context)
+        let transactions = try fetchTransactions(from: context)
+
+        #expect(generated == 1)
+        #expect(transactions.first?.walletId == "wallet_side_work")
     }
 
     // MARK: - Weekly Template Tests

@@ -21,6 +21,14 @@ struct L10nTests {
         #expect(result == unknownKey)
     }
 
+    @Test("wallet whats new strings are localized in Vietnamese")
+    func testWalletWhatsNewVietnameseLocalization() {
+        #expect(L10n.tr("wallets.whats_new.title", "vi") == "Ví đã sẵn sàng")
+        #expect(L10n.tr("wallets.create", "vi") == "Tạo ví")
+        #expect(L10n.tr("wallets.not_now", "vi") == "Để sau")
+        #expect(L10n.tr("wallets.personal", "vi") == "Cá nhân")
+    }
+
     // MARK: - Format Arguments
 
     @Test("tr with format args does not crash")

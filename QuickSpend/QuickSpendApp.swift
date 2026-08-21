@@ -15,27 +15,24 @@ struct QuickSpendApp: App {
 
     let modelContainer: ModelContainer
 
-    /// Set to `true` ONLY when you need to push a new SwiftData schema to
-    /// CloudKit's development environment (e.g. after adding/removing a model
-    /// or changing a field). Build, run once on a DEBUG simulator/device, see
-    /// "CloudKit development schema initialized" in the log, then set this back
-    /// to `false` and commit.
+    /// Pass `-InitializeCloudKitSchema` as a DEBUG launch argument ONLY when you
+    /// need to push a new SwiftData schema to CloudKit's development environment
+    /// (e.g. after adding/removing a model or changing a field). The app initializes
+    /// schema using a temporary store, then stops before opening the normal app store
+    /// so a real device's local data is not accidentally synced into Development.
     ///
-    /// Why not gated by UserDefaults: a UserDefaults flag gets wiped on app
-    /// uninstall, so reinstalling triggered the schema init again — and the
-    /// container teardown after init crashes ("Illegal attempt to save to a
-    /// file that was never opened") in iOS 18+. A source-controlled constant
-    /// can't be wiped accidentally.
-    private static let cloudKitSchemaInitEnabled = false
+    /// Why not gated by UserDefaults: a UserDefaults flag can persist invisibly
+    /// or be wiped during reinstall. A launch argument makes schema init explicit
+    /// and one-run only.
+    private static var cloudKitSchemaInitEnabled: Bool {
+        ProcessInfo.processInfo.arguments.contains("-InitializeCloudKitSchema")
+    }
 
     init() {
         #if DEBUG
         if Self.cloudKitSchemaInitEnabled {
-            let cloudConfig = ModelConfiguration(
-                schema: AppSchema.schema,
-                cloudKitDatabase: .private(AppSchema.cloudKitContainerId)
-            )
-            Self._initializeCloudKitSchema(config: cloudConfig)
+            Self._initializeCloudKitSchema()
+            fatalError("[QuickSpendApp] CloudKit schema init finished. Remove -InitializeCloudKitSchema and run again.")
         }
         #endif
 
@@ -47,6 +44,7 @@ struct QuickSpendApp: App {
             fatalError("[QuickSpendApp] Failed to create ModelContainer: \(error)")
         }
         self.modelContainer = resolvedContainer
+        _ = try? WalletService.bootstrapIfNeeded(modelContext: resolvedContainer.mainContext)
 
         // CloudSyncService is shared with BalanceService via its didFinishImport
         // publisher — local insert via willSave AND remote import via Combine both
@@ -91,12 +89,14 @@ struct QuickSpendApp: App {
     /// Push the SwiftData schema to CloudKit's development environment.
     /// Runs inside autoreleasepool so the Core Data stack is fully deallocated
     /// before SwiftData's ModelContainer opens the same store.
-    private static func _initializeCloudKitSchema(config: ModelConfiguration) {
+    private static func _initializeCloudKitSchema() {
         do {
             try autoreleasepool {
-                let desc = NSPersistentStoreDescription(url: config.url)
+                let storeURL = URL(fileURLWithPath: NSTemporaryDirectory())
+                    .appendingPathComponent("QuickSpendCloudKitSchemaInit.sqlite")
+                let desc = NSPersistentStoreDescription(url: storeURL)
                 let opts = NSPersistentCloudKitContainerOptions(
-                    containerIdentifier: "iCloud.com.randomtech.quickSpend"
+                    containerIdentifier: AppSchema.cloudKitContainerId
                 )
                 desc.cloudKitContainerOptions = opts
                 desc.shouldAddStoreAsynchronously = false

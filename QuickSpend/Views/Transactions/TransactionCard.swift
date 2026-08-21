@@ -4,7 +4,15 @@ import SwiftUI
 struct TransactionCard: View {
     let transaction: Transaction
     let category: Category?
+    let wallet: Wallet?
     let config: AppConfig
+
+    init(transaction: Transaction, category: Category?, wallet: Wallet? = nil, config: AppConfig) {
+        self.transaction = transaction
+        self.category = category
+        self.wallet = wallet
+        self.config = config
+    }
 
     var body: some View {
         HStack(spacing: AppTheme.spacing12) {
@@ -28,6 +36,10 @@ struct TransactionCard: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
+
+                if let wallet {
+                    walletBadge(wallet)
+                }
             }
 
             Spacer()
@@ -51,5 +63,24 @@ struct TransactionCard: View {
             }
         }
         .cardBackground(shadow: true)
+    }
+
+    private func walletBadge(_ wallet: Wallet) -> some View {
+        HStack(spacing: AppTheme.spacing4) {
+            Image(systemName: wallet.iconName)
+                .font(.system(size: 9, weight: .semibold))
+                .frame(width: 12, height: 12)
+
+            Text(wallet.displayName(language: config.language))
+                .font(.system(size: 10, weight: .semibold))
+                .lineLimit(1)
+        }
+        .foregroundStyle(wallet.color)
+        .padding(.horizontal, AppTheme.spacing8)
+        .padding(.vertical, 3)
+        .background {
+            Capsule()
+                .fill(wallet.color.opacity(0.12))
+        }
     }
 }

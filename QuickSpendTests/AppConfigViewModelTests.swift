@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 import SwiftUI
+import Observation
 @testable import QuickSpend
 
 @Suite("AppConfigViewModel Tests")
@@ -195,6 +196,25 @@ struct AppConfigViewModelTests {
         vm.setLanguage("vi")
         let formatted = vm.formatCurrency(1500000)
         #expect(formatted.contains("₫"))
+    }
+
+    // MARK: - Wallet Preferences
+
+    @Test("setDefaultWalletId notifies observers so wallet management rows refresh")
+    func testSetDefaultWalletIdNotifiesObservers() {
+        let vm = makeViewModel()
+        var didNotify = false
+
+        withObservationTracking {
+            _ = vm.defaultWalletId
+        } onChange: {
+            didNotify = true
+        }
+
+        vm.setDefaultWalletId("wallet_side_work")
+
+        #expect(vm.defaultWalletId == "wallet_side_work")
+        #expect(didNotify == true)
     }
 
     // MARK: - Sequential Operations

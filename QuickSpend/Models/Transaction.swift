@@ -8,6 +8,7 @@ final class Transaction {
     var amount: Double = 0
     var note: String = ""
     var categoryId: String = ""
+    var walletId: String = Wallet.personalID
     var type: TransactionType = TransactionType.expense
     var date: Date = Date.now
     var rawInput: String?
@@ -23,6 +24,7 @@ final class Transaction {
         amount: Double,
         note: String,
         categoryId: String,
+        walletId: String = Wallet.personalID,
         type: TransactionType = .expense,
         date: Date = .now,
         rawInput: String? = nil,
@@ -34,6 +36,7 @@ final class Transaction {
         self.amount = amount
         self.note = note
         self.categoryId = categoryId
+        self.walletId = walletId
         self.type = type
         self.date = date
         self.rawInput = rawInput

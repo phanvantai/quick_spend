@@ -7,9 +7,11 @@ import SwiftData
 /// `.sheet` modifier on a `Section` deep inside the list.
 enum SettingsSheet: Hashable, Identifiable {
     case balanceEdit
+    case balanceWalletPicker
     case currencyPicker
     case languagePicker
     case themePicker
+    case wallets
     case paywall
     case premiumStatus
 
@@ -108,7 +110,9 @@ struct SettingsView: View {
     private func sheetContent(for sheet: SettingsSheet) -> some View {
         switch sheet {
         case .balanceEdit:
-            BalanceEditSheet()
+            BalanceEditSheet(walletId: appConfig.defaultWalletId)
+        case .balanceWalletPicker:
+            BalanceWalletPickerView()
         case .currencyPicker:
             PickerSheet(
                 title: L10n.tr("settings.currency", appConfig.language),
@@ -158,6 +162,8 @@ struct SettingsView: View {
                 },
                 onDone: { activeSheet = nil }
             )
+        case .wallets:
+            WalletManagementView()
         case .paywall:
             PaywallView()
         case .premiumStatus:
@@ -171,6 +177,8 @@ struct SettingsView: View {
             try modelContext.delete(model: Category.self)
             try modelContext.delete(model: RecurringTemplate.self)
             try modelContext.delete(model: BalanceAnchor.self)
+            try modelContext.delete(model: Wallet.self)
+            try? WalletService.bootstrapIfNeeded(modelContext: modelContext)
         } catch {
             print("[Settings] Failed to delete data: \(error)")
         }
@@ -181,7 +189,7 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
-        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self], inMemory: true)
         .environment(AppConfigViewModel())
         .environment(SubscriptionViewModel())
         .environment(CloudSyncService())

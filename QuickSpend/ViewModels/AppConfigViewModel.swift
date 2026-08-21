@@ -5,6 +5,8 @@ import SwiftUI
 @Observable
 final class AppConfigViewModel {
     private(set) var config: AppConfig
+    private(set) var selectedWalletScope: WalletScope
+    private(set) var defaultWalletId: String
     private let preferences: PreferencesService
 
     /// Supported language codes in the app
@@ -17,6 +19,7 @@ final class AppConfigViewModel {
     var hasSeenBalanceWhatsNew: Bool { config.hasSeenBalanceWhatsNew }
     var hasSeenSiriPromo: Bool { config.hasSeenSiriPromo }
     var hasSeenVoiceShortcutPromo: Bool { config.hasSeenVoiceShortcutPromo }
+    var shouldShowWalletsWhatsNew: Bool { preferences.shouldShowWalletsWhatsNew }
     /// Decoded form of `config.focalChartPreference`. Unknown raw values fall
     /// back to `.donut` (mirrors the AppConfig decoder).
     var focalChartPreference: FocalChartPreference {
@@ -33,6 +36,8 @@ final class AppConfigViewModel {
     init(preferences: PreferencesService) {
         self.preferences = preferences
         self.config = preferences.getConfig()
+        self.selectedWalletScope = WalletScope(rawValue: preferences.selectedWalletScopeRawValue) ?? .wallet(Wallet.personalID)
+        self.defaultWalletId = preferences.defaultWalletId
     }
 
     func setLanguage(_ language: String) {
@@ -124,6 +129,20 @@ final class AppConfigViewModel {
         preferences.saveConfig(config)
     }
 
+    func setDefaultWalletId(_ walletId: String) {
+        defaultWalletId = walletId
+        preferences.setDefaultWalletId(walletId)
+    }
+
+    func setSelectedWalletScope(_ scope: WalletScope) {
+        selectedWalletScope = scope
+        preferences.setSelectedWalletScope(scope)
+    }
+
+    func markWalletsWhatsNewSeen() {
+        preferences.setShouldShowWalletsWhatsNew(false)
+    }
+
     /// Bulk update (useful during onboarding)
     func updatePreferences(language: String? = nil, currency: String? = nil, isOnboardingComplete: Bool? = nil) {
         if let language {
@@ -149,6 +168,8 @@ final class AppConfigViewModel {
     func resetAll() {
         preferences.clearAll()
         config = AppConfig()
+        selectedWalletScope = .wallet(Wallet.personalID)
+        defaultWalletId = Wallet.personalID
     }
 
     /// Format an amount using current config

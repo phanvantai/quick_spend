@@ -26,6 +26,34 @@ struct PreferencesServiceTests {
         #expect(config.hasSeenBalanceWhatsNew == false)
     }
 
+    @Test("wallet preferences default to Personal wallet scope")
+    func testWalletPreferenceDefaults() {
+        let service = makeService()
+
+        #expect(service.defaultWalletId == Wallet.personalID)
+        #expect(service.selectedWalletScopeRawValue == WalletScope.wallet(Wallet.personalID).rawValue)
+        #expect(service.shouldShowWalletsWhatsNew == false)
+    }
+
+    @Test("wallet preferences persist independently from AppConfig")
+    func testWalletPreferencesPersist() {
+        let service = makeService()
+
+        service.setDefaultWalletId("wallet_side_work")
+        service.setSelectedWalletScope(.all)
+        service.setShouldShowWalletsWhatsNew(true)
+
+        #expect(service.defaultWalletId == "wallet_side_work")
+        #expect(service.selectedWalletScopeRawValue == WalletScope.all.rawValue)
+        #expect(service.shouldShowWalletsWhatsNew == true)
+
+        service.saveConfig(AppConfig(language: "vi", currency: "VND"))
+
+        #expect(service.defaultWalletId == "wallet_side_work")
+        #expect(service.selectedWalletScopeRawValue == WalletScope.all.rawValue)
+        #expect(service.shouldShowWalletsWhatsNew == true)
+    }
+
     @Test("completeOnboarding atomically sets isOnboardingComplete + hasSeenBalanceWhatsNew + hasSeenSiriPromo — fresh install never sees the catch-up modals")
     func testCompleteOnboardingSetsPromoFlagsAtomic() {
         let service = makeService()
@@ -193,6 +221,9 @@ struct PreferencesServiceTests {
         service.setCurrency("VND")
         service.setThemeMode("dark")
         service.completeOnboarding()
+        service.setDefaultWalletId("wallet_side_work")
+        service.setSelectedWalletScope(.all)
+        service.setShouldShowWalletsWhatsNew(true)
 
         service.clearAll()
 
@@ -201,6 +232,9 @@ struct PreferencesServiceTests {
         #expect(config.currency == "USD")
         #expect(config.themeMode == "system")
         #expect(config.isOnboardingComplete == false)
+        #expect(service.defaultWalletId == Wallet.personalID)
+        #expect(service.selectedWalletScopeRawValue == WalletScope.wallet(Wallet.personalID).rawValue)
+        #expect(service.shouldShowWalletsWhatsNew == false)
     }
 
     @Test("clearAll resets voice tutorial and recording count")

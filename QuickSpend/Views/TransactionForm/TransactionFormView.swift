@@ -8,12 +8,15 @@ struct TransactionFormView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
 
     let categories: [Category]
+    let wallets: [Wallet]
+    let defaultWalletId: String
     let existingTransaction: Transaction?
     let onSave: (Transaction) -> Void
 
     @State private var noteText: String
     @State private var amountText: String
     @State private var selectedCategoryId: String?
+    @State private var selectedWalletId: String
     @State private var selectedDate: Date
     @State private var selectedType: TransactionType
 
@@ -39,17 +42,22 @@ struct TransactionFormView: View {
 
     init(
         categories: [Category],
+        wallets: [Wallet] = [],
+        defaultWalletId: String = Wallet.personalID,
         expense: Transaction? = nil,
         initialNote: String? = nil,
         onSave: @escaping (Transaction) -> Void
     ) {
         self.categories = categories
+        self.wallets = wallets
+        self.defaultWalletId = defaultWalletId
         self.existingTransaction = expense
         self.onSave = onSave
 
         _noteText = State(initialValue: expense?.note ?? initialNote ?? "")
         _amountText = State(initialValue: expense.map { String(format: "%.0f", $0.amount) } ?? "")
         _selectedCategoryId = State(initialValue: expense?.categoryId)
+        _selectedWalletId = State(initialValue: expense?.walletId ?? defaultWalletId)
         _selectedDate = State(initialValue: expense?.date ?? {
             let now = Date.now
             return Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: now) ?? now
@@ -70,6 +78,9 @@ struct TransactionFormView: View {
                                 selectedType: $selectedType,
                                 language: appConfig.language
                             )
+                            if wallets.count > 1 {
+                                walletPicker
+                            }
                             AmountInputField(
                                 amountText: $amountText,
                                 currency: appConfig.config.currency,
@@ -177,6 +188,28 @@ struct TransactionFormView: View {
         .padding(.vertical, AppTheme.spacing16)
     }
 
+    private var walletPicker: some View {
+        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
+            Text(L10n.tr("wallets.wallet", appConfig.language))
+                .font(Typography.caption)
+                .foregroundStyle(.secondary)
+            Picker(L10n.tr("wallets.wallet", appConfig.language), selection: $selectedWalletId) {
+                ForEach(wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }, id: \.id) { wallet in
+                    Label(wallet.displayName(language: appConfig.language), systemImage: wallet.iconName)
+                        .tag(wallet.id)
+                }
+            }
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, AppTheme.spacing12)
+            .padding(.vertical, AppTheme.spacing12)
+            .background {
+                RoundedRectangle(cornerRadius: AppTheme.radiusMedium)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            }
+        }
+    }
+
     // MARK: - Validation
 
     @discardableResult
@@ -247,6 +280,7 @@ struct TransactionFormView: View {
             amount: amount,
             note: noteText.trimmingCharacters(in: .whitespaces),
             categoryId: selectedCategoryId!,
+            walletId: selectedWalletId,
             type: selectedType,
             date: selectedDate,
             rawInput: existingTransaction?.rawInput,

@@ -8,6 +8,9 @@ final class PreferencesService {
     private let configKey = "app_config"
     private let voiceTutorialShownKey = "voice_tutorial_shown"
     private let voiceRecordingCountKey = "voice_recording_count"
+    private let defaultWalletIdKey = "default_wallet_id"
+    private let selectedWalletScopeKey = "selected_wallet_scope"
+    private let walletsWhatsNewKey = "wallets_whats_new"
 
     private convenience init() {
         self.init(defaults: .standard)
@@ -69,6 +72,32 @@ final class PreferencesService {
         updateConfig { $0.focalChartPreference = value.rawValue }
     }
 
+    // MARK: - Wallets
+
+    var defaultWalletId: String {
+        defaults.string(forKey: defaultWalletIdKey) ?? Wallet.personalID
+    }
+
+    func setDefaultWalletId(_ walletId: String) {
+        defaults.set(walletId, forKey: defaultWalletIdKey)
+    }
+
+    var selectedWalletScopeRawValue: String {
+        defaults.string(forKey: selectedWalletScopeKey) ?? WalletScope.wallet(Wallet.personalID).rawValue
+    }
+
+    func setSelectedWalletScope(_ scope: WalletScope) {
+        defaults.set(scope.rawValue, forKey: selectedWalletScopeKey)
+    }
+
+    var shouldShowWalletsWhatsNew: Bool {
+        defaults.bool(forKey: walletsWhatsNewKey)
+    }
+
+    func setShouldShowWalletsWhatsNew(_ shouldShow: Bool) {
+        defaults.set(shouldShow, forKey: walletsWhatsNewKey)
+    }
+
     private func updateConfig(_ update: (inout AppConfig) -> Void) {
         var config = getConfig()
         update(&config)
@@ -103,5 +132,8 @@ final class PreferencesService {
         defaults.removeObject(forKey: configKey)
         defaults.removeObject(forKey: voiceTutorialShownKey)
         defaults.removeObject(forKey: voiceRecordingCountKey)
+        defaults.removeObject(forKey: defaultWalletIdKey)
+        defaults.removeObject(forKey: selectedWalletScopeKey)
+        defaults.removeObject(forKey: walletsWhatsNewKey)
     }
 }

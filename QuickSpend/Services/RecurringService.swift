@@ -77,6 +77,7 @@ struct RecurringService {
                 amount: template.amount,
                 note: template.note,
                 categoryId: template.categoryId,
+                walletId: template.walletId,
                 type: template.type,
                 date: date,
                 rawInput: "Recurring: \(template.note)"

@@ -9,6 +9,7 @@ struct TransactionsView: View {
     @Environment(BalanceService.self) private var balance
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Category.name) private var categories: [Category]
+    @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     @State private var selectedMonth = Date()
     @State private var selectedDate: Date?
@@ -20,7 +21,7 @@ struct TransactionsView: View {
     /// Transactions filtered to the selected month
     private var monthTransactions: [Transaction] {
         let calendar = Calendar.current
-        return allTransactions.filter {
+        return scopedTransactions.filter {
             calendar.isDate($0.date, equalTo: selectedMonth, toGranularity: .month)
         }
     }
@@ -56,6 +57,55 @@ struct TransactionsView: View {
 
     private var netTotal: Double {
         totalIncome - totalExpense
+    }
+
+    private var activeWallets: [Wallet] {
+        WalletService.activeWallets(from: wallets)
+    }
+
+    private var effectiveWalletScope: WalletScope {
+        guard activeWallets.count > 1 else {
+            return .wallet(activeWallets.first?.id ?? Wallet.personalID)
+        }
+
+        switch appConfig.selectedWalletScope {
+        case .all:
+            return .all
+        case .wallet(let walletId):
+            return activeWallets.contains(where: { $0.id == walletId })
+                ? appConfig.selectedWalletScope
+                : .wallet(activeWallets.first?.id ?? Wallet.personalID)
+        }
+    }
+
+    private var selectedWalletScopeBinding: Binding<WalletScope> {
+        Binding(
+            get: { effectiveWalletScope },
+            set: { appConfig.setSelectedWalletScope($0) }
+        )
+    }
+
+    private var scopedTransactions: [Transaction] {
+        switch effectiveWalletScope {
+        case .all:
+            let walletIds = Set(WalletService.walletIdsForAllScope(wallets: wallets))
+            return allTransactions.filter { walletIds.contains($0.walletId) }
+        case .wallet(let walletId):
+            return allTransactions.filter { $0.walletId == walletId }
+        }
+    }
+
+    private var defaultWalletId: String {
+        switch effectiveWalletScope {
+        case .all:
+            return WalletService.resolvedDefaultWalletId(wallets: wallets)
+        case .wallet(let walletId):
+            return walletId
+        }
+    }
+
+    private var shouldShowWalletBadge: Bool {
+        activeWallets.count > 1 && effectiveWalletScope == .all
     }
 
     // MARK: - Month Date Range Label
@@ -116,6 +166,13 @@ struct TransactionsView: View {
                             .font(.title3)
                     }
                 }
+                ToolbarItem(placement: .principal) {
+                    WalletScopeMenu(
+                        selectedScope: selectedWalletScopeBinding,
+                        language: appConfig.language,
+                        wallets: activeWallets
+                    )
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showingAddTransaction = true
@@ -126,7 +183,11 @@ struct TransactionsView: View {
                 }
             }
             .sheet(isPresented: $showingAddTransaction) {
-                TransactionFormView(categories: categories) { transaction in
+                TransactionFormView(
+                    categories: categories,
+                    wallets: activeWallets,
+                    defaultWalletId: defaultWalletId
+                ) { transaction in
                     modelContext.insert(transaction)
                     balance.applyOptimisticInsert(transaction)
                 }
@@ -137,13 +198,20 @@ struct TransactionsView: View {
                     .presentationDragIndicator(.visible)
             }
             .sheet(item: $editingTransaction) { transaction in
-                TransactionFormView(categories: categories, expense: transaction) { updated in
+                TransactionFormView(
+                    categories: categories,
+                    wallets: activeWallets,
+                    defaultWalletId: transaction.walletId,
+                    expense: transaction
+                ) { updated in
                     let oldAmount = transaction.amount
                     let oldType = transaction.type
+                    let oldWalletId = transaction.walletId
                     let createdAt = transaction.createdAt
                     transaction.amount = updated.amount
                     transaction.note = updated.note
                     transaction.categoryId = updated.categoryId
+                    transaction.walletId = updated.walletId
                     transaction.date = updated.date
                     transaction.type = updated.type
                     transaction.updatedAt = .now
@@ -151,8 +219,10 @@ struct TransactionsView: View {
                         createdAt: createdAt,
                         oldAmount: oldAmount,
                         oldType: oldType,
+                        oldWalletId: oldWalletId,
                         newAmount: updated.amount,
-                        newType: updated.type
+                        newType: updated.type,
+                        newWalletId: updated.walletId
                     )
                 }
             }
@@ -260,9 +330,11 @@ struct TransactionsView: View {
                 Section {
                     ForEach(group.transactions, id: \.id) { transaction in
                         let category = categories.first { $0.id == transaction.categoryId }
+                        let wallet = shouldShowWalletBadge ? activeWallets.first { $0.id == transaction.walletId } : nil
                         TransactionCard(
                             transaction: transaction,
                             category: category,
+                            wallet: wallet,
                             config: appConfig.config
                         )
                         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
@@ -327,6 +399,6 @@ struct TransactionsView: View {
 
 #Preview {
     TransactionsView()
-        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, Wallet.self], inMemory: true)
         .environment(AppConfigViewModel())
 }
