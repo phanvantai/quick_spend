@@ -154,14 +154,12 @@ struct HomeView: View {
                         onTap: { showBalanceEdit = true }
                     )
 
-                    if activeWallets.count > 1 {
-                        walletScopePicker
-                    }
-
                     HomeAppBar(
                         selectedMonth: $selectedMonth,
+                        selectedWalletScope: $selectedWalletScope,
                         language: appConfig.language,
-                        currency: appConfig.config.currency
+                        currency: appConfig.config.currency,
+                        wallets: activeWallets
                     )
 
                     SummaryPills(
@@ -272,15 +270,6 @@ struct HomeView: View {
         }
     }
 
-    private var walletScopePicker: some View {
-        Picker(L10n.tr("wallets.wallet", appConfig.language), selection: $selectedWalletScope) {
-            Text(L10n.tr("wallets.all", appConfig.language)).tag(WalletScope.all)
-            ForEach(activeWallets, id: \.id) { wallet in
-                Text(wallet.displayName(language: appConfig.language)).tag(WalletScope.wallet(wallet.id))
-            }
-        }
-        .pickerStyle(.segmented)
-    }
 }
 
 #Preview {
