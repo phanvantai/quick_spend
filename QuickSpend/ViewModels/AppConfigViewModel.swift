@@ -5,6 +5,7 @@ import SwiftUI
 @Observable
 final class AppConfigViewModel {
     private(set) var config: AppConfig
+    private(set) var selectedWalletScope: WalletScope
     private let preferences: PreferencesService
 
     /// Supported language codes in the app
@@ -18,9 +19,6 @@ final class AppConfigViewModel {
     var hasSeenSiriPromo: Bool { config.hasSeenSiriPromo }
     var hasSeenVoiceShortcutPromo: Bool { config.hasSeenVoiceShortcutPromo }
     var defaultWalletId: String { preferences.defaultWalletId }
-    var selectedWalletScope: WalletScope {
-        WalletScope(rawValue: preferences.selectedWalletScopeRawValue) ?? .wallet(Wallet.personalID)
-    }
     var shouldShowWalletsWhatsNew: Bool { preferences.shouldShowWalletsWhatsNew }
     /// Decoded form of `config.focalChartPreference`. Unknown raw values fall
     /// back to `.donut` (mirrors the AppConfig decoder).
@@ -38,6 +36,7 @@ final class AppConfigViewModel {
     init(preferences: PreferencesService) {
         self.preferences = preferences
         self.config = preferences.getConfig()
+        self.selectedWalletScope = WalletScope(rawValue: preferences.selectedWalletScopeRawValue) ?? .wallet(Wallet.personalID)
     }
 
     func setLanguage(_ language: String) {
@@ -134,6 +133,7 @@ final class AppConfigViewModel {
     }
 
     func setSelectedWalletScope(_ scope: WalletScope) {
+        selectedWalletScope = scope
         preferences.setSelectedWalletScope(scope)
     }
 
@@ -166,6 +166,7 @@ final class AppConfigViewModel {
     func resetAll() {
         preferences.clearAll()
         config = AppConfig()
+        selectedWalletScope = .wallet(Wallet.personalID)
     }
 
     /// Format an amount using current config
