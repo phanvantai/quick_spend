@@ -60,7 +60,7 @@ struct TransactionsView: View {
     }
 
     private var activeWallets: [Wallet] {
-        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+        WalletService.activeWallets(from: wallets)
     }
 
     private var effectiveWalletScope: WalletScope {
@@ -88,8 +88,8 @@ struct TransactionsView: View {
     private var scopedTransactions: [Transaction] {
         switch effectiveWalletScope {
         case .all:
-            let activeIds = Set(activeWallets.map(\.id))
-            return allTransactions.filter { activeIds.contains($0.walletId) }
+            let walletIds = Set(WalletService.walletIdsForAllScope(wallets: wallets))
+            return allTransactions.filter { walletIds.contains($0.walletId) }
         case .wallet(let walletId):
             return allTransactions.filter { $0.walletId == walletId }
         }
@@ -98,9 +98,7 @@ struct TransactionsView: View {
     private var defaultWalletId: String {
         switch effectiveWalletScope {
         case .all:
-            return activeWallets.contains(where: { $0.id == appConfig.defaultWalletId })
-                ? appConfig.defaultWalletId
-                : Wallet.personalID
+            return WalletService.resolvedDefaultWalletId(wallets: wallets)
         case .wallet(let walletId):
             return walletId
         }
@@ -208,6 +206,7 @@ struct TransactionsView: View {
                 ) { updated in
                     let oldAmount = transaction.amount
                     let oldType = transaction.type
+                    let oldWalletId = transaction.walletId
                     let createdAt = transaction.createdAt
                     transaction.amount = updated.amount
                     transaction.note = updated.note
@@ -220,8 +219,10 @@ struct TransactionsView: View {
                         createdAt: createdAt,
                         oldAmount: oldAmount,
                         oldType: oldType,
+                        oldWalletId: oldWalletId,
                         newAmount: updated.amount,
-                        newType: updated.type
+                        newType: updated.type,
+                        newWalletId: updated.walletId
                     )
                 }
             }

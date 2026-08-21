@@ -640,6 +640,36 @@ struct BalanceServiceTests {
         #expect(service.currentBalance == optimistic)
     }
 
+    @Test("Computing another wallet balance does not change Personal optimistic insert anchor")
+    func testOtherWalletComputeDoesNotPoisonPersonalOptimisticAnchor() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let personalAnchorDate = Date().addingTimeInterval(-3_600)
+        let sideAnchorDate = Date().addingTimeInterval(3_600)
+        try insertAnchor(openingBalance: 1_000, anchorDate: personalAnchorDate, walletId: Wallet.personalID, in: context)
+        try insertAnchor(openingBalance: 500, anchorDate: sideAnchorDate, walletId: "wallet_side_work", in: context)
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        #expect(service.currentBalance == 1_000)
+
+        _ = try service.computeBalance(walletId: "wallet_side_work")
+
+        let tx = Transaction(
+            amount: 100,
+            note: "Personal coffee",
+            categoryId: "food",
+            walletId: Wallet.personalID,
+            type: .expense,
+            date: .now,
+            createdAt: Date()
+        )
+        context.insert(tx)
+        service.applyOptimisticInsert(tx)
+
+        #expect(service.currentBalance == 900)
+    }
+
     @Test("Optimistic delete — subtracts the transaction's signed amount")
     func testOptimisticDelete() throws {
         let container = try makeContainer()
@@ -681,6 +711,41 @@ struct BalanceServiceTests {
             newAmount: 250, newType: .expense
         )
         #expect(service.currentBalance == 750)
+    }
+
+    @Test("Optimistic edit — moving a Personal expense to another wallet restores Personal balance")
+    func testOptimisticEditMovingExpenseOutOfPersonalWallet() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let anchorDate = Date().addingTimeInterval(-3600)
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, in: context)
+
+        let tx = Transaction(
+            amount: 100,
+            note: "",
+            categoryId: "x",
+            walletId: Wallet.personalID,
+            type: .expense,
+            date: .now
+        )
+        context.insert(tx)
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        #expect(service.currentBalance == 900)
+
+        service.applyOptimisticEdit(
+            createdAt: tx.createdAt,
+            oldAmount: 100,
+            oldType: .expense,
+            oldWalletId: Wallet.personalID,
+            newAmount: 100,
+            newType: .expense,
+            newWalletId: "wallet_side_work"
+        )
+
+        #expect(service.currentBalance == 1_000)
     }
 
     @Test("Optimistic edit — type flip from expense to income inverts the contribution")

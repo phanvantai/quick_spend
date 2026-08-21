@@ -8,6 +8,32 @@ struct WalletBootstrapResult {
 
 @MainActor
 enum WalletService {
+    static func activeWallets(from wallets: [Wallet]) -> [Wallet] {
+        wallets
+            .filter { !$0.isArchived }
+            .sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    static func walletIdsForAllScope(wallets: [Wallet]) -> [String] {
+        let sortedWallets = wallets.sorted { $0.sortOrder < $1.sortOrder }
+        let ids = sortedWallets.map(\.id)
+        return ids.isEmpty ? [Wallet.personalID] : ids
+    }
+
+    static func resolvedDefaultWalletId(
+        wallets: [Wallet],
+        preferences: PreferencesService = .shared
+    ) -> String {
+        let activeWallets = activeWallets(from: wallets)
+        if activeWallets.contains(where: { $0.id == preferences.defaultWalletId }) {
+            return preferences.defaultWalletId
+        }
+        if activeWallets.contains(where: { $0.id == Wallet.personalID }) {
+            return Wallet.personalID
+        }
+        return activeWallets.first?.id ?? Wallet.personalID
+    }
+
     static func bootstrapIfNeeded(modelContext: ModelContext) throws -> WalletBootstrapResult {
         try bootstrapIfNeeded(modelContext: modelContext, preferences: .shared)
     }

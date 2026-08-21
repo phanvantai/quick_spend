@@ -74,7 +74,7 @@ struct ReportDetailView: View {
     }
 
     private var activeWallets: [Wallet] {
-        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+        WalletService.activeWallets(from: wallets)
     }
 
     private var effectiveWalletScope: WalletScope {
@@ -92,8 +92,8 @@ struct ReportDetailView: View {
     private var scopedTransactions: [Transaction] {
         switch effectiveWalletScope {
         case .all:
-            let activeIds = Set(activeWallets.map(\.id))
-            return allTransactions.filter { activeIds.contains($0.walletId) }
+            let walletIds = Set(WalletService.walletIdsForAllScope(wallets: wallets))
+            return allTransactions.filter { walletIds.contains($0.walletId) }
         case .wallet(let walletId):
             return allTransactions.filter { $0.walletId == walletId }
         }

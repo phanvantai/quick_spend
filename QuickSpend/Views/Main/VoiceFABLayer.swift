@@ -22,13 +22,11 @@ struct VoiceFABLayer: View {
     private let preferences = PreferencesService.shared
 
     private var activeWallets: [Wallet] {
-        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+        WalletService.activeWallets(from: wallets)
     }
 
     private var defaultWalletId: String {
-        activeWallets.contains(where: { $0.id == appConfig.defaultWalletId })
-            ? appConfig.defaultWalletId
-            : Wallet.personalID
+        WalletService.resolvedDefaultWalletId(wallets: wallets)
     }
 
     var body: some View {

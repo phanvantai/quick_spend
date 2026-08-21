@@ -105,11 +105,12 @@ struct AddExpenseIntent: AppIntent {
     @MainActor
     private func saveOrThrow(parsed: [ParsedTransaction], in context: ModelContext, language: String) throws {
         do {
+            let wallets = (try? context.fetch(FetchDescriptor<Wallet>())) ?? []
             try AddExpenseFlow.save(
                 parsed: parsed,
                 rawInput: expenseDescription,
                 in: context,
-                walletId: PreferencesService.shared.defaultWalletId
+                walletId: WalletService.resolvedDefaultWalletId(wallets: wallets)
             )
         } catch {
             throw AddExpenseError.saveFailed(language: language)

@@ -25,9 +25,11 @@ final class BalanceService {
     @ObservationIgnored private var observerToken: NSObjectProtocol?
     @ObservationIgnored private var debounceTask: Task<Void, Never>?
     @ObservationIgnored private var importSubscription: AnyCancellable?
-    /// Cached anchor date from the last successful compute. Lets `applyOptimistic*`
-    /// decide inclusion without a SwiftData fetch on every CRUD call.
-    @ObservationIgnored private var cachedAnchorDate: Date?
+    /// Cached anchor dates from the last successful compute per wallet. Lets
+    /// `applyOptimistic*` decide inclusion without a SwiftData fetch on every
+    /// CRUD call, while keeping non-Personal balance reads from affecting
+    /// Personal optimistic updates.
+    @ObservationIgnored private var cachedAnchorDates: [String: Date] = [:]
 
     /// 200ms — coalesces notification bursts (CloudKit import, rapid CRUD).
     static let debounceInterval: Duration = .milliseconds(200)
@@ -107,11 +109,11 @@ final class BalanceService {
 
     func computeBalance(walletId: String) throws -> Double? {
         guard let anchor = try fetchAnchor(walletId: walletId) else {
-            cachedAnchorDate = nil
+            cachedAnchorDates[walletId] = nil
             return nil
         }
         let anchorDate = anchor.anchorDate
-        cachedAnchorDate = anchorDate
+        cachedAnchorDates[walletId] = anchorDate
         let predicate = #Predicate<Transaction> {
             $0.createdAt >= anchorDate && $0.walletId == walletId
         }
@@ -155,7 +157,7 @@ final class BalanceService {
     /// transaction predates the anchor (excluded by the compute predicate).
     func applyOptimisticInsert(_ tx: Transaction) {
         guard tx.walletId == Wallet.personalID else { return }
-        guard let current = currentBalance, let anchorDate = cachedAnchorDate else { return }
+        guard let current = currentBalance, let anchorDate = cachedAnchorDates[Wallet.personalID] else { return }
         guard tx.createdAt >= anchorDate else { return }
         let signed = signedAmount(amount: tx.amount, type: tx.type)
         currentBalance = current + signed
@@ -167,7 +169,7 @@ final class BalanceService {
     /// so the values are still readable.
     func applyOptimisticDelete(_ tx: Transaction) {
         guard tx.walletId == Wallet.personalID else { return }
-        guard let current = currentBalance, let anchorDate = cachedAnchorDate else { return }
+        guard let current = currentBalance, let anchorDate = cachedAnchorDates[Wallet.personalID] else { return }
         guard tx.createdAt >= anchorDate else { return }
         let signed = signedAmount(amount: tx.amount, type: tx.type)
         currentBalance = current - signed
@@ -181,13 +183,20 @@ final class BalanceService {
         createdAt: Date,
         oldAmount: Double,
         oldType: TransactionType,
+        oldWalletId: String = Wallet.personalID,
         newAmount: Double,
-        newType: TransactionType
+        newType: TransactionType,
+        newWalletId: String = Wallet.personalID
     ) {
-        guard let current = currentBalance, let anchorDate = cachedAnchorDate else { return }
+        guard let current = currentBalance, let anchorDate = cachedAnchorDates[Wallet.personalID] else { return }
         guard createdAt >= anchorDate else { return }
-        let delta = signedAmount(amount: newAmount, type: newType)
-            - signedAmount(amount: oldAmount, type: oldType)
+        let oldContribution = oldWalletId == Wallet.personalID
+            ? signedAmount(amount: oldAmount, type: oldType)
+            : 0
+        let newContribution = newWalletId == Wallet.personalID
+            ? signedAmount(amount: newAmount, type: newType)
+            : 0
+        let delta = newContribution - oldContribution
         guard delta != 0 else { return }
         currentBalance = current + delta
         cacheStore.write(balance: current + delta)
@@ -223,7 +232,7 @@ final class BalanceService {
     /// pending-changes path), so SettingsView calls this directly after the wipe.
     func clearAll() {
         currentBalance = nil
-        cachedAnchorDate = nil
+        cachedAnchorDates.removeAll()
         cacheStore.clear()
         recomputeCount += 1
     }

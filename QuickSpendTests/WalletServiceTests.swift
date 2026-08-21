@@ -108,4 +108,61 @@ struct WalletServiceTests {
         #expect(anchor.walletId == Wallet.personalID)
         #expect(anchor.id == BalanceAnchor.id(for: Wallet.personalID))
     }
+
+    @Test("wallet IDs for all scope include archived wallets so historical transactions remain visible")
+    func allScopeIncludesArchivedWalletIds() {
+        let activePersonal = Wallet.personal()
+        let archivedSideWork = Wallet(
+            id: "wallet_side_work",
+            name: "Side Work",
+            iconName: "briefcase.fill",
+            colorHex: "#2563EB",
+            isArchived: true
+        )
+
+        let ids = WalletService.walletIdsForAllScope(wallets: [activePersonal, archivedSideWork])
+
+        #expect(ids == [Wallet.personalID, "wallet_side_work"])
+    }
+
+    @Test("resolving default wallet falls back to Personal when the stored default is archived")
+    func defaultWalletFallsBackWhenArchived() {
+        let preferences = makePreferences()
+        preferences.setDefaultWalletId("wallet_side_work")
+        let personal = Wallet.personal()
+        let archivedSideWork = Wallet(
+            id: "wallet_side_work",
+            name: "Side Work",
+            iconName: "briefcase.fill",
+            colorHex: "#2563EB",
+            isArchived: true
+        )
+
+        let resolved = WalletService.resolvedDefaultWalletId(
+            wallets: [personal, archivedSideWork],
+            preferences: preferences
+        )
+
+        #expect(resolved == Wallet.personalID)
+    }
+
+    @Test("resolving default wallet uses the stored default when it is active")
+    func defaultWalletUsesStoredActiveWallet() {
+        let preferences = makePreferences()
+        preferences.setDefaultWalletId("wallet_side_work")
+        let personal = Wallet.personal()
+        let sideWork = Wallet(
+            id: "wallet_side_work",
+            name: "Side Work",
+            iconName: "briefcase.fill",
+            colorHex: "#2563EB"
+        )
+
+        let resolved = WalletService.resolvedDefaultWalletId(
+            wallets: [personal, sideWork],
+            preferences: preferences
+        )
+
+        #expect(resolved == "wallet_side_work")
+    }
 }
