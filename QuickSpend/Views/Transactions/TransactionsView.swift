@@ -106,6 +106,10 @@ struct TransactionsView: View {
         }
     }
 
+    private var shouldShowWalletBadge: Bool {
+        activeWallets.count > 1 && effectiveWalletScope == .all
+    }
+
     // MARK: - Month Date Range Label
 
     private var monthDateRange: String {
@@ -325,9 +329,11 @@ struct TransactionsView: View {
                 Section {
                     ForEach(group.transactions, id: \.id) { transaction in
                         let category = categories.first { $0.id == transaction.categoryId }
+                        let wallet = shouldShowWalletBadge ? activeWallets.first { $0.id == transaction.walletId } : nil
                         TransactionCard(
                             transaction: transaction,
                             category: category,
+                            wallet: wallet,
                             config: appConfig.config
                         )
                         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
