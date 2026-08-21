@@ -3,6 +3,7 @@ import SwiftData
 
 struct WalletManagementView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
@@ -42,16 +43,6 @@ struct WalletManagementView: View {
                                 }
                             }
                             Spacer()
-                            Button {
-                                editingWallet = wallet
-                            } label: {
-                                Image(systemName: "pencil")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 28, height: 28)
-                            }
-                            .buttonStyle(.borderless)
-
                             if wallet.id != appConfig.defaultWalletId {
                                 Button(L10n.tr("wallets.make_default", appConfig.language)) {
                                     appConfig.setDefaultWalletId(wallet.id)
@@ -60,11 +51,7 @@ struct WalletManagementView: View {
                                 .buttonStyle(.borderless)
                             }
                         }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            editingWallet = wallet
-                        }
-                        .swipeActions {
+                        .swipeActions(edge: .trailing) {
                             if wallet.id != Wallet.personalID {
                                 Button(role: .destructive) {
                                     archive(wallet)
@@ -72,6 +59,14 @@ struct WalletManagementView: View {
                                     Label(L10n.tr("wallets.archive", appConfig.language), systemImage: "archivebox.fill")
                                 }
                             }
+                        }
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                editingWallet = wallet
+                            } label: {
+                                Label(L10n.tr("common.edit", appConfig.language), systemImage: "pencil")
+                            }
+                            .tint(AppTheme.adaptiveAccent(colorScheme))
                         }
                     }
                 }
