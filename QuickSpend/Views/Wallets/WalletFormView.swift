@@ -9,10 +9,8 @@ struct WalletFormView: View {
 
     @State private var name = ""
     @State private var selectedIcon = "briefcase.fill"
-    @State private var selectedColor = "#16A34A"
-
-    private let icons = ["briefcase.fill", "creditcard.fill", "banknote.fill", "cart.fill", "airplane", "house.fill"]
-    private let colors = ["#16A34A", "#2563EB", "#DC2626", "#9333EA", "#EA580C", "#0891B2"]
+    @State private var selectedColorHex = CategoryColorPalette.colorHex(for: "freelance")
+    @State private var customColor = Color(hex: CategoryColorPalette.colorHex(for: "freelance"))
 
     private var canSave: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -22,30 +20,29 @@ struct WalletFormView: View {
         NavigationStack {
             Form {
                 Section {
+                    previewRow
+                }
+
+                Section {
                     TextField(L10n.tr("wallets.name_placeholder", appConfig.language), text: $name)
                         .textInputAutocapitalization(.words)
                 }
 
                 Section(L10n.tr("wallets.icon", appConfig.language)) {
-                    Picker(L10n.tr("wallets.icon", appConfig.language), selection: $selectedIcon) {
-                        ForEach(icons, id: \.self) { icon in
-                            Label(icon, systemImage: icon).tag(icon)
-                        }
-                    }
-                    .pickerStyle(.menu)
+                    iconPicker
                 }
 
                 Section(L10n.tr("wallets.color", appConfig.language)) {
-                    Picker(L10n.tr("wallets.color", appConfig.language), selection: $selectedColor) {
-                        ForEach(colors, id: \.self) { color in
-                            HStack {
-                                Circle().fill(Color(hex: color)).frame(width: 16, height: 16)
-                                Text(color)
-                            }
-                            .tag(color)
-                        }
+                    colorPicker
+
+                    ColorPicker(
+                        L10n.tr("category_form.custom_color", appConfig.language),
+                        selection: $customColor,
+                        supportsOpacity: false
+                    )
+                    .onChange(of: customColor) {
+                        selectedColorHex = customColor.toHex()
                     }
-                    .pickerStyle(.menu)
                 }
             }
             .navigationTitle(L10n.tr("wallets.new", appConfig.language))
@@ -62,12 +59,85 @@ struct WalletFormView: View {
         }
     }
 
+    private var previewRow: some View {
+        HStack(spacing: AppTheme.spacing12) {
+            CategoryIconBadge(
+                iconName: selectedIcon,
+                color: Color(hex: selectedColorHex),
+                size: 48,
+                iconFont: .title3
+            )
+
+            Text(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? L10n.tr("wallets.name_placeholder", appConfig.language)
+                : name)
+                .font(.headline)
+                .foregroundStyle(canSave ? .primary : .tertiary)
+        }
+    }
+
+    private var iconPicker: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: AppTheme.spacing8)], spacing: AppTheme.spacing8) {
+            ForEach(CategoryFormView.availableIcons, id: \.self) { iconName in
+                let isSelected = iconName == selectedIcon
+                Button {
+                    selectedIcon = iconName
+                } label: {
+                    Image(systemName: iconName)
+                        .font(.body)
+                        .frame(width: 44, height: 44)
+                        .background {
+                            RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
+                                .fill(isSelected ? Color(hex: selectedColorHex).opacity(0.2) : Color(.tertiarySystemGroupedBackground))
+                        }
+                        .overlay {
+                            RoundedRectangle(cornerRadius: AppTheme.radiusSmall)
+                                .stroke(isSelected ? Color(hex: selectedColorHex) : .clear, lineWidth: 2)
+                        }
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(isSelected ? Color(hex: selectedColorHex) : .primary)
+            }
+        }
+        .padding(.vertical, AppTheme.spacing4)
+    }
+
+    private var colorPicker: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: AppTheme.spacing12)], spacing: AppTheme.spacing12) {
+            ForEach(CategoryColorPalette.availableColorHexes(), id: \.self) { hex in
+                let isSelected = hex == selectedColorHex
+                Button {
+                    selectedColorHex = hex
+                    customColor = Color(hex: hex)
+                } label: {
+                    Circle()
+                        .fill(Color(hex: hex))
+                        .frame(width: 44, height: 44)
+                        .overlay {
+                            if isSelected {
+                                Image(systemName: "checkmark")
+                                    .font(.body.bold())
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                        .overlay {
+                            Circle()
+                                .stroke(isSelected ? Color.primary : .clear, lineWidth: 3)
+                        }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.vertical, AppTheme.spacing4)
+    }
+
     private func save() {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let nextSortOrder = (wallets.map(\.sortOrder).max() ?? 0) + 1
         let wallet = Wallet(
-            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+            name: trimmedName,
             iconName: selectedIcon,
-            colorHex: selectedColor,
+            colorHex: selectedColorHex,
             sortOrder: nextSortOrder
         )
         modelContext.insert(wallet)
