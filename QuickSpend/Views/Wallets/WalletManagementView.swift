@@ -18,9 +18,9 @@ struct WalletManagementView: View {
                 if activeWallets.count == 1 {
                     Section {
                         VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-                            Text("Separate money streams")
+                            Text(L10n.tr("wallets.education_title", appConfig.language))
                                 .font(Typography.bodyEmphasized)
-                            Text("Create another wallet when you want to track side income, project costs, travel, or shared expenses separately.")
+                            Text(L10n.tr("wallets.education_subtitle", appConfig.language))
                                 .font(Typography.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -28,21 +28,21 @@ struct WalletManagementView: View {
                     }
                 }
 
-                Section("Wallets") {
+                Section(L10n.tr("wallets.title", appConfig.language)) {
                     ForEach(activeWallets, id: \.id) { wallet in
                         HStack(spacing: AppTheme.spacing12) {
                             CategoryIconBadge(iconName: wallet.iconName, color: wallet.color, size: 36, iconFont: .body)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(wallet.name)
+                                Text(wallet.displayName(language: appConfig.language))
                                 if wallet.id == appConfig.defaultWalletId {
-                                    Text("Default")
+                                    Text(L10n.tr("wallets.default", appConfig.language))
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
                             }
                             Spacer()
                             if wallet.id != appConfig.defaultWalletId {
-                                Button("Make Default") {
+                                Button(L10n.tr("wallets.make_default", appConfig.language)) {
                                     appConfig.setDefaultWalletId(wallet.id)
                                 }
                                 .font(.caption)
@@ -53,14 +53,14 @@ struct WalletManagementView: View {
                                 Button(role: .destructive) {
                                     archive(wallet)
                                 } label: {
-                                    Label("Archive", systemImage: "archivebox.fill")
+                                    Label(L10n.tr("wallets.archive", appConfig.language), systemImage: "archivebox.fill")
                                 }
                             }
                         }
                     }
                 }
             }
-            .navigationTitle("Wallets")
+            .navigationTitle(L10n.tr("wallets.title", appConfig.language))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {

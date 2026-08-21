@@ -190,12 +190,12 @@ struct TransactionFormView: View {
 
     private var walletPicker: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-            Text("Wallet")
+            Text(L10n.tr("wallets.wallet", appConfig.language))
                 .font(Typography.caption)
                 .foregroundStyle(.secondary)
-            Picker("Wallet", selection: $selectedWalletId) {
+            Picker(L10n.tr("wallets.wallet", appConfig.language), selection: $selectedWalletId) {
                 ForEach(wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }, id: \.id) { wallet in
-                    Label(wallet.name, systemImage: wallet.iconName)
+                    Label(wallet.displayName(language: appConfig.language), systemImage: wallet.iconName)
                         .tag(wallet.id)
                 }
             }

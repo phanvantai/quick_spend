@@ -1,15 +1,17 @@
 import SwiftUI
 
 struct WalletWhatsNewModal: View {
+    @Environment(AppConfigViewModel.self) private var appConfig
+
     let onCreateWallet: () -> Void
     let onDismiss: () -> Void
 
     var body: some View {
         ModalTemplate(
-            title: "Wallets are here",
-            subtitle: "Your existing data is safely in Personal. Create another wallet when you want to separate side income, project costs, or travel money.",
-            primary: ModalCTA(label: "Create Wallet", icon: "plus.circle.fill", action: onCreateWallet),
-            secondary: ModalCTA(label: "Not Now", action: onDismiss)
+            title: L10n.tr("wallets.whats_new.title", appConfig.language),
+            subtitle: L10n.tr("wallets.whats_new.subtitle", appConfig.language),
+            primary: ModalCTA(label: L10n.tr("wallets.create", appConfig.language), icon: "plus.circle.fill", action: onCreateWallet),
+            secondary: ModalCTA(label: L10n.tr("wallets.not_now", appConfig.language), action: onDismiss)
         ) {
             ModalGradientHero(
                 icon: "wallet.pass.fill",

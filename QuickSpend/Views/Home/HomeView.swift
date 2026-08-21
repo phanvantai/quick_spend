@@ -273,10 +273,10 @@ struct HomeView: View {
     }
 
     private var walletScopePicker: some View {
-        Picker("Wallet", selection: $selectedWalletScope) {
-            Text("All Wallets").tag(WalletScope.all)
+        Picker(L10n.tr("wallets.wallet", appConfig.language), selection: $selectedWalletScope) {
+            Text(L10n.tr("wallets.all", appConfig.language)).tag(WalletScope.all)
             ForEach(activeWallets, id: \.id) { wallet in
-                Text(wallet.name).tag(WalletScope.wallet(wallet.id))
+                Text(wallet.displayName(language: appConfig.language)).tag(WalletScope.wallet(wallet.id))
             }
         }
         .pickerStyle(.segmented)

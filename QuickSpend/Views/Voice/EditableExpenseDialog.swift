@@ -86,9 +86,9 @@ struct EditableExpenseDialog: View {
         }
 
         if wallets.count > 1 {
-            Picker("Wallet", selection: $editableExpenses[index].walletId) {
+            Picker(L10n.tr("wallets.wallet", appConfig.language), selection: $editableExpenses[index].walletId) {
                 ForEach(wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }, id: \.id) { wallet in
-                    Label(wallet.name, systemImage: wallet.iconName)
+                    Label(wallet.displayName(language: appConfig.language), systemImage: wallet.iconName)
                         .tag(wallet.id)
                 }
             }

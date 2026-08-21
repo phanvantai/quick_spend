@@ -39,8 +39,8 @@ struct PreferencesSection: View {
                 SettingsRow(
                     icon: "wallet.pass.fill",
                     iconColor: AppTheme.incomeColor,
-                    title: "Wallets",
-                    subtitle: "Separate personal and side money"
+                    title: L10n.tr("wallets.title", appConfig.language),
+                    subtitle: L10n.tr("wallets.settings_subtitle", appConfig.language)
                 )
             }
             .tint(.primary)

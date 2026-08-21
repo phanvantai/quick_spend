@@ -22,12 +22,12 @@ struct WalletFormView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Wallet name", text: $name)
+                    TextField(L10n.tr("wallets.name_placeholder", appConfig.language), text: $name)
                         .textInputAutocapitalization(.words)
                 }
 
-                Section("Icon") {
-                    Picker("Icon", selection: $selectedIcon) {
+                Section(L10n.tr("wallets.icon", appConfig.language)) {
+                    Picker(L10n.tr("wallets.icon", appConfig.language), selection: $selectedIcon) {
                         ForEach(icons, id: \.self) { icon in
                             Label(icon, systemImage: icon).tag(icon)
                         }
@@ -35,8 +35,8 @@ struct WalletFormView: View {
                     .pickerStyle(.menu)
                 }
 
-                Section("Color") {
-                    Picker("Color", selection: $selectedColor) {
+                Section(L10n.tr("wallets.color", appConfig.language)) {
+                    Picker(L10n.tr("wallets.color", appConfig.language), selection: $selectedColor) {
                         ForEach(colors, id: \.self) { color in
                             HStack {
                                 Circle().fill(Color(hex: color)).frame(width: 16, height: 16)
@@ -48,7 +48,7 @@ struct WalletFormView: View {
                     .pickerStyle(.menu)
                 }
             }
-            .navigationTitle("New Wallet")
+            .navigationTitle(L10n.tr("wallets.new", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

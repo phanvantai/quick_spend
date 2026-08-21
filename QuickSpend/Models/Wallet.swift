@@ -20,6 +20,10 @@ final class Wallet {
         Color(hex: colorHex)
     }
 
+    func displayName(language: String) -> String {
+        id == Self.personalID ? L10n.tr("wallets.personal", language) : name
+    }
+
     init(
         id: String = UUID().uuidString,
         name: String,
