@@ -21,7 +21,7 @@ struct TransactionsView: View {
     /// Transactions filtered to the selected month
     private var monthTransactions: [Transaction] {
         let calendar = Calendar.current
-        return allTransactions.filter {
+        return scopedTransactions.filter {
             calendar.isDate($0.date, equalTo: selectedMonth, toGranularity: .month)
         }
     }
@@ -63,10 +63,47 @@ struct TransactionsView: View {
         wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
     }
 
+    private var effectiveWalletScope: WalletScope {
+        guard activeWallets.count > 1 else {
+            return .wallet(activeWallets.first?.id ?? Wallet.personalID)
+        }
+
+        switch appConfig.selectedWalletScope {
+        case .all:
+            return .all
+        case .wallet(let walletId):
+            return activeWallets.contains(where: { $0.id == walletId })
+                ? appConfig.selectedWalletScope
+                : .wallet(activeWallets.first?.id ?? Wallet.personalID)
+        }
+    }
+
+    private var selectedWalletScopeBinding: Binding<WalletScope> {
+        Binding(
+            get: { effectiveWalletScope },
+            set: { appConfig.setSelectedWalletScope($0) }
+        )
+    }
+
+    private var scopedTransactions: [Transaction] {
+        switch effectiveWalletScope {
+        case .all:
+            let activeIds = Set(activeWallets.map(\.id))
+            return allTransactions.filter { activeIds.contains($0.walletId) }
+        case .wallet(let walletId):
+            return allTransactions.filter { $0.walletId == walletId }
+        }
+    }
+
     private var defaultWalletId: String {
-        activeWallets.contains(where: { $0.id == appConfig.defaultWalletId })
-            ? appConfig.defaultWalletId
-            : Wallet.personalID
+        switch effectiveWalletScope {
+        case .all:
+            return activeWallets.contains(where: { $0.id == appConfig.defaultWalletId })
+                ? appConfig.defaultWalletId
+                : Wallet.personalID
+        case .wallet(let walletId):
+            return walletId
+        }
     }
 
     // MARK: - Month Date Range Label
@@ -126,6 +163,13 @@ struct TransactionsView: View {
                         Image(systemName: "gearshape.fill")
                             .font(.title3)
                     }
+                }
+                ToolbarItem(placement: .principal) {
+                    WalletScopeMenu(
+                        selectedScope: selectedWalletScopeBinding,
+                        language: appConfig.language,
+                        wallets: activeWallets
+                    )
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -348,6 +392,6 @@ struct TransactionsView: View {
 
 #Preview {
     TransactionsView()
-        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, Wallet.self], inMemory: true)
         .environment(AppConfigViewModel())
 }

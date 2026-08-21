@@ -18,7 +18,6 @@ struct HomeView: View {
     @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     @State private var selectedMonth = Date()
-    @State private var selectedWalletScope: WalletScope = .wallet(Wallet.personalID)
     @State private var showAddTransaction = false
     @State private var showBalanceEdit = false
     @State private var showSettings = false
@@ -47,6 +46,17 @@ struct HomeView: View {
         case .wallet(let walletId):
             return activeWallets.contains(where: { $0.id == walletId }) ? selectedWalletScope : .wallet(activeWallets.first?.id ?? Wallet.personalID)
         }
+    }
+
+    private var selectedWalletScope: WalletScope {
+        appConfig.selectedWalletScope
+    }
+
+    private var selectedWalletScopeBinding: Binding<WalletScope> {
+        Binding(
+            get: { effectiveWalletScope },
+            set: { appConfig.setSelectedWalletScope($0) }
+        )
     }
 
     private var scopedTransactions: [Transaction] {
@@ -156,10 +166,8 @@ struct HomeView: View {
 
                     HomeAppBar(
                         selectedMonth: $selectedMonth,
-                        selectedWalletScope: $selectedWalletScope,
                         language: appConfig.language,
-                        currency: appConfig.config.currency,
-                        wallets: activeWallets
+                        currency: appConfig.config.currency
                     )
 
                     SummaryPills(
@@ -218,6 +226,13 @@ struct HomeView: View {
                             .font(.title3)
                     }
                 }
+                ToolbarItem(placement: .principal) {
+                    WalletScopeMenu(
+                        selectedScope: selectedWalletScopeBinding,
+                        language: appConfig.language,
+                        wallets: activeWallets
+                    )
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showAddTransaction = true
@@ -261,11 +276,7 @@ struct HomeView: View {
                 .presentationDragIndicator(.visible)
             }
             .onAppear {
-                selectedWalletScope = appConfig.selectedWalletScope
                 showWalletsWhatsNew = appConfig.shouldShowWalletsWhatsNew
-            }
-            .onChange(of: selectedWalletScope) { _, newScope in
-                appConfig.setSelectedWalletScope(newScope)
             }
         }
     }
