@@ -21,7 +21,7 @@ final class Wallet {
     }
 
     func displayName(language: String) -> String {
-        id == Self.personalID ? L10n.tr("wallets.personal", language) : name
+        id == Self.personalID && name == "Personal" ? L10n.tr("wallets.personal", language) : name
     }
 
     init(

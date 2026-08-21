@@ -7,6 +7,7 @@ struct WalletManagementView: View {
     @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     @State private var showCreateWallet = false
+    @State private var editingWallet: Wallet?
 
     private var activeWallets: [Wallet] {
         wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
@@ -41,12 +42,27 @@ struct WalletManagementView: View {
                                 }
                             }
                             Spacer()
+                            Button {
+                                editingWallet = wallet
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 28, height: 28)
+                            }
+                            .buttonStyle(.borderless)
+
                             if wallet.id != appConfig.defaultWalletId {
                                 Button(L10n.tr("wallets.make_default", appConfig.language)) {
                                     appConfig.setDefaultWalletId(wallet.id)
                                 }
                                 .font(.caption)
+                                .buttonStyle(.borderless)
                             }
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            editingWallet = wallet
                         }
                         .swipeActions {
                             if wallet.id != Wallet.personalID {
@@ -72,6 +88,9 @@ struct WalletManagementView: View {
             }
             .sheet(isPresented: $showCreateWallet) {
                 WalletFormView()
+            }
+            .sheet(item: $editingWallet) { wallet in
+                WalletFormView(existingWallet: wallet)
             }
         }
     }

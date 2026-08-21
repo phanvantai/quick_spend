@@ -7,10 +7,24 @@ struct WalletFormView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
     @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
-    @State private var name = ""
-    @State private var selectedIcon = "briefcase.fill"
-    @State private var selectedColorHex = CategoryColorPalette.colorHex(for: "freelance")
-    @State private var customColor = Color(hex: CategoryColorPalette.colorHex(for: "freelance"))
+    private let existingWallet: Wallet?
+
+    @State private var name: String
+    @State private var selectedIcon: String
+    @State private var selectedColorHex: String
+    @State private var customColor: Color
+
+    private var isEditMode: Bool { existingWallet != nil }
+
+    init(existingWallet: Wallet? = nil) {
+        self.existingWallet = existingWallet
+        let defaultColorHex = CategoryColorPalette.colorHex(for: "freelance")
+        let colorHex = existingWallet?.colorHex ?? defaultColorHex
+        _name = State(initialValue: existingWallet?.name ?? "")
+        _selectedIcon = State(initialValue: existingWallet?.iconName ?? "briefcase.fill")
+        _selectedColorHex = State(initialValue: colorHex)
+        _customColor = State(initialValue: Color(hex: colorHex))
+    }
 
     private var canSave: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -45,7 +59,7 @@ struct WalletFormView: View {
                     }
                 }
             }
-            .navigationTitle(L10n.tr("wallets.new", appConfig.language))
+            .navigationTitle(isEditMode ? name : L10n.tr("wallets.new", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -133,6 +147,17 @@ struct WalletFormView: View {
 
     private func save() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if let existingWallet {
+            existingWallet.name = trimmedName
+            existingWallet.iconName = selectedIcon
+            existingWallet.colorHex = selectedColorHex
+            existingWallet.updatedAt = .now
+            try? modelContext.save()
+            dismiss()
+            return
+        }
+
         let nextSortOrder = (wallets.map(\.sortOrder).max() ?? 0) + 1
         let wallet = Wallet(
             name: trimmedName,
