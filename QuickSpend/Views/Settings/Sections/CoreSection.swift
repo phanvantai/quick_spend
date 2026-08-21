@@ -5,20 +5,40 @@ import SwiftData
 struct CoreSection: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
+    @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     let isCurrencyLocked: Bool
     @Binding var activeSheet: SettingsSheet?
 
+    private var activeWallets: [Wallet] {
+        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+    }
+
     var body: some View {
         Section {
             Button {
-                activeSheet = .balanceEdit
+                activeSheet = .wallets
+            } label: {
+                SettingsRow(
+                    icon: "wallet.pass.fill",
+                    iconColor: AppTheme.incomeColor,
+                    title: L10n.tr("wallets.title", appConfig.language),
+                    subtitle: L10n.tr("wallets.settings_subtitle", appConfig.language)
+                )
+            }
+            .tint(.primary)
+
+            Button {
+                activeSheet = activeWallets.count > 1 ? .balanceWalletPicker : .balanceEdit
             } label: {
                 SettingsRow(
                     icon: "banknote.fill",
                     iconColor: AppTheme.adaptiveAccent(colorScheme),
                     title: L10n.tr("settings.balance", appConfig.language),
-                    subtitle: L10n.tr("settings.balance_subtitle", appConfig.language)
+                    subtitle: L10n.tr(
+                        activeWallets.count > 1 ? "settings.balance_wallets_subtitle" : "settings.balance_subtitle",
+                        appConfig.language
+                    )
                 )
             }
             .tint(.primary)

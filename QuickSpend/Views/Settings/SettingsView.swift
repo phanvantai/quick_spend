@@ -7,6 +7,7 @@ import SwiftData
 /// `.sheet` modifier on a `Section` deep inside the list.
 enum SettingsSheet: Hashable, Identifiable {
     case balanceEdit
+    case balanceWalletPicker
     case currencyPicker
     case languagePicker
     case themePicker
@@ -110,6 +111,8 @@ struct SettingsView: View {
         switch sheet {
         case .balanceEdit:
             BalanceEditSheet(walletId: appConfig.defaultWalletId)
+        case .balanceWalletPicker:
+            BalanceWalletPickerView()
         case .currencyPicker:
             PickerSheet(
                 title: L10n.tr("settings.currency", appConfig.language),

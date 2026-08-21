@@ -1041,6 +1041,15 @@
         }
       }
     },
+    "balance.not_set" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not set" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sin configurar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "未設定" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chưa thiết lập" } }
+      }
+    },
     "balance.whatsnew_benefit_1" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7251,6 +7260,15 @@
             "value" : "Số tiền bắt đầu để theo dõi số dư"
           }
         }
+      }
+    },
+    "settings.balance_wallets_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Set balances per wallet" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Configura saldos por billetera" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ウォレットごとに残高を設定" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chỉnh số dư theo từng ví" } }
       }
     },
     "settings.categories" : {
