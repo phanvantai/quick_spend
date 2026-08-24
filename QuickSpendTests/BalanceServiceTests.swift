@@ -2,11 +2,25 @@ import Testing
 import Foundation
 import SwiftData
 import Combine
+import Observation
 @testable import QuickSpend
 
 @Suite("BalanceService Tests")
 @MainActor
 struct BalanceServiceTests {
+
+    private final class ObservationFlag: @unchecked Sendable {
+        private let lock = NSLock()
+        private var storage = false
+
+        var value: Bool {
+            lock.withLock { storage }
+        }
+
+        func markChanged() {
+            lock.withLock { storage = true }
+        }
+    }
 
     private func makeContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
@@ -809,6 +823,136 @@ struct BalanceServiceTests {
         )
 
         #expect(service.currentBalance == 1_000)
+    }
+
+    @Test("Optimistic edit — moving a Personal expense publishes the destination wallet balance")
+    func testOptimisticEditMovingExpenseFromPersonalPublishesDestinationWallet() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let anchorDate = Date().addingTimeInterval(-3_600)
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, walletId: Wallet.personalID, in: context)
+        try insertAnchor(openingBalance: 500, anchorDate: anchorDate, walletId: "wallet_side_work", in: context)
+
+        let transaction = Transaction(
+            amount: 100,
+            note: "Transfer expense",
+            categoryId: "x",
+            walletId: Wallet.personalID,
+            type: .expense,
+            createdAt: Date()
+        )
+        context.insert(transaction)
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        let destinationDidRefresh = ObservationFlag()
+        withObservationTracking {
+            _ = service.currentBalance(for: "wallet_side_work")
+        } onChange: {
+            destinationDidRefresh.markChanged()
+        }
+
+        transaction.walletId = "wallet_side_work"
+        service.applyOptimisticEdit(
+            createdAt: transaction.createdAt,
+            oldAmount: 100,
+            oldType: .expense,
+            oldWalletId: Wallet.personalID,
+            newAmount: 100,
+            newType: .expense,
+            newWalletId: "wallet_side_work"
+        )
+
+        #expect(service.currentBalance(for: Wallet.personalID) == 1_000)
+        #expect(service.currentBalance(for: "wallet_side_work") == 400)
+        #expect(destinationDidRefresh.value == true)
+    }
+
+    @Test("Optimistic edit — moving an expense to Personal publishes the source wallet balance")
+    func testOptimisticEditMovingExpenseToPersonalPublishesSourceWallet() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let anchorDate = Date().addingTimeInterval(-3_600)
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, walletId: Wallet.personalID, in: context)
+        try insertAnchor(openingBalance: 500, anchorDate: anchorDate, walletId: "wallet_side_work", in: context)
+
+        let transaction = Transaction(
+            amount: 100,
+            note: "Transfer expense",
+            categoryId: "x",
+            walletId: "wallet_side_work",
+            type: .expense,
+            createdAt: Date()
+        )
+        context.insert(transaction)
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        let sourceDidRefresh = ObservationFlag()
+        withObservationTracking {
+            _ = service.currentBalance(for: "wallet_side_work")
+        } onChange: {
+            sourceDidRefresh.markChanged()
+        }
+
+        transaction.walletId = Wallet.personalID
+        service.applyOptimisticEdit(
+            createdAt: transaction.createdAt,
+            oldAmount: 100,
+            oldType: .expense,
+            oldWalletId: "wallet_side_work",
+            newAmount: 100,
+            newType: .expense,
+            newWalletId: Wallet.personalID
+        )
+
+        #expect(service.currentBalance(for: "wallet_side_work") == 500)
+        #expect(service.currentBalance(for: Wallet.personalID) == 900)
+        #expect(sourceDidRefresh.value == true)
+    }
+
+    @Test("Optimistic edit — moving an expense between non-Personal wallets publishes both balances")
+    func testOptimisticEditMovingExpenseBetweenWalletsPublishesBothBalances() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let anchorDate = Date().addingTimeInterval(-3_600)
+        try insertAnchor(openingBalance: 500, anchorDate: anchorDate, walletId: "wallet_side_work", in: context)
+        try insertAnchor(openingBalance: 800, anchorDate: anchorDate, walletId: "wallet_savings", in: context)
+
+        let transaction = Transaction(
+            amount: 100,
+            note: "Transfer expense",
+            categoryId: "x",
+            walletId: "wallet_side_work",
+            type: .expense,
+            createdAt: Date()
+        )
+        context.insert(transaction)
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false)
+        let affectedWalletsDidRefresh = ObservationFlag()
+        withObservationTracking {
+            _ = service.currentBalance(for: "wallet_side_work")
+            _ = service.currentBalance(for: "wallet_savings")
+        } onChange: {
+            affectedWalletsDidRefresh.markChanged()
+        }
+
+        transaction.walletId = "wallet_savings"
+        service.applyOptimisticEdit(
+            createdAt: transaction.createdAt,
+            oldAmount: 100,
+            oldType: .expense,
+            oldWalletId: "wallet_side_work",
+            newAmount: 100,
+            newType: .expense,
+            newWalletId: "wallet_savings"
+        )
+
+        #expect(service.currentBalance(for: "wallet_side_work") == 500)
+        #expect(service.currentBalance(for: "wallet_savings") == 700)
+        #expect(affectedWalletsDidRefresh.value == true)
     }
 
     @Test("Optimistic edit — type flip from expense to income inverts the contribution")

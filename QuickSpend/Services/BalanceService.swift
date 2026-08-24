@@ -17,6 +17,11 @@ final class BalanceService {
     /// Latest computed balance. `nil` means no anchor exists yet (user hasn't set up balance).
     private(set) var currentBalance: Double?
 
+    /// Published balances for non-Personal wallets that have been affected by a
+    /// local edit or reconciled after a save. Reading through `currentBalance(for:)`
+    /// observes this map so wallet-scoped UI refreshes when either side of a move changes.
+    private(set) var walletBalances: [String: Double] = [:]
+
     /// Recompute counter — used by tests and useful for diagnostics.
     private(set) var recomputeCount: Int = 0
 
@@ -30,6 +35,9 @@ final class BalanceService {
     /// CRUD call, while keeping non-Personal balance reads from affecting
     /// Personal optimistic updates.
     @ObservationIgnored private var cachedAnchorDates: [String: Date] = [:]
+    /// Wallets whose balances have been read or mutated during this service lifetime.
+    /// Reconciliation refreshes this set without having to query Wallet rows.
+    @ObservationIgnored private var knownWalletIds: Set<String> = [Wallet.personalID]
 
     /// 200ms — coalesces notification bursts (CloudKit import, rapid CRUD).
     static let debounceInterval: Duration = .milliseconds(200)
@@ -112,6 +120,7 @@ final class BalanceService {
     }
 
     func computeBalance(walletId: String) throws -> Double? {
+        knownWalletIds.insert(walletId)
         guard let anchor = try fetchAnchor(walletId: walletId) else {
             cachedAnchorDates[walletId] = nil
             return nil
@@ -147,6 +156,9 @@ final class BalanceService {
     func currentBalance(for walletId: String) -> Double? {
         if walletId == Wallet.personalID {
             return currentBalance
+        }
+        if let published = walletBalances[walletId] {
+            return published
         }
         return try? computeBalance(walletId: walletId)
     }
@@ -192,6 +204,20 @@ final class BalanceService {
         newType: TransactionType,
         newWalletId: String = Wallet.personalID
     ) {
+        knownWalletIds.insert(oldWalletId)
+        knownWalletIds.insert(newWalletId)
+
+        // The caller has already mutated the Transaction. Recompute each affected
+        // non-Personal wallet from the current context and publish the result so
+        // observers refresh both the source and destination wallet immediately.
+        let affectedNonPersonalWallets = Set([oldWalletId, newWalletId])
+            .filter { $0 != Wallet.personalID }
+        for walletId in affectedNonPersonalWallets {
+            refreshPublishedBalance(for: walletId)
+        }
+
+        // Personal keeps its existing O(1) optimistic path and per-device cache.
+        guard oldWalletId == Wallet.personalID || newWalletId == Wallet.personalID else { return }
         guard let current = currentBalance, let anchorDate = cachedAnchorDates[Wallet.personalID] else { return }
         guard createdAt >= anchorDate else { return }
         let oldContribution = oldWalletId == Wallet.personalID
@@ -204,6 +230,34 @@ final class BalanceService {
         guard delta != 0 else { return }
         currentBalance = current + delta
         cacheStore.write(balance: current + delta)
+    }
+
+    private func refreshPublishedBalance(for walletId: String) {
+        do {
+            setPublishedBalance(try computeBalance(walletId: walletId), for: walletId)
+        } catch {
+            // Keep the edit flow non-throwing. The pending save observer will retry
+            // all known wallets through the normal debounced reconciliation path.
+            scheduleRecompute()
+        }
+    }
+
+    private func setPublishedBalance(_ balance: Double?, for walletId: String) {
+        if walletId == Wallet.personalID {
+            currentBalance = balance
+            if let balance {
+                cacheStore.write(balance: balance)
+            } else {
+                cacheStore.clear()
+            }
+            return
+        }
+
+        if let balance {
+            walletBalances[walletId] = balance
+        } else {
+            walletBalances.removeValue(forKey: walletId)
+        }
     }
 
     private func signedAmount(amount: Double, type: TransactionType) -> Double {
@@ -220,14 +274,11 @@ final class BalanceService {
     /// Runs duplicate-anchor recovery first so the compute path stays a pure read.
     func recomputeNow() throws {
         try recoverDuplicateAnchorsIfNeeded()
-        let result = try computeBalance()
-        currentBalance = result
-        recomputeCount += 1
-        if let value = result {
-            cacheStore.write(balance: value)
-        } else {
-            cacheStore.clear()
+        let walletIds = knownWalletIds
+        for walletId in walletIds {
+            setPublishedBalance(try computeBalance(walletId: walletId), for: walletId)
         }
+        recomputeCount += 1
     }
 
     /// Treat `amount` as the wallet's balance at `date`. Moving the anchor to
@@ -267,6 +318,7 @@ final class BalanceService {
             }
         } else {
             cachedAnchorDates[walletId] = date
+            setPublishedBalance(amount, for: walletId)
         }
     }
 
@@ -276,7 +328,9 @@ final class BalanceService {
     /// pending-changes path), so SettingsView calls this directly after the wipe.
     func clearAll() {
         currentBalance = nil
+        walletBalances.removeAll()
         cachedAnchorDates.removeAll()
+        knownWalletIds = [Wallet.personalID]
         cacheStore.clear()
         recomputeCount += 1
     }
