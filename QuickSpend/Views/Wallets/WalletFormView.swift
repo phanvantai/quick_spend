@@ -54,9 +54,18 @@ struct WalletFormView: View {
         appConfig.config.parseAmount(balanceText)
     }
 
-    private var balanceDidChange: Bool {
-        guard let parsedBalance else { return false }
-        return parsedBalance != initialBalance
+    @discardableResult
+    static func saveBalanceIfChanged(
+        parsedBalance: Double?,
+        initialBalance: Double?,
+        walletId: String,
+        balanceService: BalanceService
+    ) throws -> Bool {
+        guard let parsedBalance, parsedBalance != initialBalance else {
+            return false
+        }
+        try balanceService.setCurrentBalance(parsedBalance, for: walletId)
+        return true
     }
 
     var body: some View {
@@ -270,9 +279,13 @@ struct WalletFormView: View {
             existingWallet.colorHex = selectedColorHex
             existingWallet.updatedAt = .now
             do {
-                if balanceDidChange, let parsedBalance {
-                    try balanceService.setCurrentBalance(parsedBalance, for: existingWallet.id)
-                } else {
+                let didSetBalance = try Self.saveBalanceIfChanged(
+                    parsedBalance: parsedBalance,
+                    initialBalance: initialBalance,
+                    walletId: existingWallet.id,
+                    balanceService: balanceService
+                )
+                if !didSetBalance {
                     try modelContext.save()
                 }
                 dismiss()

@@ -193,6 +193,7 @@ struct WalletServiceTests {
             updatedAt: importedUpdatedAt
         )
         let transaction = Transaction(
+            id: "tx_duplicate_reference",
             amount: 125,
             note: "Must survive wallet de-duplication",
             categoryId: "food",
@@ -213,6 +214,7 @@ struct WalletServiceTests {
         #expect(personalWallets.first?.colorHex == "#FF9500")
         let transactions = try context.fetch(FetchDescriptor<Transaction>())
         #expect(transactions.count == 1)
+        #expect(transactions.first?.id == "tx_duplicate_reference")
         #expect(transactions.first?.walletId == Wallet.personalID)
         #expect(transactions.first?.amount == 125)
     }

@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import SwiftData
 @testable import QuickSpend
 
 @Suite("AppConfig Currency Formatting Tests")
@@ -84,6 +85,44 @@ struct CurrencyFormatterTests {
 
         #expect(displayed.text == "1.500.000")
         #expect(displayed.value == 1_500_000)
+    }
+
+    @Test("Wallet edit keeps the anchor unchanged when its formatted balance is untouched")
+    @MainActor
+    func testWalletEditDoesNotMoveAnchorForUntouchedFormattedBalance() throws {
+        let configuration = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+        let container = try ModelContainer(
+            for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self,
+            configurations: configuration
+        )
+        let context = container.mainContext
+        let originalAnchorDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let anchor = BalanceAnchor(
+            walletId: Wallet.personalID,
+            openingBalance: 1_500_000.49,
+            anchorDate: originalAnchorDate
+        )
+        context.insert(anchor)
+        try context.save()
+
+        let config = AppConfig(language: "vi", currency: "VND")
+        let displayed = WalletFormView.editableBalance(
+            from: anchor.openingBalance,
+            config: config
+        )
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+
+        let didSetBalance = try WalletFormView.saveBalanceIfChanged(
+            parsedBalance: displayed.value,
+            initialBalance: displayed.value,
+            walletId: Wallet.personalID,
+            balanceService: service
+        )
+
+        let savedAnchor = try #require(context.fetch(FetchDescriptor<BalanceAnchor>()).first)
+        #expect(didSetBalance == false)
+        #expect(savedAnchor.anchorDate == originalAnchorDate)
+        #expect(savedAnchor.openingBalance == 1_500_000.49)
     }
 
     @Test("formatNumber JPY no decimals")
