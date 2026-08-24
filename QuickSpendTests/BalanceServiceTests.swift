@@ -99,6 +99,69 @@ struct BalanceServiceTests {
         #expect(try service.computeTotalBalance(walletIds: [Wallet.personalID, "wallet_side_work"]) == 1_975)
     }
 
+    @Test("Setting a wallet balance creates its wallet-scoped anchor")
+    func testSetCurrentBalanceCreatesWalletAnchor() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let confirmationDate = Date(timeIntervalSince1970: 1_800_000_000)
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+
+        try service.setCurrentBalance(2_500, for: "wallet_side_work", at: confirmationDate)
+
+        let anchors = try context.fetch(FetchDescriptor<BalanceAnchor>())
+        #expect(anchors.count == 1)
+        #expect(anchors.first?.id == BalanceAnchor.id(for: "wallet_side_work"))
+        #expect(anchors.first?.walletId == "wallet_side_work")
+        #expect(anchors.first?.openingBalance == 2_500)
+        #expect(anchors.first?.anchorDate == confirmationDate)
+        #expect(try service.computeBalance(walletId: "wallet_side_work") == 2_500)
+    }
+
+    @Test("Resetting a wallet balance moves its anchor so earlier transactions are not counted twice")
+    func testSetCurrentBalanceUpdatesExistingAnchorDate() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let originalDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let confirmationDate = originalDate.addingTimeInterval(120)
+        try insertAnchor(
+            openingBalance: 1_000,
+            anchorDate: originalDate,
+            walletId: "wallet_side_work",
+            in: context
+        )
+        context.insert(Transaction(
+            amount: 200,
+            note: "Before reset",
+            categoryId: "food",
+            walletId: "wallet_side_work",
+            type: .expense,
+            createdAt: originalDate.addingTimeInterval(60)
+        ))
+        try context.save()
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+
+        try service.setCurrentBalance(3_000, for: "wallet_side_work", at: confirmationDate)
+
+        let anchors = try context.fetch(FetchDescriptor<BalanceAnchor>())
+        #expect(anchors.count == 1)
+        #expect(anchors.first?.openingBalance == 3_000)
+        #expect(anchors.first?.anchorDate == confirmationDate)
+        #expect(try service.computeBalance(walletId: "wallet_side_work") == 3_000)
+    }
+
+    @Test("Setting Personal balance refreshes the observable balance immediately")
+    func testSetCurrentBalanceRefreshesPersonalBalance() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let confirmationDate = Date(timeIntervalSince1970: 1_800_000_000)
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+
+        try service.setCurrentBalance(4_200, for: Wallet.personalID, at: confirmationDate)
+
+        #expect(service.currentBalance == 4_200)
+        #expect(try service.computeBalance() == 4_200)
+    }
+
     // MARK: - Test 3: Expense subtracts from balance
 
     @Test("Expense transaction — balance = opening − expense amount")
@@ -283,7 +346,7 @@ struct BalanceServiceTests {
         let initialCount = service.recomputeCount
         #expect(service.currentBalance == nil)
 
-        // Mimic the BalanceEditSheet first-time path: insert + save
+        // Mimic the WalletForm first-time balance path: insert + save
         let anchor = BalanceAnchor(
             openingBalance: 1_500_000,
             anchorDate: Date()

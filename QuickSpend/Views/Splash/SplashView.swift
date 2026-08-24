@@ -157,15 +157,25 @@ struct SplashView: View {
         // Step 1: Wait for CloudKit initial import to complete
         await waitForCloudImport()
 
-        // Step 2: Remove any duplicate categories caused by seed + CloudKit race condition
+        // Step 2: Reconcile wallets after the initial import. The app-level
+        // bootstrap runs before CloudKit can restore data, so running it again
+        // here repairs duplicate business IDs even if the import notification
+        // was delivered before CloudSyncService started observing it.
+        do {
+            _ = try WalletService.bootstrapIfNeeded(modelContext: modelContext)
+        } catch {
+            print("[WalletService] initial-cloud-import repair failed: \(error)")
+        }
+
+        // Step 3: Remove any duplicate categories caused by seed + CloudKit race condition
         CategoryService.deduplicateCategoriesIfNeeded(modelContext: modelContext)
 
-        // Step 3: If onboarding not done, check if synced data allows skipping it
+        // Step 4: If onboarding not done, check if synced data allows skipping it
         if !appConfig.isOnboardingComplete {
             checkSyncedDataAndSkipOnboarding()
         }
 
-        // Step 4: Generate recurring transactions if onboarding is complete
+        // Step 5: Generate recurring transactions if onboarding is complete
         if appConfig.isOnboardingComplete {
             let _ = RecurringService.generatePendingTransactions(modelContext: modelContext)
         }

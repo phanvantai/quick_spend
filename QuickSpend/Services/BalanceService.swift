@@ -74,7 +74,11 @@ final class BalanceService {
             self.importSubscription = importEventPublisher.sink { [weak self] in
                 Task { @MainActor [weak self] in
                     guard let self else { return }
-                    _ = try? WalletService.bootstrapIfNeeded(modelContext: self.modelContext)
+                    do {
+                        _ = try WalletService.bootstrapIfNeeded(modelContext: self.modelContext)
+                    } catch {
+                        print("[WalletService] cloud-import-event repair failed: \(error)")
+                    }
                     self.scheduleRecompute()
                 }
             }
@@ -223,6 +227,46 @@ final class BalanceService {
             cacheStore.write(balance: value)
         } else {
             cacheStore.clear()
+        }
+    }
+
+    /// Treat `amount` as the wallet's balance at `date`. Moving the anchor to
+    /// the confirmation moment prevents earlier transactions from being counted
+    /// again after the user resets the displayed balance.
+    func setCurrentBalance(
+        _ amount: Double,
+        for walletId: String,
+        at date: Date = .now
+    ) throws {
+        try recoverDuplicateAnchorsIfNeeded()
+
+        if let existing = try fetchAnchor(walletId: walletId) {
+            existing.openingBalance = amount
+            existing.anchorDate = date
+        } else {
+            modelContext.insert(BalanceAnchor(
+                walletId: walletId,
+                openingBalance: amount,
+                anchorDate: date
+            ))
+        }
+
+        try modelContext.save()
+        if walletId == Wallet.personalID {
+            do {
+                try recomputeNow()
+            } catch {
+                // The anchor is already persisted, so do not surface this as a
+                // failed save and invite a retry that moves the anchor again.
+                // Keep the UI/cache consistent with the confirmed value and let
+                // the debounced reconciliation retry the authoritative fetch.
+                currentBalance = amount
+                cachedAnchorDates[walletId] = date
+                cacheStore.write(balance: amount)
+                scheduleRecompute()
+            }
+        } else {
+            cachedAnchorDates[walletId] = date
         }
     }
 

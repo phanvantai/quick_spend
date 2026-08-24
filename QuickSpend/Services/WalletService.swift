@@ -20,9 +20,13 @@ enum WalletService {
         return ids.isEmpty ? [Wallet.personalID] : ids
     }
 
+    static func resolvedDefaultWalletId(wallets: [Wallet]) -> String {
+        resolvedDefaultWalletId(wallets: wallets, preferences: .shared)
+    }
+
     static func resolvedDefaultWalletId(
         wallets: [Wallet],
-        preferences: PreferencesService = .shared
+        preferences: PreferencesService
     ) -> String {
         let activeWallets = activeWallets(from: wallets)
         if activeWallets.contains(where: { $0.id == preferences.defaultWalletId }) {
@@ -46,8 +50,30 @@ enum WalletService {
         var didMigrateLegacyData = false
 
         let wallets = try modelContext.fetch(FetchDescriptor<Wallet>())
-        if !wallets.contains(where: { $0.id == Wallet.personalID }) {
-            modelContext.insert(Wallet.personal())
+        let groupedWallets = Dictionary(grouping: wallets, by: \Wallet.id)
+        var canonicalWallets: [Wallet] = []
+        for walletGroup in groupedWallets.values {
+            let canonical = walletGroup.sorted { lhs, rhs in
+                let lhsWasEdited = lhs.updatedAt > lhs.createdAt
+                let rhsWasEdited = rhs.updatedAt > rhs.createdAt
+                if lhsWasEdited != rhsWasEdited {
+                    return lhsWasEdited
+                }
+                if lhsWasEdited, lhs.updatedAt != rhs.updatedAt {
+                    return lhs.updatedAt > rhs.updatedAt
+                }
+                return lhs.createdAt < rhs.createdAt
+            }[0]
+            canonicalWallets.append(canonical)
+            for duplicate in walletGroup where duplicate !== canonical {
+                modelContext.delete(duplicate)
+            }
+        }
+
+        if !canonicalWallets.contains(where: { $0.id == Wallet.personalID }) {
+            let personalWallet = Wallet.personal()
+            modelContext.insert(personalWallet)
+            canonicalWallets.append(personalWallet)
             didCreatePersonalWallet = true
         }
 
@@ -58,8 +84,15 @@ enum WalletService {
         }
 
         let templates = try modelContext.fetch(FetchDescriptor<RecurringTemplate>())
-        for template in templates where template.walletId.isEmpty {
-            template.walletId = Wallet.personalID
+        let activeCanonicalWallets = activeWallets(from: canonicalWallets)
+        let resolvedDefaultWalletId = resolvedDefaultWalletId(
+            wallets: activeCanonicalWallets,
+            preferences: preferences
+        )
+        let activeWalletIds = Set(activeCanonicalWallets.map(\.id))
+        for template in templates
+        where template.walletId.isEmpty || !activeWalletIds.contains(template.walletId) {
+            template.walletId = resolvedDefaultWalletId
             didMigrateLegacyData = true
         }
 

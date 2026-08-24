@@ -89,6 +89,134 @@ struct WalletServiceTests {
         #expect(transaction.walletId == custom.id)
     }
 
+    @Test("bootstrap assigns an empty recurring wallet to the active configured default")
+    func bootstrapAssignsEmptyRecurringWalletToDefault() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let preferences = makePreferences()
+        let personal = Wallet.personal()
+        let sideWork = Wallet(
+            id: "wallet_side_work", name: "Side Work",
+            iconName: "briefcase.fill", colorHex: "#2563EB"
+        )
+        let template = RecurringTemplate(amount: 500, note: "Tools", categoryId: "tools")
+        template.walletId = ""
+        context.insert(personal)
+        context.insert(sideWork)
+        context.insert(template)
+        preferences.setDefaultWalletId(sideWork.id)
+        try context.save()
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+
+        #expect(template.walletId == "wallet_side_work")
+    }
+
+    @Test("bootstrap repairs missing and archived recurring wallets")
+    func bootstrapRepairsInvalidRecurringWallets() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let preferences = makePreferences()
+        let personal = Wallet.personal()
+        let archived = Wallet(
+            id: "wallet_archived", name: "Archived", iconName: "archivebox.fill",
+            colorHex: "#8E8E93", isArchived: true
+        )
+        let archivedTemplate = RecurringTemplate(
+            amount: 100, note: "Archived wallet", categoryId: "other_expense",
+            walletId: "wallet_archived"
+        )
+        let missingTemplate = RecurringTemplate(
+            amount: 200, note: "Missing wallet", categoryId: "other_expense",
+            walletId: "wallet_missing"
+        )
+        context.insert(personal)
+        context.insert(archived)
+        context.insert(archivedTemplate)
+        context.insert(missingTemplate)
+        preferences.setDefaultWalletId(archived.id)
+        try context.save()
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+
+        #expect(archivedTemplate.walletId == "wallet_personal")
+        #expect(missingTemplate.walletId == "wallet_personal")
+    }
+
+    @Test("bootstrap keeps a valid recurring wallet and is idempotent")
+    func bootstrapKeepsValidRecurringWallet() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let preferences = makePreferences()
+        let personal = Wallet.personal()
+        let sideWork = Wallet(
+            id: "wallet_side_work", name: "Side Work",
+            iconName: "briefcase.fill", colorHex: "#2563EB"
+        )
+        let template = RecurringTemplate(
+            amount: 500, note: "Tools", categoryId: "tools",
+            walletId: "wallet_side_work"
+        )
+        context.insert(personal)
+        context.insert(sideWork)
+        context.insert(template)
+        try context.save()
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+        let second = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+
+        #expect(template.walletId == "wallet_side_work")
+        #expect(second.didCreatePersonalWallet == false)
+        #expect(second.didMigrateLegacyData == false)
+    }
+
+    @Test("bootstrap removes a Personal wallet duplicated by a later CloudKit import")
+    func bootstrapRemovesImportedPersonalWalletDuplicate() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let preferences = makePreferences()
+        let importedCreatedAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let importedUpdatedAt = importedCreatedAt.addingTimeInterval(60)
+        let localSeedDate = importedCreatedAt.addingTimeInterval(120)
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+        let original = try #require(context.fetch(FetchDescriptor<Wallet>()).first)
+        original.createdAt = localSeedDate
+        original.updatedAt = localSeedDate
+
+        let imported = Wallet(
+            id: Wallet.personalID,
+            name: "My Personal Wallet",
+            iconName: "star.fill",
+            colorHex: "#FF9500",
+            createdAt: importedCreatedAt,
+            updatedAt: importedUpdatedAt
+        )
+        let transaction = Transaction(
+            amount: 125,
+            note: "Must survive wallet de-duplication",
+            categoryId: "food",
+            walletId: Wallet.personalID,
+            type: .expense
+        )
+        context.insert(imported)
+        context.insert(transaction)
+        try context.save()
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+
+        let personalWallets = try context.fetch(FetchDescriptor<Wallet>())
+            .filter { $0.id == Wallet.personalID }
+        #expect(personalWallets.count == 1)
+        #expect(personalWallets.first?.name == "My Personal Wallet")
+        #expect(personalWallets.first?.iconName == "star.fill")
+        #expect(personalWallets.first?.colorHex == "#FF9500")
+        let transactions = try context.fetch(FetchDescriptor<Transaction>())
+        #expect(transactions.count == 1)
+        #expect(transactions.first?.walletId == Wallet.personalID)
+        #expect(transactions.first?.amount == 125)
+    }
+
     @Test("bootstrap converts legacy personal balance anchor to wallet-scoped anchor ID")
     func bootstrapConvertsLegacyAnchorId() throws {
         let container = try makeContainer()
