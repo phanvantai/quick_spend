@@ -23,7 +23,7 @@ The current work does not introduce a structural database change. Therefore it m
 
 Add `QuickSpendSchemaV1: VersionedSchema` with version identifier `1.0.0` and the current model list. `AppSchema` builds its runtime `Schema` from `QuickSpendSchemaV1` rather than an unversioned model array.
 
-The existing top-level `@Model` declarations become the frozen V1 model definitions. They must not be edited for a future structural change. When a real V2 is needed, V2 receives separate version-owned model declarations and application call sites move to the V2 types; V1 continues referencing the unchanged shipped types. This avoids changing model namespaces during the V1 adoption and protects compatibility with the existing App Store entity identities.
+The existing top-level `@Model` declarations become the frozen V1 model definitions. They must not be edited for a future structural change. A purely additive future schema may reuse these unchanged types while adding a new entity. Any future version that changes an existing entity receives separate version-owned model declarations and moves application call sites to the new types; V1 continues referencing the unchanged shipped types. This avoids changing model namespaces during the V1 adoption and protects compatibility with the existing App Store entity identities.
 
 Add `QuickSpendMigrationPlan: SchemaMigrationPlan` with:
 
