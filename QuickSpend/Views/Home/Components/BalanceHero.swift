@@ -3,8 +3,8 @@ import SwiftUI
 /// v3.0 Home hero — the user's all-time account balance, dominant on screen.
 ///
 /// Layout: leading accent stripe + subtle dot pattern background + uppercase
-/// label + big monospaced amount + inline month-net delta. Tap opens the
-/// BalanceEditSheet via `onTap`.
+/// label + big monospaced amount + inline month-net delta. Tap opens wallet
+/// management via `onTap`; balance changes live in the wallet edit form.
 ///
 /// States:
 /// - `currentBalance == nil`: setup CTA (fresh-install skipped the balance

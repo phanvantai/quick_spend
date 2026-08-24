@@ -72,6 +72,20 @@ struct CurrencyFormatterTests {
         #expect(result == "1.500.000")
     }
 
+    @Test("Wallet balance editor compares with the rounded value shown to the user")
+    @MainActor
+    func testWalletBalanceEditorNormalizesDisplayedValue() {
+        let config = AppConfig(language: "vi", currency: "VND")
+
+        let displayed = WalletFormView.editableBalance(
+            from: 1_500_000.49,
+            config: config
+        )
+
+        #expect(displayed.text == "1.500.000")
+        #expect(displayed.value == 1_500_000)
+    }
+
     @Test("formatNumber JPY no decimals")
     func testFormatNumberJPY() {
         let config = AppConfig(language: "en", currency: "JPY")

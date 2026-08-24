@@ -6,8 +6,6 @@ import SwiftData
 /// the "two sheets both vanish" bug we hit when each section owned its own
 /// `.sheet` modifier on a `Section` deep inside the list.
 enum SettingsSheet: Hashable, Identifiable {
-    case balanceEdit
-    case balanceWalletPicker
     case currencyPicker
     case languagePicker
     case themePicker
@@ -109,10 +107,6 @@ struct SettingsView: View {
     @ViewBuilder
     private func sheetContent(for sheet: SettingsSheet) -> some View {
         switch sheet {
-        case .balanceEdit:
-            BalanceEditSheet(walletId: appConfig.defaultWalletId)
-        case .balanceWalletPicker:
-            BalanceWalletPickerView()
         case .currencyPicker:
             PickerSheet(
                 title: L10n.tr("settings.currency", appConfig.language),
@@ -178,7 +172,7 @@ struct SettingsView: View {
             try modelContext.delete(model: RecurringTemplate.self)
             try modelContext.delete(model: BalanceAnchor.self)
             try modelContext.delete(model: Wallet.self)
-            try? WalletService.bootstrapIfNeeded(modelContext: modelContext)
+            _ = try? WalletService.bootstrapIfNeeded(modelContext: modelContext)
         } catch {
             print("[Settings] Failed to delete data: \(error)")
         }

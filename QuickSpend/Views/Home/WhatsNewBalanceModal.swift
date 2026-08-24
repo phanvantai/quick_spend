@@ -6,7 +6,7 @@ import SwiftData
 /// flips `hasSeenBalanceWhatsNew = true` atomically with `isOnboardingComplete`.
 ///
 /// Two paths:
-/// - "Set up balance now" → opens BalanceEditSheet, then dismisses + marks seen
+/// - "Set up balance now" → opens wallet management, where balance lives in edit
 /// - "Set up later"       → dismisses + marks seen
 ///
 /// Custom hero: a non-interactive BalanceHero preview so the user sees exactly
@@ -16,7 +16,7 @@ struct WhatsNewBalanceModal: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
 
-    @State private var showEditSheet = false
+    @State private var showWallets = false
 
     /// Culturally-plausible preview balance per locale so the hero looks like
     /// a real account, not a demo placeholder.
@@ -36,7 +36,7 @@ struct WhatsNewBalanceModal: View {
             primary: ModalCTA(
                 label: L10n.tr("balance.whatsnew_setup_cta", appConfig.language),
                 icon: "arrow.right.circle.fill",
-                action: { showEditSheet = true }
+                action: { showWallets = true }
             ),
             secondary: ModalCTA(
                 label: L10n.tr("balance.whatsnew_later_cta", appConfig.language),
@@ -45,12 +45,12 @@ struct WhatsNewBalanceModal: View {
             hero: { hero },
             content: { benefits }
         )
-        .sheet(isPresented: $showEditSheet, onDismiss: {
-            // Mark-seen runs only after the edit sheet closes. The user made
+        .sheet(isPresented: $showWallets, onDismiss: {
+            // Mark-seen runs only after wallet management closes. The user made
             // an intentional choice whether or not they actually saved.
             dismissAndMarkSeen()
         }) {
-            BalanceEditSheet()
+            WalletManagementView()
         }
     }
 
@@ -121,7 +121,7 @@ struct WhatsNewBalanceModal: View {
 
 #Preview("Vietnamese") {
     let container = try! ModelContainer(
-        for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self,
+        for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     )
     let viewModel = AppConfigViewModel()
@@ -135,7 +135,7 @@ struct WhatsNewBalanceModal: View {
 
 #Preview("English Dark") {
     let container = try! ModelContainer(
-        for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self,
+        for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     )
     return WhatsNewBalanceModal()

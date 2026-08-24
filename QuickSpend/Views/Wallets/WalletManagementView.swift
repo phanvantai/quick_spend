@@ -11,7 +11,7 @@ struct WalletManagementView: View {
     @State private var editingWallet: Wallet?
 
     private var activeWallets: [Wallet] {
-        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+        WalletService.activeWallets(from: wallets)
     }
 
     var body: some View {
@@ -33,16 +33,25 @@ struct WalletManagementView: View {
                 Section(L10n.tr("wallets.title", appConfig.language)) {
                     ForEach(activeWallets, id: \.id) { wallet in
                         HStack(spacing: AppTheme.spacing12) {
-                            CategoryIconBadge(iconName: wallet.iconName, color: wallet.color, size: 36, iconFont: .body)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(wallet.displayName(language: appConfig.language))
-                                if wallet.id == appConfig.defaultWalletId {
-                                    Text(L10n.tr("wallets.default", appConfig.language))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                            Button {
+                                editingWallet = wallet
+                            } label: {
+                                HStack(spacing: AppTheme.spacing12) {
+                                    CategoryIconBadge(iconName: wallet.iconName, color: wallet.color, size: 36, iconFont: .body)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(wallet.displayName(language: appConfig.language))
+                                        if wallet.id == appConfig.defaultWalletId {
+                                            Text(L10n.tr("wallets.default", appConfig.language))
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                    Spacer(minLength: 0)
                                 }
+                                .contentShape(Rectangle())
                             }
-                            Spacer()
+                            .buttonStyle(.plain)
+
                             if wallet.id != appConfig.defaultWalletId {
                                 Button(L10n.tr("wallets.make_default", appConfig.language)) {
                                     appConfig.setDefaultWalletId(wallet.id)
@@ -50,6 +59,17 @@ struct WalletManagementView: View {
                                 .font(.caption)
                                 .buttonStyle(.borderless)
                             }
+
+                            Button {
+                                editingWallet = wallet
+                            } label: {
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.tertiary)
+                                    .frame(minWidth: 24, minHeight: 44)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(L10n.tr("common.edit", appConfig.language))
                         }
                         .swipeActions(edge: .trailing) {
                             if wallet.id != Wallet.personalID {

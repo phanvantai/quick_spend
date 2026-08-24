@@ -19,7 +19,7 @@ struct HomeView: View {
 
     @State private var selectedMonth = Date()
     @State private var showAddTransaction = false
-    @State private var showBalanceEdit = false
+    @State private var showWallets = false
     @State private var showSettings = false
     @State private var showWalletsWhatsNew = false
 
@@ -159,7 +159,7 @@ struct HomeView: View {
                         monthlyNet: (totalIncome == 0 && totalExpenses == 0) ? nil : (totalIncome - totalExpenses),
                         language: appConfig.language,
                         currency: appConfig.config.currency,
-                        onTap: { showBalanceEdit = true }
+                        onTap: { showWallets = true }
                     )
 
                     HomeAppBar(
@@ -250,8 +250,10 @@ struct HomeView: View {
                     balance.applyOptimisticInsert(transaction)
                 }
             }
-            .sheet(isPresented: $showBalanceEdit) {
-                BalanceEditSheet(walletId: defaultWalletIdForNewTransaction)
+            .sheet(isPresented: $showWallets) {
+                WalletManagementView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
@@ -263,7 +265,7 @@ struct HomeView: View {
                     onCreateWallet: {
                         appConfig.markWalletsWhatsNewSeen()
                         showWalletsWhatsNew = false
-                        showSettings = true
+                        showWallets = true
                     },
                     onDismiss: {
                         appConfig.markWalletsWhatsNewSeen()

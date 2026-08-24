@@ -5,6 +5,7 @@ struct WalletFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
+    @Environment(BalanceService.self) private var balanceService
     @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     private let existingWallet: Wallet?
@@ -13,8 +14,20 @@ struct WalletFormView: View {
     @State private var selectedIcon: String
     @State private var selectedColorHex: String
     @State private var customColor: Color
+    @State private var balanceText: String = ""
+    @State private var initialBalance: Double?
+    @State private var didLoadBalance = false
+    @State private var saveError: String?
 
     private var isEditMode: Bool { existingWallet != nil }
+
+    static func editableBalance(
+        from currentBalance: Double,
+        config: AppConfig
+    ) -> (text: String, value: Double) {
+        let text = config.formatNumber(currentBalance)
+        return (text, config.parseAmount(text) ?? currentBalance)
+    }
 
     init(existingWallet: Wallet? = nil) {
         self.existingWallet = existingWallet
@@ -27,7 +40,23 @@ struct WalletFormView: View {
     }
 
     private var canSave: Bool {
-        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+        guard isEditMode else { return true }
+        if balanceText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return initialBalance == nil
+        }
+        return parsedBalance != nil
+    }
+
+    private var parsedBalance: Double? {
+        appConfig.config.parseAmount(balanceText)
+    }
+
+    private var balanceDidChange: Bool {
+        guard let parsedBalance else { return false }
+        return parsedBalance != initialBalance
     }
 
     var body: some View {
@@ -58,6 +87,10 @@ struct WalletFormView: View {
                         selectedColorHex = customColor.toHex()
                     }
                 }
+
+                if isEditMode {
+                    balanceSection
+                }
             }
             .navigationTitle(isEditMode ? name : L10n.tr("wallets.new", appConfig.language))
             .navigationBarTitleDisplayMode(.inline)
@@ -70,6 +103,61 @@ struct WalletFormView: View {
                         .disabled(!canSave)
                 }
             }
+            .onAppear(perform: loadBalanceIfNeeded)
+            .alert(
+                L10n.tr("balance.edit_error_title", appConfig.language),
+                isPresented: Binding(
+                    get: { saveError != nil },
+                    set: { if !$0 { saveError = nil } }
+                ),
+                presenting: saveError
+            ) { _ in
+                Button(L10n.tr("common.close", appConfig.language)) {
+                    saveError = nil
+                }
+            } message: { error in
+                Text(error)
+            }
+        }
+    }
+
+    private var balanceSection: some View {
+        Section {
+            HStack(spacing: AppTheme.spacing8) {
+                Text(appConfig.config.currencySymbol)
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(.secondary)
+                TextField(
+                    L10n.tr("balance.edit_placeholder", appConfig.language),
+                    text: $balanceText
+                )
+                .keyboardType(.decimalPad)
+                .font(.title3.weight(.semibold))
+                .onChange(of: balanceText) { _, newValue in
+                    let formatted = appConfig.config.formatAmountInput(newValue)
+                    if formatted != newValue {
+                        balanceText = formatted
+                    }
+                }
+                Button(action: toggleBalanceSign) {
+                    Text("\u{00B1}")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(balanceText.hasPrefix("-") ? AppTheme.expenseColor : .secondary)
+                        .frame(width: 32, height: 32)
+                        .background {
+                            Circle().fill(Color(.tertiarySystemFill))
+                        }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(L10n.tr("balance.edit_toggle_sign", appConfig.language))
+            }
+        } header: {
+            Text(L10n.tr("settings.balance", appConfig.language))
+        } footer: {
+            Text(L10n.tr(
+                initialBalance == nil ? "balance.edit_hint_new" : "balance.edit_hint_existing",
+                appConfig.language
+            ))
         }
     }
 
@@ -145,6 +233,34 @@ struct WalletFormView: View {
         .padding(.vertical, AppTheme.spacing4)
     }
 
+    private func loadBalanceIfNeeded() {
+        guard !didLoadBalance, let existingWallet else { return }
+        didLoadBalance = true
+        let currentBalance = balanceService.currentBalance(for: existingWallet.id)
+        if let currentBalance {
+            let editableBalance = Self.editableBalance(
+                from: currentBalance,
+                config: appConfig.config
+            )
+            balanceText = editableBalance.text
+            // Compare future edits with the exact value displayed to the user.
+            // A computed Double can contain sub-cent floating-point noise that
+            // formatting intentionally hides; saving an untouched form must not
+            // move the balance anchor because of that invisible difference.
+            initialBalance = editableBalance.value
+        }
+    }
+
+    private func toggleBalanceSign() {
+        if balanceText.hasPrefix("-") {
+            balanceText = String(balanceText.dropFirst())
+        } else if !balanceText.isEmpty {
+            balanceText = "-" + balanceText
+        } else {
+            balanceText = "-"
+        }
+    }
+
     private func save() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -153,8 +269,16 @@ struct WalletFormView: View {
             existingWallet.iconName = selectedIcon
             existingWallet.colorHex = selectedColorHex
             existingWallet.updatedAt = .now
-            try? modelContext.save()
-            dismiss()
+            do {
+                if balanceDidChange, let parsedBalance {
+                    try balanceService.setCurrentBalance(parsedBalance, for: existingWallet.id)
+                } else {
+                    try modelContext.save()
+                }
+                dismiss()
+            } catch {
+                saveError = error.localizedDescription
+            }
             return
         }
 
@@ -166,8 +290,12 @@ struct WalletFormView: View {
             sortOrder: nextSortOrder
         )
         modelContext.insert(wallet)
-        try? modelContext.save()
-        appConfig.setSelectedWalletScope(.wallet(wallet.id))
-        dismiss()
+        do {
+            try modelContext.save()
+            appConfig.setSelectedWalletScope(.wallet(wallet.id))
+            dismiss()
+        } catch {
+            saveError = error.localizedDescription
+        }
     }
 }
