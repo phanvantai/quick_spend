@@ -22,6 +22,21 @@ struct WalletServiceTests {
         return PreferencesService(defaults: defaults)
     }
 
+    @Test("Wallet construction uses its creation timestamp as the default update timestamp")
+    func walletConstructionUsesOneTimestamp() {
+        let createdAt = Date(timeIntervalSince1970: 1_700_000_000)
+
+        let wallet = Wallet(
+            name: "Side Work",
+            iconName: "briefcase.fill",
+            colorHex: "#2563EB",
+            createdAt: createdAt
+        )
+
+        #expect(wallet.createdAt == createdAt)
+        #expect(wallet.updatedAt == createdAt)
+    }
+
     @Test("bootstrap creates only Personal wallet for a new install")
     func bootstrapCreatesOnlyPersonalWallet() throws {
         let container = try makeContainer()
@@ -245,6 +260,90 @@ struct WalletServiceTests {
             .filter { $0.id == "wallet_duplicate" }
         #expect(survivingWallets.count == 1)
         #expect(survivingWallets.first?.name == "Latest edited")
+    }
+
+    @Test("bootstrap keeps an older customized Personal wallet over a newer seed with init jitter")
+    func bootstrapKeepsCustomizedPersonalWalletOverJitteredSeed() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let preferences = makePreferences()
+        let remoteCreatedAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let localCreatedAt = remoteCreatedAt.addingTimeInterval(300)
+        let customizedRemote = Wallet(
+            id: Wallet.personalID,
+            name: "Household",
+            iconName: "house.fill",
+            colorHex: "#FF9500",
+            createdAt: remoteCreatedAt,
+            updatedAt: remoteCreatedAt.addingTimeInterval(0.000_2)
+        )
+        let newerDefaultSeed = Wallet(
+            id: Wallet.personalID,
+            name: "Personal",
+            iconName: "person.crop.circle.fill",
+            colorHex: "#2563EB",
+            createdAt: localCreatedAt,
+            updatedAt: localCreatedAt.addingTimeInterval(0.000_5)
+        )
+        context.insert(customizedRemote)
+        context.insert(newerDefaultSeed)
+        try context.save()
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+
+        let survivor = try #require(context.fetch(FetchDescriptor<Wallet>()).first)
+        #expect(survivor.name == "Household")
+        #expect(survivor.iconName == "house.fill")
+        #expect(survivor.colorHex == "#FF9500")
+    }
+
+    @Test("canonical wallet tie breaking is independent of input order")
+    func canonicalWalletTieBreakIsDeterministic() {
+        let timestamp = Date(timeIntervalSince1970: 1_700_000_000)
+        let alpha = Wallet(
+            id: Wallet.personalID,
+            name: "Alpha",
+            iconName: "star.fill",
+            colorHex: "#FF9500",
+            createdAt: timestamp,
+            updatedAt: timestamp.addingTimeInterval(60)
+        )
+        let zulu = Wallet(
+            id: Wallet.personalID,
+            name: "Zulu",
+            iconName: "star.fill",
+            colorHex: "#FF9500",
+            createdAt: timestamp,
+            updatedAt: timestamp.addingTimeInterval(60)
+        )
+
+        #expect(WalletService.canonicalWallet(from: [zulu, alpha]) === alpha)
+        #expect(WalletService.canonicalWallet(from: [alpha, zulu]) === alpha)
+    }
+
+    @Test("canonical wallet uses oldest creation when edit timestamps tie")
+    func canonicalWalletUsesOldestCreationForEqualEdits() {
+        let createdAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let editedAt = createdAt.addingTimeInterval(120)
+        let older = Wallet(
+            id: "wallet_duplicate",
+            name: "Older",
+            iconName: "1.circle.fill",
+            colorHex: "#2563EB",
+            createdAt: createdAt,
+            updatedAt: editedAt
+        )
+        let newer = Wallet(
+            id: "wallet_duplicate",
+            name: "Newer",
+            iconName: "2.circle.fill",
+            colorHex: "#FF9500",
+            createdAt: createdAt.addingTimeInterval(10),
+            updatedAt: editedAt
+        )
+
+        #expect(WalletService.canonicalWallet(from: [newer, older]) === older)
+        #expect(WalletService.canonicalWallet(from: [older, newer]) === older)
     }
 
     @Test("bootstrap keeps the earliest unedited wallet among duplicate IDs")

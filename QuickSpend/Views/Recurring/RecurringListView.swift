@@ -68,7 +68,7 @@ struct RecurringListView: View {
                 wallets: activeWallets,
                 defaultWalletId: defaultWalletId
             ) { newTemplate in
-                modelContext.insert(newTemplate)
+                try RecurringTemplatePersistence.create(newTemplate, in: modelContext)
             }
         }
         .sheet(item: $editingTemplate) { template in
@@ -78,15 +78,11 @@ struct RecurringListView: View {
                 defaultWalletId: defaultWalletId,
                 existingTemplate: template
             ) { updated in
-                template.amount = updated.amount
-                template.note = updated.note
-                template.categoryId = updated.categoryId
-                template.walletId = updated.walletId
-                template.type = updated.type
-                template.pattern = updated.pattern
-                template.startDate = updated.startDate
-                template.endDate = updated.endDate
-                template.updatedAt = .now
+                try RecurringTemplatePersistence.update(
+                    template,
+                    with: updated,
+                    in: modelContext
+                )
             }
         }
         .alert(

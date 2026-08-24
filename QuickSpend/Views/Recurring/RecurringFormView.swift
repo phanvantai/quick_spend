@@ -9,7 +9,7 @@ struct RecurringFormView: View {
     let wallets: [Wallet]
     let defaultWalletId: String
     let existingTemplate: RecurringTemplate?
-    let onSave: (RecurringTemplate) -> Void
+    let onSave: (RecurringTemplate) throws -> Void
 
     @State private var noteText: String
     @State private var amountText: String
@@ -22,6 +22,7 @@ struct RecurringFormView: View {
     @State private var endDate: Date
 
     @State private var showAmountError = false
+    @State private var saveError: String?
 
     private var isEditMode: Bool { existingTemplate != nil }
 
@@ -34,7 +35,7 @@ struct RecurringFormView: View {
         wallets: [Wallet] = [],
         defaultWalletId: String = Wallet.personalID,
         existingTemplate: RecurringTemplate? = nil,
-        onSave: @escaping (RecurringTemplate) -> Void
+        onSave: @escaping (RecurringTemplate) throws -> Void
     ) {
         let activeWallets = WalletService.activeWallets(from: wallets)
 
@@ -171,6 +172,20 @@ struct RecurringFormView: View {
                     selectedCategoryId = filteredCategories.first?.id ?? "other_expense"
                 }
             }
+            .alert(
+                L10n.tr("recurring_form.save_error_title", appConfig.language),
+                isPresented: Binding(
+                    get: { saveError != nil },
+                    set: { if !$0 { saveError = nil } }
+                ),
+                presenting: saveError
+            ) { _ in
+                Button(L10n.tr("common.close", appConfig.language)) {
+                    saveError = nil
+                }
+            } message: { error in
+                Text(error)
+            }
         }
     }
 
@@ -227,8 +242,12 @@ struct RecurringFormView: View {
             isActive: existingTemplate?.isActive ?? true
         )
 
-        onSave(template)
-        dismiss()
+        do {
+            try onSave(template)
+            dismiss()
+        } catch {
+            saveError = error.localizedDescription
+        }
     }
 
     static func resolveInitialWalletId(

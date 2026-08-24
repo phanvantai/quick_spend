@@ -8,6 +8,11 @@ struct WalletBootstrapResult {
 
 @MainActor
 enum WalletService {
+    /// Old App Store builds evaluated `createdAt` and `updatedAt` defaults
+    /// independently. The resulting sub-second delta is constructor jitter, not
+    /// evidence that the user edited a wallet.
+    private static let editTimestampTolerance: TimeInterval = 1
+
     static func activeWallets(from wallets: [Wallet]) -> [Wallet] {
         wallets
             .filter { !$0.isArchived }
@@ -38,6 +43,54 @@ enum WalletService {
         return activeWallets.first?.id ?? Wallet.personalID
     }
 
+    static func canonicalWallet(from wallets: [Wallet]) -> Wallet {
+        precondition(!wallets.isEmpty, "A canonical wallet requires at least one candidate")
+        return wallets.dropFirst().reduce(wallets[0]) { canonical, candidate in
+            isPreferredCanonical(candidate, over: canonical) ? candidate : canonical
+        }
+    }
+
+    private static func isPreferredCanonical(_ lhs: Wallet, over rhs: Wallet) -> Bool {
+        let lhsWasEdited = wasMeaningfullyEdited(lhs)
+        let rhsWasEdited = wasMeaningfullyEdited(rhs)
+        if lhsWasEdited != rhsWasEdited {
+            return lhsWasEdited
+        }
+        if lhsWasEdited, lhs.updatedAt != rhs.updatedAt {
+            return lhs.updatedAt > rhs.updatedAt
+        }
+        if lhs.createdAt != rhs.createdAt {
+            return lhs.createdAt < rhs.createdAt
+        }
+
+        // V1 has no immutable per-row business key beyond `id`. Compare every
+        // remaining persisted content field so equal timestamp ties resolve the
+        // same way regardless of fetch order. Exact duplicates are semantically
+        // indistinguishable, so either row is an equivalent survivor.
+        if lhs.name != rhs.name { return lhs.name < rhs.name }
+        if lhs.iconName != rhs.iconName { return lhs.iconName < rhs.iconName }
+        if lhs.colorHex != rhs.colorHex { return lhs.colorHex < rhs.colorHex }
+        if lhs.sortOrder != rhs.sortOrder { return lhs.sortOrder < rhs.sortOrder }
+        if lhs.isArchived != rhs.isArchived { return !lhs.isArchived }
+        if lhs.updatedAt != rhs.updatedAt { return lhs.updatedAt < rhs.updatedAt }
+        return lhs.id < rhs.id
+    }
+
+    private static func wasMeaningfullyEdited(_ wallet: Wallet) -> Bool {
+        let timestampIndicatesEdit = wallet.updatedAt.timeIntervalSince(wallet.createdAt)
+            > editTimestampTolerance
+        return timestampIndicatesEdit || hasCustomizedPersonalMetadata(wallet)
+    }
+
+    private static func hasCustomizedPersonalMetadata(_ wallet: Wallet) -> Bool {
+        guard wallet.id == Wallet.personalID else { return false }
+        return wallet.name != "Personal"
+            || wallet.iconName != "person.crop.circle.fill"
+            || wallet.colorHex != "#2563EB"
+            || wallet.sortOrder != 0
+            || wallet.isArchived
+    }
+
     static func bootstrapIfNeeded(modelContext: ModelContext) throws -> WalletBootstrapResult {
         try bootstrapIfNeeded(modelContext: modelContext, preferences: .shared)
     }
@@ -53,17 +106,7 @@ enum WalletService {
         let groupedWallets = Dictionary(grouping: wallets, by: \Wallet.id)
         var canonicalWallets: [Wallet] = []
         for walletGroup in groupedWallets.values {
-            let canonical = walletGroup.sorted { lhs, rhs in
-                let lhsWasEdited = lhs.updatedAt > lhs.createdAt
-                let rhsWasEdited = rhs.updatedAt > rhs.createdAt
-                if lhsWasEdited != rhsWasEdited {
-                    return lhsWasEdited
-                }
-                if lhsWasEdited, lhs.updatedAt != rhs.updatedAt {
-                    return lhs.updatedAt > rhs.updatedAt
-                }
-                return lhs.createdAt < rhs.createdAt
-            }[0]
+            let canonical = canonicalWallet(from: walletGroup)
             canonicalWallets.append(canonical)
             for duplicate in walletGroup where duplicate !== canonical {
                 modelContext.delete(duplicate)

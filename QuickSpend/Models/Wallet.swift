@@ -32,7 +32,7 @@ final class Wallet {
         sortOrder: Int = 0,
         isArchived: Bool = false,
         createdAt: Date = .now,
-        updatedAt: Date = .now
+        updatedAt: Date? = nil
     ) {
         self.id = id
         self.name = name
@@ -41,7 +41,7 @@ final class Wallet {
         self.sortOrder = sortOrder
         self.isArchived = isArchived
         self.createdAt = createdAt
-        self.updatedAt = updatedAt
+        self.updatedAt = updatedAt ?? createdAt
     }
 
     static func personal() -> Wallet {

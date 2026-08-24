@@ -6622,6 +6622,35 @@
         }
       }
     },
+    "recurring_form.save_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Save Recurring Transaction"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar la transacción recurrente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期取引を保存できませんでした"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể lưu giao dịch định kỳ"
+          }
+        }
+      }
+    },
     "recurring_form.schedule" : {
       "extractionState" : "manual",
       "localizations" : {
