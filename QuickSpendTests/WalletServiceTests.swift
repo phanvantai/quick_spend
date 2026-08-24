@@ -217,6 +217,61 @@ struct WalletServiceTests {
         #expect(transactions.first?.amount == 125)
     }
 
+    @Test("bootstrap keeps the latest edited wallet among duplicate IDs")
+    func bootstrapKeepsLatestEditedDuplicateWallet() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let preferences = makePreferences()
+        let createdAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let earlierEdited = Wallet(
+            id: "wallet_duplicate", name: "Earlier edited", iconName: "1.circle.fill",
+            colorHex: "#2563EB", createdAt: createdAt,
+            updatedAt: createdAt.addingTimeInterval(60)
+        )
+        let latestEdited = Wallet(
+            id: "wallet_duplicate", name: "Latest edited", iconName: "2.circle.fill",
+            colorHex: "#FF9500", createdAt: createdAt.addingTimeInterval(10),
+            updatedAt: createdAt.addingTimeInterval(120)
+        )
+        context.insert(earlierEdited)
+        context.insert(latestEdited)
+        try context.save()
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+
+        let survivingWallets = try context.fetch(FetchDescriptor<Wallet>())
+            .filter { $0.id == "wallet_duplicate" }
+        #expect(survivingWallets.count == 1)
+        #expect(survivingWallets.first?.name == "Latest edited")
+    }
+
+    @Test("bootstrap keeps the earliest unedited wallet among duplicate IDs")
+    func bootstrapKeepsEarliestUneditedDuplicateWallet() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let preferences = makePreferences()
+        let createdAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let earliestUnedited = Wallet(
+            id: "wallet_duplicate", name: "Earliest created", iconName: "1.circle.fill",
+            colorHex: "#2563EB", createdAt: createdAt, updatedAt: createdAt
+        )
+        let laterUnedited = Wallet(
+            id: "wallet_duplicate", name: "Later created", iconName: "2.circle.fill",
+            colorHex: "#FF9500", createdAt: createdAt.addingTimeInterval(60),
+            updatedAt: createdAt.addingTimeInterval(60)
+        )
+        context.insert(earliestUnedited)
+        context.insert(laterUnedited)
+        try context.save()
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+
+        let survivingWallets = try context.fetch(FetchDescriptor<Wallet>())
+            .filter { $0.id == "wallet_duplicate" }
+        #expect(survivingWallets.count == 1)
+        #expect(survivingWallets.first?.name == "Earliest created")
+    }
+
     @Test("bootstrap converts legacy personal balance anchor to wallet-scoped anchor ID")
     func bootstrapConvertsLegacyAnchorId() throws {
         let container = try makeContainer()
