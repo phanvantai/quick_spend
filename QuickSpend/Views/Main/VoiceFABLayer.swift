@@ -134,10 +134,11 @@ struct VoiceFABLayer: View {
                 wallets: activeWallets,
                 defaultWalletId: defaultWalletId,
                 onSave: { transactions in
-                    for transaction in transactions {
-                        modelContext.insert(transaction)
-                        balance.applyOptimisticInsert(transaction)
-                    }
+                    try TransactionPersistence.createMany(
+                        transactions,
+                        modelContext: modelContext,
+                        balanceService: balance
+                    )
                     vm.parsedTransactions = []
                 }
             )
@@ -149,8 +150,11 @@ struct VoiceFABLayer: View {
                 defaultWalletId: defaultWalletId,
                 initialNote: vm.fallbackTranscription.isEmpty ? nil : vm.fallbackTranscription
             ) { transaction in
-                modelContext.insert(transaction)
-                balance.applyOptimisticInsert(transaction)
+                try TransactionPersistence.create(
+                    transaction,
+                    modelContext: modelContext,
+                    balanceService: balance
+                )
                 vm.fallbackTranscription = ""
             }
         }

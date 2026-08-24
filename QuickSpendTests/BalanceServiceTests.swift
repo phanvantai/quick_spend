@@ -26,6 +26,7 @@ struct BalanceServiceTests {
         let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try ModelContainer(
             for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self,
+            BalanceAdjustment.self,
             configurations: config
         )
     }
@@ -131,8 +132,8 @@ struct BalanceServiceTests {
         #expect(try service.computeBalance(walletId: "wallet_side_work") == 2_500)
     }
 
-    @Test("Resetting a wallet balance moves its anchor so earlier transactions are not counted twice")
-    func testSetCurrentBalanceUpdatesExistingAnchorDate() throws {
+    @Test("Reconciling an existing wallet records a delta without moving its anchor")
+    func testSetCurrentBalanceRecordsAdjustment() throws {
         let container = try makeContainer()
         let context = container.mainContext
         let originalDate = Date(timeIntervalSince1970: 1_700_000_000)
@@ -158,9 +159,48 @@ struct BalanceServiceTests {
 
         let anchors = try context.fetch(FetchDescriptor<BalanceAnchor>())
         #expect(anchors.count == 1)
-        #expect(anchors.first?.openingBalance == 3_000)
-        #expect(anchors.first?.anchorDate == confirmationDate)
+        #expect(anchors.first?.openingBalance == 1_000)
+        #expect(anchors.first?.anchorDate == originalDate)
+        let adjustments = try context.fetch(FetchDescriptor<BalanceAdjustment>())
+        #expect(adjustments.count == 1)
+        #expect(adjustments.first?.amount == 2_200)
+        #expect(adjustments.first?.reason == BalanceAdjustmentReason.manualReconciliation.rawValue)
         #expect(try service.computeBalance(walletId: "wallet_side_work") == 3_000)
+
+        try service.setCurrentBalance(3_000, for: "wallet_side_work", at: confirmationDate.addingTimeInterval(60))
+        #expect(try context.fetchCount(FetchDescriptor<BalanceAdjustment>()) == 1)
+    }
+
+    @Test("Balance includes every wallet adjustment regardless of adjustment date")
+    func testBalanceIncludesAdjustmentsBeforeAnchor() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let anchorDate = Date(timeIntervalSince1970: 1_700_000_000)
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, walletId: "wallet_side_work", in: context)
+        context.insert(Transaction(
+            amount: 100,
+            note: "After anchor",
+            categoryId: "food",
+            walletId: "wallet_side_work",
+            type: .expense,
+            createdAt: anchorDate.addingTimeInterval(60)
+        ))
+        context.insert(BalanceAdjustment(
+            walletId: "wallet_side_work",
+            amount: 25,
+            reason: .transactionEdit,
+            createdAt: anchorDate.addingTimeInterval(-86_400)
+        ))
+        context.insert(BalanceAdjustment(
+            walletId: "wallet_side_work",
+            amount: -5,
+            reason: .manualReconciliation,
+            createdAt: anchorDate.addingTimeInterval(120)
+        ))
+        try context.save()
+
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+        #expect(try service.computeBalance(walletId: "wallet_side_work") == 920)
     }
 
     @Test("Setting Personal balance refreshes the observable balance immediately")

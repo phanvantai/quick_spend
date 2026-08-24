@@ -17,6 +17,7 @@ struct TransactionsView: View {
     @State private var deletingTransaction: Transaction?
     @State private var showingAddTransaction = false
     @State private var showSettings = false
+    @State private var mutationError: String?
 
     /// Transactions filtered to the selected month
     private var monthTransactions: [Transaction] {
@@ -188,8 +189,11 @@ struct TransactionsView: View {
                     wallets: activeWallets,
                     defaultWalletId: defaultWalletId
                 ) { transaction in
-                    modelContext.insert(transaction)
-                    balance.applyOptimisticInsert(transaction)
+                    try TransactionPersistence.create(
+                        transaction,
+                        modelContext: modelContext,
+                        balanceService: balance
+                    )
                 }
             }
             .sheet(isPresented: $showSettings) {
@@ -204,25 +208,11 @@ struct TransactionsView: View {
                     defaultWalletId: transaction.walletId,
                     expense: transaction
                 ) { updated in
-                    let oldAmount = transaction.amount
-                    let oldType = transaction.type
-                    let oldWalletId = transaction.walletId
-                    let createdAt = transaction.createdAt
-                    transaction.amount = updated.amount
-                    transaction.note = updated.note
-                    transaction.categoryId = updated.categoryId
-                    transaction.walletId = updated.walletId
-                    transaction.date = updated.date
-                    transaction.type = updated.type
-                    transaction.updatedAt = .now
-                    balance.applyOptimisticEdit(
-                        createdAt: createdAt,
-                        oldAmount: oldAmount,
-                        oldType: oldType,
-                        oldWalletId: oldWalletId,
-                        newAmount: updated.amount,
-                        newType: updated.type,
-                        newWalletId: updated.walletId
+                    try TransactionPersistence.update(
+                        transaction,
+                        with: updated,
+                        modelContext: modelContext,
+                        balanceService: balance
                     )
                 }
             }
@@ -247,6 +237,18 @@ struct TransactionsView: View {
                 }
             } message: {
                 Text(L10n.tr("transactions.delete_confirm", appConfig.language))
+            }
+            .alert(
+                L10n.tr("recurring_form.save_error_title", appConfig.language),
+                isPresented: Binding(
+                    get: { mutationError != nil },
+                    set: { if !$0 { mutationError = nil } }
+                ),
+                presenting: mutationError
+            ) { _ in
+                Button(L10n.tr("common.close", appConfig.language)) { mutationError = nil }
+            } message: { error in
+                Text(error)
             }
         }
     }
@@ -390,15 +392,20 @@ struct TransactionsView: View {
     // MARK: - Actions
 
     private func deleteTransaction(_ transaction: Transaction) {
-        withAnimation(.springSmooth) {
-            balance.applyOptimisticDelete(transaction)
-            modelContext.delete(transaction)
+        do {
+            try TransactionPersistence.delete(
+                transaction,
+                modelContext: modelContext,
+                balanceService: balance
+            )
+        } catch {
+            mutationError = error.localizedDescription
         }
     }
 }
 
 #Preview {
     TransactionsView()
-        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, Wallet.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self, BalanceAdjustment.self], inMemory: true)
         .environment(AppConfigViewModel())
 }

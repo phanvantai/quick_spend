@@ -152,6 +152,22 @@ enum WalletService {
             }
         }
 
+        let adjustments = try modelContext.fetch(FetchDescriptor<BalanceAdjustment>())
+        let groupedAdjustments = Dictionary(grouping: adjustments, by: \BalanceAdjustment.id)
+        for group in groupedAdjustments.values where group.count > 1 {
+            let ordered = group.sorted { lhs, rhs in
+                if lhs.createdAt != rhs.createdAt { return lhs.createdAt < rhs.createdAt }
+                if lhs.operationId != rhs.operationId { return lhs.operationId < rhs.operationId }
+                if lhs.walletId != rhs.walletId { return lhs.walletId < rhs.walletId }
+                if lhs.amount != rhs.amount { return lhs.amount < rhs.amount }
+                if lhs.reason != rhs.reason { return lhs.reason < rhs.reason }
+                return (lhs.sourceTransactionId ?? "") < (rhs.sourceTransactionId ?? "")
+            }
+            for duplicate in ordered.dropFirst() {
+                modelContext.delete(duplicate)
+            }
+        }
+
         if preferences.defaultWalletId.isEmpty {
             preferences.setDefaultWalletId(Wallet.personalID)
         }

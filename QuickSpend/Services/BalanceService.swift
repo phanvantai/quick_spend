@@ -10,7 +10,7 @@ import Combine
 /// Defensive: if more than one `BalanceAnchor` row is found (e.g. CloudKit last-writer-wins
 /// race despite the fixed singleton UUID), keeps the oldest `createdAt` and deletes the rest.
 ///
-/// Formula: `balance = openingBalance + Σ(income.amount where date >= anchorDate) − Σ(expense.amount where date >= anchorDate)`
+/// Formula: `balance = openingBalance + Σ(post-anchor transaction amounts) + Σ(adjustments)`
 @MainActor
 @Observable
 final class BalanceService {
@@ -138,7 +138,14 @@ final class BalanceService {
             case .expense: return acc - tx.amount
             }
         }
-        return anchor.openingBalance + delta
+        let adjustmentPredicate = #Predicate<BalanceAdjustment> {
+            $0.walletId == walletId
+        }
+        let adjustments = try modelContext.fetch(
+            FetchDescriptor<BalanceAdjustment>(predicate: adjustmentPredicate)
+        )
+        let adjustmentDelta = adjustments.reduce(0.0) { $0 + $1.amount }
+        return anchor.openingBalance + delta + adjustmentDelta
     }
 
     func computeTotalBalance(walletIds: [String]) throws -> Double? {
@@ -161,6 +168,23 @@ final class BalanceService {
             return published
         }
         return try? computeBalance(walletId: walletId)
+    }
+
+    func authoritativeBalances(for walletIds: Set<String>) throws -> [String: Double] {
+        var balances: [String: Double] = [:]
+        for walletId in walletIds {
+            if let balance = try computeBalance(walletId: walletId) {
+                balances[walletId] = balance
+            }
+        }
+        return balances
+    }
+
+    func publish(_ balances: [String: Double]) {
+        for (walletId, balance) in balances {
+            knownWalletIds.insert(walletId)
+            setPublishedBalance(balance, for: walletId)
+        }
     }
 
     // MARK: - Optimistic updates
@@ -281,9 +305,9 @@ final class BalanceService {
         recomputeCount += 1
     }
 
-    /// Treat `amount` as the wallet's balance at `date`. Moving the anchor to
-    /// the confirmation moment prevents earlier transactions from being counted
-    /// again after the user resets the displayed balance.
+    /// Treat `amount` as the wallet's balance at `date`. The first setup creates
+    /// an anchor. Later reconciliations append a signed correction and preserve
+    /// the original anchor so future transaction edits have a stable baseline.
     func setCurrentBalance(
         _ amount: Double,
         for walletId: String,
@@ -292,8 +316,18 @@ final class BalanceService {
         try recoverDuplicateAnchorsIfNeeded()
 
         if let existing = try fetchAnchor(walletId: walletId) {
-            existing.openingBalance = amount
-            existing.anchorDate = date
+            let current = try computeBalance(walletId: walletId) ?? existing.openingBalance
+            let delta = amount - current
+            if abs(delta) > 0.000_001 {
+                let operationId = UUID().uuidString
+                modelContext.insert(BalanceAdjustment(
+                    id: "\(operationId):\(walletId)",
+                    operationId: operationId,
+                    walletId: walletId,
+                    amount: delta,
+                    reason: .manualReconciliation
+                ))
+            }
         } else {
             modelContext.insert(BalanceAnchor(
                 walletId: walletId,
@@ -303,23 +337,11 @@ final class BalanceService {
         }
 
         try modelContext.save()
-        if walletId == Wallet.personalID {
-            do {
-                try recomputeNow()
-            } catch {
-                // The anchor is already persisted, so do not surface this as a
-                // failed save and invite a retry that moves the anchor again.
-                // Keep the UI/cache consistent with the confirmed value and let
-                // the debounced reconciliation retry the authoritative fetch.
-                currentBalance = amount
-                cachedAnchorDates[walletId] = date
-                cacheStore.write(balance: amount)
-                scheduleRecompute()
-            }
-        } else {
-            cachedAnchorDates[walletId] = date
-            setPublishedBalance(amount, for: walletId)
+        knownWalletIds.insert(walletId)
+        if cachedAnchorDates[walletId] == nil {
+            cachedAnchorDates[walletId] = try fetchAnchor(walletId: walletId)?.anchorDate
         }
+        setPublishedBalance(amount, for: walletId)
     }
 
     /// Explicit wipe used by "Delete All Data" so the cache + observable state
@@ -374,13 +396,13 @@ final class BalanceService {
         }
     }
 
-    /// Inspect the model context's pending changes for Transaction OR BalanceAnchor
+    /// Inspect the model context's pending changes for transaction, anchor, or adjustment
     /// inserts/updates/deletes. Both affect the running balance: Transaction changes
     /// shift the sum, BalanceAnchor changes shift the opening value or anchor moment.
     /// Must be called on MainActor (the context is MainActor-isolated in our setup).
     private func contextAffectsBalanceInputs() -> Bool {
         func matches(_ model: any PersistentModel) -> Bool {
-            model is Transaction || model is BalanceAnchor
+            model is Transaction || model is BalanceAnchor || model is BalanceAdjustment
         }
         if modelContext.insertedModelsArray.contains(where: matches) { return true }
         if modelContext.changedModelsArray.contains(where: matches) { return true }

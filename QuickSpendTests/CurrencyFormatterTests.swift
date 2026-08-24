@@ -93,6 +93,7 @@ struct CurrencyFormatterTests {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try ModelContainer(
             for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self,
+            BalanceAdjustment.self,
             configurations: configuration
         )
         let context = container.mainContext

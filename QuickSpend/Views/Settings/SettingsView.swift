@@ -171,6 +171,7 @@ struct SettingsView: View {
             try modelContext.delete(model: Category.self)
             try modelContext.delete(model: RecurringTemplate.self)
             try modelContext.delete(model: BalanceAnchor.self)
+            try modelContext.delete(model: BalanceAdjustment.self)
             try modelContext.delete(model: Wallet.self)
             _ = try? WalletService.bootstrapIfNeeded(modelContext: modelContext)
         } catch {
@@ -183,7 +184,7 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
-        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self, BalanceAdjustment.self], inMemory: true)
         .environment(AppConfigViewModel())
         .environment(SubscriptionViewModel())
         .environment(CloudSyncService())

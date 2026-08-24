@@ -9,16 +9,17 @@ struct EditableExpenseDialog: View {
     let categories: [Category]
     let wallets: [Wallet]
     let defaultWalletId: String
-    let onSave: ([Transaction]) -> Void
+    let onSave: ([Transaction]) throws -> Void
 
     @State private var editableExpenses: [EditableExpenseData]
+    @State private var saveError: String?
 
     init(
         parsedExpenses: [ParsedTransaction],
         categories: [Category],
         wallets: [Wallet] = [],
         defaultWalletId: String = Wallet.personalID,
-        onSave: @escaping ([Transaction]) -> Void
+        onSave: @escaping ([Transaction]) throws -> Void
     ) {
         self.parsedTransactions = parsedExpenses
         self.categories = categories
@@ -47,6 +48,18 @@ struct EditableExpenseDialog: View {
                     Button(L10n.tr("common.save", appConfig.language)) { save() }
                         .bold()
                 }
+            }
+            .alert(
+                L10n.tr("recurring_form.save_error_title", appConfig.language),
+                isPresented: Binding(
+                    get: { saveError != nil },
+                    set: { if !$0 { saveError = nil } }
+                ),
+                presenting: saveError
+            ) { _ in
+                Button(L10n.tr("common.close", appConfig.language)) { saveError = nil }
+            } message: { error in
+                Text(error)
             }
         }
     }
@@ -168,8 +181,12 @@ struct EditableExpenseDialog: View {
         }
 
         guard !transactions.isEmpty else { return }
-        onSave(transactions)
-        dismiss()
+        do {
+            try onSave(transactions)
+            dismiss()
+        } catch {
+            saveError = error.localizedDescription
+        }
     }
 
     private func parseAmount(_ text: String) -> Double? {

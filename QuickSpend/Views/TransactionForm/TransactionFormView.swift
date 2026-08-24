@@ -11,7 +11,7 @@ struct TransactionFormView: View {
     let wallets: [Wallet]
     let defaultWalletId: String
     let existingTransaction: Transaction?
-    let onSave: (Transaction) -> Void
+    let onSave: (Transaction) throws -> Void
 
     @State private var noteText: String
     @State private var amountText: String
@@ -25,6 +25,7 @@ struct TransactionFormView: View {
     @State private var noteError: String?
     @State private var dateError: String?
     @State private var hasAttemptedSave = false
+    @State private var saveError: String?
 
     private var isEditMode: Bool { existingTransaction != nil }
 
@@ -46,7 +47,7 @@ struct TransactionFormView: View {
         defaultWalletId: String = Wallet.personalID,
         expense: Transaction? = nil,
         initialNote: String? = nil,
-        onSave: @escaping (Transaction) -> Void
+        onSave: @escaping (Transaction) throws -> Void
     ) {
         self.categories = categories
         self.wallets = wallets
@@ -148,6 +149,18 @@ struct TransactionFormView: View {
             }
             .onChange(of: selectedDate) {
                 if hasAttemptedSave { validateDate() }
+            }
+            .alert(
+                L10n.tr("recurring_form.save_error_title", appConfig.language),
+                isPresented: Binding(
+                    get: { saveError != nil },
+                    set: { if !$0 { saveError = nil } }
+                ),
+                presenting: saveError
+            ) { _ in
+                Button(L10n.tr("common.close", appConfig.language)) { saveError = nil }
+            } message: { error in
+                Text(error)
             }
         }
     }
@@ -287,8 +300,12 @@ struct TransactionFormView: View {
             confidence: existingTransaction?.confidence
         )
 
-        onSave(transaction)
-        dismiss()
+        do {
+            try onSave(transaction)
+            dismiss()
+        } catch {
+            saveError = error.localizedDescription
+        }
     }
 }
 

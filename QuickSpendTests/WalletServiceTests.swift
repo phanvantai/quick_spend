@@ -11,8 +11,38 @@ struct WalletServiceTests {
         let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try ModelContainer(
             for: Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self,
+            BalanceAdjustment.self,
             configurations: config
         )
+    }
+
+    @Test("bootstrap removes duplicate balance adjustments by business id")
+    func bootstrapRemovesDuplicateBalanceAdjustments() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let preferences = makePreferences()
+        let earlier = Date(timeIntervalSince1970: 1_700_000_000)
+        context.insert(BalanceAdjustment(
+            id: "op:wallet_personal", operationId: "op", walletId: Wallet.personalID,
+            amount: 100, reason: .transactionEdit, createdAt: earlier
+        ))
+        context.insert(BalanceAdjustment(
+            id: "op:wallet_personal", operationId: "op", walletId: Wallet.personalID,
+            amount: 100, reason: .transactionEdit, createdAt: earlier.addingTimeInterval(1)
+        ))
+        context.insert(BalanceAdjustment(
+            id: "other:wallet_personal", operationId: "other", walletId: Wallet.personalID,
+            amount: -20, reason: .manualReconciliation, createdAt: earlier
+        ))
+        try context.save()
+
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+        _ = try WalletService.bootstrapIfNeeded(modelContext: context, preferences: preferences)
+
+        let adjustments = try context.fetch(FetchDescriptor<BalanceAdjustment>())
+        #expect(adjustments.count == 2)
+        #expect(adjustments.filter { $0.id == "op:wallet_personal" }.count == 1)
+        #expect(adjustments.contains { $0.id == "other:wallet_personal" })
     }
 
     private func makePreferences() -> PreferencesService {

@@ -9,6 +9,14 @@ enum QuickSpendSchemaV1: VersionedSchema {
 }
 
 enum QuickSpendMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [QuickSpendSchemaV1.self] }
-    static var stages: [MigrationStage] { [] }
+    static let v1ToV2 = MigrationStage.lightweight(
+        fromVersion: QuickSpendSchemaV1.self,
+        toVersion: QuickSpendSchemaV2.self
+    )
+
+    static var schemas: [any VersionedSchema.Type] {
+        [QuickSpendSchemaV1.self, QuickSpendSchemaV2.self]
+    }
+
+    static var stages: [MigrationStage] { [v1ToV2] }
 }

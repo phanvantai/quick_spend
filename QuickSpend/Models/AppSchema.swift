@@ -2,9 +2,9 @@ import Foundation
 import SwiftData
 
 enum AppSchema {
-    static let models = QuickSpendSchemaV1.models
+    static let models = QuickSpendSchemaV2.models
 
-    static let schema = Schema(versionedSchema: QuickSpendSchemaV1.self)
+    static let schema = Schema(versionedSchema: QuickSpendSchemaV2.self)
     static let migrationPlan: any SchemaMigrationPlan.Type = QuickSpendMigrationPlan.self
 
     static let cloudKitContainerId = "iCloud.com.randomtech.quickSpend"

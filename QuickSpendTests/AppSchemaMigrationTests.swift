@@ -36,7 +36,7 @@ struct AppSchemaMigrationTests {
     }
 
     private func shippedV1Signature() -> [String] {
-        AppSchema.schema.entities.flatMap { entity in
+        Schema(versionedSchema: QuickSpendSchemaV1.self).entities.flatMap { entity in
             entity.properties.map { property in
                 let kind = property.isAttribute ? "attribute" : "relationship"
                 let optionality = property.isOptional ? "optional" : "required"
@@ -59,15 +59,43 @@ struct AppSchemaMigrationTests {
         .sorted()
     }
 
-    @Test("App Store schema is frozen as V1")
-    func appStoreSchemaIsV1() {
+    @Test("Runtime advances to V2 without changing the shipped V1 schema")
+    func runtimeAdvancesToV2() {
         #expect(QuickSpendSchemaV1.versionIdentifier == Schema.Version(1, 0, 0))
+        #expect(QuickSpendSchemaV2.versionIdentifier == Schema.Version(2, 0, 0))
         #expect(QuickSpendSchemaV1.models.count == 5)
+        #expect(QuickSpendSchemaV2.models.count == 6)
         #expect(Set(AppSchema.schema.entities.map(\.name)) == [
-            "Transaction", "Category", "RecurringTemplate", "BalanceAnchor", "Wallet"
+            "Transaction", "Category", "RecurringTemplate", "BalanceAnchor", "Wallet",
+            "BalanceAdjustment"
         ])
-        #expect(QuickSpendMigrationPlan.schemas.count == 1)
-        #expect(QuickSpendMigrationPlan.stages.isEmpty)
+        #expect(QuickSpendMigrationPlan.schemas.count == 2)
+        #expect(QuickSpendMigrationPlan.stages.count == 1)
+    }
+
+    @Test("V2 balance adjustment has the additive CloudKit-compatible signature")
+    func balanceAdjustmentSignature() throws {
+        let entity = try #require(AppSchema.schema.entities.first { $0.name == "BalanceAdjustment" })
+        let signature = Set(entity.properties.map { property in
+            let attribute = property as? Schema.Attribute
+            return [
+                entity.name,
+                property.name,
+                String(describing: property.valueType),
+                property.isOptional ? "optional" : "required",
+                property.isUnique ? "unique" : "nonunique",
+                attribute.map(defaultSignature(for:)) ?? "n/a"
+            ].joined(separator: "|")
+        })
+        #expect(signature == [
+            "BalanceAdjustment|amount|Double|required|nonunique|Double(0.0)",
+            "BalanceAdjustment|createdAt|Date|required|nonunique|Date.dynamic",
+            "BalanceAdjustment|id|String|required|nonunique|String()",
+            "BalanceAdjustment|operationId|String|required|nonunique|String()",
+            "BalanceAdjustment|reason|String|required|nonunique|String(manual_reconciliation)",
+            "BalanceAdjustment|sourceTransactionId|Optional<String>|optional|nonunique|nil",
+            "BalanceAdjustment|walletId|String|required|nonunique|String(wallet_personal)"
+        ])
     }
 
     @Test("V1 entity and property signature matches the shipped App Store schema")
@@ -125,7 +153,7 @@ struct AppSchemaMigrationTests {
         #expect(shippedV1Signature() == expected)
     }
 
-    @Test("Versioned V1 opens an existing unversioned App Store store in place")
+    @Test("V2 opens an existing unversioned App Store store in place")
     @MainActor
     func versionedV1OpensExistingStore() throws {
         let directory = FileManager.default.temporaryDirectory
@@ -182,5 +210,14 @@ struct AppSchemaMigrationTests {
         #expect(try context.fetchCount(FetchDescriptor<AppCategory>()) == 1)
         #expect(try context.fetchCount(FetchDescriptor<BalanceAnchor>()) == 1)
         #expect(try context.fetchCount(FetchDescriptor<Wallet>()) == 1)
+        context.insert(BalanceAdjustment(
+            id: "migration_adjustment", operationId: "migration",
+            walletId: Wallet.personalID, amount: 75, reason: .manualReconciliation
+        ))
+        try context.save()
+
+        let adjustments = try context.fetch(FetchDescriptor<BalanceAdjustment>())
+        #expect(adjustments.count == 1)
+        #expect(adjustments.first?.amount == 75)
     }
 }

@@ -246,8 +246,11 @@ struct HomeView: View {
                     wallets: activeWallets,
                     defaultWalletId: defaultWalletIdForNewTransaction
                 ) { transaction in
-                    modelContext.insert(transaction)
-                    balance.applyOptimisticInsert(transaction)
+                    try TransactionPersistence.create(
+                        transaction,
+                        modelContext: modelContext,
+                        balanceService: balance
+                    )
                 }
             }
             .sheet(isPresented: $showWallets) {
