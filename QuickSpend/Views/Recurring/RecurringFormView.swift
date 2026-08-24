@@ -6,12 +6,15 @@ struct RecurringFormView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
 
     let categories: [Category]
+    let wallets: [Wallet]
+    let defaultWalletId: String
     let existingTemplate: RecurringTemplate?
     let onSave: (RecurringTemplate) -> Void
 
     @State private var noteText: String
     @State private var amountText: String
     @State private var selectedCategoryId: String
+    @State private var selectedWalletId: String
     @State private var selectedType: TransactionType
     @State private var selectedPattern: RecurrencePattern
     @State private var startDate: Date
@@ -28,16 +31,27 @@ struct RecurringFormView: View {
 
     init(
         categories: [Category],
+        wallets: [Wallet] = [],
+        defaultWalletId: String = Wallet.personalID,
         existingTemplate: RecurringTemplate? = nil,
         onSave: @escaping (RecurringTemplate) -> Void
     ) {
+        let activeWallets = WalletService.activeWallets(from: wallets)
+
         self.categories = categories
+        self.wallets = activeWallets
+        self.defaultWalletId = defaultWalletId
         self.existingTemplate = existingTemplate
         self.onSave = onSave
 
         _noteText = State(initialValue: existingTemplate?.note ?? "")
         _amountText = State(initialValue: existingTemplate.map { String(format: "%.2f", $0.amount) } ?? "")
         _selectedCategoryId = State(initialValue: existingTemplate?.categoryId ?? "other_expense")
+        _selectedWalletId = State(initialValue: Self.resolveInitialWalletId(
+            existingTemplate: existingTemplate,
+            wallets: activeWallets,
+            defaultWalletId: defaultWalletId
+        ))
         _selectedType = State(initialValue: existingTemplate?.type ?? .expense)
         _selectedPattern = State(initialValue: existingTemplate?.pattern ?? .monthly)
         _startDate = State(initialValue: existingTemplate?.startDate ?? .now)
@@ -54,6 +68,18 @@ struct RecurringFormView: View {
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets())
                         .padding(.vertical, AppTheme.spacing4)
+                }
+
+                if wallets.count > 1 {
+                    Section(L10n.tr("wallets.wallet", appConfig.language)) {
+                        Picker(L10n.tr("wallets.wallet", appConfig.language), selection: $selectedWalletId) {
+                            ForEach(wallets, id: \.id) { wallet in
+                                Label(wallet.displayName(language: appConfig.language), systemImage: wallet.iconName)
+                                    .tag(wallet.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
                 }
 
                 // Description
@@ -192,6 +218,7 @@ struct RecurringFormView: View {
             amount: amount,
             note: noteText.trimmingCharacters(in: .whitespaces),
             categoryId: selectedCategoryId,
+            walletId: selectedWalletId,
             type: selectedType,
             pattern: selectedPattern,
             startDate: startDate,
@@ -202,6 +229,23 @@ struct RecurringFormView: View {
 
         onSave(template)
         dismiss()
+    }
+
+    static func resolveInitialWalletId(
+        existingTemplate: RecurringTemplate?,
+        wallets: [Wallet],
+        defaultWalletId: String
+    ) -> String {
+        let activeWallets = WalletService.activeWallets(from: wallets)
+        let activeWalletIds = Set(activeWallets.map(\.id))
+
+        if let existingTemplate, activeWalletIds.contains(existingTemplate.walletId) {
+            return existingTemplate.walletId
+        }
+        if activeWalletIds.contains(defaultWalletId) {
+            return defaultWalletId
+        }
+        return Wallet.personalID
     }
 }
 

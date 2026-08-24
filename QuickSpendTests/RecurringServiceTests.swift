@@ -110,6 +110,33 @@ struct RecurringServiceTests {
         #expect(transactions.first?.walletId == "wallet_side_work")
     }
 
+    @Test("Editing a recurring wallet changes the next generated transaction")
+    func editingTemplateWalletChangesFutureGeneratedTransaction() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let template = RecurringTemplate(
+            amount: 500,
+            note: "Side work tool",
+            categoryId: "tools",
+            walletId: Wallet.personalID,
+            type: .expense,
+            pattern: .daily,
+            startDate: Date.now
+        )
+        context.insert(template)
+        try context.save()
+
+        template.walletId = "wallet_side_work"
+
+        let generated = RecurringService.generatePendingTransactions(modelContext: context)
+        let transactions = try fetchTransactions(from: context)
+
+        #expect(generated == 1)
+        #expect(transactions.count == 1)
+        #expect(transactions.first?.walletId == "wallet_side_work")
+    }
+
     // MARK: - Weekly Template Tests
 
     @Test("Weekly template generates transactions for past weeks")

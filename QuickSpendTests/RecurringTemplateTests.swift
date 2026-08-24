@@ -93,4 +93,47 @@ struct RecurringTemplateTests {
 
         #expect(template.walletId == "wallet_side_work")
     }
+
+    @Test("New recurring form starts with the resolved default wallet")
+    @MainActor
+    func recurringFormUsesDefaultWallet() {
+        let wallets = [Wallet.personal(), Wallet(
+            id: "wallet_side_work", name: "Side Work",
+            iconName: "briefcase.fill", colorHex: "#2563EB"
+        )]
+
+        #expect(RecurringFormView.resolveInitialWalletId(
+            existingTemplate: nil,
+            wallets: wallets,
+            defaultWalletId: "wallet_side_work"
+        ) == "wallet_side_work")
+    }
+
+    @Test("Editing recurring form keeps an active assigned wallet")
+    @MainActor
+    func recurringFormKeepsExistingWallet() {
+        let personal = Wallet.personal()
+        let sideWork = Wallet(
+            id: "wallet_side_work", name: "Side Work",
+            iconName: "briefcase.fill", colorHex: "#2563EB"
+        )
+        let template = RecurringTemplate(
+            amount: 100, note: "Tools", categoryId: "tools",
+            walletId: "wallet_side_work"
+        )
+
+        #expect(RecurringFormView.resolveInitialWalletId(
+            existingTemplate: template,
+            wallets: [personal, sideWork],
+            defaultWalletId: Wallet.personalID
+        ) == "wallet_side_work")
+
+        sideWork.isArchived = true
+
+        #expect(RecurringFormView.resolveInitialWalletId(
+            existingTemplate: template,
+            wallets: [personal, sideWork],
+            defaultWalletId: Wallet.personalID
+        ) == Wallet.personalID)
+    }
 }

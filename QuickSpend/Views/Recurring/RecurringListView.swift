@@ -9,6 +9,7 @@ struct RecurringListView: View {
     @Environment(SubscriptionViewModel.self) private var subscription
     @Query(sort: \RecurringTemplate.startDate, order: .reverse) private var templates: [RecurringTemplate]
     @Query(sort: \Category.name) private var categories: [Category]
+    @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     @State private var showingAddForm = false
     @State private var editingTemplate: RecurringTemplate?
@@ -62,15 +63,25 @@ struct RecurringListView: View {
             }
         }
         .sheet(isPresented: $showingAddForm) {
-            RecurringFormView(categories: categories) { newTemplate in
+            RecurringFormView(
+                categories: categories,
+                wallets: activeWallets,
+                defaultWalletId: defaultWalletId
+            ) { newTemplate in
                 modelContext.insert(newTemplate)
             }
         }
         .sheet(item: $editingTemplate) { template in
-            RecurringFormView(categories: categories, existingTemplate: template) { updated in
+            RecurringFormView(
+                categories: categories,
+                wallets: activeWallets,
+                defaultWalletId: defaultWalletId,
+                existingTemplate: template
+            ) { updated in
                 template.amount = updated.amount
                 template.note = updated.note
                 template.categoryId = updated.categoryId
+                template.walletId = updated.walletId
                 template.type = updated.type
                 template.pattern = updated.pattern
                 template.startDate = updated.startDate
@@ -115,6 +126,14 @@ struct RecurringListView: View {
     }
 
     // MARK: - Template Row
+
+    private var activeWallets: [Wallet] {
+        WalletService.activeWallets(from: wallets)
+    }
+
+    private var defaultWalletId: String {
+        WalletService.resolvedDefaultWalletId(wallets: activeWallets)
+    }
 
     private func templateRow(_ template: RecurringTemplate) -> some View {
         let category = categories.first { $0.id == template.categoryId }
@@ -182,7 +201,7 @@ struct RecurringListView: View {
     NavigationStack {
         RecurringListView()
     }
-    .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self], inMemory: true)
+    .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, Wallet.self], inMemory: true)
     .environment(AppConfigViewModel())
     .environment(SubscriptionViewModel())
 }
