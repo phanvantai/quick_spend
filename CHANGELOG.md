@@ -2,7 +2,7 @@
 
 ---
 
-## [3.1] - 2026-08-26
+## [3.2] - 2026-08-26
 
 ### What's New
 - Multiple wallets with wallet selection for transactions and recurring transactions
