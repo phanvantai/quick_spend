@@ -16,7 +16,8 @@ struct RecurringServiceTests {
     private func makeContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try ModelContainer(
-            for: Transaction.self, AppCategory.self, RecurringTemplate.self, Wallet.self,
+            for: Transaction.self, AppCategory.self, RecurringTemplate.self, BalanceAnchor.self,
+            Wallet.self, BalanceAdjustment.self,
             configurations: config
         )
     }
@@ -108,6 +109,31 @@ struct RecurringServiceTests {
 
         #expect(generated == 1)
         #expect(transactions.first?.walletId == "wallet_side_work")
+    }
+
+    @Test("Recurring generation affects balance when device time is before the anchor")
+    func recurringBeforeAnchorCreatesCompensatingAdjustment() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        context.insert(BalanceAnchor(
+            openingBalance: 1_000,
+            anchorDate: Date.now.addingTimeInterval(3_600)
+        ))
+        context.insert(RecurringTemplate(
+            amount: 100,
+            note: "Clock skew expense",
+            categoryId: "food_drink",
+            type: .expense,
+            pattern: .daily,
+            startDate: .now
+        ))
+        try context.save()
+
+        #expect(RecurringService.generatePendingTransactions(modelContext: context) == 1)
+
+        let balance = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+        #expect(try balance.computeBalance() == 900)
+        #expect(try context.fetchCount(FetchDescriptor<BalanceAdjustment>()) == 1)
     }
 
     @Test("Editing a recurring wallet changes the next generated transaction")

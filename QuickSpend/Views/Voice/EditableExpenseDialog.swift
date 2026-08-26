@@ -50,7 +50,7 @@ struct EditableExpenseDialog: View {
                 }
             }
             .alert(
-                L10n.tr("recurring_form.save_error_title", appConfig.language),
+                L10n.tr("transaction.save_error_title", appConfig.language),
                 isPresented: Binding(
                     get: { saveError != nil },
                     set: { if !$0 { saveError = nil } }

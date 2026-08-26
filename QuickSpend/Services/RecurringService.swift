@@ -7,15 +7,49 @@ struct RecurringService {
     /// Generate all pending recurring transactions
     /// Should be called on app startup
     @MainActor
-    static func generatePendingTransactions(modelContext: ModelContext) -> Int {
+    static func generatePendingTransactions(
+        modelContext: ModelContext,
+        balanceService: BalanceService? = nil
+    ) -> Int {
         let descriptor = FetchDescriptor<RecurringTemplate>(
             predicate: #Predicate { $0.isActive == true }
         )
         guard let templates = try? modelContext.fetch(descriptor) else { return 0 }
 
         var totalGenerated = 0
+        var transactions: [Transaction] = []
+        var originalLastGeneratedDates: [(RecurringTemplate, Date?)] = []
         for template in templates {
-            totalGenerated += generateTransactions(for: template, modelContext: modelContext)
+            let result = pendingTransactions(for: template, modelContext: modelContext)
+            totalGenerated += result.occurrenceCount
+            transactions.append(contentsOf: result.transactions)
+            if let lastGeneratedDate = result.lastGeneratedDate {
+                originalLastGeneratedDates.append((template, template.lastGeneratedDate))
+                template.lastGeneratedDate = lastGeneratedDate
+            }
+        }
+
+        do {
+            if transactions.isEmpty {
+                if modelContext.hasChanges { try modelContext.save() }
+            } else {
+                let balanceService = balanceService ?? BalanceService(
+                    modelContext: modelContext,
+                    autoObserve: false,
+                    autoCompute: false
+                )
+                try TransactionPersistence.createMany(
+                    transactions,
+                    modelContext: modelContext,
+                    balanceService: balanceService
+                )
+            }
+        } catch {
+            for (template, originalDate) in originalLastGeneratedDates {
+                template.lastGeneratedDate = originalDate
+            }
+            print("[RecurringService] Failed to persist recurring transactions: \(error)")
+            return 0
         }
 
         if totalGenerated > 0 {
@@ -26,18 +60,18 @@ struct RecurringService {
 
     /// Generate transactions for a single template
     @MainActor
-    private static func generateTransactions(
+    private static func pendingTransactions(
         for template: RecurringTemplate,
         modelContext: ModelContext
-    ) -> Int {
-        guard template.isActive else { return 0 }
+    ) -> (transactions: [Transaction], lastGeneratedDate: Date?, occurrenceCount: Int) {
+        guard template.isActive else { return ([], nil, 0) }
 
         let now = Date.now
         let calendar = Calendar.current
 
         // If template has ended, skip
         if let endDate = template.endDate, now > endDate {
-            return 0
+            return ([], nil, 0)
         }
 
         // Determine start: next occurrence after lastGeneratedDate, or startDate
@@ -57,8 +91,9 @@ struct RecurringService {
             calendar: calendar
         )
 
-        guard !dates.isEmpty else { return 0 }
+        guard !dates.isEmpty else { return ([], nil, 0) }
 
+        var transactions: [Transaction] = []
         var lastGenerated: Date?
         for date in dates {
             let deterministicId = Self.deterministicId(templateId: template.id, date: date)
@@ -82,15 +117,11 @@ struct RecurringService {
                 date: date,
                 rawInput: "Recurring: \(template.note)"
             )
-            modelContext.insert(transaction)
+            transactions.append(transaction)
             lastGenerated = date
         }
 
-        if let lastGenerated {
-            template.lastGeneratedDate = lastGenerated
-        }
-
-        return dates.count
+        return (transactions, lastGenerated, dates.count)
     }
 
     // MARK: - Deterministic ID

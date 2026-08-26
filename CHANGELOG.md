@@ -2,6 +2,62 @@
 
 ---
 
+## [3.1] - 2026-08-26
+
+### What's New
+- Multiple wallets with wallet selection for transactions and recurring transactions
+- Balance editing is now part of the wallet editor; the separate quick-balance actions were removed
+
+### Bug Fixes
+- Repairs duplicate Personal wallets created by older App Store, TestFlight, or development installs without duplicating transactions
+- Migrates existing recurring transactions to the default Personal wallet and allows changing their wallet when editing
+- Keeps wallet balances correct when transactions are created, edited, moved between wallets, or deleted, while preserving manual balance corrections
+- Adds a versioned V1-to-V2 data migration and rollback-safe persistence for existing installations
+
+### App Store Notes
+
+#### en
+What's New
+• Multiple wallets, including wallet selection for recurring transactions
+• Edit a wallet and its current balance together in one place
+
+Bug Fixes
+• Repairs duplicate Personal wallets from older installs without affecting transactions
+• Wallet balances now stay correct when transactions move between wallets
+• Existing recurring transactions are safely assigned to the default Personal wallet
+
+#### vi
+Tính năng mới
+• Hỗ trợ nhiều ví, bao gồm chọn ví cho giao dịch định kỳ
+• Sửa thông tin ví và số dư hiện tại tại cùng một nơi
+
+Sửa lỗi
+• Khắc phục ví Cá nhân bị trùng từ các bản cài cũ mà không ảnh hưởng giao dịch
+• Số dư được cập nhật đúng khi chuyển giao dịch giữa các ví
+• Giao dịch định kỳ hiện có được gán an toàn vào ví Cá nhân mặc định
+
+#### ja
+新機能
+• 複数ウォレットに対応し、定期取引でもウォレットを選択可能
+• ウォレット情報と現在残高を同じ画面で編集
+
+バグ修正
+• 取引に影響を与えず、旧バージョンで重複した個人ウォレットを修復
+• 取引を別のウォレットへ移動した際の残高更新を修正
+• 既存の定期取引をデフォルトの個人ウォレットへ安全に移行
+
+#### es
+Novedades
+• Varias carteras, con selección de cartera para transacciones recurrentes
+• Edita la cartera y su saldo actual desde un solo lugar
+
+Correcciones
+• Repara carteras personales duplicadas de instalaciones anteriores sin afectar las transacciones
+• Los saldos se actualizan correctamente al mover transacciones entre carteras
+• Las transacciones recurrentes existentes se asignan de forma segura a la cartera Personal predeterminada
+
+---
+
 ## [3.0] - 2026-05-23
 
 ### What's New

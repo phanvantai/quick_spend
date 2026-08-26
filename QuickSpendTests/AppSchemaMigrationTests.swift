@@ -155,7 +155,7 @@ struct AppSchemaMigrationTests {
 
     @Test("V2 opens an existing unversioned App Store store in place")
     @MainActor
-    func versionedV1OpensExistingStore() throws {
+    func unversionedAppStoreStoreMigratesToV2() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("QuickSpendV1Migration-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -219,5 +219,64 @@ struct AppSchemaMigrationTests {
         let adjustments = try context.fetch(FetchDescriptor<BalanceAdjustment>())
         #expect(adjustments.count == 1)
         #expect(adjustments.first?.amount == 75)
+    }
+
+    @Test("A versioned V1 store migrates to V2 without losing persisted data")
+    @MainActor
+    func versionedV1StoreMigratesToV2() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("QuickSpendVersionedV1Migration-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let storeURL = directory.appendingPathComponent("QuickSpend.sqlite")
+
+        func createVersionedV1Store() throws {
+            let v1Schema = Schema(versionedSchema: QuickSpendSchemaV1.self)
+            let v1Container = try ModelContainer(
+                for: v1Schema,
+                configurations: ModelConfiguration(
+                    "VersionedV1",
+                    schema: v1Schema,
+                    url: storeURL,
+                    cloudKitDatabase: .none
+                )
+            )
+            let context = v1Container.mainContext
+            context.insert(Wallet.personal())
+            context.insert(Transaction(
+                id: "versioned_tx_preserved", amount: 250, note: "Versioned preserve",
+                categoryId: "food", walletId: Wallet.personalID, type: .expense
+            ))
+            context.insert(BalanceAnchor(
+                walletId: Wallet.personalID, openingBalance: 3_000, anchorDate: .now
+            ))
+            try context.save()
+        }
+        try createVersionedV1Store()
+
+        let migratedContainer = try ModelContainer(
+            for: AppSchema.schema,
+            migrationPlan: QuickSpendMigrationPlan.self,
+            configurations: ModelConfiguration(
+                "MigratedV2",
+                schema: AppSchema.schema,
+                url: storeURL,
+                cloudKitDatabase: .none
+            )
+        )
+        let context = migratedContainer.mainContext
+        #expect(try context.fetch(FetchDescriptor<Transaction>()).first?.id == "versioned_tx_preserved")
+        #expect(try context.fetchCount(FetchDescriptor<Wallet>()) == 1)
+        #expect(try context.fetchCount(FetchDescriptor<BalanceAnchor>()) == 1)
+
+        context.insert(BalanceAdjustment(
+            id: "versioned_migration_adjustment",
+            operationId: "versioned_migration",
+            walletId: Wallet.personalID,
+            amount: 50,
+            reason: .manualReconciliation
+        ))
+        try context.save()
+        #expect(try context.fetchCount(FetchDescriptor<BalanceAdjustment>()) == 1)
     }
 }

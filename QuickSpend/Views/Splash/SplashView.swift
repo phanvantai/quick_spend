@@ -8,6 +8,7 @@ struct SplashView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(CloudSyncService.self) private var cloudSync
+    @Environment(BalanceService.self) private var balanceService
 
     /// True once all launch work has completed and the minimum display time has elapsed
     @State private var isLaunchComplete = false
@@ -177,7 +178,10 @@ struct SplashView: View {
 
         // Step 5: Generate recurring transactions if onboarding is complete
         if appConfig.isOnboardingComplete {
-            let _ = RecurringService.generatePendingTransactions(modelContext: modelContext)
+            let _ = RecurringService.generatePendingTransactions(
+                modelContext: modelContext,
+                balanceService: balanceService
+            )
         }
     }
 

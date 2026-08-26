@@ -239,7 +239,7 @@ struct TransactionsView: View {
                 Text(L10n.tr("transactions.delete_confirm", appConfig.language))
             }
             .alert(
-                L10n.tr("recurring_form.save_error_title", appConfig.language),
+                L10n.tr("transaction.save_error_title", appConfig.language),
                 isPresented: Binding(
                     get: { mutationError != nil },
                     set: { if !$0 { mutationError = nil } }

@@ -398,7 +398,8 @@ struct RecurringServiceDeduplicationTests {
     private func makeContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try ModelContainer(
-            for: Transaction.self, AppCategory.self, RecurringTemplate.self,
+            for: Transaction.self, AppCategory.self, RecurringTemplate.self, BalanceAnchor.self,
+            Wallet.self, BalanceAdjustment.self,
             configurations: config
         )
     }

@@ -311,32 +311,48 @@ final class BalanceService {
     func setCurrentBalance(
         _ amount: Double,
         for walletId: String,
-        at date: Date = .now
+        at date: Date = .now,
+        save: @MainActor (ModelContext) throws -> Void = { try $0.save() }
     ) throws {
-        try recoverDuplicateAnchorsIfNeeded()
+        // Do not run the repair path here: it performs its own save and could
+        // commit unrelated wallet metadata before this reconciliation is ready.
+        // `fetchAnchor` already deterministically uses the oldest anchor, while
+        // startup/debounced recomputation handles duplicate cleanup separately.
+        var insertedAdjustment: BalanceAdjustment?
+        var insertedAnchor: BalanceAnchor?
 
         if let existing = try fetchAnchor(walletId: walletId) {
             let current = try computeBalance(walletId: walletId) ?? existing.openingBalance
             let delta = amount - current
             if abs(delta) > 0.000_001 {
                 let operationId = UUID().uuidString
-                modelContext.insert(BalanceAdjustment(
+                let adjustment = BalanceAdjustment(
                     id: "\(operationId):\(walletId)",
                     operationId: operationId,
                     walletId: walletId,
                     amount: delta,
                     reason: .manualReconciliation
-                ))
+                )
+                modelContext.insert(adjustment)
+                insertedAdjustment = adjustment
             }
         } else {
-            modelContext.insert(BalanceAnchor(
+            let anchor = BalanceAnchor(
                 walletId: walletId,
                 openingBalance: amount,
                 anchorDate: date
-            ))
+            )
+            modelContext.insert(anchor)
+            insertedAnchor = anchor
         }
 
-        try modelContext.save()
+        do {
+            try save(modelContext)
+        } catch {
+            if let insertedAdjustment { modelContext.delete(insertedAdjustment) }
+            if let insertedAnchor { modelContext.delete(insertedAnchor) }
+            throw error
+        }
         knownWalletIds.insert(walletId)
         if cachedAnchorDates[walletId] == nil {
             cachedAnchorDates[walletId] = try fetchAnchor(walletId: walletId)?.anchorDate
@@ -436,12 +452,14 @@ final class BalanceService {
         let descriptor = FetchDescriptor<BalanceAnchor>(sortBy: [SortDescriptor(\.createdAt, order: .forward)])
         let anchors = try modelContext.fetch(descriptor)
         let grouped = Dictionary(grouping: anchors) { $0.walletId }
+        var didRepair = false
         for walletAnchors in grouped.values where walletAnchors.count > 1 {
             for extra in walletAnchors.dropFirst() {
                 modelContext.delete(extra)
+                didRepair = true
             }
         }
-        if modelContext.hasChanges {
+        if didRepair {
             try modelContext.save()
         }
     }

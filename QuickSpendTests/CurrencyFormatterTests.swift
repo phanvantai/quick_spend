@@ -5,6 +5,7 @@ import SwiftData
 
 @Suite("AppConfig Currency Formatting Tests")
 struct CurrencyFormatterTests {
+    private enum InjectedSaveFailure: Error { case failed }
 
     // MARK: - formatCurrency with AppConfig
 
@@ -124,6 +125,71 @@ struct CurrencyFormatterTests {
         #expect(didSetBalance == false)
         #expect(savedAnchor.anchorDate == originalAnchorDate)
         #expect(savedAnchor.openingBalance == 1_500_000.49)
+    }
+
+    @Test("Failed wallet edit restores metadata and removes its balance adjustment")
+    @MainActor
+    func failedWalletEditRollsBackAllPendingChanges() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("WalletEditRollback-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let storeURL = directory.appendingPathComponent("QuickSpend.sqlite")
+        let schema = Schema([
+            Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self,
+            Wallet.self, BalanceAdjustment.self
+        ])
+        let configuration = ModelConfiguration(
+            "WalletEditRollback",
+            schema: schema,
+            url: storeURL,
+            cloudKitDatabase: .none
+        )
+        let container = try ModelContainer(
+            for: schema,
+            configurations: configuration
+        )
+        let context = container.mainContext
+        let wallet = Wallet.personal()
+        context.insert(wallet)
+        context.insert(BalanceAnchor(openingBalance: 1_000, anchorDate: .now))
+        try context.save()
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+
+        #expect(throws: InjectedSaveFailure.self) {
+            try WalletFormView.updateExistingWallet(
+                wallet,
+                name: "Changed",
+                iconName: "briefcase.fill",
+                colorHex: "#FF0000",
+                parsedBalance: 1_250,
+                initialBalance: 1_000,
+                modelContext: context,
+                balanceService: service,
+                save: { _ in throw InjectedSaveFailure.failed }
+            )
+        }
+
+        #expect(wallet.name == "Personal")
+        #expect(wallet.iconName == "person.crop.circle.fill")
+        #expect(wallet.colorHex == "#2563EB")
+        #expect(try context.fetchCount(FetchDescriptor<BalanceAdjustment>()) == 0)
+        #expect(try service.computeBalance() == 1_000)
+
+        let verifier = try ModelContainer(
+            for: schema,
+            configurations: ModelConfiguration(
+                "WalletEditRollbackVerifier",
+                schema: schema,
+                url: storeURL,
+                cloudKitDatabase: .none
+            )
+        )
+        let persistedWallet = try #require(verifier.mainContext.fetch(FetchDescriptor<Wallet>()).first)
+        #expect(persistedWallet.name == "Personal")
+        #expect(persistedWallet.iconName == "person.crop.circle.fill")
+        #expect(persistedWallet.colorHex == "#2563EB")
+        #expect(try verifier.mainContext.fetchCount(FetchDescriptor<BalanceAdjustment>()) == 0)
     }
 
     @Test("formatNumber JPY no decimals")

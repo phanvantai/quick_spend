@@ -38,6 +38,7 @@ struct AddExpenseFlowTests {
         let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try ModelContainer(
             for: Transaction.self, AppCategory.self, RecurringTemplate.self, BalanceAnchor.self,
+            Wallet.self, BalanceAdjustment.self,
             configurations: config
         )
     }
@@ -214,5 +215,29 @@ struct AddExpenseFlowTests {
         #expect(saved.isEmpty)
         let stored = try context.fetch(FetchDescriptor<Transaction>())
         #expect(stored.isEmpty)
+    }
+
+    @Test("Siri save affects balance even when device time is before the wallet anchor")
+    func saveBeforeAnchorCreatesCompensatingAdjustment() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        context.insert(BalanceAnchor(
+            openingBalance: 1_000,
+            anchorDate: Date.now.addingTimeInterval(3_600)
+        ))
+        try context.save()
+
+        _ = try AddExpenseFlow.save(
+            parsed: [ParsedTransaction(
+                amount: 100, note: "Coffee", categoryId: "food_drink",
+                type: .expense, date: .now, confidence: 1
+            )],
+            rawInput: "coffee 100",
+            in: context
+        )
+
+        let balance = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+        #expect(try balance.computeBalance() == 900)
+        #expect(try context.fetchCount(FetchDescriptor<BalanceAdjustment>()) == 1)
     }
 }

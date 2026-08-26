@@ -8,6 +8,7 @@ import Observation
 @Suite("BalanceService Tests")
 @MainActor
 struct BalanceServiceTests {
+    private enum InjectedSaveFailure: Error { case failed }
 
     private final class ObservationFlag: @unchecked Sendable {
         private let lock = NSLock()
@@ -169,6 +170,29 @@ struct BalanceServiceTests {
 
         try service.setCurrentBalance(3_000, for: "wallet_side_work", at: confirmationDate.addingTimeInterval(60))
         #expect(try context.fetchCount(FetchDescriptor<BalanceAdjustment>()) == 1)
+    }
+
+    @Test("Failed reconciliation removes its pending adjustment and preserves the anchor")
+    func failedReconciliationRollsBackPendingAdjustment() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let anchorDate = Date(timeIntervalSince1970: 1_700_000_000)
+        try insertAnchor(openingBalance: 1_000, anchorDate: anchorDate, in: context)
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+
+        #expect(throws: InjectedSaveFailure.self) {
+            try service.setCurrentBalance(
+                1_250,
+                for: Wallet.personalID,
+                save: { _ in throw InjectedSaveFailure.failed }
+            )
+        }
+
+        let anchor = try #require(context.fetch(FetchDescriptor<BalanceAnchor>()).first)
+        #expect(anchor.openingBalance == 1_000)
+        #expect(anchor.anchorDate == anchorDate)
+        #expect(try context.fetchCount(FetchDescriptor<BalanceAdjustment>()) == 0)
+        #expect(try service.computeBalance() == 1_000)
     }
 
     @Test("Balance includes every wallet adjustment regardless of adjustment date")

@@ -29,6 +29,14 @@ struct L10nTests {
         #expect(L10n.tr("wallets.personal", "vi") == "Cá nhân")
     }
 
+    @Test("transaction save error title is distinct from recurring transaction errors")
+    func transactionSaveErrorTitleIsLocalized() {
+        #expect(L10n.tr("transaction.save_error_title", "en") == "Couldn't Save Transaction")
+        #expect(L10n.tr("transaction.save_error_title", "vi") == "Không thể lưu giao dịch")
+        #expect(L10n.tr("transaction.save_error_title", "ja") == "取引を保存できませんでした")
+        #expect(L10n.tr("transaction.save_error_title", "es") == "No se pudo guardar la transacción")
+    }
+
     // MARK: - Format Arguments
 
     @Test("tr with format args does not crash")

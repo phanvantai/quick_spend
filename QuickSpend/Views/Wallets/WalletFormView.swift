@@ -68,6 +68,46 @@ struct WalletFormView: View {
         return true
     }
 
+    static func updateExistingWallet(
+        _ wallet: Wallet,
+        name: String,
+        iconName: String,
+        colorHex: String,
+        parsedBalance: Double?,
+        initialBalance: Double?,
+        modelContext: ModelContext,
+        balanceService: BalanceService,
+        save: @MainActor (ModelContext) throws -> Void = { try $0.save() }
+    ) throws {
+        let originalName = wallet.name
+        let originalIconName = wallet.iconName
+        let originalColorHex = wallet.colorHex
+        let originalUpdatedAt = wallet.updatedAt
+
+        wallet.name = name
+        wallet.iconName = iconName
+        wallet.colorHex = colorHex
+        wallet.updatedAt = .now
+
+        do {
+            if let parsedBalance, parsedBalance != initialBalance {
+                try balanceService.setCurrentBalance(
+                    parsedBalance,
+                    for: wallet.id,
+                    save: save
+                )
+            } else {
+                try save(modelContext)
+            }
+        } catch {
+            wallet.name = originalName
+            wallet.iconName = originalIconName
+            wallet.colorHex = originalColorHex
+            wallet.updatedAt = originalUpdatedAt
+            throw error
+        }
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -274,20 +314,17 @@ struct WalletFormView: View {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if let existingWallet {
-            existingWallet.name = trimmedName
-            existingWallet.iconName = selectedIcon
-            existingWallet.colorHex = selectedColorHex
-            existingWallet.updatedAt = .now
             do {
-                let didSetBalance = try Self.saveBalanceIfChanged(
+                try Self.updateExistingWallet(
+                    existingWallet,
+                    name: trimmedName,
+                    iconName: selectedIcon,
+                    colorHex: selectedColorHex,
                     parsedBalance: parsedBalance,
                     initialBalance: initialBalance,
-                    walletId: existingWallet.id,
+                    modelContext: modelContext,
                     balanceService: balanceService
                 )
-                if !didSetBalance {
-                    try modelContext.save()
-                }
                 dismiss()
             } catch {
                 saveError = error.localizedDescription
@@ -308,6 +345,7 @@ struct WalletFormView: View {
             appConfig.setSelectedWalletScope(.wallet(wallet.id))
             dismiss()
         } catch {
+            modelContext.delete(wallet)
             saveError = error.localizedDescription
         }
     }

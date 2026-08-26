@@ -49,7 +49,8 @@ enum AddExpenseFlow {
         parsed: [ParsedTransaction],
         rawInput: String,
         in context: ModelContext,
-        walletId: String = Wallet.personalID
+        walletId: String = Wallet.personalID,
+        balanceService: BalanceService? = nil
     ) throws -> [Transaction] {
         var saved: [Transaction] = []
         for item in parsed {
@@ -63,10 +64,18 @@ enum AddExpenseFlow {
                 rawInput: rawInput,
                 confidence: item.confidence
             )
-            context.insert(transaction)
             saved.append(transaction)
         }
-        try context.save()
+        let balanceService = balanceService ?? BalanceService(
+            modelContext: context,
+            autoObserve: false,
+            autoCompute: false
+        )
+        try TransactionPersistence.createMany(
+            saved,
+            modelContext: context,
+            balanceService: balanceService
+        )
         return saved
     }
 }
