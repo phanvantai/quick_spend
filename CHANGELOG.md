@@ -2,6 +2,32 @@
 
 ---
 
+## [3.3] - 2026-08-28
+
+### Bug Fixes
+- Opens the app immediately for returning users instead of waiting for an unnecessary CloudKit import timeout
+- Keeps fresh-install restores bounded while reconciling CloudKit imports that finish after launch
+
+### App Store Notes
+
+#### en
+Bug Fixes
+• QuickSpend now opens much faster and no longer waits unnecessarily for iCloud sync
+
+#### vi
+Sửa lỗi
+• QuickSpend nay mở nhanh hơn nhiều và không còn chờ đồng bộ iCloud không cần thiết
+
+#### ja
+バグ修正
+• 不要なiCloud同期を待たず、QuickSpendが大幅に速く起動するようになりました
+
+#### es
+Correcciones
+• QuickSpend ahora se abre mucho más rápido y ya no espera innecesariamente la sincronización con iCloud
+
+---
+
 ## [3.2] - 2026-08-26
 
 ### What's New

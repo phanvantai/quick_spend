@@ -10,6 +10,18 @@ private typealias AppCategory = QuickSpend.Category
 @MainActor
 struct SplashViewLaunchLogicTests {
 
+    @Test("Returning users bypass the CloudKit launch gate")
+    func returningUserBypassesCloudImportWait() {
+        #expect(SplashLaunchPolicy.shouldWaitForCloudImport(isOnboardingComplete: true) == false)
+        #expect(SplashLaunchPolicy.minimumDisplayDuration == .milliseconds(300))
+    }
+
+    @Test("Fresh installs get a bounded CloudKit restore window")
+    func freshInstallUsesBoundedCloudImportWait() {
+        #expect(SplashLaunchPolicy.shouldWaitForCloudImport(isOnboardingComplete: false))
+        #expect(SplashLaunchPolicy.cloudRestoreWaitLimit == .seconds(3))
+    }
+
     private func makeContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try ModelContainer(

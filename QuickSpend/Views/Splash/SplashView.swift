@@ -35,6 +35,10 @@ struct SplashView: View {
             }
         }
         .animation(.easeInOut(duration: 0.4), value: isLaunchComplete)
+        .onReceive(cloudSync.didFinishImport) { _ in
+            guard isLaunchComplete else { return }
+            reconcileImportedData()
+        }
     }
 
     // MARK: - Destination Routing
@@ -141,7 +145,7 @@ struct SplashView: View {
 
     @MainActor
     private func performLaunchWork() async {
-        async let minimumDisplay: () = safeSleep(seconds: 1.5)
+        async let minimumDisplay: () = safeSleep(for: SplashLaunchPolicy.minimumDisplayDuration)
         async let launchWork: () = executeLaunchSequence()
 
         _ = await (minimumDisplay, launchWork)
@@ -149,16 +153,26 @@ struct SplashView: View {
         isLaunchComplete = true
     }
 
-    private func safeSleep(seconds: Double) async {
-        try? await Task.sleep(for: .seconds(seconds))
+    private func safeSleep(for duration: Duration) async {
+        try? await Task.sleep(for: duration)
     }
 
     @MainActor
     private func executeLaunchSequence() async {
-        // Step 1: Wait for CloudKit initial import to complete
-        await waitForCloudImport()
+        let shouldWaitForCloudImport = SplashLaunchPolicy.shouldWaitForCloudImport(
+            isOnboardingComplete: appConfig.isOnboardingComplete
+        )
 
-        // Step 2: Reconcile wallets after the initial import. The app-level
+        if shouldWaitForCloudImport {
+            await waitForCloudImport(maximumDuration: SplashLaunchPolicy.cloudRestoreWaitLimit)
+        }
+
+        reconcileImportedData()
+    }
+
+    @MainActor
+    private func reconcileImportedData() {
+        // Reconcile wallets after the initial import. The app-level
         // bootstrap runs before CloudKit can restore data, so running it again
         // here repairs duplicate business IDs even if the import notification
         // was delivered before CloudSyncService started observing it.
@@ -168,15 +182,16 @@ struct SplashView: View {
             print("[WalletService] initial-cloud-import repair failed: \(error)")
         }
 
-        // Step 3: Remove any duplicate categories caused by seed + CloudKit race condition
+        // Remove any duplicate categories caused by seed + CloudKit race condition
         CategoryService.deduplicateCategoriesIfNeeded(modelContext: modelContext)
 
-        // Step 4: If onboarding not done, check if synced data allows skipping it
+        // If onboarding is not done, check if synced data allows skipping it.
+        // This also runs for imports that finish after the bounded splash wait.
         if !appConfig.isOnboardingComplete {
             checkSyncedDataAndSkipOnboarding()
         }
 
-        // Step 5: Generate recurring transactions if onboarding is complete
+        // Generate recurring transactions if onboarding is complete
         if appConfig.isOnboardingComplete {
             let _ = RecurringService.generatePendingTransactions(
                 modelContext: modelContext,
@@ -186,10 +201,17 @@ struct SplashView: View {
     }
 
     @MainActor
-    private func waitForCloudImport() async {
+    private func waitForCloudImport(maximumDuration: Duration) async {
         guard !cloudSync.hasCompletedInitialImport else { return }
-        while !cloudSync.hasCompletedInitialImport {
-            try? await Task.sleep(for: .milliseconds(100))
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: maximumDuration)
+
+        while !cloudSync.hasCompletedInitialImport && clock.now < deadline {
+            do {
+                try await Task.sleep(for: .milliseconds(100))
+            } catch {
+                return
+            }
         }
     }
 
