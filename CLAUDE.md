@@ -9,7 +9,8 @@ QuickSpend is a native iOS expense tracking app built with SwiftUI and SwiftData
 - **Bundle ID:** `com.randomtech.quickSpend`
 - **Deployment target:** iOS 18.0
 - **Swift version:** 5.0
-- **Dependencies (SPM):** Firebase iOS SDK (Analytics, AI/Gemini), RevenueCat
+- **Xcode:** 26.2+ (required by Firebase iOS SDK 12.x)
+- **Dependencies (SPM):** Firebase iOS SDK (Analytics, `FirebaseAILogic`), RevenueCat
 
 ## Build & Test
 
@@ -31,7 +32,8 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 
 ### Data Layer
 
-- **SwiftData** models: `Transaction`, `Category`, `RecurringTemplate` — registered in `QuickSpendApp.modelContainer`
+- **SwiftData** models: `Transaction`, `Category`, `RecurringTemplate`, `Wallet`, `BalanceAnchor`, `BalanceAdjustment` — versioned schema in `Models/AppSchema.swift`
+- **CloudKit** sync to the private database (`iCloud.com.randomtech.quickSpend`); `CloudSyncService` tracks account status and import events
 - **UserDefaults** via `PreferencesService` (singleton) stores `AppConfig` as JSON — holds language, currency, theme, onboarding state
 - Categories are linked to transactions via `categoryId` string (not a SwiftData relationship)
 
@@ -45,7 +47,8 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 
 - `CategoryService` — seeds default categories on first launch, updates names on language change
 - `RecurringService` — generates pending transactions from active templates on app startup
-- `GeminiParserService` — AI expense parsing via Firebase AI (Gemini 2.5 Flash). Compiles with `#if canImport(FirebaseAI)` guards; falls back gracefully when SDK is absent
+- `WalletService` / `BalanceService` — wallets and their balances (anchors + adjustments)
+- `GeminiParserService` — AI expense parsing via Firebase AI Logic (model name in `AppConstants.geminiModelName`). Compiles with `#if canImport(FirebaseAILogic)` guards; falls back gracefully when SDK is absent
 - `VoiceService` (`@Observable`) — `SFSpeechRecognizer` + `AVAudioEngine` for live transcription
 - `UsageLimitService` (`@Observable`) — daily Gemini parse limit tracking, auto-resets each day
 - `AnalyticsService` — Firebase Analytics wrapper with `#if canImport(FirebaseAnalytics)` guards
@@ -78,7 +81,7 @@ QuickSpendApp
 
 ### Freemium Model
 
-- Free tier limits: 5 Gemini parses/day, 3 recurring templates, 7-day reports
+- Free tier limits: 3 Gemini parses/day, 3 recurring templates, 7-day reports
 - Pro via RevenueCat (`SubscriptionViewModel`), gated with `#if canImport(RevenueCat)`
 - Constants in `AppConstants`
 
