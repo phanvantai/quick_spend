@@ -210,6 +210,28 @@ struct GeminiParserServiceTests {
         #expect(parsed == expected)
     }
 
+    @Test("ISO date is read as Gregorian when the device uses the Japanese calendar")
+    func testParseDateISOWithJapaneseCalendar() {
+        let gregorian = Calendar(identifier: .gregorian)
+        let yesterday = gregorian.date(byAdding: .day, value: -1, to: .now)!
+        let parts = gregorian.dateComponents([.year, .month, .day], from: yesterday)
+        let iso = String(format: "%04d-%02d-%02d", parts.year!, parts.month!, parts.day!)
+
+        let parsed = GeminiParserService.parseDate(iso, calendar: Calendar(identifier: .japanese))
+        #expect(parsed == gregorian.startOfDay(for: yesterday))
+    }
+
+    @Test("ISO date is read as Gregorian when the device uses the Buddhist calendar")
+    func testParseDateISOWithBuddhistCalendar() {
+        let gregorian = Calendar(identifier: .gregorian)
+        let yesterday = gregorian.date(byAdding: .day, value: -1, to: .now)!
+        let parts = gregorian.dateComponents([.year, .month, .day], from: yesterday)
+        let iso = String(format: "%04d-%02d-%02d", parts.year!, parts.month!, parts.day!)
+
+        let parsed = GeminiParserService.parseDate(iso, calendar: Calendar(identifier: .buddhist))
+        #expect(parsed == gregorian.startOfDay(for: yesterday))
+    }
+
     @Test("Invalid date string defaults to today")
     func testParseDateInvalid() {
         let parsed = GeminiParserService.parseDate("not-a-date")

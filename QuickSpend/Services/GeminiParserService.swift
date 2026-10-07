@@ -284,9 +284,8 @@ enum GeminiParserService {
         return incomeCategories.contains(categoryId) ? .income : .expense
     }
 
-    static func parseDate(_ dateStr: String) -> Date {
+    static func parseDate(_ dateStr: String, calendar: Calendar = .current) -> Date {
         let now = Date.now
-        let calendar = Calendar.current
         let normalized = dateStr.lowercased().trimmingCharacters(in: .whitespaces)
 
         let todayWords: Set<String> = ["today", "hôm nay", "今日", "hoy"]
@@ -309,7 +308,13 @@ enum GeminiParserService {
         }
 
         // Try ISO date
+        // The model always returns Gregorian YYYY-MM-DD, so read it with a fixed
+        // POSIX + Gregorian formatter. Without this, a device set to the Japanese
+        // or Buddhist calendar reads "2026" as an era year and every date falls back to today.
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = calendar.timeZone
         formatter.dateFormat = "yyyy-MM-dd"
         if let parsed = formatter.date(from: normalized) {
             // Validate the date is not unreasonably far in the past or future
