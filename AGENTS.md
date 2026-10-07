@@ -23,3 +23,7 @@ Use Swift Testing (`@Test`, `#expect`) for new unit tests and XCTest for UI test
 ## Commit & Pull Request Guidelines
 
 Follow the history's Conventional Commit style, such as `feat(home): ...`, `fix(intent): ...`, `test(appConfig): ...`, or `docs(changelog): ...`. Keep commits focused. Pull requests should explain user-visible behavior, list verification performed, link relevant issues, and include screenshots or recordings for UI changes. Update `CHANGELOG.md` for releases, including App Store notes in English, Vietnamese, Japanese, and Spanish. Never commit new API keys or production user data.
+
+## Versioning & Release Tags
+
+The latest git tag marks the version live on the App Store; tags are the bare version (`3.3`, no `v`), annotated, on the shipped commit. Before every merge to `main`, check that `MARKETING_VERSION` in `QuickSpend.xcodeproj/project.pbxproj` is higher than the latest tag (`git fetch --tags origin && git tag -l | sort -V | tail -1`), because a build with the live version cannot be uploaded. If it is not higher, bump it first in a `chore(release): bump version to X` commit: raise `MARKETING_VERSION` in the 2 app target configs (test targets stay at `1.0`) and `CURRENT_PROJECT_VERSION` by 1 in all 6 configs. When a version ships, tag its commit with `git tag -a <version> <sha> -m "QuickSpend <version> (App Store)"` and push the tag.

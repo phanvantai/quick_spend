@@ -112,6 +112,19 @@ This project follows **Test-Driven Development (TDD)**. Tests are not optional.
 
 - If a bug is fixed, add a regression test that reproduces the bug first.
 
+## Versioning & Release Tags
+
+- The latest git tag is the version live on the App Store. Tags are the bare version (`3.3`, no `v`), annotated, on the shipped commit.
+- **Before every merge to `main`**, `MARKETING_VERSION` in `project.pbxproj` must be higher than the latest tag. A build with the live version cannot be uploaded.
+
+  ```bash
+  git fetch --tags origin && git tag -l | sort -V | tail -1   # latest tag
+  grep 'MARKETING_VERSION' QuickSpend.xcodeproj/project.pbxproj | sort -u   # app version (ignore test targets' 1.0)
+  ```
+
+- If it is not higher, bump first in a `chore(release): bump version to X` commit: raise `MARKETING_VERSION` in the 2 app target configs (test targets stay at `1.0`) and `CURRENT_PROJECT_VERSION` by 1 in all 6 configs.
+- When a version ships, tag its commit: `git tag -a 3.4 <sha> -m "QuickSpend 3.4 (App Store)" && git push origin 3.4`.
+
 ## Changelog & Release Notes
 
 - Changelog is tracked in `CHANGELOG.md` at the project root.
