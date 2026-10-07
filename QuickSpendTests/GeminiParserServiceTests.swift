@@ -530,9 +530,26 @@ struct GeminiParserServiceTests {
     func testIsAvailableWithoutFirebase() {
         // Without Firebase AI SDK, isAvailable should return false
         // This test validates the graceful degradation
-        #if !canImport(FirebaseAI)
+        #if !canImport(FirebaseAILogic)
         #expect(GeminiParserService.isAvailable == false)
         #endif
+    }
+
+    // MARK: - Model configuration
+
+    @Test("Gemini model is not a retired 2.x model")
+    func testModelIsNotRetiredGeneration() {
+        let modelName = AppConstants.geminiModelName
+        #expect(modelName.hasPrefix("gemini-"))
+        #expect(!modelName.hasPrefix("gemini-1."))
+        #expect(!modelName.hasPrefix("gemini-2."))
+    }
+
+    @Test("Gemini model is a stable model, not a preview")
+    func testModelIsStable() {
+        let modelName = AppConstants.geminiModelName
+        #expect(!modelName.contains("preview"))
+        #expect(!modelName.contains("exp"))
     }
 
     // MARK: - isValidInput: maxVoiceInputLength enforcement (#7)

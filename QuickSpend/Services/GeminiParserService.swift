@@ -13,14 +13,14 @@ struct ParsedTransaction: Identifiable {
 }
 
 /// AI-powered expense parser using Firebase AI (Gemini)
-/// NOTE: Requires FirebaseAI SDK added via SPM. Until then, this service
+/// NOTE: Requires FirebaseAILogic SDK added via SPM. Until then, this service
 /// will report as unavailable and the app will fall back to manual input.
 enum GeminiParserService {
 
     /// Whether the Gemini parser is available
     /// Returns true only when Firebase AI SDK is configured
     static var isAvailable: Bool {
-        #if canImport(FirebaseAI)
+        #if canImport(FirebaseAILogic)
         return _model != nil
         #else
         return false
@@ -30,7 +30,7 @@ enum GeminiParserService {
     /// Initialize the Gemini model
     /// Call this from QuickSpendApp after Firebase.configure()
     static func initialize() {
-        #if canImport(FirebaseAI)
+        #if canImport(FirebaseAILogic)
         _initializeFirebaseModel()
         #else
         print("[GeminiParser] Firebase AI SDK not available. Add firebase-ios-sdk via SPM to enable AI parsing.")
@@ -57,7 +57,7 @@ enum GeminiParserService {
             return []
         }
 
-        #if canImport(FirebaseAI)
+        #if canImport(FirebaseAILogic)
         return await _parseWithFirebase(
             input: input,
             categories: categories,
@@ -452,26 +452,27 @@ enum GeminiParserService {
 }
 
 // MARK: - Firebase AI Integration
-// This section compiles only when FirebaseAI SDK is available
+// This section compiles only when FirebaseAILogic SDK is available
 
-#if canImport(FirebaseAI)
-import FirebaseAI
+#if canImport(FirebaseAILogic)
+import FirebaseAILogic
 
 private var _model: GenerativeModel?
 
 extension GeminiParserService {
     static func _initializeFirebaseModel() {
         _model = FirebaseAI.firebaseAI(backend: .googleAI()).generativeModel(
-            modelName: "gemini-2.5-flash",
+            modelName: AppConstants.geminiModelName,
+            // Gemini 3.x: keep default temperature (lower values can cause looping)
+            // and use low thinking, since parsing doesn't need deep reasoning.
+            // Thinking tokens count toward maxOutputTokens, so leave headroom.
             generationConfig: GenerationConfig(
-                temperature: 0.1,
-                topP: 1,
-                topK: 1,
-                maxOutputTokens: 1024,
-                responseMIMEType: "application/json"
+                maxOutputTokens: 2048,
+                responseMIMEType: "application/json",
+                thinkingConfig: ThinkingConfig(thinkingLevel: .low)
             )
         )
-        print("[GeminiParser] Initialized with Gemini 2.5 Flash via Firebase AI")
+        print("[GeminiParser] Initialized with \(AppConstants.geminiModelName) via Firebase AI")
     }
 
     static func _parseWithFirebase(
