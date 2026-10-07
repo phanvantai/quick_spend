@@ -6,7 +6,7 @@
 
 ## Build, Test, and Development Commands
 
-- `open QuickSpend.xcodeproj` opens the app in Xcode 16+; select the `QuickSpend` scheme and an iOS 18+ simulator.
+- `open QuickSpend.xcodeproj` opens the app in Xcode 26.2+ (required by Firebase iOS SDK 12.x); select the `QuickSpend` scheme and an iOS 18+ simulator.
 - `xcodebuild -project QuickSpend.xcodeproj -scheme QuickSpend -sdk iphonesimulator build` resolves Swift Package Manager dependencies and builds the app.
 - `xcodebuild -project QuickSpend.xcodeproj -scheme QuickSpend -sdk iphonesimulator test` runs unit and UI test targets.
 - Add `-only-testing:QuickSpendTests/TransactionTests` before `test` to run one suite.

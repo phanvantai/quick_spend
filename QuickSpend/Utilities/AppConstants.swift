@@ -19,6 +19,7 @@ enum AppConstants {
 
     // MARK: - API & Network
 
+    static let geminiModelName = "gemini-3.8-flash"
     static let geminiApiTimeoutSeconds = 30
     static let geminiDailyParsingLimit = 3
     static let geminiWarningThreshold = 5
