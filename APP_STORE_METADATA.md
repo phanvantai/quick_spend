@@ -87,7 +87,7 @@ Unlock unlimited AI voice parses, unlimited recurring templates, extended report
 Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period.
 
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Privacy Policy: https://portfolio.taiphanvan.dev/quickspend/privacy
+Privacy Policy: https://quickspend.taiphanvan.dev/privacy.html
 
 Try QuickSpend today and experience the fastest way to track your money!
 ```
@@ -177,7 +177,7 @@ Mở khóa không giới hạn phân tích giọng nói AI, mẫu định kỳ k
 Thanh toán sẽ được tính vào tài khoản Apple ID của bạn khi xác nhận mua. Đăng ký tự động gia hạn trừ khi tự động gia hạn được tắt ít nhất 24 giờ trước khi kết thúc kỳ hiện tại. Tài khoản của bạn sẽ bị tính phí gia hạn trong vòng 24 giờ trước khi kết thúc kỳ hiện tại.
 
 Điều khoản sử dụng: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Chính sách bảo mật: https://portfolio.taiphanvan.dev/quickspend/privacy
+Chính sách bảo mật: https://quickspend.taiphanvan.dev/privacy.html
 
 Hãy dùng thử QuickSpend ngay hôm nay và trải nghiệm cách nhanh nhất để quản lý tiền!
 ```
@@ -267,7 +267,7 @@ PROサブスクリプション
 購入確認時にApple IDアカウントに課金されます。サブスクリプションは、現在の期間の終了の少なくとも24時間前に自動更新をオフにしない限り、自動的に更新されます。現在の期間の終了前24時間以内に、アカウントに更新料金が請求されます。
 
 利用規約: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-プライバシーポリシー: https://portfolio.taiphanvan.dev/quickspend/privacy
+プライバシーポリシー: https://quickspend.taiphanvan.dev/privacy.html
 
 今すぐQuickSpendを試して、最速の家計管理を体験しましょう！
 ```
@@ -357,7 +357,7 @@ Desbloquea analisis de voz IA ilimitados, plantillas recurrentes ilimitadas, inf
 El pago se cargara a su cuenta de Apple ID en el momento de la confirmacion de la compra. La suscripcion se renueva automaticamente a menos que la renovacion automatica se desactive al menos 24 horas antes del final del periodo actual. Se cobrara a su cuenta la renovacion dentro de las 24 horas anteriores al final del periodo actual.
 
 Terminos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Politica de privacidad: https://portfolio.taiphanvan.dev/quickspend/privacy
+Politica de privacidad: https://quickspend.taiphanvan.dev/privacy.html
 
 Prueba QuickSpend hoy y experimenta la forma mas rapida de rastrear tu dinero!
 ```
@@ -437,9 +437,9 @@ Recommend highlighting these features in App Store screenshots (in order):
 
 ## Support Information
 
-**Support URL:** <https://portfolio.taiphanvan.dev/quickspend>
-**Marketing URL:** <https://portfolio.taiphanvan.dev/quickspend>
-**Privacy Policy URL:** <https://portfolio.taiphanvan.dev/quickspend/privacy>
+**Support URL:** <https://quickspend.taiphanvan.dev/support.html>
+**Marketing URL:** <https://quickspend.taiphanvan.dev>
+**Privacy Policy URL:** <https://quickspend.taiphanvan.dev/privacy.html>
 
 ---
 
