@@ -2,47 +2,6 @@ import SwiftUI
 import SwiftData
 import Charts
 
-/// Date range options shown in the period picker. `lastMonth` and
-/// `last3Months` require a premium subscription; the picker shows a lock
-/// emoji and routes free users to the paywall on selection.
-enum ReportPeriod: CaseIterable {
-    case thisMonth, lastMonth, last3Months
-
-    func label(language: String) -> String {
-        switch self {
-        case .thisMonth: return L10n.tr("report.this_month", language)
-        case .lastMonth: return L10n.tr("report.last_month", language)
-        case .last3Months: return L10n.tr("report.three_months", language)
-        }
-    }
-
-    var requiresPremium: Bool {
-        switch self {
-        case .thisMonth: return false
-        case .lastMonth, .last3Months: return true
-        }
-    }
-
-    func dateRange() -> (start: Date, end: Date) {
-        let calendar = Calendar.current
-        let now = Date()
-        switch self {
-        case .thisMonth:
-            let start = calendar.date(from: calendar.dateComponents([.year, .month], from: now))!
-            let end = calendar.date(byAdding: .month, value: 1, to: start)!
-            return (start, end)
-        case .lastMonth:
-            let thisMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now))!
-            let start = calendar.date(byAdding: .month, value: -1, to: thisMonthStart)!
-            return (start, thisMonthStart)
-        case .last3Months:
-            let thisMonthEnd = calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: now))!)!
-            let start = calendar.date(byAdding: .month, value: -3, to: thisMonthEnd)!
-            return (start, thisMonthEnd)
-        }
-    }
-}
-
 /// Drill-down report screen reached from Home's "View full report" link.
 ///
 /// Consolidates v2.4's ReportView + ReportSection — same period picker

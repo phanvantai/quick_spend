@@ -146,8 +146,8 @@ struct PaywallView: View {
                 icon: "chart.bar.fill",
                 color: AppTheme.accentOrange,
                 title: L10n.tr("paywall.feature_reports", appConfig.language),
-                freeValue: "\(AppConstants.freeTierReportDaysLimit) \(L10n.tr("paywall.days", appConfig.language))",
-                premiumValue: L10n.tr("paywall.all_time", appConfig.language)
+                freeValue: ReportPeriod.paywallValue(isPremium: false, language: appConfig.language),
+                premiumValue: ReportPeriod.paywallValue(isPremium: true, language: appConfig.language)
             )
 
             Divider().padding(.leading, 56)

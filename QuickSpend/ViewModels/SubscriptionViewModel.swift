@@ -60,10 +60,6 @@ final class SubscriptionViewModel {
         isPremium ? 999 : AppConstants.freeTierRecurringTemplatesLimit
     }
 
-    var reportDaysLimit: Int {
-        isPremium ? 365 * 10 : AppConstants.freeTierReportDaysLimit
-    }
-
     /// Check if user can add more recurring templates
     func canAddRecurringTemplate(currentCount: Int) -> Bool {
         isPremium || currentCount < recurringTemplatesLimit

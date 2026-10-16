@@ -11,7 +11,6 @@ struct AppConstantsTests {
     func testFreeTierLimits() {
         #expect(AppConstants.freeTierGeminiLimit > 0)
         #expect(AppConstants.freeTierRecurringTemplatesLimit > 0)
-        #expect(AppConstants.freeTierReportDaysLimit > 0)
     }
 
     @Test("Free tier Gemini limit is 3")
@@ -22,11 +21,6 @@ struct AppConstantsTests {
     @Test("Free tier recurring templates limit is 3")
     func testFreeTierRecurringLimit() {
         #expect(AppConstants.freeTierRecurringTemplatesLimit == 3)
-    }
-
-    @Test("Free tier report days limit is 7")
-    func testFreeTierReportDays() {
-        #expect(AppConstants.freeTierReportDaysLimit == 7)
     }
 
     // MARK: - Voice Input
