@@ -78,6 +78,9 @@ struct QuickSpendApp: App {
                 .task {
                     appConfig.syncLanguageFromSystem()
                 }
+                .onOpenURL { url in
+                    QuickLaunchCenter.shared.handle(url)
+                }
         }
         .modelContainer(modelContainer)
     }

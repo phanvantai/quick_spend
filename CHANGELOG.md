@@ -2,12 +2,22 @@
 
 ---
 
-## [3.4] - 2026-10-16
+## [4.0] - 2026-10-16
+
+3.4 was never released; its changes ship in 4.0.
 
 ### What's New
+- Transfer money between wallets: choose Transfer in the add form (needs 2+ wallets). Both wallet balances update, and transfers are not counted as income or expenses
+- Voice widget for the Home Screen and Lock Screen, plus a Control Center / Lock Screen / Action button control, that opens QuickSpend and starts recording right away (tap Done when finished)
+- In-app voice input saves confident results right away (same rule as Siri: every item ≥ 90% confidence) and shows a short confirmation instead of the review screen; uncertain results still open review
+- Voice input understands wallets: name a wallet ("paid 45k in cash") or move money between wallets ("move 2 million from bank to cash") and it is saved as a transfer
 - Voice input now uses Gemini 3.8 Flash via Firebase AI Logic for faster, more accurate expense parsing
 
 ### Bug Fixes
+- Wallets without a starting balance now count from 0 once they have activity, so moving money into a new wallet no longer lowers the total balance
+- Voice income in a custom income category is no longer saved as an expense
+- Voice input no longer picks hidden categories, never saves future dates, and asks for review instead of auto-saving when it falls back to "Other"
+- The paywall now shows the report periods each plan really includes (Free: this month, Premium: last 3 months) instead of "7 days" and "All time"
 - Dates like "yesterday" or "last Monday" are no longer lost on devices set to the Japanese or Buddhist calendar
 
 ### Improvements
@@ -18,43 +28,51 @@
 
 #### en
 What's New
-• Smarter, faster voice input powered by the latest Gemini AI
+• Move money between your wallets with the new Transfer option
+• Voice widget and Control Center button: start recording an expense with one tap
+• Clear voice entries are saved instantly — no extra confirmation step
+• Say which wallet you paid from, or move money between wallets by voice
+• Smarter, faster voice input with the latest Gemini AI
 
 Bug Fixes
-• Dates like "yesterday" or "last Monday" are now recognized correctly on any calendar setting
-
-Improvements
-• Stronger security for AI-powered features
+• Dates like "yesterday" are now recognized correctly on all calendars
+• Improved security and stability
 
 #### vi
 Tính năng mới
+• Chuyển tiền giữa các ví với tùy chọn Chuyển tiền mới
+• Widget giọng nói và nút trong Trung tâm điều khiển: chạm một lần để bắt đầu ghi chi tiêu
+• Ghi bằng giọng nói rõ ràng được lưu ngay, không cần bấm xác nhận
+• Nói tên ví đã dùng, hoặc chuyển tiền giữa các ví bằng giọng nói
 • Nhập bằng giọng nói thông minh và nhanh hơn với Gemini AI mới nhất
 
 Sửa lỗi
-• Nhận diện đúng các ngày như "hôm qua" hay "thứ Hai tuần trước" với mọi cài đặt lịch
-
-Cải thiện
-• Tăng cường bảo mật cho các tính năng AI
+• Nhận diện đúng ngày như "hôm qua" với mọi loại lịch
+• Cải thiện bảo mật và độ ổn định
 
 #### ja
 新機能
-• 最新のGemini AIで、音声入力がよりスマートで高速に
+• 新しい「振替」でウォレット間の資金移動が可能に
+• 音声ウィジェットとコントロールセンターのボタン：ワンタップで支出の録音を開始
+• はっきり認識できた音声入力は確認なしですぐに保存
+• 支払ったウォレットの指定や、ウォレット間の振替も音声で可能に
+• 最新のGemini AIで音声入力がよりスマートで高速に
 
 バグ修正
-• どのカレンダー設定でも「昨日」「先週の月曜日」などの日付を正しく認識するように修正
-
-改善
-• AI機能のセキュリティを強化
+• どのカレンダー設定でも「昨日」などの日付を正しく認識
+• セキュリティと安定性を向上
 
 #### es
 Novedades
+• Mueve dinero entre tus billeteras con la nueva opción Transferencia
+• Widget de voz y botón en el Centro de control: empieza a grabar un gasto con un toque
+• Las entradas de voz claras se guardan al instante, sin paso de confirmación
+• Indica con qué billetera pagaste o mueve dinero entre billeteras por voz
 • Entrada por voz más inteligente y rápida con la última versión de Gemini AI
 
 Correcciones
-• Fechas como "ayer" o "el lunes pasado" ahora se reconocen correctamente con cualquier calendario
-
-Mejoras
-• Mayor seguridad en las funciones de IA
+• Fechas como "ayer" ahora se reconocen correctamente con cualquier calendario
+• Mejoras de seguridad y estabilidad
 
 ---
 

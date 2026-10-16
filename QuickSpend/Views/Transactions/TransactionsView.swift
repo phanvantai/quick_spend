@@ -14,6 +14,7 @@ struct TransactionsView: View {
     @State private var selectedMonth = Date()
     @State private var selectedDate: Date?
     @State private var editingTransaction: Transaction?
+    @State private var editingTransfer: TransferEditSession?
     @State private var deletingTransaction: Transaction?
     @State private var showingAddTransaction = false
     @State private var showSettings = false
@@ -49,11 +50,11 @@ struct TransactionsView: View {
     // MARK: - Monthly Totals
 
     private var totalIncome: Double {
-        monthTransactions.filter(\.isIncome).reduce(0) { $0 + $1.amount }
+        monthTransactions.excludingTransfers().filter(\.isIncome).reduce(0) { $0 + $1.amount }
     }
 
     private var totalExpense: Double {
-        monthTransactions.filter(\.isExpense).reduce(0) { $0 + $1.amount }
+        monthTransactions.excludingTransfers().filter(\.isExpense).reduce(0) { $0 + $1.amount }
     }
 
     private var netTotal: Double {
@@ -105,6 +106,29 @@ struct TransactionsView: View {
         }
     }
 
+    /// Both legs of every transfer, keyed by leg id, to find a row's counterpart.
+    private var transferLegsById: [String: Transaction] {
+        Dictionary(
+            allTransactions.filter(\.isTransfer).map { ($0.id, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+    }
+
+    private func transferLegs(for transaction: Transaction) -> [Transaction] {
+        guard let counterpartId = transaction.transferCounterpartId else { return [transaction] }
+        return [transaction] + [transferLegsById[counterpartId]].compactMap { $0 }
+    }
+
+    private func beginEditing(_ transaction: Transaction) {
+        guard transaction.isTransfer else {
+            editingTransaction = transaction
+            return
+        }
+        let legs = transferLegs(for: transaction)
+        guard let transfer = Transfer(legs: legs) else { return }
+        editingTransfer = TransferEditSession(transfer: transfer, legs: legs)
+    }
+
     private var shouldShowWalletBadge: Bool {
         activeWallets.count > 1 && effectiveWalletScope == .all
     }
@@ -135,7 +159,7 @@ struct TransactionsView: View {
                         VStack(spacing: AppTheme.spacing16) {
                             CalendarGrid(
                                 selectedMonth: selectedMonth,
-                                expenses: monthTransactions,
+                                expenses: monthTransactions.excludingTransfers(),
                                 currency: appConfig.config.currency,
                                 language: appConfig.language,
                                 selectedDate: $selectedDate
@@ -187,7 +211,14 @@ struct TransactionsView: View {
                 TransactionFormView(
                     categories: categories,
                     wallets: activeWallets,
-                    defaultWalletId: defaultWalletId
+                    defaultWalletId: defaultWalletId,
+                    onSaveTransfer: { transfer in
+                        try TransferPersistence.create(
+                            transfer,
+                            modelContext: modelContext,
+                            balanceService: balance
+                        )
+                    }
                 ) { transaction in
                     try TransactionPersistence.create(
                         transaction,
@@ -195,6 +226,22 @@ struct TransactionsView: View {
                         balanceService: balance
                     )
                 }
+            }
+            .sheet(item: $editingTransfer) { session in
+                TransactionFormView(
+                    categories: categories,
+                    wallets: activeWallets,
+                    defaultWalletId: session.transfer.fromWalletId,
+                    transfer: session.transfer,
+                    onSaveTransfer: { transfer in
+                        try TransferPersistence.update(
+                            legs: session.legs,
+                            to: transfer,
+                            modelContext: modelContext,
+                            balanceService: balance
+                        )
+                    }
+                ) { _ in }
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
@@ -236,7 +283,10 @@ struct TransactionsView: View {
                     deletingTransaction = nil
                 }
             } message: {
-                Text(L10n.tr("transactions.delete_confirm", appConfig.language))
+                Text(L10n.tr(
+                    deletingTransaction?.isTransfer == true ? "transfer.delete_confirm" : "transactions.delete_confirm",
+                    appConfig.language
+                ))
             }
             .alert(
                 L10n.tr("transaction.save_error_title", appConfig.language),
@@ -333,10 +383,12 @@ struct TransactionsView: View {
                     ForEach(group.transactions, id: \.id) { transaction in
                         let category = categories.first { $0.id == transaction.categoryId }
                         let wallet = shouldShowWalletBadge ? activeWallets.first { $0.id == transaction.walletId } : nil
+                        let counterpartWalletId = transaction.transferCounterpartId.flatMap { transferLegsById[$0]?.walletId }
                         TransactionCard(
                             transaction: transaction,
                             category: category,
                             wallet: wallet,
+                            transferCounterpart: wallets.first { $0.id == counterpartWalletId },
                             config: appConfig.config
                         )
                         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
@@ -352,7 +404,7 @@ struct TransactionsView: View {
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
                             Button {
-                                editingTransaction = transaction
+                                beginEditing(transaction)
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
@@ -393,11 +445,19 @@ struct TransactionsView: View {
 
     private func deleteTransaction(_ transaction: Transaction) {
         do {
-            try TransactionPersistence.delete(
-                transaction,
-                modelContext: modelContext,
-                balanceService: balance
-            )
+            if transaction.isTransfer {
+                try TransferPersistence.delete(
+                    legs: transferLegs(for: transaction),
+                    modelContext: modelContext,
+                    balanceService: balance
+                )
+            } else {
+                try TransactionPersistence.delete(
+                    transaction,
+                    modelContext: modelContext,
+                    balanceService: balance
+                )
+            }
         } catch {
             mutationError = error.localizedDescription
         }
@@ -408,4 +468,12 @@ struct TransactionsView: View {
     TransactionsView()
         .modelContainer(for: [Transaction.self, Category.self, RecurringTemplate.self, BalanceAnchor.self, Wallet.self, BalanceAdjustment.self], inMemory: true)
         .environment(AppConfigViewModel())
+}
+
+/// A transfer opened for editing, with the legs it was rebuilt from.
+private struct TransferEditSession: Identifiable {
+    let transfer: Transfer
+    let legs: [Transaction]
+
+    var id: String { transfer.id }
 }

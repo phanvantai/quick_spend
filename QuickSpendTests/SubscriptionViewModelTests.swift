@@ -84,12 +84,6 @@ struct SubscriptionViewModelTests {
         #expect(vm.recurringTemplatesLimit == AppConstants.freeTierRecurringTemplatesLimit)
     }
 
-    @Test("Free tier report days limit matches constants")
-    func testFreeTierReportDaysLimit() {
-        let vm = makeVM()
-        #expect(vm.reportDaysLimit == AppConstants.freeTierReportDaysLimit)
-    }
-
     // MARK: - Feature Gating (Premium Tier)
 
     @Test("Premium Gemini limit is 999")
@@ -104,13 +98,6 @@ struct SubscriptionViewModelTests {
         let vm = makeVM()
         vm._setPremium(true)
         #expect(vm.recurringTemplatesLimit == 999)
-    }
-
-    @Test("Premium report days limit is 3650")
-    func testPremiumReportDaysLimit() {
-        let vm = makeVM()
-        vm._setPremium(true)
-        #expect(vm.reportDaysLimit == 365 * 10)
     }
 
     // MARK: - canAddRecurringTemplate
@@ -235,6 +222,5 @@ struct SubscriptionViewModelTests {
         let vm = makeVM()
         #expect(vm.geminiDailyLimit > 0)
         #expect(vm.recurringTemplatesLimit > 0)
-        #expect(vm.reportDaysLimit > 0)
     }
 }

@@ -508,8 +508,11 @@ struct GeminiParserServiceTests {
             ]
         ]
 
-        let validIds: Set<String> = ["gym_membership", "food_drink"]
-        let results = GeminiParserService.parseResponse(jsonData: json, language: "en", validCategoryIds: validIds)
+        let categories = [
+            AppCategory(id: "gym_membership", name: "Gym", iconName: "dumbbell", colorHex: "#FF0000", type: .expense),
+            AppCategory(id: "food_drink", name: "Food", iconName: "fork.knife", colorHex: "#FF0000", type: .expense),
+        ]
+        let results = GeminiParserService.parseResponse(jsonData: json, language: "en", categories: categories)
         #expect(results.count == 1)
         #expect(results[0].categoryId == "gym_membership")
     }
@@ -780,5 +783,184 @@ struct GeminiParserServiceTests {
             #expect(result.note == "tiền xe khách")
             #expect(result.categoryId == "transport")
         }
+    }
+
+    // MARK: - Review fixes (2026-10-16)
+
+    private static let tipCategory = AppCategory(
+        id: "tien_tip", name: "Tiền tip", iconName: "star", colorHex: "#00FF00", type: .income
+    )
+    private static let hiddenCategory = AppCategory(
+        id: "old_hobby", name: "Old hobby", iconName: "star", colorHex: "#FF00FF", type: .expense, isHidden: true
+    )
+    private static let foodCategory = AppCategory(
+        id: "food_drink", name: "Ăn uống", iconName: "fork.knife", colorHex: "#FF0000", type: .expense
+    )
+    private static let cashWallet = Wallet(id: Wallet.personalID, name: "Personal", iconName: "banknote", colorHex: "#000000", sortOrder: 0)
+    private static let bankWallet = Wallet(id: "wallet_bank_test", name: "Bank test", iconName: "building.columns", colorHex: "#000000", sortOrder: 1)
+
+    private func item(_ fields: [String: Any]) -> [String: Any] {
+        var base: [String: Any] = ["amount": 100, "description": "test", "category": "food_drink",
+                                   "type": "expense", "date": "today", "confidence": 0.95]
+        fields.forEach { base[$0.key] = $0.value }
+        return base
+    }
+
+    private func parse(
+        _ items: [[String: Any]],
+        categories: [AppCategory] = [GeminiParserServiceTests.foodCategory, GeminiParserServiceTests.tipCategory],
+        wallets: [Wallet] = [],
+        language: String = "en"
+    ) -> [ParsedTransaction] {
+        GeminiParserService.parseResponse(
+            jsonData: ["transactions": items],
+            language: language,
+            categories: categories,
+            wallets: wallets
+        )
+    }
+
+    @Test("A custom income category stays income (type comes from the user's category)")
+    func testCustomIncomeCategoryKeepsIncomeType() {
+        let results = parse([item(["category": "tien_tip", "type": "income"])])
+        #expect(results.first?.categoryId == "tien_tip")
+        #expect(results.first?.type == .income)
+    }
+
+    @Test("The category's type wins over a contradicting type from the model")
+    func testCategoryTypeWins() {
+        let results = parse([item(["category": "tien_tip", "type": "expense"])])
+        #expect(results.first?.type == .income)
+    }
+
+    @Test("A fallback category is never confident enough to auto-save")
+    func testFallbackCategoryCapsConfidence() {
+        let results = parse([
+            item(["category": "other_expense", "confidence": 0.99]),
+            item(["category": "made_up", "confidence": 0.99]),
+        ])
+        #expect(results.count == 2)
+        #expect(results.allSatisfy { $0.confidence <= 0.7 })
+        #expect(!VoiceAutoSavePolicy.shouldAutoSave(results))
+    }
+
+    @Test("A real category keeps the model's confidence")
+    func testRealCategoryKeepsConfidence() {
+        #expect(parse([item(["confidence": 0.95])]).first?.confidence == 0.95)
+    }
+
+    @Test("Hidden categories are left out of the prompt and the allowed IDs")
+    func testHiddenCategoriesExcluded() {
+        let categories = [Self.foodCategory, Self.hiddenCategory]
+        let text = GeminiParserService.buildInstructions(categories: categories, language: "en", now: Self.fixedNow)
+        #expect(!text.contains("old_hobby"))
+        #expect(!GeminiParserService.allowedCategoryIds(for: categories).contains("old_hobby"))
+    }
+
+    @Test("A hidden category in the response falls back to other")
+    func testHiddenCategoryInResponseFallsBack() {
+        let results = parse([item(["category": "old_hobby"])], categories: [Self.foodCategory, Self.hiddenCategory])
+        #expect(results.first?.categoryId == "other_expense")
+    }
+
+    @Test("A future date is moved to today and needs review")
+    func testFutureDateClampedToToday() {
+        let future = Calendar.current.date(byAdding: .day, value: 3, to: .now)!
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        let results = parse([item(["date": formatter.string(from: future), "confidence": 0.99])])
+
+        #expect(results.first?.date == Calendar.current.startOfDay(for: .now))
+        #expect((results.first?.confidence ?? 1) <= 0.7)
+    }
+
+    @Test("Instructions tell the model not to use future dates")
+    func testInstructionsForbidFutureDates() {
+        #expect(instructions().contains("never after today"))
+    }
+
+    @Test("A missing description uses the category name in the app language")
+    func testMissingDescriptionUsesCategoryName() {
+        let results = parse([item(["description": ""])], language: "vi")
+        #expect(results.first?.note == "Ăn uống")
+    }
+
+    @Test("A missing description without a known category is localized")
+    func testMissingDescriptionLocalizedFallback() {
+        let results = parse([item(["description": "", "category": "other_income", "type": "income"])], categories: [], language: "vi")
+        #expect(results.first?.note == "Thu nhập")
+    }
+
+    @Test("The response array is read from 'transactions' (and still from 'expenses')")
+    func testTransactionsKey() {
+        #expect(parse([item([:])]).count == 1)
+        let legacy = GeminiParserService.parseResponse(jsonData: ["expenses": [item([:])]], language: "en")
+        #expect(legacy.count == 1)
+    }
+
+    // MARK: - Wallets and transfers
+
+    @Test("A named wallet is used; otherwise the default wallet")
+    func testWalletResolution() {
+        let wallets = [Self.cashWallet, Self.bankWallet]
+        let results = parse([item(["wallet": "wallet_bank_test"]), item([:]), item(["wallet": "no_such_wallet"])], wallets: wallets)
+        #expect(results.map(\.walletId) == ["wallet_bank_test", Wallet.personalID, Wallet.personalID])
+    }
+
+    @Test("A transfer between two known wallets is parsed as a transfer")
+    func testTransferParsed() {
+        let wallets = [Self.cashWallet, Self.bankWallet]
+        let results = parse(
+            [item(["type": "transfer", "category": "other_expense", "wallet": Wallet.personalID, "to_wallet": "wallet_bank_test", "confidence": 0.95])],
+            wallets: wallets
+        )
+        let transfer = results.first
+        #expect(transfer?.isTransfer == true)
+        #expect(transfer?.walletId == Wallet.personalID)
+        #expect(transfer?.transferToWalletId == "wallet_bank_test")
+        #expect(transfer?.categoryId == Transfer.categoryId)
+        #expect(transfer?.confidence == 0.95)
+        #expect(transfer?.isIncompleteTransfer == false)
+    }
+
+    @Test("A transfer without a source wallet starts from the default wallet")
+    func testTransferDefaultSource() {
+        let wallets = [Self.cashWallet, Self.bankWallet]
+        let results = parse([item(["type": "transfer", "to_wallet": "wallet_bank_test"])], wallets: wallets)
+        #expect(results.first?.walletId == Wallet.personalID)
+        #expect(results.first?.isIncompleteTransfer == false)
+    }
+
+    @Test("A transfer with an unknown or identical destination is incomplete and needs review")
+    func testIncompleteTransfer() {
+        let wallets = [Self.cashWallet, Self.bankWallet]
+        let results = parse([
+            item(["type": "transfer", "confidence": 0.99]),
+            item(["type": "transfer", "wallet": "wallet_bank_test", "to_wallet": "wallet_bank_test", "confidence": 0.99]),
+        ], wallets: wallets)
+        #expect(results.count == 2)
+        #expect(results.allSatisfy { $0.isTransfer && $0.isIncompleteTransfer })
+        #expect(results.allSatisfy { $0.confidence <= 0.7 })
+    }
+
+    @Test("Without a second wallet a 'transfer' is treated as an uncertain expense")
+    func testTransferWithSingleWallet() {
+        let results = parse([item(["type": "transfer", "to_wallet": "wallet_bank_test"])], wallets: [Self.cashWallet])
+        #expect(results.first?.isTransfer == false)
+        #expect(results.first?.type == .expense)
+        #expect((results.first?.confidence ?? 1) <= 0.7)
+    }
+
+    @Test("Wallets and transfers are only described when the user has 2+ wallets")
+    func testInstructionsWalletSection() {
+        let one = GeminiParserService.buildInstructions(categories: [Self.foodCategory], wallets: [Self.cashWallet], language: "en", now: Self.fixedNow)
+        let two = GeminiParserService.buildInstructions(categories: [Self.foodCategory], wallets: [Self.cashWallet, Self.bankWallet], language: "en", now: Self.fixedNow)
+        #expect(!one.contains("Wallets"))
+        #expect(two.contains("Wallets"))
+        #expect(two.contains("wallet_bank_test: Bank test"))
+        #expect(two.contains("\"transfer\""))
     }
 }

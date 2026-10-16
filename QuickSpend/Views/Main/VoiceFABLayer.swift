@@ -18,6 +18,7 @@ struct VoiceFABLayer: View {
     @Query(sort: \Category.name) private var categories: [Category]
     @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
+    @Environment(\.scenePhase) private var scenePhase
     @State private var vm = VoiceCaptureViewModel()
     private let preferences = PreferencesService.shared
 
@@ -59,7 +60,12 @@ struct VoiceFABLayer: View {
                         isDragCancelling: vm.isDragCancelling
                     )
                     .padding(.horizontal, AppTheme.spacing16)
-                    .padding(.bottom, 200)
+                    if vm.isHandsFree {
+                        handsFreeControls
+                            .padding(.top, AppTheme.spacing12)
+                    }
+                    Spacer()
+                        .frame(height: vm.isHandsFree ? 140 : 200)
                 }
                 .transition(.asymmetric(
                     insertion: .scale(scale: 0.9, anchor: .bottom).combined(with: .opacity),
@@ -87,7 +93,25 @@ struct VoiceFABLayer: View {
             }
         }
         .overlay(alignment: .top) {
-            if vm.showParseFailureToast {
+            if vm.showAutoSavedToast {
+                AutoSavedToast(
+                    items: vm.autoSavedItems,
+                    categories: categories,
+                    wallets: wallets,
+                    config: appConfig.config
+                )
+                .padding(.top, 60)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .onTapGesture {
+                    withAnimation { vm.showAutoSavedToast = false }
+                }
+                .onAppear {
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                        withAnimation { vm.showAutoSavedToast = false }
+                    }
+                }
+            } else if vm.showParseFailureToast {
                 HStack(spacing: AppTheme.spacing8) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(AppTheme.warning)
@@ -112,11 +136,19 @@ struct VoiceFABLayer: View {
             }
         }
         .animation(.easeQuick, value: vm.showParseFailureToast)
+        .animation(.easeQuick, value: vm.showAutoSavedToast)
         .animation(.easeQuick, value: vm.isProcessingVoice)
         .animation(.springFast, value: vm.isRecordingActive)
         .animation(.springFast, value: vm.voiceService.isListening)
         .onAppear {
             syncToViewModel()
+            startPendingQuickLaunch()
+        }
+        .onChange(of: QuickLaunchCenter.shared.pending) {
+            startPendingQuickLaunch()
+        }
+        .onChange(of: scenePhase) {
+            startPendingQuickLaunch()
         }
         .onChange(of: vm.voiceService.isListening) {
             vm.syncWithVoiceServiceListeningState()
@@ -127,6 +159,10 @@ struct VoiceFABLayer: View {
         .onChange(of: appConfig.language) { vm.language = appConfig.language }
         .onChange(of: appConfig.currency) { vm.currency = appConfig.currency }
         .onChange(of: categories) { _, newCategories in vm.categories = newCategories }
+        .onChange(of: wallets) {
+            vm.defaultWalletId = defaultWalletId
+            vm.wallets = activeWallets
+        }
         .sheet(isPresented: $vm.showTransactionReview) {
             EditableExpenseDialog(
                 parsedExpenses: vm.parsedTransactions,
@@ -186,6 +222,48 @@ struct VoiceFABLayer: View {
         }
     }
 
+    /// Done / Cancel for recordings started from a widget or Control Center,
+    /// where there is no held FAB to release or drag away.
+    private var handsFreeControls: some View {
+        VStack(spacing: AppTheme.spacing8) {
+            Text(L10n.tr("voice.hands_free_hint", appConfig.language))
+                .font(Typography.caption)
+                .foregroundStyle(.secondary)
+            HStack(spacing: AppTheme.spacing12) {
+                Button {
+                    vm.cancelHandsFreeRecording()
+                } label: {
+                    Label(L10n.tr("common.cancel", appConfig.language), systemImage: "xmark")
+                        .font(.body.weight(.semibold))
+                        .padding(.horizontal, AppTheme.spacing20)
+                        .padding(.vertical, AppTheme.spacing12)
+                        .background(Capsule().fill(.ultraThinMaterial))
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    vm.finishHandsFreeRecording()
+                } label: {
+                    Label(L10n.tr("common.done", appConfig.language), systemImage: "checkmark")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, AppTheme.spacing20)
+                        .padding(.vertical, AppTheme.spacing12)
+                        .background(Capsule().fill(AppTheme.adaptiveAccent(colorScheme)))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    /// Starts recording when the app was opened from the voice widget or control.
+    private func startPendingQuickLaunch() {
+        // The microphone is only available once the app is fully in front.
+        guard scenePhase == .active, QuickLaunchCenter.shared.consume(.voiceExpense) else { return }
+        syncToViewModel()
+        vm.startHandsFreeRecording()
+    }
+
     /// Push the current view-level inputs into the view model. Called once
     /// on first appear; later updates go through individual .onChange handlers.
     private func syncToViewModel() {
@@ -193,5 +271,14 @@ struct VoiceFABLayer: View {
         vm.currency = appConfig.currency
         vm.categories = categories
         vm.isPremium = subscription.isPremium
+        vm.defaultWalletId = defaultWalletId
+        vm.wallets = activeWallets
+        vm.onAutoSave = { [modelContext, balance] transactions in
+            try TransactionPersistence.createMany(
+                transactions,
+                modelContext: modelContext,
+                balanceService: balance
+            )
+        }
     }
 }

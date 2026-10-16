@@ -12,6 +12,7 @@ import SwiftUI
 struct ParsedExpenseSnippetView: View {
     let items: [ParsedTransaction]
     let categories: [Category]
+    var wallets: [Wallet] = []
     let config: AppConfig
 
     var body: some View {
@@ -38,8 +39,9 @@ struct ParsedExpenseSnippetView: View {
         .colorScheme(.dark)
     }
 
+    /// Net of income and expenses; transfers move money and don't change it.
     private var totalAmount: Double {
-        items.reduce(0) { partial, item in
+        items.filter { !$0.isTransfer }.reduce(0) { partial, item in
             partial + (item.type == .income ? item.amount : -item.amount)
         }
         .magnitude
@@ -49,7 +51,39 @@ struct ParsedExpenseSnippetView: View {
         categories.first { $0.id == item.categoryId }
     }
 
+    @ViewBuilder
     private func row(for item: ParsedTransaction) -> some View {
+        if item.isTransfer {
+            transferRow(for: item)
+        } else {
+            categoryRow(for: item)
+        }
+    }
+
+    private func transferRow(for item: ParsedTransaction) -> some View {
+        let from = VoiceSummary.walletName(item.walletId, wallets: wallets, language: config.language)
+        let to = VoiceSummary.walletName(item.transferToWalletId, wallets: wallets, language: config.language)
+        return HStack(spacing: AppTheme.spacing12) {
+            CategoryIconBadge(iconName: Transfer.iconName, color: AppTheme.accentTeal, size: 36, iconFont: .callout)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.note)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                Text("\(from) → \(to)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            Text(config.formatCurrency(item.amount))
+                .font(.body.weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(.primary)
+        }
+    }
+
+    private func categoryRow(for item: ParsedTransaction) -> some View {
         let matched = category(for: item)
         return HStack(spacing: AppTheme.spacing12) {
             CategoryIconBadge(

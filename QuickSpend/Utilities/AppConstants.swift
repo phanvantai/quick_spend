@@ -15,7 +15,6 @@ enum AppConstants {
     static let privacyPolicyUrl = "https://quickspend.taiphanvan.dev/privacy.html"
     static let freeTierGeminiLimit = 3
     static let freeTierRecurringTemplatesLimit = 3
-    static let freeTierReportDaysLimit = 7
 
     // MARK: - API & Network
 

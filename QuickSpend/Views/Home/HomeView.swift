@@ -25,10 +25,12 @@ struct HomeView: View {
 
     // MARK: - Selected Month Data
 
+    /// Income and expenses in the selected month. Home only shows totals and
+    /// charts, so wallet transfers are left out.
     private var monthTransactions: [Transaction] {
         let calendar = Calendar.current
         return scopedTransactions.filter {
-            calendar.isDate($0.date, equalTo: selectedMonth, toGranularity: .month)
+            !$0.isTransfer && calendar.isDate($0.date, equalTo: selectedMonth, toGranularity: .month)
         }
     }
 
@@ -101,7 +103,7 @@ struct HomeView: View {
         let calendar = Calendar.current
         guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: selectedMonth) else { return [] }
         return scopedTransactions.filter {
-            calendar.isDate($0.date, equalTo: prevMonth, toGranularity: .month)
+            !$0.isTransfer && calendar.isDate($0.date, equalTo: prevMonth, toGranularity: .month)
         }
     }
 
@@ -244,7 +246,14 @@ struct HomeView: View {
                 TransactionFormView(
                     categories: categories,
                     wallets: activeWallets,
-                    defaultWalletId: defaultWalletIdForNewTransaction
+                    defaultWalletId: defaultWalletIdForNewTransaction,
+                    onSaveTransfer: { transfer in
+                        try TransferPersistence.create(
+                            transfer,
+                            modelContext: modelContext,
+                            balanceService: balance
+                        )
+                    }
                 ) { transaction in
                     try TransactionPersistence.create(
                         transaction,

@@ -86,7 +86,7 @@ enum TransactionPersistence {
                 modelContext: modelContext
             )
             try save(modelContext)
-            balanceService.publish(targets)
+            publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
         } catch {
             adjustments.forEach(modelContext.delete)
             modelContext.delete(transaction)
@@ -120,7 +120,7 @@ enum TransactionPersistence {
             )
             do {
                 try save(modelContext)
-                balanceService.publish(targets)
+                publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
             } catch {
                 adjustments.forEach(modelContext.delete)
                 throw error
@@ -168,7 +168,7 @@ enum TransactionPersistence {
                 modelContext: modelContext
             )
             try save(modelContext)
-            balanceService.publish(targets)
+            publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
         } catch {
             adjustments.forEach(modelContext.delete)
             snapshot.restore(transaction)
@@ -202,7 +202,7 @@ enum TransactionPersistence {
                 modelContext: modelContext
             )
             try save(modelContext)
-            balanceService.publish(targets)
+            publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
         } catch {
             adjustments.forEach(modelContext.delete)
             // SwiftData does not revive a pending-deleted model when the same
@@ -211,6 +211,68 @@ enum TransactionPersistence {
             balanceService.publish(before)
             throw error
         }
+    }
+
+    /// Deletes `removing` and inserts `inserting` in one save, reconciling
+    /// every wallet either side touches. Used for multi-row changes such as
+    /// wallet transfers; on failure the store and balances are left as before.
+    static func replace(
+        removing: [Transaction],
+        inserting: [Transaction],
+        modelContext: ModelContext,
+        balanceService: BalanceService,
+        save: SaveContext = { try $0.save() }
+    ) throws {
+        guard !removing.isEmpty || !inserting.isEmpty else { return }
+        let snapshots = removing.map(Snapshot.init)
+        let walletIds = Set(snapshots.map(\.walletId) + inserting.map(\.walletId))
+        let before = try balanceService.authoritativeBalances(for: walletIds)
+        var targets = before
+        for snapshot in snapshots where targets[snapshot.walletId] != nil {
+            targets[snapshot.walletId, default: 0] -= signedAmount(amount: snapshot.amount, type: snapshot.type)
+        }
+        for transaction in inserting where targets[transaction.walletId] != nil {
+            targets[transaction.walletId, default: 0] += signedAmount(of: transaction)
+        }
+
+        removing.forEach(modelContext.delete)
+        inserting.forEach(modelContext.insert)
+        var adjustments: [BalanceAdjustment] = []
+        do {
+            adjustments = try insertAdjustments(
+                for: targets,
+                natural: balanceService.authoritativeBalances(for: walletIds),
+                reason: inserting.isEmpty ? .transactionDelete : .transactionEdit,
+                transactionId: (inserting.first ?? removing.first)?.id,
+                modelContext: modelContext
+            )
+            try save(modelContext)
+            publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
+        } catch {
+            adjustments.forEach(modelContext.delete)
+            inserting.forEach(modelContext.delete)
+            // Pending-deleted models are not revived by re-inserting the same
+            // instance, so restore equivalent rows instead.
+            snapshots.forEach { modelContext.insert($0.restoredTransaction()) }
+            balanceService.publish(before)
+            throw error
+        }
+    }
+
+    /// Publishes the reconciled targets plus wallets that had no balance before
+    /// this change (no starting balance and no activity) but have one now.
+    private static func publishAfterSave(
+        _ targets: [String: Double],
+        walletIds: Set<String>,
+        balanceService: BalanceService
+    ) {
+        var balances = targets
+        for walletId in walletIds where balances[walletId] == nil {
+            if let balance = try? balanceService.computeBalance(walletId: walletId) {
+                balances[walletId] = balance
+            }
+        }
+        balanceService.publish(balances)
     }
 
     private static func applying(

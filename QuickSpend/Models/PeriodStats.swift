@@ -42,7 +42,8 @@ struct PeriodStats {
     }
 
     /// Calculate statistics from a list of transactions
-    static func fromTransactions(_ transactions: [Transaction], startDate: Date, endDate: Date) -> PeriodStats {
+    static func fromTransactions(_ allTransactions: [Transaction], startDate: Date, endDate: Date) -> PeriodStats {
+        let transactions = allTransactions.excludingTransfers()
         guard !transactions.isEmpty else {
             return .empty(startDate: startDate, endDate: endDate)
         }

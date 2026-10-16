@@ -45,6 +45,9 @@ final class VoiceCaptureViewModel {
     var isRecordingActive = false
     /// True when the user is dragging the FAB toward the cancel zone.
     var isDragCancelling = false
+    /// Recording started from a widget or Control Center: no finger is on the
+    /// FAB, so the user ends it with Done / Cancel instead of releasing.
+    var isHandsFree = false
     /// Deferred start of the recognizer — gives a brief hold window so accidental
     /// taps don't trigger a recording.
     private var recordingStartTask: DispatchWorkItem?
@@ -73,6 +76,20 @@ final class VoiceCaptureViewModel {
     var showPaywall = false
     var showManualFallback = false
     var showParseFailureToast = false
+    /// Shown briefly after a confident parse was saved without review.
+    var showAutoSavedToast = false
+    /// What the last auto-save stored (as parsed, so a transfer is one item), for the toast.
+    var autoSavedItems: [ParsedTransaction] = []
+
+    // MARK: - Auto-save
+
+    /// Wallet that confident parses are saved to (the app's default wallet).
+    var defaultWalletId: String = Wallet.personalID
+    /// Active wallets, so the parser can recognize named wallets and transfers.
+    var wallets: [Wallet] = []
+    /// Persists transactions from a confident parse. Set by the view, which owns
+    /// the model context; when nil, every parse goes through review.
+    var onAutoSave: (([Transaction]) throws -> Void)?
 
     // MARK: - Init
 
@@ -147,8 +164,50 @@ final class VoiceCaptureViewModel {
         )
     }
 
+    /// Starts recording right away for a widget / Control Center launch.
+    /// Same gates as hold-to-record; asks for permission and then starts.
+    func startHandsFreeRecording() {
+        guard !isProcessingVoice, !isRecordingActive else { return }
+
+        if !isPremium && usageLimitService.hasReachedLimit {
+            showLimitReachedAlert = true
+            return
+        }
+
+        guard voiceService.isAuthorized else {
+            Task { [weak self] in
+                guard let self else { return }
+                if await self.voiceService.requestPermissions() {
+                    self.startHandsFreeRecording()
+                } else {
+                    self.showPermissionAlert = true
+                }
+            }
+            return
+        }
+
+        do {
+            try voiceService.startListening(language: language)
+            isRecordingActive = voiceService.isListening
+            isHandsFree = isRecordingActive
+        } catch {
+            print("[VoiceCaptureViewModel] Failed to start hands-free voice: \(error)")
+        }
+    }
+
+    func finishHandsFreeRecording() {
+        isHandsFree = false
+        handleRecordEnd()
+    }
+
+    func cancelHandsFreeRecording() {
+        isHandsFree = false
+        handleRecordCancel()
+    }
+
     /// Hold-to-record end handler. Stops voice and kicks off parsing.
     func handleRecordEnd() {
+        isHandsFree = false
         recordingStartTask?.cancel()
         recordingStartTask = nil
         guard isRecordingActive else { return }
@@ -160,6 +219,7 @@ final class VoiceCaptureViewModel {
 
     /// Drag-to-cancel handler. Stops voice without parsing.
     func handleRecordCancel() {
+        isHandsFree = false
         recordingStartTask?.cancel()
         recordingStartTask = nil
         guard isRecordingActive else { return }
@@ -172,7 +232,11 @@ final class VoiceCaptureViewModel {
     /// service's own listening state. If the service stops on its own
     /// (timeout, error, OS interruption), we clear the FAB state too.
     func syncWithVoiceServiceListeningState() {
-        if !voiceService.isListening && isRecordingActive {
+        guard !voiceService.isListening && isRecordingActive else { return }
+        if isHandsFree {
+            // Nobody is holding the FAB, so parse what was heard.
+            finishHandsFreeRecording()
+        } else {
             isRecordingActive = false
         }
     }
@@ -226,6 +290,8 @@ final class VoiceCaptureViewModel {
                 input: inputText,
                 categories: self.categories,
                 language: self.language,
+                wallets: self.wallets,
+                defaultWalletId: self.defaultWalletId,
                 currency: self.currency,
                 usageLimitService: self.usageLimitService
             )
@@ -245,8 +311,27 @@ final class VoiceCaptureViewModel {
             print("[VoiceCapture] Parser produced \(results.count) transaction(s)")
             var resultsWithRawInput = results
             for i in resultsWithRawInput.indices { resultsWithRawInput[i].rawInput = inputText }
+            if autoSaveIfConfident(resultsWithRawInput) { return }
             parsedTransactions = resultsWithRawInput
             showTransactionReview = true
         }
+    }
+
+    /// Same rule as Siri: when every item is confident, save straight to the
+    /// default wallet and show a short toast instead of the review sheet.
+    /// Returns false (so the caller shows review) when not confident or the
+    /// save failed.
+    private func autoSaveIfConfident(_ parsed: [ParsedTransaction]) -> Bool {
+        guard let onAutoSave, VoiceAutoSavePolicy.shouldAutoSave(parsed) else { return false }
+        do {
+            let transactions = try VoiceTransactionBuilder.transactions(from: parsed, defaultWalletId: defaultWalletId)
+            try onAutoSave(transactions)
+        } catch {
+            print("[VoiceCapture] Auto-save failed, showing review instead: \(error)")
+            return false
+        }
+        autoSavedItems = parsed
+        showAutoSavedToast = true
+        return true
     }
 }

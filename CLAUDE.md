@@ -10,7 +10,7 @@ QuickSpend is a native iOS expense tracking app built with SwiftUI and SwiftData
 - **Deployment target:** iOS 18.0
 - **Swift version:** 5.0
 - **Xcode:** 26.2+ (required by Firebase iOS SDK 12.x)
-- **Dependencies (SPM):** Firebase iOS SDK (Analytics, `FirebaseAILogic`), RevenueCat
+- **Dependencies (SPM):** Firebase iOS SDK (Analytics, `FirebaseAILogic`, `FirebaseAppCheck`, Firestore), RevenueCat
 
 ## Build & Test
 
@@ -36,6 +36,8 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 - **CloudKit** sync to the private database (`iCloud.com.randomtech.quickSpend`); `CloudSyncService` tracks account status and import events
 - **UserDefaults** via `PreferencesService` (singleton) stores `AppConfig` as JSON — holds language, currency, theme, onboarding state
 - Categories are linked to transactions via `categoryId` string (not a SwiftData relationship)
+- Wallet transfers (`Models/Transfer.swift`) are two `Transaction` legs — `.expense` in the source wallet, `.income` in the destination — with `categoryId == Transfer.categoryId` (`system.transfer`) and ids `transfer:<id>:out|in`. Change them only through `TransferPersistence` (both legs in one save). Totals, charts, and reports must use `excludingTransfers()` / skip `isTransfer`
+- The versioned schemas (`QuickSpendSchemaV1/V2`) list the live model classes, so adding a stored property to an existing model changes the frozen V1 shape. Prefer designs that need no schema change, or freeze the old models first
 
 ### State Management
 
@@ -54,6 +56,12 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 - `UsageLimitService` (`@Observable`) — daily Gemini parse limit tracking, auto-resets each day
 - `AnalyticsService` — Firebase Analytics wrapper with `#if canImport(FirebaseAnalytics)` guards
 - `PreferencesService` — singleton for UserDefaults-backed app config
+
+### Widgets & Quick Launch
+
+- `QuickSpendWidgets/` is the `QuickSpendWidgetsExtension` target: a Home/Lock Screen voice widget (opens `quickspend://voice`) and a Control Center control (runs `StartVoiceExpenseIntent`)
+- `Shared/` is compiled into both the app and the widget extension (`QuickLaunchAction`, `QuickLaunchCenter`, `StartVoiceExpenseIntent`). The app records the request (`onOpenURL` / intent) and `VoiceFABLayer` starts a hands-free recording (Done / Cancel) once the main UI is visible
+- The widget has its own `Localizable.xcstrings`; intent strings live in both catalogs
 
 ### View Hierarchy
 
@@ -123,7 +131,7 @@ This project follows **Test-Driven Development (TDD)**. Tests are not optional.
   grep 'MARKETING_VERSION' QuickSpend.xcodeproj/project.pbxproj | sort -u   # app version (ignore test targets' 1.0)
   ```
 
-- If it is not higher, bump first in a `chore(release): bump version to X` commit: raise `MARKETING_VERSION` in the 2 app target configs (test targets stay at `1.0`) and `CURRENT_PROJECT_VERSION` by 1 in all 6 configs.
+- If it is not higher, bump first in a `chore(release): bump version to X` commit: raise `MARKETING_VERSION` in the 4 app + widget extension configs (they must match; test targets stay at `1.0`) and `CURRENT_PROJECT_VERSION` by 1 in all 8 configs.
 - When a version ships, tag its commit: `git tag -a 3.4 <sha> -m "QuickSpend 3.4 (App Store)" && git push origin 3.4`.
 
 ## Changelog & Release Notes
