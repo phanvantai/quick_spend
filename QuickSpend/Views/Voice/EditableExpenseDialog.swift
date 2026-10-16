@@ -83,10 +83,57 @@ struct EditableExpenseDialog: View {
 
     // MARK: - Expense Form
 
+    private var activeWallets: [Wallet] {
+        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+    }
+
     @ViewBuilder
     private func expenseForm(at index: Int) -> some View {
+        if editableExpenses[index].toWalletId != nil {
+            transferForm(at: index)
+        } else {
+            categorizedForm(at: index)
+        }
+    }
+
+    /// A wallet-to-wallet transfer heard in the voice input.
+    @ViewBuilder
+    private func transferForm(at index: Int) -> some View {
+        Label(L10n.tr("transfer.title", appConfig.language), systemImage: Transfer.iconName)
+            .foregroundStyle(AppTheme.accentTeal)
+
+        walletPicker(L10n.tr("transfer.from", appConfig.language), selection: $editableExpenses[index].walletId)
+        walletPicker(
+            L10n.tr("transfer.to", appConfig.language),
+            selection: Binding(
+                get: { editableExpenses[index].toWalletId ?? "" },
+                set: { editableExpenses[index].toWalletId = $0 }
+            )
+        )
+
+        TextField(L10n.tr("common.description", appConfig.language), text: $editableExpenses[index].note)
+            .textInputAutocapitalization(.sentences)
+        amountField(at: index)
+        dateField(at: index)
+        lowConfidenceWarning(editableExpenses[index].confidence)
+    }
+
+    private func walletPicker(_ title: String, selection: Binding<String>) -> some View {
+        Picker(title, selection: selection) {
+            if selection.wrappedValue.isEmpty {
+                Text(L10n.tr("transfer.choose_wallet", appConfig.language)).tag("")
+            }
+            ForEach(activeWallets, id: \.id) { wallet in
+                Label(wallet.displayName(language: appConfig.language), systemImage: wallet.iconName)
+                    .tag(wallet.id)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func categorizedForm(at index: Int) -> some View {
         let data = editableExpenses[index]
-        let filteredCategories = categories.filter { $0.type == data.type }
+        let filteredCategories = categories.filter { $0.type == data.type && !$0.isHidden }
 
         // Type
         TransactionTypePicker(selection: $editableExpenses[index].type, language: appConfig.language)
@@ -111,7 +158,24 @@ struct EditableExpenseDialog: View {
         TextField(L10n.tr("common.description", appConfig.language), text: $editableExpenses[index].note)
             .textInputAutocapitalization(.sentences)
 
-        // Amount
+        amountField(at: index)
+
+        // Category
+        Picker(L10n.tr("common.category", appConfig.language), selection: $editableExpenses[index].categoryId) {
+            ForEach(filteredCategories, id: \.id) { category in
+                HStack {
+                    Image(systemName: category.iconName)
+                    Text(category.name)
+                }
+                .tag(category.id)
+            }
+        }
+
+        dateField(at: index)
+        lowConfidenceWarning(data.confidence)
+    }
+
+    private func amountField(at index: Int) -> some View {
         HStack {
             Text(appConfig.config.currencySymbol)
                 .font(.body.bold())
@@ -126,28 +190,20 @@ struct EditableExpenseDialog: View {
                     }
                 }
         }
+    }
 
-        // Category
-        Picker(L10n.tr("common.category", appConfig.language), selection: $editableExpenses[index].categoryId) {
-            ForEach(filteredCategories, id: \.id) { category in
-                HStack {
-                    Image(systemName: category.iconName)
-                    Text(category.name)
-                }
-                .tag(category.id)
-            }
-        }
-
-        // Date
+    private func dateField(at index: Int) -> some View {
         DatePicker(
             L10n.tr("common.date", appConfig.language),
             selection: $editableExpenses[index].date,
             in: ...Date(),
             displayedComponents: [.date]
         )
+    }
 
-        // Low confidence warning
-        if data.confidence < AppConstants.confidenceWarningThreshold {
+    @ViewBuilder
+    private func lowConfidenceWarning(_ confidence: Double) -> some View {
+        if confidence < AppConstants.confidenceWarningThreshold {
             HStack(spacing: AppTheme.spacing8) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(AppTheme.warning)
@@ -163,21 +219,41 @@ struct EditableExpenseDialog: View {
     // MARK: - Save
 
     private func save() {
-        let transactions = editableExpenses.compactMap { data -> Transaction? in
-            guard let amount = parseAmount(data.amountText), amount > 0 else { return nil }
-            let clampedAmount = min(amount, AppConstants.maxExpenseAmount)
-            guard !data.note.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+        let hasIncompleteTransfer = editableExpenses.contains { data in
+            guard let destination = data.toWalletId else { return false }
+            return destination.isEmpty || destination == data.walletId
+        }
+        guard !hasIncompleteTransfer else {
+            saveError = L10n.tr("voice_review.transfer_incomplete", appConfig.language)
+            return
+        }
 
-            return Transaction(
+        let transactions = editableExpenses.flatMap { data -> [Transaction] in
+            guard let amount = parseAmount(data.amountText), amount > 0 else { return [] }
+            let clampedAmount = min(amount, AppConstants.maxExpenseAmount)
+            let note = data.note.trimmingCharacters(in: .whitespaces)
+
+            if let destination = data.toWalletId {
+                return Transfer(
+                    fromWalletId: data.walletId,
+                    toWalletId: destination,
+                    amount: clampedAmount,
+                    date: data.date,
+                    note: note
+                ).makeLegs()
+            }
+
+            guard !note.isEmpty else { return [] }
+            return [Transaction(
                 amount: clampedAmount,
-                note: data.note.trimmingCharacters(in: .whitespaces),
+                note: note,
                 categoryId: data.categoryId,
                 walletId: data.walletId,
                 type: data.type,
                 date: data.date,
                 rawInput: data.rawInput,
                 confidence: data.confidence
-            )
+            )]
         }
 
         guard !transactions.isEmpty else { return }
@@ -201,6 +277,8 @@ struct EditableExpenseData {
     var amountText: String
     var categoryId: String
     var walletId: String
+    /// Set for a transfer; empty until the user picks the destination.
+    var toWalletId: String?
     var type: TransactionType
     var date: Date
     var confidence: Double
@@ -210,7 +288,8 @@ struct EditableExpenseData {
         self.note = parsed.note
         self.amountText = String(format: parsed.amount == floor(parsed.amount) ? "%.0f" : "%.2f", parsed.amount)
         self.categoryId = parsed.categoryId
-        self.walletId = walletId
+        self.walletId = parsed.walletId ?? walletId
+        self.toWalletId = parsed.transferToWalletId
         self.type = parsed.type
         self.date = parsed.date
         self.confidence = parsed.confidence

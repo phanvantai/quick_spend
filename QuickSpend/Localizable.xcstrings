@@ -4826,6 +4826,35 @@
         }
       }
     },
+    "intent.confirm_transfer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move %1$@ from %2$@ to %3$@?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Mover %1$@ de %2$@ a %3$@?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$@から%3$@へ%1$@を振替しますか？"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chuyển %1$@ từ %2$@ sang %3$@?"
+          }
+        }
+      }
+    },
     "intent.error.could_not_parse" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4851,6 +4880,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tôi chưa hiểu rõ. Thử lại với số tiền và lý do chi tiêu nhé."
+          }
+        }
+      }
+    },
+    "intent.error.incomplete_transfer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I couldn't tell which wallets to move money between. Please add this transfer in QuickSpend."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pude saber entre qué billeteras mover el dinero. Añade esta transferencia en QuickSpend."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どのウォレット間で振替するか分かりませんでした。QuickSpendで追加してください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tôi chưa rõ chuyển tiền giữa những ví nào. Vui lòng thêm giao dịch chuyển tiền này trong QuickSpend."
           }
         }
       }
@@ -9040,6 +9098,35 @@
         }
       }
     },
+    "voice_review.transfer_incomplete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose two different wallets for each transfer"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige dos billeteras diferentes para cada transferencia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "振替ごとに異なる2つのウォレットを選択してください"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy chọn hai ví khác nhau cho mỗi giao dịch chuyển tiền"
+          }
+        }
+      }
+    },
     "voice_shortcut.install_cta" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9819,6 +9906,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Thả để hủy"
+          }
+        }
+      }
+    },
+    "voice.transfer_saved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moved %1$@ from %2$@ to %3$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se movieron %1$@ de %2$@ a %3$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$@から%3$@へ%1$@を振替しました"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã chuyển %1$@ từ %2$@ sang %3$@"
           }
         }
       }

@@ -18,6 +18,8 @@ private final class MockExpenseParser: ExpenseParsing {
         input: String,
         categories: [QuickSpend.Category],
         language: String,
+        wallets: [Wallet],
+        defaultWalletId: String,
         currency: String,
         usageLimitService: UsageLimitService
     ) async -> [ParsedTransaction] {
@@ -239,5 +241,48 @@ struct AddExpenseFlowTests {
         let balance = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
         #expect(try balance.computeBalance() == 900)
         #expect(try context.fetchCount(FetchDescriptor<BalanceAdjustment>()) == 1)
+    }
+
+    // MARK: - Transfers
+
+    @Test("save stores a voice transfer as two legs between the named wallets")
+    func saveTransfer() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        var parsed = ParsedTransaction(
+            amount: 500, note: "Savings test", categoryId: Transfer.categoryId,
+            type: .expense, date: .now, confidence: 0.95
+        )
+        parsed.walletId = "wallet_cash_test"
+        parsed.transferToWalletId = "wallet_bank_test"
+
+        try AddExpenseFlow.save(parsed: [parsed], rawInput: "move 500", in: context)
+
+        let stored = try context.fetch(FetchDescriptor<Transaction>())
+        #expect(stored.count == 2)
+        #expect(stored.allSatisfy { $0.isTransfer })
+        #expect(Set(stored.map(\.walletId)) == ["wallet_cash_test", "wallet_bank_test"])
+    }
+
+    @Test("parse rejects a transfer whose wallets are unclear, since Siri cannot edit it")
+    func parseRejectsIncompleteTransfer() async throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        seedCategories(in: context)
+        var parsed = ParsedTransaction(
+            amount: 500, note: "Move test", categoryId: Transfer.categoryId,
+            type: .expense, date: .now, confidence: 0.5
+        )
+        parsed.walletId = Wallet.personalID
+        parsed.transferToWalletId = ""
+        let parser = MockExpenseParser()
+        parser.stubbedResults = [parsed]
+
+        await #expect(throws: AddExpenseError.self) {
+            _ = try await AddExpenseFlow.parse(
+                input: "move money", in: context, language: "en", currency: "USD",
+                parser: parser, usage: makeUsage()
+            )
+        }
     }
 }

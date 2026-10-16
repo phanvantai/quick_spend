@@ -10,6 +10,20 @@ struct ParsedTransaction: Identifiable {
     var date: Date
     var confidence: Double
     var rawInput: String?
+    /// Wallet the money left or arrived in. `nil` means the default wallet.
+    var walletId: String?
+    /// Set for a transfer between two of the user's wallets (`walletId` is the
+    /// source). Empty when the model could not tell the destination.
+    var transferToWalletId: String?
+
+    var isTransfer: Bool { transferToWalletId != nil }
+
+    /// A transfer that cannot be saved as-is: no valid destination, or the
+    /// destination is the source wallet.
+    var isIncompleteTransfer: Bool {
+        guard let destination = transferToWalletId else { return false }
+        return destination.isEmpty || destination == walletId
+    }
 }
 
 /// AI-powered expense parser using Firebase AI (Gemini)
@@ -42,6 +56,8 @@ enum GeminiParserService {
         input: String,
         categories: [Category],
         language: String,
+        wallets: [Wallet] = [],
+        defaultWalletId: String = Wallet.personalID,
         currency: String = "USD",
         usageLimitService: UsageLimitService
     ) async -> [ParsedTransaction] {
@@ -62,6 +78,8 @@ enum GeminiParserService {
             input: input,
             categories: categories,
             language: language,
+            wallets: wallets,
+            defaultWalletId: defaultWalletId,
             currency: currency,
             usageLimitService: usageLimitService
         )
@@ -151,9 +169,22 @@ enum GeminiParserService {
     /// Fallback category IDs the model may always use, even if the user removed them
     static let fallbackCategoryIds = ["other_expense", "other_income"]
 
+    /// Confidence given to a result the app does not trust enough to save
+    /// without review: a fallback category, a future date, or a transfer whose
+    /// wallets are unclear. Below `AppConstants.confidenceWarningThreshold`, so
+    /// the review screen also flags it.
+    static let uncertainConfidence = 0.6
+
     /// System instruction for the model: our app's data plus the product rules
     /// the model cannot guess. Language understanding is left to the model.
-    static func buildInstructions(categories: [Category], language: String, currency: String = "USD", now: Date = .now) -> String {
+    static func buildInstructions(
+        categories: [Category],
+        wallets: [Wallet] = [],
+        defaultWalletId: String? = nil,
+        language: String,
+        currency: String = "USD",
+        now: Date = .now
+    ) -> String {
         // POSIX + Gregorian so the model always sees e.g. "2026-03-04 (Wednesday)",
         // even when the device uses the Japanese or Buddhist calendar
         let formatter = DateFormatter()
@@ -164,12 +195,18 @@ enum GeminiParserService {
         formatter.dateFormat = "EEEE"
         let weekday = formatter.string(from: now)
 
-        let expenseList = categories.filter(\.isExpenseCategory)
+        let visible = categories.filter { !$0.isHidden }
+        let expenseList = visible.filter(\.isExpenseCategory)
             .map { "- \($0.id): \($0.name)" }
             .joined(separator: "\n")
-        let incomeList = categories.filter(\.isIncomeCategory)
+        let incomeList = visible.filter(\.isIncomeCategory)
             .map { "- \($0.id): \($0.name)" }
             .joined(separator: "\n")
+        let walletSection = walletInstructions(
+            wallets: activeWallets(wallets),
+            defaultWalletId: defaultWalletId,
+            language: language
+        )
 
         return """
         You turn what a user said into transactions for an expense-tracking app. \
@@ -185,20 +222,51 @@ enum GeminiParserService {
 
         Income categories:
         \(incomeList)
-
+        \(walletSection)
         Rules:
         - Return one transaction per item mentioned. A date range with "each day" means one transaction per day in that range, each with its own date.
         - The type is "expense" unless the user clearly received money.
         - Pick the closest category of the matching type. Use other_expense or other_income if none fits.
-        - Dates are YYYY-MM-DD. Use today if no date is mentioned.
+        - Dates are YYYY-MM-DD, never after today. Use today if no date is mentioned.
         - confidence (0 to 1): use 0.9 or higher only when the amount, date, and category are all clear. Use less than 0.7 if you had to guess any of them.
         - If the text is not about money, return an empty list.
         """
     }
 
+    /// Wallet list and transfer rules, only when the user has 2+ wallets.
+    private static func walletInstructions(wallets: [Wallet], defaultWalletId: String?, language: String) -> String {
+        guard wallets.count > 1 else { return "" }
+        let defaultId = resolvedDefaultWalletId(wallets: wallets, preferred: defaultWalletId) ?? Wallet.personalID
+        let list = wallets
+            .map { "- \($0.id): \($0.displayName(language: language))" }
+            .joined(separator: "\n")
+        return """
+
+        Wallets (default: \(defaultId)):
+        \(list)
+
+        Wallet rules:
+        - "wallet" is the wallet the money left or arrived in. Set it only when the user names one of these wallets; otherwise leave it out and the default wallet is used.
+        - Money moved between two of these wallets (a transfer, withdrawing cash, topping up, putting money into savings) has type "transfer": "wallet" is where it leaves, "to_wallet" is where it arrives, and the category is other_expense. If either wallet is unclear, still return the transfer with confidence below 0.7.
+
+        """
+    }
+
+    private static func activeWallets(_ wallets: [Wallet]) -> [Wallet] {
+        wallets.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    /// The preferred default if it is an active wallet, else Personal, else the first.
+    private static func resolvedDefaultWalletId(wallets: [Wallet], preferred: String?) -> String? {
+        let ids = activeWallets(wallets).map(\.id)
+        if let preferred, ids.contains(preferred) { return preferred }
+        if ids.contains(Wallet.personalID) { return Wallet.personalID }
+        return ids.first
+    }
+
     /// Category IDs the response schema allows: the user's categories in order, plus fallbacks
     static func allowedCategoryIds(for categories: [Category]) -> [String] {
-        var ids = categories.map(\.id)
+        var ids = categories.filter { !$0.isHidden }.map(\.id)
         for fallback in fallbackCategoryIds where !ids.contains(fallback) {
             ids.append(fallback)
         }
@@ -216,47 +284,100 @@ enum GeminiParserService {
 
     // MARK: - Response Parsing
 
-    static func parseResponse(jsonData: [String: Any], language: String, validCategoryIds: Set<String> = []) -> [ParsedTransaction] {
-        guard let expenses = jsonData["expenses"] as? [[String: Any]] else {
-            print("[GeminiParser] Response has no 'expenses' array")
+    /// Turns the model's JSON into transactions and applies the checks the
+    /// model cannot be trusted with: the category's real type, known wallets,
+    /// no future dates, and lower confidence for anything the app had to fix.
+    static func parseResponse(
+        jsonData: [String: Any],
+        language: String,
+        categories: [Category] = [],
+        wallets: [Wallet] = [],
+        defaultWalletId: String? = nil,
+        now: Date = .now,
+        calendar: Calendar = .current
+    ) -> [ParsedTransaction] {
+        guard let items = (jsonData["transactions"] ?? jsonData["expenses"]) as? [[String: Any]] else {
+            print("[GeminiParser] Response has no 'transactions' array")
             return []
         }
 
-        print("[GeminiParser] Response: \(expenses.count) expense(s) in JSON")
+        print("[GeminiParser] Response: \(items.count) transaction(s) in JSON")
+
+        let usableCategories = categories.filter { !$0.isHidden }
+        let categoryById = Dictionary(usableCategories.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let validCategoryIds = Set(categoryById.keys)
+        let walletIds = Set(activeWallets(wallets).map(\.id))
+        let defaultWallet = resolvedDefaultWalletId(wallets: wallets, preferred: defaultWalletId)
+        let canTransfer = walletIds.count > 1
+        let today = calendar.startOfDay(for: now)
 
         var results: [ParsedTransaction] = []
-        for (index, expenseData) in expenses.enumerated() {
-            guard let amount = (expenseData["amount"] as? NSNumber)?.doubleValue, amount > 0 else {
-                let rawAmount = expenseData["amount"]
-                print("[GeminiParser] Skipped expense[\(index)]: invalid amount (\(String(describing: rawAmount)))")
+        for (index, item) in items.enumerated() {
+            guard let amount = (item["amount"] as? NSNumber)?.doubleValue, amount > 0 else {
+                print("[GeminiParser] Skipped transaction[\(index)]: invalid amount (\(String(describing: item["amount"])))")
                 continue
             }
-
-            // Clamp amount to max allowed
             let clampedAmount = min(amount, AppConstants.maxExpenseAmount)
 
-            let description = expenseData["description"] as? String ?? ""
-            let categoryStr = (expenseData["category"] as? String ?? "other").lowercased()
-            let typeStr = (expenseData["type"] as? String ?? "expense").lowercased()
-            let dateStr = expenseData["date"] as? String ?? "today"
-            let confidence = (expenseData["confidence"] as? NSNumber)?.doubleValue ?? 0.5
+            let description = (item["description"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let categoryStr = (item["category"] as? String ?? "other").lowercased()
+            let typeStr = (item["type"] as? String ?? "expense").lowercased()
+            var confidence = (item["confidence"] as? NSNumber)?.doubleValue ?? 0.5
 
-            let type = typeStr == "income" ? TransactionType.income : TransactionType.expense
+            var date = parseDate(item["date"] as? String ?? "today", calendar: calendar)
+            if date > today {
+                date = today
+                confidence = min(confidence, uncertainConfidence)
+            }
+
+            let namedWallet = (item["wallet"] as? String).flatMap { walletIds.contains($0) ? $0 : nil }
+            let walletId = namedWallet ?? defaultWallet
+
+            if typeStr == "transfer" && canTransfer {
+                let source = walletId ?? Wallet.personalID
+                let destination = (item["to_wallet"] as? String)
+                    .flatMap { walletIds.contains($0) && $0 != source ? $0 : nil }
+                if destination == nil {
+                    confidence = min(confidence, uncertainConfidence)
+                }
+                results.append(ParsedTransaction(
+                    amount: clampedAmount,
+                    note: description.isEmpty ? L10n.tr("transfer.title", language) : description,
+                    categoryId: Transfer.categoryId,
+                    type: .expense,
+                    date: date,
+                    confidence: confidence,
+                    walletId: source,
+                    transferToWalletId: destination ?? ""
+                ))
+                continue
+            }
+            if typeStr == "transfer" {
+                // Nowhere to transfer to: keep it as an expense the user reviews.
+                confidence = min(confidence, uncertainConfidence)
+            }
+
+            let type: TransactionType = typeStr == "income" ? .income : .expense
             let categoryId = normalizeCategoryId(categoryStr, type: type, validCategoryIds: validCategoryIds)
-            let correctedType = typeFromCategory(categoryId)
-            let date = parseDate(dateStr)
+            let correctedType = typeFromCategory(categoryId, categories: usableCategories)
+            if fallbackCategoryIds.contains(categoryId) {
+                confidence = min(confidence, uncertainConfidence)
+            }
 
+            let defaultNote = categoryById[categoryId]?.name
+                ?? L10n.tr(correctedType == .income ? "common.income" : "common.expense", language)
             results.append(ParsedTransaction(
                 amount: clampedAmount,
-                note: description.isEmpty ? (correctedType == .income ? "Income" : "Expense") : description,
+                note: description.isEmpty ? defaultNote : description,
                 categoryId: categoryId,
                 type: correctedType,
                 date: date,
-                confidence: confidence
+                confidence: confidence,
+                walletId: walletId
             ))
         }
-        if results.isEmpty && !expenses.isEmpty {
-            print("[GeminiParser] All \(expenses.count) expense(s) were filtered out (invalid amounts)")
+        if results.isEmpty && !items.isEmpty {
+            print("[GeminiParser] All \(items.count) transaction(s) were filtered out (invalid amounts)")
         }
         return results
     }
@@ -264,9 +385,12 @@ enum GeminiParserService {
     // MARK: - Helpers
 
     static func normalizeCategoryId(_ categoryStr: String, type: TransactionType, validCategoryIds: Set<String> = []) -> String {
-        // Accept any category ID that exists in the actual categories list
-        if !validCategoryIds.isEmpty && validCategoryIds.contains(categoryStr) {
-            return categoryStr
+        // With the user's categories known, only those (and the fallbacks) are valid
+        if !validCategoryIds.isEmpty {
+            if validCategoryIds.contains(categoryStr) || fallbackCategoryIds.contains(categoryStr) {
+                return categoryStr
+            }
+            return type == .income ? "other_income" : "other_expense"
         }
 
         let incomeCategories: Set<String> = ["salary", "freelance", "bonus", "investment_income", "interest", "gift_received", "refund", "other_income"]
@@ -279,6 +403,13 @@ enum GeminiParserService {
         }
     }
 
+    /// The category's own type when it is one of the user's categories, so a
+    /// custom income category stays income.
+    static func typeFromCategory(_ categoryId: String, categories: [Category]) -> TransactionType {
+        categories.first { $0.id == categoryId }?.type ?? typeFromCategory(categoryId)
+    }
+
+    /// Type for the built-in category IDs; anything unknown is an expense.
     static func typeFromCategory(_ categoryId: String) -> TransactionType {
         let incomeCategories: Set<String> = ["salary", "freelance", "bonus", "investment_income", "interest", "gift_received", "refund", "other_income"]
         return incomeCategories.contains(categoryId) ? .income : .expense
@@ -359,7 +490,14 @@ extension GeminiParserService {
 
     /// Builds a model per request, since the instructions and the allowed
     /// category IDs depend on the user's categories, language, and currency.
-    static func _makeModel(ai: FirebaseAI, categories: [Category], language: String, currency: String) -> GenerativeModel {
+    static func _makeModel(
+        ai: FirebaseAI,
+        categories: [Category],
+        wallets: [Wallet],
+        defaultWalletId: String,
+        language: String,
+        currency: String
+    ) -> GenerativeModel {
         ai.generativeModel(
             modelName: AppConstants.geminiModelName,
             // Gemini 3.x: keep default temperature (lower values can cause looping)
@@ -369,11 +507,16 @@ extension GeminiParserService {
             generationConfig: GenerationConfig(
                 maxOutputTokens: 4096,
                 responseMIMEType: "application/json",
-                responseSchema: _responseSchema(categoryIds: allowedCategoryIds(for: categories)),
+                responseSchema: _responseSchema(
+                    categoryIds: allowedCategoryIds(for: categories),
+                    walletIds: activeWallets(wallets).map(\.id)
+                ),
                 thinkingConfig: ThinkingConfig(thinkingLevel: .low)
             ),
             systemInstruction: ModelContent(role: "system", parts: buildInstructions(
                 categories: categories,
+                wallets: wallets,
+                defaultWalletId: defaultWalletId,
                 language: language,
                 currency: currency
             ))
@@ -381,17 +524,26 @@ extension GeminiParserService {
     }
 
     /// The response shape that `parseResponse` reads. The category must be one
-    /// of the user's category IDs, so the model cannot invent one.
-    static func _responseSchema(categoryIds: [String]) -> Schema {
-        .object(properties: [
-            "expenses": .array(items: .object(properties: [
-                "amount": .double(description: "Positive amount in the user's currency"),
-                "description": .string(description: "A few words, in the language the user spoke"),
-                "category": .enumeration(values: categoryIds),
-                "type": .enumeration(values: ["expense", "income"]),
-                "date": .string(description: "YYYY-MM-DD"),
-                "confidence": .double(description: "0 to 1"),
-            ])),
+    /// of the user's category IDs, so the model cannot invent one. With 2+
+    /// wallets the model may also name a wallet and return transfers.
+    static func _responseSchema(categoryIds: [String], walletIds: [String]) -> Schema {
+        let canTransfer = walletIds.count > 1
+        var properties: [String: Schema] = [
+            "amount": .double(description: "Positive amount in the user's currency"),
+            "description": .string(description: "A few words, in the language the user spoke"),
+            "category": .enumeration(values: categoryIds),
+            "type": .enumeration(values: canTransfer ? ["expense", "income", "transfer"] : ["expense", "income"]),
+            "date": .string(description: "YYYY-MM-DD"),
+            "confidence": .double(description: "0 to 1"),
+        ]
+        var optional: [String] = []
+        if canTransfer {
+            properties["wallet"] = .enumeration(values: walletIds)
+            properties["to_wallet"] = .enumeration(values: walletIds)
+            optional = ["wallet", "to_wallet"]
+        }
+        return .object(properties: [
+            "transactions": .array(items: .object(properties: properties, optionalProperties: optional)),
         ])
     }
 
@@ -399,13 +551,21 @@ extension GeminiParserService {
         input: String,
         categories: [Category],
         language: String,
+        wallets: [Wallet],
+        defaultWalletId: String,
         currency: String,
         usageLimitService: UsageLimitService
     ) async -> [ParsedTransaction] {
         guard let ai = _firebaseAI else { return [] }
 
-        let model = _makeModel(ai: ai, categories: categories, language: language, currency: currency)
-        let validCategoryIds = Set(categories.map(\.id))
+        let model = _makeModel(
+            ai: ai,
+            categories: categories,
+            wallets: wallets,
+            defaultWalletId: defaultWalletId,
+            language: language,
+            currency: currency
+        )
 
         do {
             let response = try await withThrowingTaskGroup(of: GenerateContentResponse.self) { group in
@@ -434,7 +594,13 @@ extension GeminiParserService {
                 return []
             }
 
-            let results = parseResponse(jsonData: json, language: language, validCategoryIds: validCategoryIds)
+            let results = parseResponse(
+                jsonData: json,
+                language: language,
+                categories: categories,
+                wallets: wallets,
+                defaultWalletId: defaultWalletId
+            )
             if !results.isEmpty {
                 usageLimitService.incrementUsage()
                 print("[GeminiParser] Successfully parsed \(results.count) transaction(s), usage incremented")

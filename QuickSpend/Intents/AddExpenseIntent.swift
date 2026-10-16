@@ -52,6 +52,8 @@ struct AddExpenseIntent: AppIntent {
         _ = try? WalletService.bootstrapIfNeeded(modelContext: context)
         let config = IntentEnvironment.currentConfig()
         let usage = await IntentEnvironment.makeUsageLimitService()
+        let wallets = (try? context.fetch(FetchDescriptor<Wallet>())) ?? []
+        let defaultWalletId = WalletService.resolvedDefaultWalletId(wallets: wallets)
 
         let parsed = try await AddExpenseFlow.parse(
             input: expenseDescription,
@@ -59,18 +61,19 @@ struct AddExpenseIntent: AppIntent {
             language: config.language,
             currency: config.currency,
             parser: Self.parser,
-            usage: usage
+            usage: usage,
+            defaultWalletId: defaultWalletId
         )
 
         let categories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
-        let snippet = ParsedExpenseSnippetView(items: parsed, categories: categories, config: config)
+        let snippet = ParsedExpenseSnippetView(items: parsed, categories: categories, wallets: wallets, config: config)
 
         // High-confidence parses skip the confirm card entirely — Siri reads
         // the success line and shows the snippet for a beat, then dismisses.
         if Self.shouldAutoSave(parsed) {
-            try saveOrThrow(parsed: parsed, in: context, language: config.language)
+            try saveOrThrow(parsed: parsed, in: context, walletId: defaultWalletId, language: config.language)
             UINotificationFeedbackGenerator().notificationOccurred(.success)
-            return .result(dialog: autoSavedDialog(for: parsed, config: config)) {
+            return .result(dialog: IntentDialog(stringLiteral: VoiceSummary.saved(parsed, wallets: wallets, config: config))) {
                 snippet
             }
         }
@@ -78,7 +81,7 @@ struct AddExpenseIntent: AppIntent {
         do {
             try await requestConfirmation(
                 actionName: .log,
-                dialog: confirmationDialog(for: parsed, config: config)
+                dialog: IntentDialog(stringLiteral: VoiceSummary.confirmation(parsed, wallets: wallets, config: config))
             ) {
                 snippet
             }
@@ -87,9 +90,9 @@ struct AddExpenseIntent: AppIntent {
             return .result(dialog: IntentDialog("")) { EmptyView() }
         }
 
-        try saveOrThrow(parsed: parsed, in: context, language: config.language)
+        try saveOrThrow(parsed: parsed, in: context, walletId: defaultWalletId, language: config.language)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        return .result(dialog: autoSavedDialog(for: parsed, config: config)) {
+        return .result(dialog: IntentDialog(stringLiteral: VoiceSummary.saved(parsed, wallets: wallets, config: config))) {
             snippet
         }
     }
@@ -102,39 +105,16 @@ struct AddExpenseIntent: AppIntent {
     }
 
     @MainActor
-    private func saveOrThrow(parsed: [ParsedTransaction], in context: ModelContext, language: String) throws {
+    private func saveOrThrow(parsed: [ParsedTransaction], in context: ModelContext, walletId: String, language: String) throws {
         do {
-            let wallets = (try? context.fetch(FetchDescriptor<Wallet>())) ?? []
             try AddExpenseFlow.save(
                 parsed: parsed,
                 rawInput: expenseDescription,
                 in: context,
-                walletId: WalletService.resolvedDefaultWalletId(wallets: wallets)
+                walletId: walletId
             )
         } catch {
             throw AddExpenseError.saveFailed(language: language)
         }
-    }
-
-    private func confirmationDialog(for parsed: [ParsedTransaction], config: AppConfig) -> IntentDialog {
-        let language = config.language
-        if parsed.count == 1, let first = parsed.first {
-            let amount = config.formatCurrency(first.amount)
-            let format = L10n.tr("intent.confirm_one", language)
-            return IntentDialog(stringLiteral: String(format: format, amount, first.note))
-        }
-        let format = L10n.tr("intent.confirm_many", language)
-        return IntentDialog(stringLiteral: String(format: format, parsed.count))
-    }
-
-    private func autoSavedDialog(for parsed: [ParsedTransaction], config: AppConfig) -> IntentDialog {
-        let language = config.language
-        if parsed.count == 1, let first = parsed.first {
-            let amount = config.formatCurrency(first.amount)
-            let format = L10n.tr("intent.auto_saved_one", language)
-            return IntentDialog(stringLiteral: String(format: format, amount, first.note))
-        }
-        let format = L10n.tr("intent.auto_saved_many", language)
-        return IntentDialog(stringLiteral: String(format: format, parsed.count))
     }
 }

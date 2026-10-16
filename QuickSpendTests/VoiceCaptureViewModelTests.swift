@@ -16,6 +16,8 @@ private final class MockParser: ExpenseParsing {
         input: String,
         categories: [QuickSpend.Category],
         language: String,
+        wallets: [Wallet],
+        defaultWalletId: String,
         currency: String,
         usageLimitService: UsageLimitService
     ) async -> [ParsedTransaction] {
@@ -332,7 +334,7 @@ struct VoiceCaptureViewModelTests {
         #expect(saved[0].confidence == 0.95)
         #expect(vm.showTransactionReview == false)
         #expect(vm.showAutoSavedToast == true)
-        #expect(vm.autoSavedTransactions.count == 2)
+        #expect(vm.autoSavedItems.count == 2)
         #expect(vm.parsedTransactions.isEmpty)
     }
 
@@ -389,5 +391,26 @@ struct VoiceCaptureViewModelTests {
         #expect(VoiceAutoSavePolicy.shouldAutoSave(confident) == AddExpenseIntent.shouldAutoSave(confident))
         #expect(VoiceAutoSavePolicy.shouldAutoSave(uncertain) == AddExpenseIntent.shouldAutoSave(uncertain))
         #expect(VoiceAutoSavePolicy.confidenceThreshold == AddExpenseIntent.autoSaveConfidenceThreshold)
+    }
+
+    @Test("A confident voice transfer is saved as two legs in one call")
+    func testConfidentTransferAutoSaves() async {
+        var transfer = makeParsed(note: "savings test", confidence: 0.95)
+        transfer.categoryId = Transfer.categoryId
+        transfer.walletId = "wallet_cash_test"
+        transfer.transferToWalletId = "wallet_bank_test"
+        let parser = MockParser()
+        parser.stubbedResults = [transfer]
+        let vm = makeViewModel(parser: parser)
+        vm.isPremium = true
+        var saved: [Transaction] = []
+        vm.onAutoSave = { saved = $0 }
+
+        await vm.processTranscription("move to savings")?.value
+
+        #expect(saved.count == 2)
+        #expect(Set(saved.map(\.walletId)) == ["wallet_cash_test", "wallet_bank_test"])
+        #expect(vm.autoSavedItems.count == 1)
+        #expect(vm.showTransactionReview == false)
     }
 }

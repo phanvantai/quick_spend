@@ -8,6 +8,8 @@ protocol ExpenseParsing {
         input: String,
         categories: [Category],
         language: String,
+        wallets: [Wallet],
+        defaultWalletId: String,
         currency: String,
         usageLimitService: UsageLimitService
     ) async -> [ParsedTransaction]
@@ -19,6 +21,8 @@ struct GeminiExpenseParser: ExpenseParsing {
         input: String,
         categories: [Category],
         language: String,
+        wallets: [Wallet],
+        defaultWalletId: String,
         currency: String,
         usageLimitService: UsageLimitService
     ) async -> [ParsedTransaction] {
@@ -26,6 +30,8 @@ struct GeminiExpenseParser: ExpenseParsing {
             input: input,
             categories: categories,
             language: language,
+            wallets: wallets,
+            defaultWalletId: defaultWalletId,
             currency: currency,
             usageLimitService: usageLimitService
         )

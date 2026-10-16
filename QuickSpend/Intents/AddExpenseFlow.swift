@@ -17,7 +17,8 @@ enum AddExpenseFlow {
         language: String,
         currency: String,
         parser: ExpenseParsing,
-        usage: UsageLimitService
+        usage: UsageLimitService,
+        defaultWalletId: String = Wallet.personalID
     ) async throws -> [ParsedTransaction] {
         guard usage.canParse else {
             throw AddExpenseError.limitReached(language: language)
@@ -28,10 +29,13 @@ enum AddExpenseFlow {
             throw AddExpenseError.noCategories(language: language)
         }
 
+        let wallets = (try? context.fetch(FetchDescriptor<Wallet>())) ?? []
         let results = await parser.parse(
             input: input,
             categories: categories,
             language: language,
+            wallets: wallets.filter { !$0.isArchived },
+            defaultWalletId: defaultWalletId,
             currency: currency,
             usageLimitService: usage
         )
@@ -39,11 +43,15 @@ enum AddExpenseFlow {
         guard !results.isEmpty else {
             throw AddExpenseError.couldNotParse(language: language)
         }
+        // Siri cannot ask which wallets to use, so send unclear transfers to the app.
+        guard !results.contains(where: \.isIncompleteTransfer) else {
+            throw AddExpenseError.incompleteTransfer(language: language)
+        }
         return results
     }
 
-    /// Insert and persist each parsed transaction. Returns the created models so
-    /// the caller can build a success dialog summarising what was saved.
+    /// Insert and persist each parsed transaction (two legs for a transfer) in
+    /// one save. Returns the created models.
     @discardableResult
     static func save(
         parsed: [ParsedTransaction],
@@ -52,20 +60,12 @@ enum AddExpenseFlow {
         walletId: String = Wallet.personalID,
         balanceService: BalanceService? = nil
     ) throws -> [Transaction] {
-        var saved: [Transaction] = []
-        for item in parsed {
-            let transaction = Transaction(
-                amount: item.amount,
-                note: item.note,
-                categoryId: item.categoryId,
-                walletId: walletId,
-                type: item.type,
-                date: item.date,
-                rawInput: rawInput,
-                confidence: item.confidence
-            )
-            saved.append(transaction)
+        let withInput = parsed.map { item -> ParsedTransaction in
+            var item = item
+            item.rawInput = rawInput
+            return item
         }
+        let saved = try VoiceTransactionBuilder.transactions(from: withInput, defaultWalletId: walletId)
         let balanceService = balanceService ?? BalanceService(
             modelContext: context,
             autoObserve: false,
@@ -85,6 +85,7 @@ enum AddExpenseError: LocalizedError {
     case couldNotParse(language: String)
     case noCategories(language: String)
     case saveFailed(language: String)
+    case incompleteTransfer(language: String)
 
     var errorDescription: String? {
         switch self {
@@ -96,6 +97,8 @@ enum AddExpenseError: LocalizedError {
             return L10n.tr("intent.error.no_categories", language)
         case .saveFailed(let language):
             return L10n.tr("intent.error.save_failed", language)
+        case .incompleteTransfer(let language):
+            return L10n.tr("intent.error.incomplete_transfer", language)
         }
     }
 }

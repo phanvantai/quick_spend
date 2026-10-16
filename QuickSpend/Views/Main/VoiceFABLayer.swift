@@ -95,8 +95,9 @@ struct VoiceFABLayer: View {
         .overlay(alignment: .top) {
             if vm.showAutoSavedToast {
                 AutoSavedToast(
-                    transactions: vm.autoSavedTransactions,
+                    items: vm.autoSavedItems,
                     categories: categories,
+                    wallets: wallets,
                     config: appConfig.config
                 )
                 .padding(.top, 60)
@@ -158,7 +159,10 @@ struct VoiceFABLayer: View {
         .onChange(of: appConfig.language) { vm.language = appConfig.language }
         .onChange(of: appConfig.currency) { vm.currency = appConfig.currency }
         .onChange(of: categories) { _, newCategories in vm.categories = newCategories }
-        .onChange(of: wallets) { vm.defaultWalletId = defaultWalletId }
+        .onChange(of: wallets) {
+            vm.defaultWalletId = defaultWalletId
+            vm.wallets = activeWallets
+        }
         .sheet(isPresented: $vm.showTransactionReview) {
             EditableExpenseDialog(
                 parsedExpenses: vm.parsedTransactions,
@@ -268,6 +272,7 @@ struct VoiceFABLayer: View {
         vm.categories = categories
         vm.isPremium = subscription.isPremium
         vm.defaultWalletId = defaultWalletId
+        vm.wallets = activeWallets
         vm.onAutoSave = { [modelContext, balance] transactions in
             try TransactionPersistence.createMany(
                 transactions,
