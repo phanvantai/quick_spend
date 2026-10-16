@@ -78,4 +78,19 @@ struct VoiceServiceTests {
         #expect(service.transcription == "")
         #expect(service.soundLevel == 0)
     }
+
+    // MARK: - Input format guard (regression: installTap crashed on an empty format)
+
+    @Test("An input format with no sample rate or no channels is rejected")
+    func testInvalidInputFormatRejected() {
+        #expect(VoiceService.isUsableInputFormat(sampleRate: 0, channelCount: 1) == false)
+        #expect(VoiceService.isUsableInputFormat(sampleRate: 48_000, channelCount: 0) == false)
+        #expect(VoiceService.isUsableInputFormat(sampleRate: 0, channelCount: 0) == false)
+    }
+
+    @Test("A normal microphone format is accepted")
+    func testValidInputFormatAccepted() {
+        #expect(VoiceService.isUsableInputFormat(sampleRate: 48_000, channelCount: 1) == true)
+        #expect(VoiceService.isUsableInputFormat(sampleRate: 16_000, channelCount: 2) == true)
+    }
 }

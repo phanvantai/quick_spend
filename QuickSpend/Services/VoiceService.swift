@@ -2,6 +2,12 @@ import Foundation
 import Speech
 import AVFoundation
 
+enum VoiceServiceError: Error {
+    /// The microphone input reported no sample rate or no channels (no input
+    /// route yet, e.g. right after a permission prompt or on some simulators).
+    case audioInputUnavailable
+}
+
 /// Speech recognition service using SFSpeechRecognizer + AVAudioEngine
 @Observable
 final class VoiceService {
@@ -60,6 +66,16 @@ final class VoiceService {
 
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
+        // installTap raises an uncaught Objective-C exception for an empty
+        // format, which would crash the app; fail with a normal error instead.
+        guard Self.isUsableInputFormat(
+            sampleRate: recordingFormat.sampleRate,
+            channelCount: recordingFormat.channelCount
+        ) else {
+            self.recognitionRequest = nil
+            try? audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+            throw VoiceServiceError.audioInputUnavailable
+        }
 
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
             self?.recognitionRequest?.append(buffer)
@@ -129,6 +145,10 @@ final class VoiceService {
     func cancelListening() {
         stopListening()
         transcription = ""
+    }
+
+    static func isUsableInputFormat(sampleRate: Double, channelCount: AVAudioChannelCount) -> Bool {
+        sampleRate > 0 && channelCount > 0
     }
 
     // MARK: - Locale Mapping
