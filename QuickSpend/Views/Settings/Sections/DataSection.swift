@@ -1,13 +1,15 @@
 import SwiftUI
 
-/// iCloud sync status + destructive delete-all action. The confirm alert
-/// lives on the parent SettingsView; this section only triggers the binding.
+/// iCloud sync status, voice-sample sharing, and the destructive delete-all
+/// action. The confirm alert lives on the parent SettingsView; this section
+/// only triggers the binding.
 struct DataSection: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(CloudSyncService.self) private var cloudSync
 
     @Binding var showDeleteAllConfirm: Bool
+    @State private var shareVoiceSamples = PreferencesService.shared.shareVoiceSamples
 
     var body: some View {
         Section {
@@ -42,6 +44,18 @@ struct DataSection: View {
                 }
             }
             .padding(.vertical, 2)
+
+            Toggle(isOn: $shareVoiceSamples) {
+                SettingsRow(
+                    icon: "waveform",
+                    iconColor: AppTheme.adaptiveAccent(colorScheme),
+                    title: L10n.tr("settings.share_voice_samples", appConfig.language),
+                    subtitle: L10n.tr("settings.share_voice_samples_subtitle", appConfig.language)
+                )
+            }
+            .onChange(of: shareVoiceSamples) {
+                PreferencesService.shared.shareVoiceSamples = shareVoiceSamples
+            }
 
             Button(role: .destructive) {
                 showDeleteAllConfirm = true

@@ -50,12 +50,18 @@ struct VoiceCaptureViewModelTests {
         return PreferencesService(defaults: defaults)
     }
 
-    private func makeViewModel(parser: MockParser? = nil) -> VoiceCaptureViewModel {
+    private func makeViewModel(
+        parser: MockParser? = nil,
+        analytics: MockAnalyticsLogger = MockAnalyticsLogger(),
+        samples: MockVoiceSampleRecorder? = nil
+    ) -> VoiceCaptureViewModel {
         VoiceCaptureViewModel(
             voiceService: VoiceService(),
             usageLimitService: makeUsage(),
             preferences: makePrefs(),
-            parser: parser ?? MockParser()
+            parser: parser ?? MockParser(),
+            analytics: analytics,
+            samples: samples ?? MockVoiceSampleRecorder()
         )
     }
 
@@ -176,7 +182,9 @@ struct VoiceCaptureViewModelTests {
             voiceService: VoiceService(),
             usageLimitService: usage,
             preferences: makePrefs(),
-            parser: parser
+            parser: parser,
+            analytics: MockAnalyticsLogger(),
+            samples: MockVoiceSampleRecorder()
         )
         vm.isPremium = false
 
@@ -202,7 +210,9 @@ struct VoiceCaptureViewModelTests {
             voiceService: VoiceService(),
             usageLimitService: usage,
             preferences: makePrefs(),
-            parser: MockParser()
+            parser: MockParser(),
+            analytics: MockAnalyticsLogger(),
+            samples: MockVoiceSampleRecorder()
         )
         vm.isPremium = false
 
@@ -223,7 +233,9 @@ struct VoiceCaptureViewModelTests {
             voiceService: VoiceService(),
             usageLimitService: usage,
             preferences: makePrefs(),
-            parser: MockParser()
+            parser: MockParser(),
+            analytics: MockAnalyticsLogger(),
+            samples: MockVoiceSampleRecorder()
         )
 
         #expect(usage.isPremium == false)
@@ -254,7 +266,9 @@ struct VoiceCaptureViewModelTests {
             voiceService: VoiceService(),
             usageLimitService: usage,
             preferences: makePrefs(),
-            parser: MockParser()
+            parser: MockParser(),
+            analytics: MockAnalyticsLogger(),
+            samples: MockVoiceSampleRecorder()
         )
         vm.isPremium = false
         for _ in 0..<AppConstants.freeTierGeminiLimit { usage.incrementUsage() }
@@ -412,5 +426,169 @@ struct VoiceCaptureViewModelTests {
         #expect(Set(saved.map(\.walletId)) == ["wallet_cash_test", "wallet_bank_test"])
         #expect(vm.autoSavedItems.count == 1)
         #expect(vm.showTransactionReview == false)
+    }
+
+    // MARK: - Analytics
+
+    @Test("A confident parse logs an auto-saved result")
+    func testAnalyticsAutoSaved() async {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.95)]
+        let analytics = MockAnalyticsLogger()
+        let vm = makeViewModel(parser: parser, analytics: analytics)
+        vm.isPremium = true
+        vm.language = "vi"
+        vm.onAutoSave = { _ in }
+
+        await vm.processTranscription("coffee")?.value
+
+        let results = analytics.events(named: VoiceAnalytics.result)
+        #expect(results.count == 1)
+        #expect(results.first?["outcome"] as? String == "auto_saved")
+        #expect(results.first?["language"] as? String == "vi")
+        #expect(results.first?["item_count"] as? Int == 1)
+        #expect(results.first?["parse_ms"] is Int)
+        #expect(analytics.events(named: VoiceAnalytics.reviewClosed).isEmpty)
+    }
+
+    @Test("A reviewed parse logs review, then saved once with no edits")
+    func testAnalyticsReviewSaved() async throws {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.8)]
+        let analytics = MockAnalyticsLogger()
+        let vm = makeViewModel(parser: parser, analytics: analytics)
+        vm.isPremium = true
+        vm.defaultWalletId = "wallet_default_test"
+
+        await vm.processTranscription("coffee")?.value
+        let saved = try VoiceTransactionBuilder.transactions(from: vm.parsedTransactions, defaultWalletId: "wallet_default_test")
+        vm.reviewSaved(saved)
+        vm.reviewDismissed()
+
+        #expect(analytics.events(named: VoiceAnalytics.result).first?["outcome"] as? String == "review")
+        let closed = analytics.events(named: VoiceAnalytics.reviewClosed)
+        #expect(closed.count == 1)
+        #expect(closed.first?["action"] as? String == "saved")
+        #expect(closed.first?["edited"] as? Int == 0)
+    }
+
+    @Test("Closing the review without saving logs a discard")
+    func testAnalyticsReviewDiscarded() async {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.7), makeParsed(confidence: 0.8)]
+        let analytics = MockAnalyticsLogger()
+        let vm = makeViewModel(parser: parser, analytics: analytics)
+        vm.isPremium = true
+
+        await vm.processTranscription("coffee and bread")?.value
+        vm.reviewDismissed()
+
+        let closed = analytics.events(named: VoiceAnalytics.reviewClosed)
+        #expect(closed.count == 1)
+        #expect(closed.first?["action"] as? String == "discarded")
+        #expect(closed.first?["item_count"] as? Int == 2)
+    }
+
+    @Test("An empty parse logs a failed result")
+    func testAnalyticsFailed() async {
+        let analytics = MockAnalyticsLogger()
+        let vm = makeViewModel(parser: MockParser(), analytics: analytics)
+        vm.isPremium = true
+
+        await vm.processTranscription("nonsense words")?.value
+
+        #expect(analytics.events(named: VoiceAnalytics.result).first?["outcome"] as? String == "failed")
+    }
+
+    @Test("Silence logs no_speech and the limit logs limit_reached without parsing")
+    func testAnalyticsNoSpeechAndLimit() async {
+        let parser = MockParser()
+        let analytics = MockAnalyticsLogger()
+        let vm = makeViewModel(parser: parser, analytics: analytics)
+        vm.isPremium = false
+        for _ in 0..<AppConstants.freeTierGeminiLimit { vm.usageLimitService.incrementUsage() }
+
+        vm.processTranscription("   ")
+        vm.processTranscription("coffee")
+        vm.handleRecordStart()
+
+        let outcomes = analytics.events(named: VoiceAnalytics.result).compactMap { $0["outcome"] as? String }
+        #expect(outcomes == ["no_speech", "limit_reached", "limit_reached"])
+        #expect(parser.callCount == 0)
+    }
+
+    // MARK: - Voice samples
+
+    @Test("An auto-saved parse records a sample with what was said and what was saved")
+    func testSampleAutoSaved() async {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.95)]
+        let samples = MockVoiceSampleRecorder()
+        let vm = makeViewModel(parser: parser, samples: samples)
+        vm.isPremium = true
+        vm.currency = "VND"
+        vm.onAutoSave = { _ in }
+
+        await vm.processTranscription("coffee fifty test")?.value
+
+        #expect(samples.recorded.count == 1)
+        let sample = samples.recorded.first
+        #expect(sample?.input == "coffee fifty test")
+        #expect(sample?.outcome == .autoSaved)
+        #expect(sample?.action == "auto_saved")
+        #expect(sample?.currency == "VND")
+        #expect(sample?.parsed.count == 1)
+        #expect(sample?.final?.count == 1)
+    }
+
+    @Test("A reviewed parse records one sample when saved, with the edit flag")
+    func testSampleReviewSaved() async throws {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.8)]
+        let samples = MockVoiceSampleRecorder()
+        let vm = makeViewModel(parser: parser, samples: samples)
+        vm.isPremium = true
+        vm.defaultWalletId = "wallet_default_test"
+
+        await vm.processTranscription("coffee test")?.value
+        #expect(samples.recorded.isEmpty)
+
+        let saved = try VoiceTransactionBuilder.transactions(from: vm.parsedTransactions, defaultWalletId: "wallet_default_test")
+        saved[0].categoryId = "shopping"
+        vm.reviewSaved(saved)
+        vm.reviewDismissed()
+
+        #expect(samples.recorded.count == 1)
+        #expect(samples.recorded.first?.action == "saved")
+        #expect(samples.recorded.first?.edited == true)
+        #expect(samples.recorded.first?.input == "coffee test")
+        #expect(samples.recorded.first?.final?.first?.categoryId == "shopping")
+    }
+
+    @Test("A discarded review and a failed parse both record a sample with nothing saved")
+    func testSampleDiscardedAndFailed() async {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.7)]
+        let samples = MockVoiceSampleRecorder()
+        let vm = makeViewModel(parser: parser, samples: samples)
+        vm.isPremium = true
+
+        await vm.processTranscription("coffee test")?.value
+        vm.reviewDismissed()
+        parser.stubbedResults = []
+        await vm.processTranscription("gibberish test")?.value
+
+        #expect(samples.recorded.map(\.outcome) == [.review, .failed])
+        #expect(samples.recorded.map(\.action) == ["discarded", nil])
+        #expect(samples.recorded.allSatisfy { $0.final == nil })
+        #expect(samples.recorded.last?.input == "gibberish test")
+    }
+
+    @Test("Silence records no sample")
+    func testNoSampleForSilence() {
+        let samples = MockVoiceSampleRecorder()
+        let vm = makeViewModel(samples: samples)
+        vm.processTranscription("  ")
+        #expect(samples.recorded.isEmpty)
     }
 }

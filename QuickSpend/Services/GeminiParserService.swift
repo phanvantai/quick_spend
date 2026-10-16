@@ -64,6 +64,7 @@ enum GeminiParserService {
         // Validate input
         guard isValidInput(input) else {
             print("[GeminiParser] Input validation failed")
+            AnalyticsService.logGeminiParseFailed(errorReason: "invalid_input", language: language)
             return []
         }
 
@@ -583,6 +584,7 @@ extension GeminiParserService {
 
             guard let text = response.text, !text.isEmpty else {
                 print("[GeminiParser] Empty response from Gemini")
+                AnalyticsService.logGeminiParseFailed(errorReason: "empty_response", language: language)
                 return []
             }
 
@@ -591,6 +593,7 @@ extension GeminiParserService {
             guard let data = text.data(using: .utf8),
                   let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 print("[GeminiParser] Failed to parse JSON from response")
+                AnalyticsService.logGeminiParseFailed(errorReason: "bad_json", language: language)
                 return []
             }
 
@@ -606,13 +609,20 @@ extension GeminiParserService {
                 print("[GeminiParser] Successfully parsed \(results.count) transaction(s), usage incremented")
             } else {
                 print("[GeminiParser] No valid transactions extracted from response")
+                AnalyticsService.logGeminiParseFailed(errorReason: "no_transactions", language: language)
             }
             return results
         } catch is GeminiTimeoutError {
             print("[GeminiParser] Gemini API timed out after \(AppConstants.geminiApiTimeoutSeconds)s")
+            AnalyticsService.logGeminiParseFailed(errorReason: "timeout", language: language)
             return []
         } catch {
             print("[GeminiParser] Error calling Gemini: \(error)")
+            AnalyticsService.logGeminiParseFailed(
+                errorReason: "api_error",
+                language: language,
+                errorCode: AnalyticsService.errorCode(error)
+            )
             return []
         }
     }

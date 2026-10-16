@@ -90,7 +90,7 @@
         <span data-i18n="header.badge">Your Privacy Matters</span>
       </div>
       <h1 class="fade-up delay-1 font-heading font-extrabold text-4xl sm:text-5xl text-forest-700 mb-4" data-i18n="header.title">Privacy Policy</h1>
-      <p class="fade-up delay-2 text-forest-400" data-i18n="header.updated">Last updated: March 19, 2026</p>
+      <p class="fade-up delay-2 text-forest-400" data-i18n="header.updated">Last updated: October 17, 2026</p>
     </div>
   </section>
 
@@ -111,7 +111,7 @@
           All your financial data — transactions, categories, recurring templates, and preferences — is stored <strong>locally on your device</strong> using Apple's SwiftData framework. We do not operate servers that store your personal financial information.
         </p>
         <ul>
-          <li data-i18n="s1.l1">Transaction amounts, descriptions, and dates remain on your device</li>
+          <li data-i18n="s1.l1">Transaction amounts, descriptions, and dates remain on your device, except the anonymous voice input samples described in section 3, which you can turn off</li>
           <li data-i18n="s1.l2">Category configurations are stored locally</li>
           <li data-i18n="s1.l3">App preferences (language, currency, theme) are stored in your device's local storage</li>
         </ul>
@@ -130,7 +130,8 @@
         <ul>
           <li data-i18n="s3.l1">Voice audio is processed on-device by Apple's Speech framework and is not sent to our servers</li>
           <li data-i18n="s3.l2">Transcribed text is sent to Google's Gemini API for parsing. Google's privacy policy applies to this processing</li>
-          <li data-i18n="s3.l3">We do not store or log your voice recordings or transcriptions on any server</li>
+          <li data-i18n="s3.l3">If <strong>Help improve voice input</strong> is on (Settings → Data, on by default), the transcribed text, the AI result, and what you saved (amount, note, category, wallet name) are stored anonymously in Google Cloud Firestore and used only to improve voice parsing. No account, name, or device identifier is attached</li>
+          <li data-i18n="s3.l4">Samples are deleted automatically after 90 days. You can turn this off at any time in Settings → Data. Voice audio is never stored</li>
         </ul>
 
         <!-- 4. Analytics -->
@@ -167,6 +168,7 @@
           <li data-i18n="s7.l2"><strong>Firebase AI / Gemini</strong> (Google) — AI-powered expense parsing from text</li>
           <li data-i18n="s7.l3"><strong>RevenueCat</strong> — subscription management and purchase validation</li>
           <li data-i18n="s7.l4"><strong>Apple iCloud / CloudKit</strong> — optional cloud data synchronization</li>
+          <li data-i18n="s7.l5"><strong>Cloud Firestore</strong> (Google) — anonymous voice input text (can be turned off)</li>
         </ul>
 
         <!-- 8. Data Retention -->
@@ -233,11 +235,11 @@
         'nav.back': 'Back to Home',
         'header.badge': 'Your Privacy Matters',
         'header.title': 'Privacy Policy',
-        'header.updated': 'Last updated: March 19, 2026',
+        'header.updated': 'Last updated: October 17, 2026',
         'intro': 'QuickSpend ("we", "our", or "the app") is an iOS expense tracking application developed by an independent developer. We are committed to protecting your privacy. This policy explains what data we collect, how we use it, and the choices you have.',
         's1.title': '1. Local-First Data Storage',
         's1.p1': 'All your financial data — transactions, categories, recurring templates, and preferences — is stored <strong>locally on your device</strong> using Apple\'s SwiftData framework. We do not operate servers that store your personal financial information.',
-        's1.l1': 'Transaction amounts, descriptions, and dates remain on your device',
+        's1.l1': 'Transaction amounts, descriptions, and dates remain on your device, except the anonymous voice input samples described in section 3, which you can turn off',
         's1.l2': 'Category configurations are stored locally',
         's1.l3': 'App preferences (language, currency, theme) are stored in your device\'s local storage',
         's2.title': '2. iCloud Sync (Optional)',
@@ -246,7 +248,8 @@
         's3.p1': 'QuickSpend uses Apple\'s on-device speech recognition to convert your voice into text. The transcribed text is then sent to <strong>Google\'s Gemini AI</strong> (via Firebase AI SDK) to extract structured expense data (amount, category, date).',
         's3.l1': 'Voice audio is processed on-device by Apple\'s Speech framework and is not sent to our servers',
         's3.l2': 'Transcribed text is sent to Google\'s Gemini API for parsing. Google\'s privacy policy applies to this processing',
-        's3.l3': 'We do not store or log your voice recordings or transcriptions on any server',
+        's3.l3': 'If <strong>Help improve voice input</strong> is on (Settings → Data, on by default), the transcribed text, the AI result, and what you saved (amount, note, category, wallet name) are stored anonymously in Google Cloud Firestore and used only to improve voice parsing. No account, name, or device identifier is attached',
+        's3.l4': 'Samples are deleted automatically after 90 days. You can turn this off at any time in Settings → Data. Voice audio is never stored',
         's4.title': '4. Analytics',
         's4.p1': 'We use <strong>Firebase Analytics</strong> to understand how the app is used and improve the experience. Our analytics are designed to be privacy-safe:',
         's4.l1': '<strong>No personally identifiable information (PII)</strong> is ever sent to analytics',
@@ -263,6 +266,7 @@
         's7.l2': '<strong>Firebase AI / Gemini</strong> (Google) — AI-powered expense parsing from text',
         's7.l3': '<strong>RevenueCat</strong> — subscription management and purchase validation',
         's7.l4': '<strong>Apple iCloud / CloudKit</strong> — optional cloud data synchronization',
+        's7.l5': '<strong>Cloud Firestore</strong> (Google) — anonymous voice input text (can be turned off)',
         's8.title': '8. Data Retention & Deletion',
         's8.p1': 'Since your data is stored locally on your device (and optionally in your private iCloud), you have full control over it. You can delete all app data at any time by:',
         's8.l1': 'Deleting individual transactions within the app',
@@ -284,11 +288,11 @@
         'nav.back': 'Về Trang Chủ',
         'header.badge': 'Quyền Riêng Tư Của Bạn',
         'header.title': 'Chính Sách Bảo Mật',
-        'header.updated': 'Cập nhật lần cuối: 19 tháng 3, 2026',
+        'header.updated': 'Cập nhật lần cuối: 17 tháng 10, 2026',
         'intro': 'QuickSpend ("chúng tôi" hoặc "ứng dụng") là ứng dụng theo dõi chi tiêu trên iOS được phát triển bởi nhà phát triển độc lập. Chúng tôi cam kết bảo vệ quyền riêng tư của bạn. Chính sách này giải thích dữ liệu chúng tôi thu thập, cách sử dụng và các lựa chọn bạn có.',
         's1.title': '1. Lưu Trữ Dữ Liệu Tại Thiết Bị',
         's1.p1': 'Tất cả dữ liệu tài chính của bạn — giao dịch, danh mục, mẫu định kỳ và cài đặt — được lưu trữ <strong>cục bộ trên thiết bị</strong> sử dụng framework SwiftData của Apple. Chúng tôi không vận hành máy chủ lưu trữ thông tin tài chính cá nhân của bạn.',
-        's1.l1': 'Số tiền, mô tả và ngày giao dịch được giữ trên thiết bị của bạn',
+        's1.l1': 'Số tiền, mô tả và ngày giao dịch được giữ trên thiết bị của bạn, trừ các mẫu nhập giọng nói ẩn danh ở mục 3 (có thể tắt)',
         's1.l2': 'Cấu hình danh mục được lưu trữ cục bộ',
         's1.l3': 'Cài đặt ứng dụng (ngôn ngữ, tiền tệ, giao diện) được lưu trong bộ nhớ cục bộ của thiết bị',
         's2.title': '2. Đồng Bộ iCloud (Tùy Chọn)',
@@ -297,7 +301,8 @@
         's3.p1': 'QuickSpend sử dụng nhận dạng giọng nói trên thiết bị của Apple để chuyển đổi giọng nói thành văn bản. Văn bản sau đó được gửi đến <strong>Google Gemini AI</strong> (qua Firebase AI SDK) để trích xuất dữ liệu chi tiêu (số tiền, danh mục, ngày).',
         's3.l1': 'Âm thanh giọng nói được xử lý trên thiết bị bởi Speech framework của Apple và không được gửi đến máy chủ của chúng tôi',
         's3.l2': 'Văn bản phiên âm được gửi đến Gemini API của Google để phân tích. Chính sách bảo mật của Google áp dụng cho quá trình xử lý này',
-        's3.l3': 'Chúng tôi không lưu trữ hoặc ghi lại bản ghi âm hoặc phiên âm của bạn trên bất kỳ máy chủ nào',
+        's3.l3': 'Nếu bật <strong>Giúp cải thiện nhập bằng giọng nói</strong> (Cài đặt → Dữ liệu, bật theo mặc định), văn bản phiên âm, kết quả của AI và nội dung bạn đã lưu (số tiền, ghi chú, danh mục, tên ví) được lưu ẩn danh trên Google Cloud Firestore và chỉ dùng để cải thiện việc phân tích giọng nói. Không kèm tài khoản, tên hay mã thiết bị',
+        's3.l4': 'Các mẫu này tự động bị xóa sau 90 ngày. Bạn có thể tắt bất cứ lúc nào trong Cài đặt → Dữ liệu. Âm thanh giọng nói không bao giờ được lưu',
         's4.title': '4. Phân Tích',
         's4.p1': 'Chúng tôi sử dụng <strong>Firebase Analytics</strong> để hiểu cách ứng dụng được sử dụng và cải thiện trải nghiệm. Phân tích của chúng tôi được thiết kế để bảo vệ quyền riêng tư:',
         's4.l1': '<strong>Không có thông tin nhận dạng cá nhân (PII)</strong> nào được gửi đến phân tích',
@@ -314,6 +319,7 @@
         's7.l2': '<strong>Firebase AI / Gemini</strong> (Google) — phân tích chi tiêu bằng AI từ văn bản',
         's7.l3': '<strong>RevenueCat</strong> — quản lý đăng ký và xác minh mua hàng',
         's7.l4': '<strong>Apple iCloud / CloudKit</strong> — đồng bộ dữ liệu đám mây tùy chọn',
+        's7.l5': '<strong>Cloud Firestore</strong> (Google) — văn bản nhập giọng nói ẩn danh (có thể tắt)',
         's8.title': '8. Lưu Giữ & Xóa Dữ Liệu',
         's8.p1': 'Vì dữ liệu được lưu cục bộ trên thiết bị (và tùy chọn trong iCloud riêng tư), bạn có toàn quyền kiểm soát. Bạn có thể xóa tất cả dữ liệu ứng dụng bất kỳ lúc nào bằng cách:',
         's8.l1': 'Xóa từng giao dịch trong ứng dụng',
@@ -335,11 +341,11 @@
         'nav.back': 'ホームに戻る',
         'header.badge': 'プライバシーを大切に',
         'header.title': 'プライバシーポリシー',
-        'header.updated': '最終更新日: 2026年3月19日',
+        'header.updated': '最終更新日: 2026年10月17日',
         'intro': 'QuickSpend（「当社」または「本アプリ」）は、独立した開発者が開発したiOS向け支出追跡アプリケーションです。私たちはお客様のプライバシーの保護に取り組んでいます。このポリシーでは、収集するデータ、使用方法、お客様の選択肢について説明します。',
         's1.title': '1. ローカルファーストのデータ保存',
         's1.p1': 'お客様のすべての財務データ（取引、カテゴリ、定期テンプレート、設定）は、AppleのSwiftDataフレームワークを使用して<strong>デバイスにローカル保存</strong>されます。お客様の個人的な財務情報を保存するサーバーは運用していません。',
-        's1.l1': '取引金額、説明、日付はデバイス上に保持されます',
+        's1.l1': '取引金額、説明、日付はデバイス上に保持されます（セクション3の匿名の音声入力サンプルを除く。オフにできます）',
         's1.l2': 'カテゴリ設定はローカルに保存されます',
         's1.l3': 'アプリの設定（言語、通貨、テーマ）はデバイスのローカルストレージに保存されます',
         's2.title': '2. iCloud同期（オプション）',
@@ -348,7 +354,8 @@
         's3.p1': 'QuickSpendはAppleのデバイス上の音声認識を使用して音声をテキストに変換します。変換されたテキストは<strong>GoogleのGemini AI</strong>（Firebase AI SDK経由）に送信され、構造化された支出データ（金額、カテゴリ、日付）を抽出します。',
         's3.l1': '音声はAppleのSpeechフレームワークによりデバイス上で処理され、当社のサーバーには送信されません',
         's3.l2': '変換されたテキストはGoogleのGemini APIに解析のために送信されます。Googleのプライバシーポリシーがこの処理に適用されます',
-        's3.l3': '当社は音声録音やテキスト変換をサーバーに保存または記録しません',
+        's3.l3': '<strong>音声入力の改善に協力</strong>がオン（設定 → データ、初期設定でオン）の場合、変換されたテキスト、AIの結果、保存した内容（金額、メモ、カテゴリ、ウォレット名）がGoogle Cloud Firestoreに匿名で保存され、音声解析の改善のみに使用されます。アカウント、名前、端末IDは含まれません',
+        's3.l4': 'サンプルは90日後に自動的に削除されます。設定 → データでいつでもオフにできます。音声そのものは保存されません',
         's4.title': '4. アナリティクス',
         's4.p1': 'アプリの使用状況を理解し体験を改善するために<strong>Firebase Analytics</strong>を使用しています。アナリティクスはプライバシーを守るよう設計されています：',
         's4.l1': '<strong>個人を特定できる情報（PII）</strong>がアナリティクスに送信されることはありません',
@@ -365,6 +372,7 @@
         's7.l2': '<strong>Firebase AI / Gemini</strong>（Google）— テキストからのAI搭載支出解析',
         's7.l3': '<strong>RevenueCat</strong> — サブスクリプション管理と購入検証',
         's7.l4': '<strong>Apple iCloud / CloudKit</strong> — オプションのクラウドデータ同期',
+        's7.l5': '<strong>Cloud Firestore</strong>（Google）— 匿名の音声入力テキスト（オフにできます）',
         's8.title': '8. データの保持と削除',
         's8.p1': 'データはデバイスにローカル保存されるため（オプションでプライベートiCloudにも）、お客様が完全に管理できます。以下の方法でいつでもすべてのアプリデータを削除できます：',
         's8.l1': 'アプリ内で個々の取引を削除',
@@ -386,11 +394,11 @@
         'nav.back': 'Volver al Inicio',
         'header.badge': 'Tu Privacidad Importa',
         'header.title': 'Política de Privacidad',
-        'header.updated': 'Última actualización: 19 de marzo de 2026',
+        'header.updated': 'Última actualización: 17 de octubre de 2026',
         'intro': 'QuickSpend ("nosotros" o "la aplicación") es una aplicación de seguimiento de gastos para iOS desarrollada por un desarrollador independiente. Estamos comprometidos con la protección de tu privacidad. Esta política explica qué datos recopilamos, cómo los usamos y las opciones que tienes.',
         's1.title': '1. Almacenamiento Local de Datos',
         's1.p1': 'Todos tus datos financieros — transacciones, categorías, plantillas recurrentes y preferencias — se almacenan <strong>localmente en tu dispositivo</strong> usando el framework SwiftData de Apple. No operamos servidores que almacenen tu información financiera personal.',
-        's1.l1': 'Los montos, descripciones y fechas de las transacciones permanecen en tu dispositivo',
+        's1.l1': 'Los montos, descripciones y fechas de las transacciones permanecen en tu dispositivo, excepto las muestras anónimas de entrada por voz de la sección 3, que puedes desactivar',
         's1.l2': 'Las configuraciones de categorías se almacenan localmente',
         's1.l3': 'Las preferencias de la app (idioma, moneda, tema) se guardan en el almacenamiento local del dispositivo',
         's2.title': '2. Sincronización iCloud (Opcional)',
@@ -399,7 +407,8 @@
         's3.p1': 'QuickSpend usa el reconocimiento de voz en el dispositivo de Apple para convertir tu voz en texto. El texto transcrito se envía a <strong>Google Gemini AI</strong> (a través de Firebase AI SDK) para extraer datos de gastos estructurados (monto, categoría, fecha).',
         's3.l1': 'El audio de voz se procesa en el dispositivo por el framework Speech de Apple y no se envía a nuestros servidores',
         's3.l2': 'El texto transcrito se envía a la API Gemini de Google para su análisis. La política de privacidad de Google aplica a este procesamiento',
-        's3.l3': 'No almacenamos ni registramos tus grabaciones de voz o transcripciones en ningún servidor',
+        's3.l3': 'Si <strong>Ayudar a mejorar la entrada por voz</strong> está activado (Ajustes → Datos, activado por defecto), el texto transcrito, el resultado de la IA y lo que guardaste (monto, nota, categoría, nombre de la billetera) se almacenan de forma anónima en Google Cloud Firestore y se usan solo para mejorar el análisis de voz. No se incluye ninguna cuenta, nombre ni identificador del dispositivo',
+        's3.l4': 'Las muestras se eliminan automáticamente a los 90 días. Puedes desactivarlo en cualquier momento en Ajustes → Datos. El audio de voz nunca se almacena',
         's4.title': '4. Analíticas',
         's4.p1': 'Usamos <strong>Firebase Analytics</strong> para entender cómo se usa la app y mejorar la experiencia. Nuestras analíticas están diseñadas para proteger la privacidad:',
         's4.l1': '<strong>No se envía información personal identificable (PII)</strong> a las analíticas',
@@ -416,6 +425,7 @@
         's7.l2': '<strong>Firebase AI / Gemini</strong> (Google) — análisis de gastos con IA desde texto',
         's7.l3': '<strong>RevenueCat</strong> — gestión de suscripciones y validación de compras',
         's7.l4': '<strong>Apple iCloud / CloudKit</strong> — sincronización opcional de datos en la nube',
+        's7.l5': '<strong>Cloud Firestore</strong> (Google) — texto anónimo de entrada por voz (se puede desactivar)',
         's8.title': '8. Retención y Eliminación de Datos',
         's8.p1': 'Dado que tus datos se almacenan localmente en tu dispositivo (y opcionalmente en tu iCloud privado), tienes control total. Puedes eliminar todos los datos de la app en cualquier momento:',
         's8.l1': 'Eliminando transacciones individuales dentro de la app',

@@ -157,11 +157,20 @@ enum AnalyticsService {
         ])
     }
 
-    static func logGeminiParseFailed(errorReason: String, language: String) {
-        logEvent("gemini_parse_failed", parameters: [
+    static func logGeminiParseFailed(errorReason: String, language: String, errorCode: String? = nil) {
+        var parameters: [String: Any] = [
             "error_reason": errorReason,
             "language": language,
-        ])
+        ]
+        // Firebase drops parameter values over 100 characters.
+        if let errorCode { parameters["error_code"] = String(errorCode.prefix(100)) }
+        logEvent("gemini_parse_failed", parameters: parameters)
+    }
+
+    /// Short, PII-free description of an API error, e.g. "FirebaseAI.GenerateContentError:3".
+    static func errorCode(_ error: Error) -> String {
+        let nsError = error as NSError
+        return "\(nsError.domain):\(nsError.code)"
     }
 
     static func logGeminiLimitReached(remainingCount: Int) {

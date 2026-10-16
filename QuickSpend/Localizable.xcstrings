@@ -8170,6 +8170,64 @@
         }
       }
     },
+    "settings.share_voice_samples" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help improve voice input"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayudar a mejorar la entrada por voz"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声入力の改善に協力"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giúp cải thiện nhập bằng giọng nói"
+          }
+        }
+      }
+    },
+    "settings.share_voice_samples_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anonymously share what you say and the result, without any account or device ID"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparte de forma anónima lo que dices y el resultado, sin cuenta ni ID del dispositivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "話した内容と結果を匿名で共有します。アカウントや端末IDは含みません"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chia sẻ ẩn danh câu bạn nói và kết quả, không kèm tài khoản hay mã thiết bị"
+          }
+        }
+      }
+    },
     "settings.speech_language" : {
       "extractionState" : "manual",
       "localizations" : {

@@ -90,7 +90,7 @@ QuickSpendTests/   Unit tests
 
 - Transaction data is stored on device and synced only to the user's private iCloud database
 - No PII logged to analytics (amounts are bucketed, no descriptions sent)
-- Privacy policy: <https://portfolio.taiphanvan.dev/quickspend/privacy>
+- Privacy policy: <https://quickspend.taiphanvan.dev/privacy.html>
 
 ## License
 

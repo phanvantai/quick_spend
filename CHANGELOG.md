@@ -23,6 +23,8 @@
 ### Improvements
 - Firebase App Check (App Attest) protects AI requests so only the genuine app can use them — required by Firebase AI Logic from November 2, 2026
 - Parser prompt replaced with one short template plus a response schema, so the AI can only pick the user's own categories
+- Voice analytics: anonymous funnel events (started, cancelled, result, review saved/discarded) and Gemini failure reasons, including App Check errors
+- New Settings → Data switch "Help improve voice input" (on by default): anonymously shares what was said, the AI result, and what was saved, to improve the parser. Samples are deleted after 90 days (Firestore TTL on `expire_at`). Privacy policy updated
 
 ### App Store Notes
 
