@@ -11,6 +11,10 @@ import Combine
 /// race despite the fixed singleton UUID), keeps the oldest `createdAt` and deletes the rest.
 ///
 /// Formula: `balance = openingBalance + Σ(post-anchor transaction amounts) + Σ(adjustments)`
+///
+/// A wallet without an anchor (the user never entered a starting balance) but
+/// with activity starts from 0: every transaction and adjustment counts. Only a
+/// wallet with neither an anchor nor activity has no balance (`nil`).
 @MainActor
 @Observable
 final class BalanceService {
@@ -122,8 +126,7 @@ final class BalanceService {
     func computeBalance(walletId: String) throws -> Double? {
         knownWalletIds.insert(walletId)
         guard let anchor = try fetchAnchor(walletId: walletId) else {
-            cachedAnchorDates[walletId] = nil
-            return nil
+            return try computeUnanchoredBalance(walletId: walletId)
         }
         let anchorDate = anchor.anchorDate
         cachedAnchorDates[walletId] = anchorDate
@@ -146,6 +149,30 @@ final class BalanceService {
         )
         let adjustmentDelta = adjustments.reduce(0.0) { $0 + $1.amount }
         return anchor.openingBalance + delta + adjustmentDelta
+    }
+
+    /// Balance of a wallet that has no starting balance: an implicit opening of
+    /// 0 before its first transaction, so money moved or spent there still
+    /// counts. `nil` while the wallet has no activity at all.
+    private func computeUnanchoredBalance(walletId: String) throws -> Double? {
+        let transactions = try modelContext.fetch(FetchDescriptor<Transaction>(
+            predicate: #Predicate { $0.walletId == walletId }
+        ))
+        let adjustments = try modelContext.fetch(FetchDescriptor<BalanceAdjustment>(
+            predicate: #Predicate { $0.walletId == walletId }
+        ))
+        guard !transactions.isEmpty || !adjustments.isEmpty else {
+            cachedAnchorDates[walletId] = nil
+            return nil
+        }
+        cachedAnchorDates[walletId] = .distantPast
+        let delta = transactions.reduce(0.0) { acc, tx in
+            switch tx.type {
+            case .income: return acc + tx.amount
+            case .expense: return acc - tx.amount
+            }
+        }
+        return delta + adjustments.reduce(0.0) { $0 + $1.amount }
     }
 
     func computeTotalBalance(walletIds: [String]) throws -> Double? {

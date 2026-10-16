@@ -86,7 +86,7 @@ enum TransactionPersistence {
                 modelContext: modelContext
             )
             try save(modelContext)
-            balanceService.publish(targets)
+            publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
         } catch {
             adjustments.forEach(modelContext.delete)
             modelContext.delete(transaction)
@@ -120,7 +120,7 @@ enum TransactionPersistence {
             )
             do {
                 try save(modelContext)
-                balanceService.publish(targets)
+                publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
             } catch {
                 adjustments.forEach(modelContext.delete)
                 throw error
@@ -168,7 +168,7 @@ enum TransactionPersistence {
                 modelContext: modelContext
             )
             try save(modelContext)
-            balanceService.publish(targets)
+            publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
         } catch {
             adjustments.forEach(modelContext.delete)
             snapshot.restore(transaction)
@@ -202,7 +202,7 @@ enum TransactionPersistence {
                 modelContext: modelContext
             )
             try save(modelContext)
-            balanceService.publish(targets)
+            publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
         } catch {
             adjustments.forEach(modelContext.delete)
             // SwiftData does not revive a pending-deleted model when the same
@@ -247,7 +247,7 @@ enum TransactionPersistence {
                 modelContext: modelContext
             )
             try save(modelContext)
-            balanceService.publish(targets)
+            publishAfterSave(targets, walletIds: walletIds, balanceService: balanceService)
         } catch {
             adjustments.forEach(modelContext.delete)
             inserting.forEach(modelContext.delete)
@@ -257,6 +257,22 @@ enum TransactionPersistence {
             balanceService.publish(before)
             throw error
         }
+    }
+
+    /// Publishes the reconciled targets plus wallets that had no balance before
+    /// this change (no starting balance and no activity) but have one now.
+    private static func publishAfterSave(
+        _ targets: [String: Double],
+        walletIds: Set<String>,
+        balanceService: BalanceService
+    ) {
+        var balances = targets
+        for walletId in walletIds where balances[walletId] == nil {
+            if let balance = try? balanceService.computeBalance(walletId: walletId) {
+                balances[walletId] = balance
+            }
+        }
+        balanceService.publish(balances)
     }
 
     private static func applying(

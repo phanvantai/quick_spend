@@ -1042,4 +1042,39 @@ struct BalanceServiceTests {
         )
         #expect(service.currentBalance == 1_100)
     }
+
+    // MARK: - Wallets without a starting balance
+
+    @Test("A wallet with no starting balance and no activity has no balance yet")
+    func testUnanchoredUntouchedWalletHasNoBalance() throws {
+        let container = try makeContainer()
+        let service = BalanceService(modelContext: container.mainContext, autoObserve: false, autoCompute: false)
+
+        #expect(try service.computeBalance(walletId: "wallet_untouched_test") == nil)
+    }
+
+    @Test("A wallet with activity but no starting balance starts from zero")
+    func testUnanchoredWalletWithActivityStartsAtZero() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let wallet = "wallet_side_test"
+        context.insert(Transaction(amount: 300, note: "Test in", categoryId: "salary", walletId: wallet, type: .income))
+        context.insert(Transaction(amount: 120, note: "Test out", categoryId: "food_drink", walletId: wallet, type: .expense))
+        try context.save()
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+
+        #expect(try service.computeBalance(walletId: wallet) == 180)
+    }
+
+    @Test("The total includes wallets that only have activity, not a starting balance")
+    func testTotalIncludesUnanchoredWalletWithActivity() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        try insertAnchor(openingBalance: 1_000, anchorDate: Date(timeIntervalSince1970: 1_700_000_000), in: context)
+        context.insert(Transaction(amount: 50, note: "Test in", categoryId: "salary", walletId: "wallet_side_test", type: .income))
+        try context.save()
+        let service = BalanceService(modelContext: context, autoObserve: false, autoCompute: false)
+
+        #expect(try service.computeTotalBalance(walletIds: [Wallet.personalID, "wallet_side_test"]) == 1_050)
+    }
 }

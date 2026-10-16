@@ -288,4 +288,24 @@ struct TransferPersistenceTests {
         #expect(result.bank == 300)
         #expect(try fixture.balance.computeTotalBalance(walletIds: [cash, bank, savings]) == 1_500)
     }
+
+    // MARK: - Regression: transfer into a wallet without a starting balance
+
+    @Test("Transferring into a wallet with no starting balance gives it that balance and keeps the total")
+    func testTransferIntoUnanchoredWalletKeepsTotal() throws {
+        let fixture = try makeFixture()
+        let newWallet = "wallet_new_test"
+        #expect(try fixture.balance.computeBalance(walletId: newWallet) == nil)
+
+        try TransferPersistence.create(
+            makeTransfer(from: cash, to: newWallet, amount: 2_005),
+            modelContext: fixture.context,
+            balanceService: fixture.balance
+        )
+
+        #expect(try fixture.balance.computeBalance(walletId: cash) == -1_005)
+        #expect(try fixture.balance.computeBalance(walletId: newWallet) == 2_005)
+        #expect(fixture.balance.currentBalance(for: newWallet) == 2_005)
+        #expect(try fixture.balance.computeTotalBalance(walletIds: [cash, bank, savings, newWallet]) == 1_500)
+    }
 }
