@@ -12,6 +12,7 @@
 - Voice input now uses Gemini 3.8 Flash via Firebase AI Logic for faster, more accurate expense parsing
 
 ### Bug Fixes
+- Wallets without a starting balance now count from 0 once they have activity, so moving money into a new wallet no longer lowers the total balance
 - The paywall now shows the report periods each plan really includes (Free: this month, Premium: last 3 months) instead of "7 days" and "All time"
 - Dates like "yesterday" or "last Monday" are no longer lost on devices set to the Japanese or Buddhist calendar
 
