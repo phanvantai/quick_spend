@@ -242,4 +242,61 @@ struct VoiceCaptureViewModelTests {
         vm.syncWithVoiceServiceListeningState()
         #expect(vm.isRecordingActive == false)
     }
+
+    // MARK: - Hands-free (widget / Control Center launch)
+
+    @Test("Hands-free start with limit reached shows the limit alert and stays idle")
+    func testHandsFreeStartLimitGate() {
+        let usage = makeUsage()
+        let vm = VoiceCaptureViewModel(
+            voiceService: VoiceService(),
+            usageLimitService: usage,
+            preferences: makePrefs(),
+            parser: MockParser()
+        )
+        vm.isPremium = false
+        for _ in 0..<AppConstants.freeTierGeminiLimit { usage.incrementUsage() }
+
+        vm.startHandsFreeRecording()
+
+        #expect(vm.showLimitReachedAlert == true)
+        #expect(vm.isHandsFree == false)
+        #expect(vm.isRecordingActive == false)
+    }
+
+    @Test("Hands-free start is ignored while a capture is being processed")
+    func testHandsFreeStartWhileProcessing() {
+        let vm = makeViewModel()
+        vm.isProcessingVoice = true
+
+        vm.startHandsFreeRecording()
+
+        #expect(vm.isHandsFree == false)
+        #expect(vm.isRecordingActive == false)
+    }
+
+    @Test("Finishing or cancelling hands-free mode clears it")
+    func testHandsFreeFinishAndCancelClearMode() {
+        let vm = makeViewModel()
+        vm.isHandsFree = true
+        vm.finishHandsFreeRecording()
+        #expect(vm.isHandsFree == false)
+
+        vm.isHandsFree = true
+        vm.cancelHandsFreeRecording()
+        #expect(vm.isHandsFree == false)
+    }
+
+    @Test("When the recognizer stops by itself in hands-free mode, the session ends")
+    func testHandsFreeAutoStopEndsSession() {
+        let vm = makeViewModel()
+        vm.isHandsFree = true
+        vm.isRecordingActive = true
+
+        // voiceService.isListening is false, as after a final result or timeout.
+        vm.syncWithVoiceServiceListeningState()
+
+        #expect(vm.isHandsFree == false)
+        #expect(vm.isRecordingActive == false)
+    }
 }

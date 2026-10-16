@@ -5058,6 +5058,64 @@
         }
       }
     },
+    "intent.voice_expense.description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens QuickSpend and starts recording."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre QuickSpend y empieza a grabar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QuickSpendを開いて録音を開始します。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở QuickSpend và bắt đầu ghi âm."
+          }
+        }
+      }
+    },
+    "intent.voice_expense.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Expense by Voice"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir gasto por voz"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声で支出を追加"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ghi chi tiêu bằng giọng nói"
+          }
+        }
+      }
+    },
     "onboarding.balance_skip" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9587,6 +9645,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chuyển đến %@"
+          }
+        }
+      }
+    },
+    "voice.hands_free_hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speak, then tap Done"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habla y luego toca Listo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "話し終えたら「完了」をタップ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy nói, rồi bấm Xong"
           }
         }
       }

@@ -45,6 +45,9 @@ final class VoiceCaptureViewModel {
     var isRecordingActive = false
     /// True when the user is dragging the FAB toward the cancel zone.
     var isDragCancelling = false
+    /// Recording started from a widget or Control Center: no finger is on the
+    /// FAB, so the user ends it with Done / Cancel instead of releasing.
+    var isHandsFree = false
     /// Deferred start of the recognizer — gives a brief hold window so accidental
     /// taps don't trigger a recording.
     private var recordingStartTask: DispatchWorkItem?
@@ -147,8 +150,50 @@ final class VoiceCaptureViewModel {
         )
     }
 
+    /// Starts recording right away for a widget / Control Center launch.
+    /// Same gates as hold-to-record; asks for permission and then starts.
+    func startHandsFreeRecording() {
+        guard !isProcessingVoice, !isRecordingActive else { return }
+
+        if !isPremium && usageLimitService.hasReachedLimit {
+            showLimitReachedAlert = true
+            return
+        }
+
+        guard voiceService.isAuthorized else {
+            Task { [weak self] in
+                guard let self else { return }
+                if await self.voiceService.requestPermissions() {
+                    self.startHandsFreeRecording()
+                } else {
+                    self.showPermissionAlert = true
+                }
+            }
+            return
+        }
+
+        do {
+            try voiceService.startListening(language: language)
+            isRecordingActive = voiceService.isListening
+            isHandsFree = isRecordingActive
+        } catch {
+            print("[VoiceCaptureViewModel] Failed to start hands-free voice: \(error)")
+        }
+    }
+
+    func finishHandsFreeRecording() {
+        isHandsFree = false
+        handleRecordEnd()
+    }
+
+    func cancelHandsFreeRecording() {
+        isHandsFree = false
+        handleRecordCancel()
+    }
+
     /// Hold-to-record end handler. Stops voice and kicks off parsing.
     func handleRecordEnd() {
+        isHandsFree = false
         recordingStartTask?.cancel()
         recordingStartTask = nil
         guard isRecordingActive else { return }
@@ -160,6 +205,7 @@ final class VoiceCaptureViewModel {
 
     /// Drag-to-cancel handler. Stops voice without parsing.
     func handleRecordCancel() {
+        isHandsFree = false
         recordingStartTask?.cancel()
         recordingStartTask = nil
         guard isRecordingActive else { return }
@@ -172,7 +218,11 @@ final class VoiceCaptureViewModel {
     /// service's own listening state. If the service stops on its own
     /// (timeout, error, OS interruption), we clear the FAB state too.
     func syncWithVoiceServiceListeningState() {
-        if !voiceService.isListening && isRecordingActive {
+        guard !voiceService.isListening && isRecordingActive else { return }
+        if isHandsFree {
+            // Nobody is holding the FAB, so parse what was heard.
+            finishHandsFreeRecording()
+        } else {
             isRecordingActive = false
         }
     }
