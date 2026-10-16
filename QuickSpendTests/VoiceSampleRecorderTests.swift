@@ -93,6 +93,7 @@ struct VoiceSampleRecorderTests {
         #expect(fields["model"] as? String == AppConstants.geminiModelName)
         #expect(fields["debug"] as? Bool == true)
         #expect(fields["final"] == nil)
+        #expect(fields["expire_at"] as? Date == capturedAt.addingTimeInterval(90 * 86_400))
         for key in fields.keys {
             #expect(!key.contains("user"))
             #expect(!key.contains("device"))

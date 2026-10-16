@@ -68,6 +68,8 @@ enum AppConstants {
     /// user kept). Write-only in Firestore rules; shared with the old Flutter
     /// app's records, which have no `schema` field.
     static let voiceSamplesCollection = "training_data"
+    /// Firestore TTL deletes a voice sample this many days after capture (`expire_at`).
+    static let voiceSampleRetentionDays = 90
     static let maxFeatureRequestTitleLength = 100
     static let maxFeatureRequestDescriptionLength = 1000
 

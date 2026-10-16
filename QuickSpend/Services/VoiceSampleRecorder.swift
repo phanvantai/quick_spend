@@ -4,7 +4,8 @@ import Foundation
 /// was said, what the AI returned, and what the user finally kept.
 ///
 /// No user or device identifier is attached. Dates are stored as a day offset
-/// from the capture day, not as calendar dates.
+/// from the capture day, not as calendar dates. Firestore's TTL policy on
+/// `expire_at` deletes each sample after `AppConstants.voiceSampleRetentionDays`.
 struct VoiceSample {
 
     struct Item: Equatable {
@@ -51,6 +52,8 @@ struct VoiceSample {
     var build: String
     var model: String
     var isDebugBuild: Bool
+    /// When Firestore deletes this sample.
+    var expiresAt: Date
 
     init(
         input: String,
@@ -111,6 +114,7 @@ struct VoiceSample {
         self.appVersion = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
         self.build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "unknown"
         self.model = AppConstants.geminiModelName
+        self.expiresAt = capturedAt.addingTimeInterval(Double(AppConstants.voiceSampleRetentionDays) * 86_400)
         #if DEBUG
         self.isDebugBuild = true
         #else
@@ -134,6 +138,7 @@ struct VoiceSample {
             "build": build,
             "model": model,
             "debug": isDebugBuild,
+            "expire_at": expiresAt,
         ]
         if let action { fields["action"] = action }
         if let final { fields["final"] = final.map(\.fields) }
