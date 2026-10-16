@@ -48,6 +48,7 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 - `CategoryService` — seeds default categories on first launch, updates names on language change
 - `RecurringService` — generates pending transactions from active templates on app startup
 - `WalletService` / `BalanceService` — wallets and their balances (anchors + adjustments)
+- `FirebaseBootstrap` — the only place that configures Firebase; installs the App Check provider first (App Attest on device, debug provider in Debug/simulator). Firebase AI Logic rejects requests without App Check, so a new simulator or dev device needs its debug token (logged as `App Check debug token`) added in Firebase Console → App Check → Manage debug tokens
 - `GeminiParserService` — AI expense parsing via Firebase AI Logic (model name in `AppConstants.geminiModelName`). Compiles with `#if canImport(FirebaseAILogic)` guards; falls back gracefully when SDK is absent
 - `VoiceService` (`@Observable`) — `SFSpeechRecognizer` + `AVAudioEngine` for live transcription
 - `UsageLimitService` (`@Observable`) — daily Gemini parse limit tracking, auto-resets each day
