@@ -2,6 +2,62 @@
 
 ---
 
+## [3.4] - 2026-10-16
+
+### What's New
+- Voice input now uses Gemini 3.8 Flash via Firebase AI Logic for faster, more accurate expense parsing
+
+### Bug Fixes
+- Dates like "yesterday" or "last Monday" are no longer lost on devices set to the Japanese or Buddhist calendar
+
+### Improvements
+- Firebase App Check (App Attest) protects AI requests so only the genuine app can use them — required by Firebase AI Logic from November 2, 2026
+- Parser prompt replaced with one short template plus a response schema, so the AI can only pick the user's own categories
+
+### App Store Notes
+
+#### en
+What's New
+• Smarter, faster voice input powered by the latest Gemini AI
+
+Bug Fixes
+• Dates like "yesterday" or "last Monday" are now recognized correctly on any calendar setting
+
+Improvements
+• Stronger security for AI-powered features
+
+#### vi
+Tính năng mới
+• Nhập bằng giọng nói thông minh và nhanh hơn với Gemini AI mới nhất
+
+Sửa lỗi
+• Nhận diện đúng các ngày như "hôm qua" hay "thứ Hai tuần trước" với mọi cài đặt lịch
+
+Cải thiện
+• Tăng cường bảo mật cho các tính năng AI
+
+#### ja
+新機能
+• 最新のGemini AIで、音声入力がよりスマートで高速に
+
+バグ修正
+• どのカレンダー設定でも「昨日」「先週の月曜日」などの日付を正しく認識するように修正
+
+改善
+• AI機能のセキュリティを強化
+
+#### es
+Novedades
+• Entrada por voz más inteligente y rápida con la última versión de Gemini AI
+
+Correcciones
+• Fechas como "ayer" o "el lunes pasado" ahora se reconocen correctamente con cualquier calendario
+
+Mejoras
+• Mayor seguridad en las funciones de IA
+
+---
+
 ## [3.3] - 2026-08-28
 
 ### Bug Fixes

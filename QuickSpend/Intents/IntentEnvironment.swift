@@ -1,8 +1,5 @@
 import Foundation
 import SwiftData
-#if canImport(FirebaseCore)
-import FirebaseCore
-#endif
 #if canImport(RevenueCat)
 import RevenueCat
 #endif
@@ -31,11 +28,7 @@ enum IntentEnvironment {
         guard !didInitGeminiSDK else { return }
         didInitGeminiSDK = true
 
-        #if canImport(FirebaseCore)
-        if FirebaseApp.app() == nil {
-            FirebaseApp.configure()
-        }
-        #endif
+        FirebaseBootstrap.configureIfNeeded()
         GeminiParserService.initialize()
     }
 

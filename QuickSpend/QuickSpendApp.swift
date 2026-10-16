@@ -2,9 +2,6 @@ import SwiftUI
 import SwiftData
 import CoreData
 import Combine
-#if canImport(FirebaseCore)
-import FirebaseCore
-#endif
 
 @main
 struct QuickSpendApp: App {
@@ -61,9 +58,7 @@ struct QuickSpendApp: App {
         ))
 
         // Initialize SDKs after all stored properties are set
-        #if canImport(FirebaseCore)
-        FirebaseApp.configure()
-        #endif
+        FirebaseBootstrap.configureIfNeeded()
         AnalyticsService.initialize()
         GeminiParserService.initialize()
         subscription.initialize()
