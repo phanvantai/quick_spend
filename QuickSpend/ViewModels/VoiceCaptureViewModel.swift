@@ -76,6 +76,18 @@ final class VoiceCaptureViewModel {
     var showPaywall = false
     var showManualFallback = false
     var showParseFailureToast = false
+    /// Shown briefly after a confident parse was saved without review.
+    var showAutoSavedToast = false
+    /// What the last auto-save stored, for the toast.
+    var autoSavedTransactions: [Transaction] = []
+
+    // MARK: - Auto-save
+
+    /// Wallet that confident parses are saved to (the app's default wallet).
+    var defaultWalletId: String = Wallet.personalID
+    /// Persists transactions from a confident parse. Set by the view, which owns
+    /// the model context; when nil, every parse goes through review.
+    var onAutoSave: (([Transaction]) throws -> Void)?
 
     // MARK: - Init
 
@@ -295,8 +307,38 @@ final class VoiceCaptureViewModel {
             print("[VoiceCapture] Parser produced \(results.count) transaction(s)")
             var resultsWithRawInput = results
             for i in resultsWithRawInput.indices { resultsWithRawInput[i].rawInput = inputText }
+            if autoSaveIfConfident(resultsWithRawInput) { return }
             parsedTransactions = resultsWithRawInput
             showTransactionReview = true
         }
+    }
+
+    /// Same rule as Siri: when every item is confident, save straight to the
+    /// default wallet and show a short toast instead of the review sheet.
+    /// Returns false (so the caller shows review) when not confident or the
+    /// save failed.
+    private func autoSaveIfConfident(_ parsed: [ParsedTransaction]) -> Bool {
+        guard let onAutoSave, VoiceAutoSavePolicy.shouldAutoSave(parsed) else { return false }
+        let transactions = parsed.map { item in
+            Transaction(
+                amount: item.amount,
+                note: item.note,
+                categoryId: item.categoryId,
+                walletId: defaultWalletId,
+                type: item.type,
+                date: item.date,
+                rawInput: item.rawInput,
+                confidence: item.confidence
+            )
+        }
+        do {
+            try onAutoSave(transactions)
+        } catch {
+            print("[VoiceCapture] Auto-save failed, showing review instead: \(error)")
+            return false
+        }
+        autoSavedTransactions = transactions
+        showAutoSavedToast = true
+        return true
     }
 }

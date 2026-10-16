@@ -90,7 +90,7 @@ struct VoiceCaptureViewModelTests {
         #expect(vm.showTransactionReview == false)
     }
 
-    @Test("processTranscription with non-empty input + parser results populates parsedTransactions and shows review")
+    @Test("processTranscription with an uncertain parse populates parsedTransactions and shows review")
     func testSuccessfulParse() async {
         let parser = MockParser()
         parser.stubbedResults = [
@@ -100,7 +100,7 @@ struct VoiceCaptureViewModelTests {
                 categoryId: "food",
                 type: .expense,
                 date: Date(),
-                confidence: 0.95
+                confidence: 0.8
             )
         ]
         let vm = makeViewModel(parser: parser)
@@ -298,5 +298,96 @@ struct VoiceCaptureViewModelTests {
 
         #expect(vm.isHandsFree == false)
         #expect(vm.isRecordingActive == false)
+    }
+
+    // MARK: - Auto-save (same rule as the Siri flow)
+
+    private func makeParsed(note: String = "coffee test", confidence: Double) -> ParsedTransaction {
+        ParsedTransaction(
+            amount: 50_000,
+            note: note,
+            categoryId: "food_drink",
+            type: .expense,
+            date: Date(timeIntervalSince1970: 1_900_000_000),
+            confidence: confidence
+        )
+    }
+
+    @Test("A confident parse is saved right away to the default wallet and shows the saved toast")
+    func testConfidentParseAutoSaves() async {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.95), makeParsed(note: "bread test", confidence: 0.9)]
+        let vm = makeViewModel(parser: parser)
+        vm.isPremium = true
+        vm.defaultWalletId = "wallet_default_test"
+        var saved: [Transaction] = []
+        vm.onAutoSave = { saved = $0 }
+
+        await vm.processTranscription("coffee and bread")?.value
+
+        #expect(saved.count == 2)
+        #expect(saved.allSatisfy { $0.walletId == "wallet_default_test" })
+        #expect(saved.allSatisfy { $0.rawInput == "coffee and bread" })
+        #expect(saved.map(\.note) == ["coffee test", "bread test"])
+        #expect(saved[0].confidence == 0.95)
+        #expect(vm.showTransactionReview == false)
+        #expect(vm.showAutoSavedToast == true)
+        #expect(vm.autoSavedTransactions.count == 2)
+        #expect(vm.parsedTransactions.isEmpty)
+    }
+
+    @Test("One uncertain item sends the whole batch to review")
+    func testOneUncertainItemShowsReview() async {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.95), makeParsed(confidence: 0.89)]
+        let vm = makeViewModel(parser: parser)
+        vm.isPremium = true
+        var autoSaveCalls = 0
+        vm.onAutoSave = { _ in autoSaveCalls += 1 }
+
+        await vm.processTranscription("coffee and something")?.value
+
+        #expect(autoSaveCalls == 0)
+        #expect(vm.showTransactionReview == true)
+        #expect(vm.showAutoSavedToast == false)
+        #expect(vm.parsedTransactions.count == 2)
+    }
+
+    @Test("If the auto-save fails, the parse falls back to review so nothing is lost")
+    func testAutoSaveFailureFallsBackToReview() async {
+        struct SaveFailure: Error {}
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.97)]
+        let vm = makeViewModel(parser: parser)
+        vm.isPremium = true
+        vm.onAutoSave = { _ in throw SaveFailure() }
+
+        await vm.processTranscription("coffee")?.value
+
+        #expect(vm.showTransactionReview == true)
+        #expect(vm.showAutoSavedToast == false)
+        #expect(vm.parsedTransactions.count == 1)
+    }
+
+    @Test("Without a save handler a confident parse still goes to review")
+    func testNoSaveHandlerShowsReview() async {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.99)]
+        let vm = makeViewModel(parser: parser)
+        vm.isPremium = true
+
+        await vm.processTranscription("coffee")?.value
+
+        #expect(vm.showTransactionReview == true)
+        #expect(vm.showAutoSavedToast == false)
+    }
+
+    @Test("In-app and Siri use the same auto-save rule")
+    func testSharedAutoSaveRule() {
+        let confident = [makeParsed(confidence: 0.9)]
+        let uncertain = [makeParsed(confidence: 0.95), makeParsed(confidence: 0.5)]
+        #expect(VoiceAutoSavePolicy.shouldAutoSave(confident) == AddExpenseIntent.shouldAutoSave(confident))
+        #expect(VoiceAutoSavePolicy.shouldAutoSave(uncertain) == AddExpenseIntent.shouldAutoSave(uncertain))
+        #expect(VoiceAutoSavePolicy.confidenceThreshold == AddExpenseIntent.autoSaveConfidenceThreshold)
     }
 }

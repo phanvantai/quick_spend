@@ -9,6 +9,7 @@
 ### What's New
 - Transfer money between wallets: choose Transfer in the add form (needs 2+ wallets). Both wallet balances update, and transfers are not counted as income or expenses
 - Voice widget for the Home Screen and Lock Screen, plus a Control Center / Lock Screen / Action button control, that opens QuickSpend and starts recording right away (tap Done when finished)
+- In-app voice input saves confident results right away (same rule as Siri: every item ≥ 90% confidence) and shows a short confirmation instead of the review screen; uncertain results still open review
 - Voice input now uses Gemini 3.8 Flash via Firebase AI Logic for faster, more accurate expense parsing
 
 ### Bug Fixes
@@ -26,6 +27,7 @@
 What's New
 • Move money between your wallets with the new Transfer option
 • Voice widget and Control Center button: start recording an expense with one tap
+• Clear voice entries are saved instantly — no extra confirmation step
 • Smarter, faster voice input with the latest Gemini AI
 
 Bug Fixes
@@ -36,6 +38,7 @@ Bug Fixes
 Tính năng mới
 • Chuyển tiền giữa các ví với tùy chọn Chuyển tiền mới
 • Widget giọng nói và nút trong Trung tâm điều khiển: chạm một lần để bắt đầu ghi chi tiêu
+• Ghi bằng giọng nói rõ ràng được lưu ngay, không cần bấm xác nhận
 • Nhập bằng giọng nói thông minh và nhanh hơn với Gemini AI mới nhất
 
 Sửa lỗi
@@ -46,6 +49,7 @@ Sửa lỗi
 新機能
 • 新しい「振替」でウォレット間の資金移動が可能に
 • 音声ウィジェットとコントロールセンターのボタン：ワンタップで支出の録音を開始
+• はっきり認識できた音声入力は確認なしですぐに保存
 • 最新のGemini AIで音声入力がよりスマートで高速に
 
 バグ修正
@@ -56,6 +60,7 @@ Sửa lỗi
 Novedades
 • Mueve dinero entre tus billeteras con la nueva opción Transferencia
 • Widget de voz y botón en el Centro de control: empieza a grabar un gasto con un toque
+• Las entradas de voz claras se guardan al instante, sin paso de confirmación
 • Entrada por voz más inteligente y rápida con la última versión de Gemini AI
 
 Correcciones

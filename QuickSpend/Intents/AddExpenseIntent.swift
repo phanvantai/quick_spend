@@ -31,7 +31,7 @@ struct AddExpenseIntent: AppIntent {
     /// Skip the Siri confirmation card when every parsed transaction is at
     /// least this confident. Below this we still show the card so the user
     /// can catch a bad parse before it lands.
-    static let autoSaveConfidenceThreshold: Double = 0.9
+    static let autoSaveConfidenceThreshold = VoiceAutoSavePolicy.confidenceThreshold
 
     /// Injection point for tests; production resolves to the Gemini-backed parser.
     @MainActor static var parser: ExpenseParsing = GeminiExpenseParser()
@@ -98,8 +98,7 @@ struct AddExpenseIntent: AppIntent {
     /// One ambiguous item drops the whole batch into the confirm-card path
     /// so the user can still cancel.
     static func shouldAutoSave(_ parsed: [ParsedTransaction]) -> Bool {
-        guard !parsed.isEmpty else { return false }
-        return parsed.allSatisfy { $0.confidence >= autoSaveConfidenceThreshold }
+        VoiceAutoSavePolicy.shouldAutoSave(parsed)
     }
 
     @MainActor

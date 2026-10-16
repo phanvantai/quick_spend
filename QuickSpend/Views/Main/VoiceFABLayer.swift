@@ -93,7 +93,24 @@ struct VoiceFABLayer: View {
             }
         }
         .overlay(alignment: .top) {
-            if vm.showParseFailureToast {
+            if vm.showAutoSavedToast {
+                AutoSavedToast(
+                    transactions: vm.autoSavedTransactions,
+                    categories: categories,
+                    config: appConfig.config
+                )
+                .padding(.top, 60)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .onTapGesture {
+                    withAnimation { vm.showAutoSavedToast = false }
+                }
+                .onAppear {
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                        withAnimation { vm.showAutoSavedToast = false }
+                    }
+                }
+            } else if vm.showParseFailureToast {
                 HStack(spacing: AppTheme.spacing8) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(AppTheme.warning)
@@ -118,6 +135,7 @@ struct VoiceFABLayer: View {
             }
         }
         .animation(.easeQuick, value: vm.showParseFailureToast)
+        .animation(.easeQuick, value: vm.showAutoSavedToast)
         .animation(.easeQuick, value: vm.isProcessingVoice)
         .animation(.springFast, value: vm.isRecordingActive)
         .animation(.springFast, value: vm.voiceService.isListening)
@@ -140,6 +158,7 @@ struct VoiceFABLayer: View {
         .onChange(of: appConfig.language) { vm.language = appConfig.language }
         .onChange(of: appConfig.currency) { vm.currency = appConfig.currency }
         .onChange(of: categories) { _, newCategories in vm.categories = newCategories }
+        .onChange(of: wallets) { vm.defaultWalletId = defaultWalletId }
         .sheet(isPresented: $vm.showTransactionReview) {
             EditableExpenseDialog(
                 parsedExpenses: vm.parsedTransactions,
@@ -248,5 +267,13 @@ struct VoiceFABLayer: View {
         vm.currency = appConfig.currency
         vm.categories = categories
         vm.isPremium = subscription.isPremium
+        vm.defaultWalletId = defaultWalletId
+        vm.onAutoSave = { [modelContext, balance] transactions in
+            try TransactionPersistence.createMany(
+                transactions,
+                modelContext: modelContext,
+                balanceService: balance
+            )
+        }
     }
 }
