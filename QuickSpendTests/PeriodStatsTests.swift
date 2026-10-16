@@ -336,4 +336,40 @@ struct PeriodStatsTests {
         #expect(stats.highestExpense?.amount == 500)
         #expect(stats.lowestExpense?.amount == 500)
     }
+
+    // MARK: - Transfers
+
+    @Test("Wallet transfers are not counted as income or expenses")
+    func testTransfersExcluded() {
+        let coffee = makeTransaction(amount: 40)
+        let salary = makeTransaction(amount: 1_000, type: .income, categoryId: "salary")
+        let transfer = Transfer(
+            fromWalletId: "wallet_a_test",
+            toWalletId: "wallet_b_test",
+            amount: 300,
+            date: .now
+        )
+
+        let stats = PeriodStats.fromTransactions(
+            [coffee, salary] + transfer.makeLegs(),
+            startDate: startDate,
+            endDate: endDate
+        )
+
+        #expect(stats.totalExpenses == 40)
+        #expect(stats.totalIncome == 1_000)
+        #expect(stats.transactionCount == 2)
+        #expect(stats.categoryTotals[Transfer.categoryId] == nil)
+    }
+
+    @Test("A period with only transfers is empty")
+    func testOnlyTransfersIsEmpty() {
+        let transfer = Transfer(fromWalletId: "wallet_a_test", toWalletId: "wallet_b_test", amount: 300, date: .now)
+
+        let stats = PeriodStats.fromTransactions(transfer.makeLegs(), startDate: startDate, endDate: endDate)
+
+        #expect(stats.totalExpenses == 0)
+        #expect(stats.totalIncome == 0)
+        #expect(stats.transactionCount == 0)
+    }
 }

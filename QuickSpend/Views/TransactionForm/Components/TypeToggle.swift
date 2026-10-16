@@ -1,16 +1,18 @@
 import SwiftUI
 
-/// Expense / Income segmented toggle used at the top of the form.
+/// Expense / Income (/ Transfer) segmented toggle used at the top of the form.
 struct TypeToggle: View {
-    @Binding var selectedType: TransactionType
+    @Binding var selection: TransactionFormKind
+    let kinds: [TransactionFormKind]
     let language: String
 
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(spacing: 0) {
-            button(.expense, label: L10n.tr("common.expense", language))
-            button(.income, label: L10n.tr("common.income", language))
+            ForEach(kinds, id: \.self) { kind in
+                button(kind)
+            }
         }
         .background(
             RoundedRectangle(cornerRadius: AppTheme.radiusXLarge)
@@ -18,23 +20,33 @@ struct TypeToggle: View {
         )
     }
 
-    private func button(_ type: TransactionType, label: String) -> some View {
+    private func label(for kind: TransactionFormKind) -> String {
+        switch kind {
+        case .expense: return L10n.tr("common.expense", language)
+        case .income: return L10n.tr("common.income", language)
+        case .transfer: return L10n.tr("transfer.title", language)
+        }
+    }
+
+    private func button(_ kind: TransactionFormKind) -> some View {
         Button {
             withAnimation(.easeQuick) {
-                selectedType = type
+                selection = kind
             }
         } label: {
-            Text(label)
+            Text(label(for: kind))
                 .font(.subheadline.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, AppTheme.spacing12)
                 .background {
-                    if selectedType == type {
+                    if selection == kind {
                         Capsule()
                             .fill(FormFieldStyle.accent(colorScheme))
                     }
                 }
-                .foregroundStyle(selectedType == type ? .white : .secondary)
+                .foregroundStyle(selection == kind ? .white : .secondary)
         }
         .buttonStyle(.plain)
     }

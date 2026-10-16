@@ -29,7 +29,7 @@ struct ReportDetailView: View {
 
     private var periodTransactions: [Transaction] {
         let range = periodRange
-        return scopedTransactions.filter { $0.date >= range.start && $0.date < range.end }
+        return scopedTransactions.filter { !$0.isTransfer && $0.date >= range.start && $0.date < range.end }
     }
 
     private var activeWallets: [Wallet] {
