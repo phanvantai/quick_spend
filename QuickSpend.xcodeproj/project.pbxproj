@@ -58,24 +58,24 @@
 /* Begin PBXFileReference section */
 		E57AC7082F5CA72B00C51447 /* QuickSpendTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuickSpendTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E57AC7232F5CA74800C51447 /* QuickSpendUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuickSpendUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E5DD73A82F3B0A8D00D37A05 /* QuickSpend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickSpend.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E59A10042F90000100A1B2C3 /* QuickSpendWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickSpendWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E5DD73A82F3B0A8D00D37A05 /* QuickSpend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickSpend.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E5BF55352F68EA5E0056AE5D /* Exceptions for "QuickSpend" folder in "QuickSpend" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = E5DD73A72F3B0A8D00D37A05 /* QuickSpend */;
-		};
 		E59A10022F90000100A1B2C3 /* Exceptions for "QuickSpendWidgets" folder in "QuickSpendWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = E59A10052F90000100A1B2C3 /* QuickSpendWidgetsExtension */;
+		};
+		E5BF55352F68EA5E0056AE5D /* Exceptions for "QuickSpend" folder in "QuickSpend" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E5DD73A72F3B0A8D00D37A05 /* QuickSpend */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -90,12 +90,12 @@
 			path = QuickSpendUITests;
 			sourceTree = "<group>";
 		};
-		E5DD73AA2F3B0A8D00D37A05 /* QuickSpend */ = {
+		E59A10012F90000100A1B2C3 /* QuickSpendWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E5BF55352F68EA5E0056AE5D /* Exceptions for "QuickSpend" folder in "QuickSpend" target */,
+				E59A10022F90000100A1B2C3 /* Exceptions for "QuickSpendWidgets" folder in "QuickSpendWidgetsExtension" target */,
 			);
-			path = QuickSpend;
+			path = QuickSpendWidgets;
 			sourceTree = "<group>";
 		};
 		E59A10032F90000100A1B2C3 /* Shared */ = {
@@ -103,12 +103,12 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		E59A10012F90000100A1B2C3 /* QuickSpendWidgets */ = {
+		E5DD73AA2F3B0A8D00D37A05 /* QuickSpend */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E59A10022F90000100A1B2C3 /* Exceptions for "QuickSpendWidgets" folder in "QuickSpendWidgetsExtension" target */,
+				E5BF55352F68EA5E0056AE5D /* Exceptions for "QuickSpend" folder in "QuickSpend" target */,
 			);
-			path = QuickSpendWidgets;
+			path = QuickSpend;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -128,6 +128,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E59A10072F90000100A1B2C3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E5DD73A52F3B0A8D00D37A05 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -139,13 +146,6 @@
 				E56806532F3DE1D100FAA8A9 /* FirebaseFirestore in Frameworks */,
 				E568064F2F3DE1D100FAA8A9 /* FirebaseAnalytics in Frameworks */,
 				E56806552F3DE1D100FAA8A9 /* FirebaseAppCheck in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E59A10072F90000100A1B2C3 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,38 +224,6 @@
 			productReference = E57AC7232F5CA74800C51447 /* QuickSpendUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		E5DD73A72F3B0A8D00D37A05 /* QuickSpend */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E5DD73B32F3B0A8F00D37A05 /* Build configuration list for PBXNativeTarget "QuickSpend" */;
-			buildPhases = (
-				E5DD73A42F3B0A8D00D37A05 /* Sources */,
-				E5DD73A52F3B0A8D00D37A05 /* Frameworks */,
-				E5DD73A62F3B0A8D00D37A05 /* Resources */,
-				E59A100C2F90000100A1B2C3 /* Embed Foundation Extensions */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				E59A100F2F90000100A1B2C3 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				E5DD73AA2F3B0A8D00D37A05 /* QuickSpend */,
-				E59A10032F90000100A1B2C3 /* Shared */,
-			);
-			name = QuickSpend;
-			packageProductDependencies = (
-				E568064C2F3DE1D100FAA8A9 /* FirebaseAILogic */,
-				E568064E2F3DE1D100FAA8A9 /* FirebaseAnalytics */,
-				E56806502F3DE1D100FAA8A9 /* FirebaseCore */,
-				E56806522F3DE1D100FAA8A9 /* FirebaseFirestore */,
-				E56806542F3DE1D100FAA8A9 /* FirebaseAppCheck */,
-				D17BC0292F50A7370035359E /* RevenueCat */,
-				D17BC02B2F50A7370035359E /* RevenueCatUI */,
-			);
-			productName = QuickSpend;
-			productReference = E5DD73A82F3B0A8D00D37A05 /* QuickSpend.app */;
-			productType = "com.apple.product-type.application";
-		};
 		E59A10052F90000100A1B2C3 /* QuickSpendWidgetsExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E59A10092F90000100A1B2C3 /* Build configuration list for PBXNativeTarget "QuickSpendWidgetsExtension" */;
@@ -279,6 +247,38 @@
 			productReference = E59A10042F90000100A1B2C3 /* QuickSpendWidgetsExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		E5DD73A72F3B0A8D00D37A05 /* QuickSpend */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E5DD73B32F3B0A8F00D37A05 /* Build configuration list for PBXNativeTarget "QuickSpend" */;
+			buildPhases = (
+				E5DD73A42F3B0A8D00D37A05 /* Sources */,
+				E5DD73A52F3B0A8D00D37A05 /* Frameworks */,
+				E5DD73A62F3B0A8D00D37A05 /* Resources */,
+				E59A100C2F90000100A1B2C3 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E59A100F2F90000100A1B2C3 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E59A10032F90000100A1B2C3 /* Shared */,
+				E5DD73AA2F3B0A8D00D37A05 /* QuickSpend */,
+			);
+			name = QuickSpend;
+			packageProductDependencies = (
+				E568064C2F3DE1D100FAA8A9 /* FirebaseAILogic */,
+				E568064E2F3DE1D100FAA8A9 /* FirebaseAnalytics */,
+				E56806502F3DE1D100FAA8A9 /* FirebaseCore */,
+				E56806522F3DE1D100FAA8A9 /* FirebaseFirestore */,
+				E56806542F3DE1D100FAA8A9 /* FirebaseAppCheck */,
+				D17BC0292F50A7370035359E /* RevenueCat */,
+				D17BC02B2F50A7370035359E /* RevenueCatUI */,
+			);
+			productName = QuickSpend;
+			productReference = E5DD73A82F3B0A8D00D37A05 /* QuickSpend.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -297,11 +297,11 @@
 						CreatedOnToolsVersion = 26.3;
 						TestTargetID = E5DD73A72F3B0A8D00D37A05;
 					};
-					E5DD73A72F3B0A8D00D37A05 = {
-						CreatedOnToolsVersion = 26.2;
-					};
 					E59A10052F90000100A1B2C3 = {
 						CreatedOnToolsVersion = 27.0;
+					};
+					E5DD73A72F3B0A8D00D37A05 = {
+						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
@@ -349,14 +349,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E5DD73A62F3B0A8D00D37A05 /* Resources */ = {
+		E59A10082F90000100A1B2C3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E59A10082F90000100A1B2C3 /* Resources */ = {
+		E5DD73A62F3B0A8D00D37A05 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -380,14 +380,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E5DD73A42F3B0A8D00D37A05 /* Sources */ = {
+		E59A10062F90000100A1B2C3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E59A10062F90000100A1B2C3 /* Sources */ = {
+		E5DD73A42F3B0A8D00D37A05 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -498,6 +498,64 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = QuickSpend;
+			};
+			name = Release;
+		};
+		E59A100A2F90000100A1B2C3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = K6GZTHQ9Z5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuickSpendWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QuickSpend;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 4.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.randomtech.quickSpend.QuickSpendWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E59A100B2F90000100A1B2C3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = K6GZTHQ9Z5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuickSpendWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QuickSpend;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 4.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.randomtech.quickSpend.QuickSpendWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -708,64 +766,6 @@
 			};
 			name = Release;
 		};
-		E59A100A2F90000100A1B2C3 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
-				DEVELOPMENT_TEAM = K6GZTHQ9Z5;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = QuickSpendWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = QuickSpend;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 4.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.randomtech.quickSpend.QuickSpendWidgets;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		E59A100B2F90000100A1B2C3 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
-				DEVELOPMENT_TEAM = K6GZTHQ9Z5;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = QuickSpendWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = QuickSpend;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 4.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.randomtech.quickSpend.QuickSpendWidgets;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -787,6 +787,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		E59A10092F90000100A1B2C3 /* Build configuration list for PBXNativeTarget "QuickSpendWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E59A100A2F90000100A1B2C3 /* Debug */,
+				E59A100B2F90000100A1B2C3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E5DD73A32F3B0A8D00D37A05 /* Build configuration list for PBXProject "QuickSpend" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -801,15 +810,6 @@
 			buildConfigurations = (
 				E5DD73B42F3B0A8F00D37A05 /* Debug */,
 				E5DD73B52F3B0A8F00D37A05 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		E59A10092F90000100A1B2C3 /* Build configuration list for PBXNativeTarget "QuickSpendWidgetsExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				E59A100A2F90000100A1B2C3 /* Debug */,
-				E59A100B2F90000100A1B2C3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
