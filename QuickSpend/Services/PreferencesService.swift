@@ -11,6 +11,7 @@ final class PreferencesService {
     private let defaultWalletIdKey = "default_wallet_id"
     private let selectedWalletScopeKey = "selected_wallet_scope"
     private let walletsWhatsNewKey = "wallets_whats_new"
+    private let shareVoiceSamplesKey = "share_voice_samples"
 
     private convenience init() {
         self.init(defaults: .standard)
@@ -123,6 +124,13 @@ final class PreferencesService {
         defaults.set(voiceRecordingCount + 1, forKey: voiceRecordingCountKey)
     }
 
+    /// Whether anonymous voice samples may be sent to improve parsing. On
+    /// unless the user turned it off in Settings.
+    var shareVoiceSamples: Bool {
+        get { defaults.object(forKey: shareVoiceSamplesKey) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: shareVoiceSamplesKey) }
+    }
+
     // MARK: - Reset
 
     /// Clears all preferences managed by this service.
@@ -135,5 +143,6 @@ final class PreferencesService {
         defaults.removeObject(forKey: defaultWalletIdKey)
         defaults.removeObject(forKey: selectedWalletScopeKey)
         defaults.removeObject(forKey: walletsWhatsNewKey)
+        defaults.removeObject(forKey: shareVoiceSamplesKey)
     }
 }

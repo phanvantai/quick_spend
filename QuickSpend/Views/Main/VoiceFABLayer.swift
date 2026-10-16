@@ -163,7 +163,7 @@ struct VoiceFABLayer: View {
             vm.defaultWalletId = defaultWalletId
             vm.wallets = activeWallets
         }
-        .sheet(isPresented: $vm.showTransactionReview) {
+        .sheet(isPresented: $vm.showTransactionReview, onDismiss: { vm.reviewDismissed() }) {
             EditableExpenseDialog(
                 parsedExpenses: vm.parsedTransactions,
                 categories: categories,
@@ -175,6 +175,7 @@ struct VoiceFABLayer: View {
                         modelContext: modelContext,
                         balanceService: balance
                     )
+                    vm.reviewSaved(transactions)
                     vm.parsedTransactions = []
                 }
             )

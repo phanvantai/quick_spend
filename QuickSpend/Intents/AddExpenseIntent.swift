@@ -35,6 +35,10 @@ struct AddExpenseIntent: AppIntent {
 
     /// Injection point for tests; production resolves to the Gemini-backed parser.
     @MainActor static var parser: ExpenseParsing = GeminiExpenseParser()
+    /// Injection point for tests; production logs to Firebase Analytics.
+    @MainActor static var analytics: AnalyticsLogging = FirebaseAnalyticsLogger()
+    /// Injection point for tests; production uploads anonymous voice samples.
+    @MainActor static var samples: VoiceSampleRecording = VoiceSampleRecorder.shared
 
     @Parameter(
         title: "Expense",
@@ -55,29 +59,53 @@ struct AddExpenseIntent: AppIntent {
         let wallets = (try? context.fetch(FetchDescriptor<Wallet>())) ?? []
         let defaultWalletId = WalletService.resolvedDefaultWalletId(wallets: wallets)
 
-        let parsed = try await AddExpenseFlow.parse(
-            input: expenseDescription,
-            in: context,
-            language: config.language,
-            currency: config.currency,
-            parser: Self.parser,
-            usage: usage,
-            defaultWalletId: defaultWalletId
-        )
+        let analytics = VoiceAnalytics(logger: Self.analytics)
+        let parsed: [ParsedTransaction]
+        do {
+            parsed = try await AddExpenseFlow.parse(
+                input: expenseDescription,
+                in: context,
+                language: config.language,
+                currency: config.currency,
+                parser: Self.parser,
+                usage: usage,
+                defaultWalletId: defaultWalletId
+            )
+        } catch {
+            if let outcome = VoiceAnalytics.Outcome(error: error) {
+                analytics.logResult(source: .siri, outcome: outcome, language: config.language)
+                Self.samples.record(VoiceSample(
+                    input: expenseDescription, source: .siri, outcome: outcome,
+                    language: config.language, currency: config.currency
+                ))
+            }
+            throw error
+        }
 
         let categories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
+        let names = VoiceSample.Names(categories: categories, wallets: wallets)
+        func recordSample(_ outcome: VoiceAnalytics.Outcome, action: String, saved: [Transaction]?) {
+            Self.samples.record(VoiceSample(
+                input: expenseDescription, source: .siri, outcome: outcome, action: action,
+                language: config.language, currency: config.currency,
+                parsed: parsed, saved: saved, names: names
+            ))
+        }
         let snippet = ParsedExpenseSnippetView(items: parsed, categories: categories, wallets: wallets, config: config)
 
         // High-confidence parses skip the confirm card entirely — Siri reads
         // the success line and shows the snippet for a beat, then dismisses.
         if Self.shouldAutoSave(parsed) {
-            try saveOrThrow(parsed: parsed, in: context, walletId: defaultWalletId, language: config.language)
+            let saved = try saveOrThrow(parsed: parsed, in: context, walletId: defaultWalletId, language: config.language)
+            analytics.logResult(source: .siri, outcome: .autoSaved, items: parsed, language: config.language)
+            recordSample(.autoSaved, action: "auto_saved", saved: saved)
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             return .result(dialog: IntentDialog(stringLiteral: VoiceSummary.saved(parsed, wallets: wallets, config: config))) {
                 snippet
             }
         }
 
+        analytics.logResult(source: .siri, outcome: .review, items: parsed, language: config.language)
         do {
             try await requestConfirmation(
                 actionName: .log,
@@ -87,10 +115,14 @@ struct AddExpenseIntent: AppIntent {
             }
         } catch {
             // User cancelled the confirmation card — exit silently, no extra popup.
+            analytics.logReviewClosed(source: .siri, saved: false, edited: false, itemCount: parsed.count)
+            recordSample(.review, action: "discarded", saved: nil)
             return .result(dialog: IntentDialog("")) { EmptyView() }
         }
 
-        try saveOrThrow(parsed: parsed, in: context, walletId: defaultWalletId, language: config.language)
+        let saved = try saveOrThrow(parsed: parsed, in: context, walletId: defaultWalletId, language: config.language)
+        analytics.logReviewClosed(source: .siri, saved: true, edited: false, itemCount: parsed.count)
+        recordSample(.review, action: "saved", saved: saved)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         return .result(dialog: IntentDialog(stringLiteral: VoiceSummary.saved(parsed, wallets: wallets, config: config))) {
             snippet
@@ -105,9 +137,9 @@ struct AddExpenseIntent: AppIntent {
     }
 
     @MainActor
-    private func saveOrThrow(parsed: [ParsedTransaction], in context: ModelContext, walletId: String, language: String) throws {
+    private func saveOrThrow(parsed: [ParsedTransaction], in context: ModelContext, walletId: String, language: String) throws -> [Transaction] {
         do {
-            try AddExpenseFlow.save(
+            return try AddExpenseFlow.save(
                 parsed: parsed,
                 rawInput: expenseDescription,
                 in: context,

@@ -54,7 +54,9 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 - `GeminiParserService` — AI expense parsing via Firebase AI Logic (model name in `AppConstants.geminiModelName`). Compiles with `#if canImport(FirebaseAILogic)` guards; falls back gracefully when SDK is absent
 - `VoiceService` (`@Observable`) — `SFSpeechRecognizer` + `AVAudioEngine` for live transcription
 - `UsageLimitService` (`@Observable`) — daily Gemini parse limit tracking, auto-resets each day
-- `AnalyticsService` — Firebase Analytics wrapper with `#if canImport(FirebaseAnalytics)` guards
+- `AnalyticsService` — Firebase Analytics wrapper with `#if canImport(FirebaseAnalytics)` guards (collection is off in DEBUG)
+- `VoiceAnalytics` — voice funnel events (`voice_started`, `voice_cancelled`, `voice_result`, `voice_review_closed`) through the `AnalyticsLogging` protocol so tests inject `MockAnalyticsLogger`. Never log what the user said, notes, or amounts
+- `VoiceSampleRecorder` — anonymous voice samples (what was said, what the AI parsed, what was saved) to Firestore `training_data` (`schema: 2`; write-only rules). Only when Settings → Data → "Help improve voice input" is on (`PreferencesService.shareVoiceSamples`, default on). No user or device id. Keep `quickspend-landing/privacy.html` in sync if the stored fields change
 - `PreferencesService` — singleton for UserDefaults-backed app config
 
 ### Widgets & Quick Launch

@@ -23,6 +23,8 @@ final class VoiceCaptureViewModel {
     let usageLimitService: UsageLimitService
     private let preferences: PreferencesService
     private let parser: ExpenseParsing
+    private let analytics: VoiceAnalytics
+    private let samples: VoiceSampleRecording
 
     // MARK: - Synced from view
 
@@ -91,6 +93,19 @@ final class VoiceCaptureViewModel {
     /// the model context; when nil, every parse goes through review.
     var onAutoSave: (([Transaction]) throws -> Void)?
 
+    // MARK: - Analytics
+
+    /// How the current (or last) recording was started.
+    private var recordingSource: VoiceAnalytics.Source = .hold
+    private var recordingStartedAt: Date?
+    /// Recording length of the capture being parsed, for the result event.
+    private var pendingRecordSeconds: Int?
+    /// What the open review sheet was showing, so its outcome can be logged
+    /// once: saved (with or without edits) or discarded.
+    private var reviewedItems: [ParsedTransaction]?
+    /// What the user said for the open review, for the voice sample.
+    private var reviewedInput = ""
+
     // MARK: - Init
 
     /// Production initializer — owns its services. Use the
@@ -110,12 +125,16 @@ final class VoiceCaptureViewModel {
         voiceService: VoiceService,
         usageLimitService: UsageLimitService,
         preferences: PreferencesService,
-        parser: ExpenseParsing
+        parser: ExpenseParsing,
+        analytics: AnalyticsLogging = FirebaseAnalyticsLogger(),
+        samples: VoiceSampleRecording? = nil
     ) {
         self.voiceService = voiceService
         self.usageLimitService = usageLimitService
         self.preferences = preferences
         self.parser = parser
+        self.analytics = VoiceAnalytics(logger: analytics)
+        self.samples = samples ?? VoiceSampleRecorder.shared
     }
 
     // MARK: - Derived
@@ -135,6 +154,7 @@ final class VoiceCaptureViewModel {
         guard !isProcessingVoice, !isRecordingActive else { return }
 
         if !isPremium && usageLimitService.hasReachedLimit {
+            analytics.logResult(source: .hold, outcome: .limitReached, language: language)
             showLimitReachedAlert = true
             return
         }
@@ -153,6 +173,7 @@ final class VoiceCaptureViewModel {
             do {
                 try self.voiceService.startListening(language: self.language)
                 self.isRecordingActive = true
+                self.recordingDidStart(source: .hold)
             } catch {
                 print("[VoiceCaptureViewModel] Failed to start voice: \(error)")
             }
@@ -170,6 +191,7 @@ final class VoiceCaptureViewModel {
         guard !isProcessingVoice, !isRecordingActive else { return }
 
         if !isPremium && usageLimitService.hasReachedLimit {
+            analytics.logResult(source: .widget, outcome: .limitReached, language: language)
             showLimitReachedAlert = true
             return
         }
@@ -190,6 +212,7 @@ final class VoiceCaptureViewModel {
             try voiceService.startListening(language: language)
             isRecordingActive = voiceService.isListening
             isHandsFree = isRecordingActive
+            if isRecordingActive { recordingDidStart(source: .widget) }
         } catch {
             print("[VoiceCaptureViewModel] Failed to start hands-free voice: \(error)")
         }
@@ -214,6 +237,7 @@ final class VoiceCaptureViewModel {
         isRecordingActive = false
         let text = voiceService.stopListening()
         print("[VoiceCapture] Recording ended — transcription: \"\(text)\" (length: \(text.count))")
+        pendingRecordSeconds = recordSecondsSoFar()
         processTranscription(text)
     }
 
@@ -226,6 +250,18 @@ final class VoiceCaptureViewModel {
         isRecordingActive = false
         voiceService.cancelListening()
         print("[VoiceCapture] Recording cancelled by user")
+        analytics.logCancelled(source: recordingSource, language: language, recordSeconds: recordSecondsSoFar() ?? 0)
+        recordingStartedAt = nil
+    }
+
+    private func recordingDidStart(source: VoiceAnalytics.Source) {
+        recordingSource = source
+        recordingStartedAt = .now
+        analytics.logStarted(source: source, language: language)
+    }
+
+    private func recordSecondsSoFar() -> Int? {
+        recordingStartedAt.map { Int(Date.now.timeIntervalSince($0).rounded()) }
     }
 
     /// Reconciles the FAB-driven `isRecordingActive` flag with the underlying
@@ -248,9 +284,13 @@ final class VoiceCaptureViewModel {
     /// after the async parse completes, so callers in tests can `await` it.
     @discardableResult
     func processTranscription(_ text: String) -> Task<Void, Never>? {
+        let recordSeconds = pendingRecordSeconds
+        pendingRecordSeconds = nil
+        recordingStartedAt = nil
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             print("[VoiceCapture] Transcription empty, skipping")
+            logResult(.noSpeech, recordSeconds: recordSeconds)
             return nil
         }
 
@@ -266,6 +306,7 @@ final class VoiceCaptureViewModel {
             print("[VoiceCapture] Gemini not available, falling back to manual entry")
             fallbackTranscription = inputText
             showManualFallback = true
+            logResult(.unavailable, recordSeconds: recordSeconds)
             return nil
         }
 
@@ -273,6 +314,7 @@ final class VoiceCaptureViewModel {
             print("[VoiceCapture] Daily parse limit reached, falling back to manual entry")
             fallbackTranscription = inputText
             showLimitReachedAlert = true
+            logResult(.limitReached, recordSeconds: recordSeconds)
             return nil
         }
 
@@ -284,6 +326,7 @@ final class VoiceCaptureViewModel {
         print("[VoiceCapture] Sending to parser: \"\(inputText)\"")
         isProcessingVoice = true
 
+        let parseStartedAt = Date.now
         return Task { [weak self] in
             guard let self else { return }
             let results = await self.parser.parse(
@@ -295,13 +338,16 @@ final class VoiceCaptureViewModel {
                 currency: self.currency,
                 usageLimitService: self.usageLimitService
             )
-            self.handleParseResults(results, inputText: inputText)
+            let parseMs = Int(Date.now.timeIntervalSince(parseStartedAt) * 1000)
+            self.handleParseResults(results, inputText: inputText, recordSeconds: recordSeconds, parseMs: parseMs)
         }
     }
 
-    private func handleParseResults(_ results: [ParsedTransaction], inputText: String) {
+    private func handleParseResults(_ results: [ParsedTransaction], inputText: String, recordSeconds: Int?, parseMs: Int) {
         isProcessingVoice = false
         if results.isEmpty {
+            logResult(.failed, recordSeconds: recordSeconds, parseMs: parseMs)
+            recordSample(input: inputText, outcome: .failed)
             print("[VoiceCapture] Parser returned no results for: \"\(inputText)\" — falling back to manual entry")
             parseFailureMessage = L10n.tr("voice.parse_failed", language)
             withAnimation { showParseFailureToast = true }
@@ -311,27 +357,92 @@ final class VoiceCaptureViewModel {
             print("[VoiceCapture] Parser produced \(results.count) transaction(s)")
             var resultsWithRawInput = results
             for i in resultsWithRawInput.indices { resultsWithRawInput[i].rawInput = inputText }
-            if autoSaveIfConfident(resultsWithRawInput) { return }
+            if let saved = autoSaveIfConfident(resultsWithRawInput) {
+                logResult(.autoSaved, items: resultsWithRawInput, recordSeconds: recordSeconds, parseMs: parseMs)
+                recordSample(input: inputText, outcome: .autoSaved, action: "auto_saved", parsed: resultsWithRawInput, saved: saved)
+                return
+            }
+            logResult(.review, items: resultsWithRawInput, recordSeconds: recordSeconds, parseMs: parseMs)
             parsedTransactions = resultsWithRawInput
+            reviewedItems = resultsWithRawInput
+            reviewedInput = inputText
             showTransactionReview = true
         }
     }
 
+    private func logResult(
+        _ outcome: VoiceAnalytics.Outcome,
+        items: [ParsedTransaction] = [],
+        recordSeconds: Int?,
+        parseMs: Int? = nil
+    ) {
+        analytics.logResult(
+            source: recordingSource,
+            outcome: outcome,
+            items: items,
+            language: language,
+            recordSeconds: recordSeconds,
+            parseMs: parseMs
+        )
+    }
+
+    // MARK: - Review outcome
+
+    /// Call after the review sheet saved `transactions`.
+    func reviewSaved(_ transactions: [Transaction]) {
+        guard let items = reviewedItems else { return }
+        reviewedItems = nil
+        let edited = VoiceAnalytics.wasEdited(parsed: items, saved: transactions, defaultWalletId: defaultWalletId)
+        analytics.logReviewClosed(source: recordingSource, saved: true, edited: edited, itemCount: transactions.count)
+        recordSample(input: reviewedInput, outcome: .review, action: "saved", edited: edited, parsed: items, saved: transactions)
+    }
+
+    /// Call when the review sheet closes; logs a discard unless it was saved.
+    func reviewDismissed() {
+        guard let items = reviewedItems else { return }
+        reviewedItems = nil
+        analytics.logReviewClosed(source: recordingSource, saved: false, edited: false, itemCount: items.count)
+        recordSample(input: reviewedInput, outcome: .review, action: "discarded", parsed: items)
+    }
+
+    private func recordSample(
+        input: String,
+        outcome: VoiceAnalytics.Outcome,
+        action: String? = nil,
+        edited: Bool = false,
+        parsed: [ParsedTransaction] = [],
+        saved: [Transaction]? = nil
+    ) {
+        samples.record(VoiceSample(
+            input: input,
+            source: recordingSource,
+            outcome: outcome,
+            action: action,
+            edited: edited,
+            language: language,
+            currency: currency,
+            parsed: parsed,
+            saved: saved,
+            names: VoiceSample.Names(categories: categories, wallets: wallets)
+        ))
+    }
+
     /// Same rule as Siri: when every item is confident, save straight to the
     /// default wallet and show a short toast instead of the review sheet.
-    /// Returns false (so the caller shows review) when not confident or the
-    /// save failed.
-    private func autoSaveIfConfident(_ parsed: [ParsedTransaction]) -> Bool {
-        guard let onAutoSave, VoiceAutoSavePolicy.shouldAutoSave(parsed) else { return false }
+    /// Returns the saved rows, or nil (so the caller shows review) when not
+    /// confident or the save failed.
+    private func autoSaveIfConfident(_ parsed: [ParsedTransaction]) -> [Transaction]? {
+        guard let onAutoSave, VoiceAutoSavePolicy.shouldAutoSave(parsed) else { return nil }
+        let transactions: [Transaction]
         do {
-            let transactions = try VoiceTransactionBuilder.transactions(from: parsed, defaultWalletId: defaultWalletId)
+            transactions = try VoiceTransactionBuilder.transactions(from: parsed, defaultWalletId: defaultWalletId)
             try onAutoSave(transactions)
         } catch {
             print("[VoiceCapture] Auto-save failed, showing review instead: \(error)")
-            return false
+            return nil
         }
         autoSavedItems = parsed
         showAutoSavedToast = true
-        return true
+        return transactions
     }
 }
