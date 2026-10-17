@@ -123,6 +123,14 @@ This project follows **Test-Driven Development (TDD)**. Tests are not optional.
 
 - If a bug is fixed, add a regression test that reproduces the bug first.
 
+## Screenshots (App Store & landing)
+
+1. Build Debug for the simulator, then launch with sample data (in-memory store, onboarding skipped, Pro):
+   `xcrun simctl launch <udid> com.randomtech.quickSpend -ScreenshotDemo -AppleLanguages "(en)"` (`Utilities/ScreenshotDemo.swift`). Use light appearance and `xcrun simctl status_bar <udid> override --time 9:41`.
+2. The simulator has no microphone. For the voice slide add `-ScreenshotDemoVoice "<sentence>"`: the text goes to the real parser on launch (needs the simulator's App Check debug token). A vague item keeps it in review instead of auto-saving.
+3. Save raw captures (`xcrun simctl io <udid> screenshot`) as `screenshot-generator/public/screenshots/{home,home2,voice,transactions,report,categories}.png`, run `npm run dev` there, and export 6.9".
+4. Copy the exports to `screenshots/` and `quickspend-landing/assets/screenshots/` (no size suffix there); `home-raw.png` is the raw Home capture.
+
 ## Versioning & Release Tags
 
 - The latest git tag is the version live on the App Store. Tags are the bare version (`3.3`, no `v`), annotated, on the shipped commit.
