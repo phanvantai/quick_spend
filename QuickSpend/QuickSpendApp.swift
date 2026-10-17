@@ -35,7 +35,19 @@ struct QuickSpendApp: App {
 
         let resolvedContainer: ModelContainer
         do {
+            #if DEBUG
+            if ScreenshotDemo.isEnabled {
+                ScreenshotDemo.preparePreferences(.shared, language: AppConfigViewModel.detectSystemLanguage() ?? "en")
+                resolvedContainer = try ScreenshotDemo.makeContainer()
+                try ScreenshotDemo.seed(into: resolvedContainer.mainContext, language: PreferencesService.shared.getConfig().language)
+                self._appConfig = State(initialValue: AppConfigViewModel())
+                self._subscription = State(initialValue: SubscriptionViewModel(provider: ScreenshotDemoPremiumProvider()))
+            } else {
+                resolvedContainer = try AppSchema.makeModelContainer()
+            }
+            #else
             resolvedContainer = try AppSchema.makeModelContainer()
+            #endif
             print("[QuickSpendApp] ModelContainer ready")
         } catch {
             fatalError("[QuickSpendApp] Failed to create ModelContainer: \(error)")

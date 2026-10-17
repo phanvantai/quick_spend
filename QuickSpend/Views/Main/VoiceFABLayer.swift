@@ -143,6 +143,11 @@ struct VoiceFABLayer: View {
         .onAppear {
             syncToViewModel()
             startPendingQuickLaunch()
+            #if DEBUG
+            if let text = ScreenshotDemo.voiceText() {
+                vm.processTranscription(text)
+            }
+            #endif
         }
         .onChange(of: QuickLaunchCenter.shared.pending) {
             startPendingQuickLaunch()
