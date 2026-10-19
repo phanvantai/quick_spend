@@ -403,4 +403,5 @@ private struct MockPremiumProvider: SubscriptionProvider {
     func loadPrices() async -> (monthly: String?, yearly: String?) { ("$2.99", "$24.99") }
     func purchase(monthly: Bool) async -> Bool { true }
     func restorePurchases() async -> Bool { true }
+    func syncPurchases() async -> Bool { true }
 }

@@ -49,12 +49,9 @@ enum IntentEnvironment {
     static func resolvePremiumStatus() async -> Bool {
         #if canImport(RevenueCat)
         ensureRevenueCatConfigured()
-        do {
-            let info = try await Purchases.shared.customerInfo()
-            return info.entitlements[SubscriptionViewModel.premiumEntitlementId]?.isActive == true
-        } catch {
-            return false
-        }
+        let subscription = SubscriptionViewModel()
+        await subscription.refreshStatus()
+        return subscription.isPremium
         #else
         return false
         #endif
