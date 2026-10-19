@@ -19,6 +19,7 @@
 - Voice input no longer picks hidden categories, never saves future dates, and asks for review instead of auto-saving when it falls back to "Other"
 - The paywall now shows the report periods each plan really includes (Free: this month, Premium: last 3 months) instead of "7 days" and "All time"
 - Dates like "yesterday" or "last Monday" are no longer lost on devices set to the Japanese or Buddhist calendar
+- Premium subscribers are no longer shown as free after reopening the app (RevenueCat's stale cached status was used at launch). Premium is now fetched fresh, checked against the App Store's own entitlements, and buying a plan you already have unlocks Premium instead of doing nothing
 
 ### Improvements
 - Firebase App Check (App Attest) protects AI requests so only the genuine app can use them — required by Firebase AI Logic from November 2, 2026
@@ -38,6 +39,7 @@ What's New
 
 Bug Fixes
 • Dates like "yesterday" are now recognized correctly on all calendars
+• Fixed Premium subscribers sometimes being treated as free and hitting the daily voice limit
 • Improved security and stability
 
 #### vi
@@ -50,6 +52,7 @@ Tính năng mới
 
 Sửa lỗi
 • Nhận diện đúng ngày như "hôm qua" với mọi loại lịch
+• Sửa lỗi người dùng Premium đôi khi bị coi là tài khoản miễn phí và bị giới hạn lượt nhập giọng nói
 • Cải thiện bảo mật và độ ổn định
 
 #### ja
@@ -62,6 +65,7 @@ Sửa lỗi
 
 バグ修正
 • どのカレンダー設定でも「昨日」などの日付を正しく認識
+• Premium会員が無料プランとして扱われ、音声入力の1日の上限に達してしまうことがある問題を修正
 • セキュリティと安定性を向上
 
 #### es
@@ -74,6 +78,7 @@ Novedades
 
 Correcciones
 • Fechas como "ayer" ahora se reconocen correctamente con cualquier calendario
+• Corregido: los suscriptores Premium a veces se trataban como usuarios gratuitos y alcanzaban el límite diario de voz
 • Mejoras de seguridad y estabilidad
 
 ---

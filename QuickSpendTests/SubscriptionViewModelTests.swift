@@ -26,6 +26,36 @@ struct MockSubscriptionProvider: SubscriptionProvider {
     func restorePurchases() async -> Bool {
         restoreResult
     }
+
+    func syncPurchases() async -> Bool {
+        premiumStatus
+    }
+}
+
+/// Counts `syncPurchases()` calls so tests can check RevenueCat gets resynced.
+final class SpySubscriptionProvider: SubscriptionProvider, @unchecked Sendable {
+    var premiumStatus = false
+    var purchaseResult = false
+    var restoreResult = false
+    private(set) var syncCallCount = 0
+
+    func configure() {}
+    func checkPremiumStatus() async -> Bool { premiumStatus }
+    func loadPrices() async -> (monthly: String?, yearly: String?) { (nil, nil) }
+    func purchase(monthly: Bool) async -> Bool { purchaseResult }
+    func restorePurchases() async -> Bool { restoreResult }
+
+    func syncPurchases() async -> Bool {
+        syncCallCount += 1
+        return premiumStatus
+    }
+}
+
+/// Stands in for StoreKit's current entitlements.
+struct MockStoreEntitlements: StoreEntitlementChecking {
+    var hasActive = false
+
+    func hasActiveSubscription() async -> Bool { hasActive }
 }
 
 @Suite("SubscriptionViewModel Tests")
@@ -38,7 +68,8 @@ struct SubscriptionViewModelTests {
         premium: Bool = false,
         prices: (monthly: String?, yearly: String?) = (nil, nil),
         purchaseResult: Bool = false,
-        restoreResult: Bool = false
+        restoreResult: Bool = false,
+        storeKitActive: Bool = false
     ) -> SubscriptionViewModel {
         let mock = MockSubscriptionProvider(
             premiumStatus: premium,
@@ -46,7 +77,10 @@ struct SubscriptionViewModelTests {
             purchaseResult: purchaseResult,
             restoreResult: restoreResult
         )
-        return SubscriptionViewModel(provider: mock)
+        return SubscriptionViewModel(
+            provider: mock,
+            storeEntitlements: MockStoreEntitlements(hasActive: storeKitActive)
+        )
     }
 
     // MARK: - Initial State
@@ -206,6 +240,58 @@ struct SubscriptionViewModelTests {
         let vm = makeVM(premium: false)
         await vm.refreshStatus()
         #expect(vm.isPremium == false)
+    }
+
+    // MARK: - StoreKit Fallback (regression: Premium lost on relaunch)
+
+    @Test("refreshStatus is premium when RevenueCat says no but StoreKit has an active subscription")
+    func testRefreshStatusFallsBackToStoreKit() async {
+        let vm = makeVM(premium: false, storeKitActive: true)
+        await vm.refreshStatus()
+        #expect(vm.isPremium == true)
+    }
+
+    @Test("refreshStatus resyncs RevenueCat when only StoreKit sees the subscription")
+    func testRefreshStatusResyncsRevenueCat() async {
+        let spy = SpySubscriptionProvider()
+        let vm = SubscriptionViewModel(provider: spy, storeEntitlements: MockStoreEntitlements(hasActive: true))
+        await vm.refreshStatus()
+        #expect(spy.syncCallCount == 1)
+    }
+
+    @Test("refreshStatus does not resync when RevenueCat already reports premium")
+    func testRefreshStatusNoResyncWhenPremium() async {
+        let spy = SpySubscriptionProvider()
+        spy.premiumStatus = true
+        let vm = SubscriptionViewModel(provider: spy, storeEntitlements: MockStoreEntitlements(hasActive: true))
+        await vm.refreshStatus()
+        #expect(vm.isPremium == true)
+        #expect(spy.syncCallCount == 0)
+    }
+
+    @Test("refreshStatus stays free when neither RevenueCat nor StoreKit has a subscription")
+    func testRefreshStatusFreeWhenNothingActive() async {
+        let spy = SpySubscriptionProvider()
+        let vm = SubscriptionViewModel(provider: spy, storeEntitlements: MockStoreEntitlements(hasActive: false))
+        await vm.refreshStatus()
+        #expect(vm.isPremium == false)
+        #expect(spy.syncCallCount == 0)
+    }
+
+    @Test("purchase succeeds when the App Store says the user is already subscribed")
+    func testPurchaseAlreadySubscribed() async {
+        let vm = makeVM(purchaseResult: false, storeKitActive: true)
+        let result = await vm.purchaseYearly()
+        #expect(result == true)
+        #expect(vm.isPremium == true)
+        #expect(vm.isLoading == false)
+    }
+
+    @Test("restorePurchases is premium when StoreKit has an active subscription")
+    func testRestoreFallsBackToStoreKit() async {
+        let vm = makeVM(restoreResult: false, storeKitActive: true)
+        await vm.restorePurchases()
+        #expect(vm.isPremium == true)
     }
 
     // MARK: - Boundary Tests
