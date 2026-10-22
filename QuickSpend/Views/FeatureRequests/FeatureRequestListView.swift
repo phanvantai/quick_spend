@@ -8,7 +8,6 @@ struct FeatureRequestListView: View {
 
     @State private var service = FeatureRequestService()
     @State private var showAddForm = false
-    @State private var showMyRequestsOnly = false
     @State private var isAdminMode = false
     @State private var adminTapCount = 0
     @State private var selectedRequest: FeatureRequest?
@@ -17,11 +16,7 @@ struct FeatureRequestListView: View {
     @State private var expandedRequestId: String?
 
     private var displayedRequests: [FeatureRequest] {
-        var result = showMyRequestsOnly ? service.myRequests() : service.requests
-        if let filter = selectedStatusFilter {
-            result = result.filter { $0.status == filter }
-        }
-        return result
+        service.visibleRequests(includeOthers: isAdminMode, status: selectedStatusFilter)
     }
 
     var body: some View {
@@ -45,15 +40,8 @@ struct FeatureRequestListView: View {
                 }
             }
 
-            // Filters
+            // Status filter
             Section {
-                Toggle(
-                    L10n.tr("feature_request.show_mine_only", appConfig.language),
-                    isOn: $showMyRequestsOnly
-                )
-                .tint(AppTheme.adaptiveAccent(colorScheme))
-
-                // Status filter
                 statusFilterRow()
             }
 
@@ -75,7 +63,7 @@ struct FeatureRequestListView: View {
                 }
             } else {
                 Section(
-                    "\(L10n.tr("feature_request.all_requests", appConfig.language)) (\(displayedRequests.count))"
+                    "\(L10n.tr(isAdminMode ? "feature_request.all_requests" : "feature_request.my_requests", appConfig.language)) (\(displayedRequests.count))"
                 ) {
                     ForEach(displayedRequests) { request in
                         if isAdminMode {
