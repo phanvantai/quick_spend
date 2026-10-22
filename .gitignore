@@ -49,3 +49,5 @@ Runner/GeneratedPluginRegistrant.*
 
 xcshareddata/
 !xcshareddata/swiftpm/Package.resolved
+# Claude Code personal settings
+.claude/settings.local.json

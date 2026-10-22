@@ -36,10 +36,12 @@ What's New
 • Clear voice entries are saved instantly — no extra confirmation step
 • Say which wallet you paid from, or move money between wallets by voice
 • Smarter, faster voice input with the latest Gemini AI
+• New "Help improve voice input" option shares anonymous voice samples (deleted after 90 days). Turn it off anytime in Settings → Data
 
 Bug Fixes
 • Dates like "yesterday" are now recognized correctly on all calendars
 • Fixed Premium subscribers sometimes being treated as free and hitting the daily voice limit
+• Fixed wallet balances, voice income in custom categories, and plan details on the paywall
 • Improved security and stability
 
 #### vi
@@ -49,10 +51,12 @@ Tính năng mới
 • Ghi bằng giọng nói rõ ràng được lưu ngay, không cần bấm xác nhận
 • Nói tên ví đã dùng, hoặc chuyển tiền giữa các ví bằng giọng nói
 • Nhập bằng giọng nói thông minh và nhanh hơn với Gemini AI mới nhất
+• Tùy chọn mới "Giúp cải thiện nhập bằng giọng nói" chia sẻ mẫu giọng nói ẩn danh (tự xóa sau 90 ngày). Có thể tắt bất cứ lúc nào trong Cài đặt → Dữ liệu
 
 Sửa lỗi
 • Nhận diện đúng ngày như "hôm qua" với mọi loại lịch
 • Sửa lỗi người dùng Premium đôi khi bị coi là tài khoản miễn phí và bị giới hạn lượt nhập giọng nói
+• Sửa số dư ví, khoản thu nhập nhập bằng giọng nói trong danh mục tùy chỉnh và thông tin gói trên màn hình nâng cấp
 • Cải thiện bảo mật và độ ổn định
 
 #### ja
@@ -62,10 +66,12 @@ Sửa lỗi
 • はっきり認識できた音声入力は確認なしですぐに保存
 • 支払ったウォレットの指定や、ウォレット間の振替も音声で可能に
 • 最新のGemini AIで音声入力がよりスマートで高速に
+• 新しい「音声入力の改善に協力」オプションで、匿名の音声サンプルを共有（90日後に自動削除）。「設定」→「データ」でいつでもオフにできます
 
 バグ修正
 • どのカレンダー設定でも「昨日」などの日付を正しく認識
 • Premium会員が無料プランとして扱われ、音声入力の1日の上限に達してしまうことがある問題を修正
+• ウォレットの残高、カスタムカテゴリへの音声での収入入力、ペイウォールのプラン内容の表示を修正
 • セキュリティと安定性を向上
 
 #### es
@@ -75,10 +81,12 @@ Novedades
 • Las entradas de voz claras se guardan al instante, sin paso de confirmación
 • Indica con qué billetera pagaste o mueve dinero entre billeteras por voz
 • Entrada por voz más inteligente y rápida con la última versión de Gemini AI
+• Nueva opción "Ayudar a mejorar la entrada por voz": comparte muestras de voz anónimas (se eliminan a los 90 días). Desactívala cuando quieras en Ajustes → Datos
 
 Correcciones
 • Fechas como "ayer" ahora se reconocen correctamente con cualquier calendario
 • Corregido: los suscriptores Premium a veces se trataban como usuarios gratuitos y alcanzaban el límite diario de voz
+• Corregidos los saldos de las billeteras, los ingresos por voz en categorías personalizadas y los detalles de los planes en la pantalla de suscripción
 • Mejoras de seguridad y estabilidad
 
 ---

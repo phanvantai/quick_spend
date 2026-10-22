@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__shipdeck__asc_setBuild",
+      "mcp__shipdeck__asc_submitForReview"
+    ]
+  }
+}

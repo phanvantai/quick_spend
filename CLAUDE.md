@@ -142,7 +142,7 @@ This project follows **Test-Driven Development (TDD)**. Tests are not optional.
   ```
 
 - If it is not higher, bump first in a `chore(release): bump version to X` commit: raise `MARKETING_VERSION` in the 4 app + widget extension configs (they must match; test targets stay at `1.0`) and `CURRENT_PROJECT_VERSION` by 1 in all 8 configs.
-- **Builds come from Xcode Cloud.** Every merge to `main` starts a workflow (set up in App Store Connect, no `ci_scripts/` in the repo) that archives the app and uploads it to TestFlight about 10 minutes later. Don't archive or upload by hand: to ship a change, merge its PR, wait for the build in TestFlight (Shipdeck `asc_status`), then select it for the version.
+- **Builds come from Xcode Cloud.** A merge to `main` that changes `QuickSpend/`, `QuickSpendWidgets/`, `Shared/` or `QuickSpend.xcodeproj/` starts a workflow (set up in App Store Connect, no `ci_scripts/` in the repo) that archives the app and uploads it to TestFlight about 10 minutes later. Docs, landing, screenshots and test-only merges don't build; add any new folder the app compiles to that list (Shipdeck `ci_updateWorkflow`). Don't archive or upload by hand: to ship a change, merge its PR, wait for the build in TestFlight (Shipdeck `asc_status`), then select it for the version.
 - Xcode Cloud sets the build number itself (4.0 builds are 109–112 while `CURRENT_PROJECT_VERSION` is 5), so the number in App Store Connect never matches the project.
 - When a version ships, tag its commit: `git tag -a 3.4 <sha> -m "QuickSpend 3.4 (App Store)" && git push origin 3.4`.
 
