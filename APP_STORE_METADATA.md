@@ -71,13 +71,13 @@ Recurring Transactions
 • Pause or resume anytime
 
 Features:
-• Works completely offline
+• Works offline (voice input needs an internet connection)
 • iCloud sync across all your Apple devices
 • No signup required
 • Dark mode support
 • 4 languages and 4 currencies (USD, VND, JPY, EUR)
 • All data stored locally and securely on-device or in iCloud
-• No ads or tracking
+• No ads
 
 PRO SUBSCRIPTION
 Unlock unlimited AI voice parses, unlimited recurring templates, extended reports, and feature requests.
@@ -161,13 +161,13 @@ Giao dịch định kỳ
 • Tạm dừng hoặc tiếp tục bất cứ lúc nào
 
 Tính năng:
-• Hoạt động hoàn toàn offline
+• Hoạt động offline (nhập bằng giọng nói cần kết nối Internet)
 • Đồng bộ iCloud trên tất cả thiết bị Apple của bạn
 • Không cần đăng ký
 • Hỗ trợ chế độ tối
 • 4 ngôn ngữ và 4 đơn vị tiền tệ (USD, VND, JPY, EUR)
 • Dữ liệu lưu cục bộ an toàn hoặc trên iCloud
-• Không quảng cáo hay theo dõi
+• Không quảng cáo
 
 GÓI PRO
 Mở khóa không giới hạn phân tích giọng nói AI, mẫu định kỳ không giới hạn, báo cáo mở rộng, và gửi yêu cầu tính năng.
@@ -251,13 +251,13 @@ QuickSpend: Instant Tracker
 • いつでも一時停止・再開
 
 機能：
-• 完全オフライン動作
+• オフラインで動作（音声入力にはインターネット接続が必要）
 • すべてのAppleデバイスでiCloud同期
 • サインアップ不要
 • ダークモード対応
 • 4言語・4通貨（USD、VND、JPY、EUR）
 • データをデバイス上またはiCloudに安全保存
-• 広告・トラッキングなし
+• 広告なし
 
 PROサブスクリプション
 無制限のAI音声解析、無制限の定期テンプレート、拡張レポート、機能リクエストをアンロック。
@@ -341,13 +341,13 @@ Transacciones recurrentes
 • Pausa o reanuda en cualquier momento
 
 Caracteristicas:
-• Funciona completamente sin conexion
+• Funciona sin conexion (la entrada de voz necesita Internet)
 • Sincronizacion iCloud en todos tus dispositivos Apple
 • No requiere registro
 • Soporte de modo oscuro
 • 4 idiomas y 4 monedas (USD, VND, JPY, EUR)
 • Datos almacenados localmente en el dispositivo o en iCloud
-• Sin anuncios ni seguimiento
+• Sin anuncios
 
 SUSCRIPCION PRO
 Desbloquea analisis de voz IA ilimitados, plantillas recurrentes ilimitadas, informes extendidos y solicitudes de funciones.
