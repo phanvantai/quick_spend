@@ -3815,54 +3815,54 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Be the first to suggest a feature!"
+            "value" : "Tell us what you'd like to see next!"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¡Sé el primero en sugerir una función!"
+            "value" : "¡Cuéntanos qué te gustaría ver a continuación!"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最初に機能を提案しましょう！"
+            "value" : "次に欲しい機能を教えてください！"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hãy là người đầu tiên đề xuất tính năng!"
+            "value" : "Hãy cho chúng tôi biết bạn muốn có tính năng gì tiếp theo!"
           }
         }
       }
     },
-    "feature_request.show_mine_only" : {
+    "feature_request.my_requests" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show My Requests Only"
+            "value" : "My Requests"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar solo mis solicitudes"
+            "value" : "Mis solicitudes"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "自分のリクエストのみ表示"
+            "value" : "自分のリクエスト"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chỉ hiện yêu cầu của tôi"
+            "value" : "Yêu cầu của tôi"
           }
         }
       }

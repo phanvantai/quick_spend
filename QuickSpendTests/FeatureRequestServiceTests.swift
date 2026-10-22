@@ -201,6 +201,44 @@ struct FeatureRequestServiceTests {
         #expect(service.myRequests().count == 2)
     }
 
+    // MARK: - visibleRequests
+
+    @Test("visibleRequests hides other users' requests outside admin mode")
+    func testVisibleRequestsHidesOthersByDefault() {
+        let (service, _) = makeService()
+        let mine = makeSampleRequest(id: "req_mine", userId: service.currentUserId)
+        let other = makeSampleRequest(id: "req_other", userId: "other_user")
+
+        service._setRequests([mine, other])
+
+        #expect(service.visibleRequests(includeOthers: false).map(\.id) == ["req_mine"])
+    }
+
+    @Test("visibleRequests shows every request in admin mode")
+    func testVisibleRequestsShowsAllInAdminMode() {
+        let (service, _) = makeService()
+        let mine = makeSampleRequest(id: "req_mine", userId: service.currentUserId)
+        let other = makeSampleRequest(id: "req_other", userId: "other_user")
+
+        service._setRequests([mine, other])
+
+        #expect(service.visibleRequests(includeOthers: true).map(\.id) == ["req_mine", "req_other"])
+    }
+
+    @Test("visibleRequests applies the status filter to the user's own requests")
+    func testVisibleRequestsFiltersByStatus() {
+        let (service, _) = makeService()
+        let myUserId = service.currentUserId
+        let minePending = makeSampleRequest(id: "req_1", userId: myUserId, status: .pending)
+        let mineDone = makeSampleRequest(id: "req_2", userId: myUserId, status: .completed)
+        let otherDone = makeSampleRequest(id: "req_3", userId: "other_user", status: .completed)
+
+        service._setRequests([minePending, mineDone, otherDone])
+
+        #expect(service.visibleRequests(includeOthers: false, status: .completed).map(\.id) == ["req_2"])
+        #expect(service.visibleRequests(includeOthers: true, status: .completed).map(\.id) == ["req_2", "req_3"])
+    }
+
     // MARK: - _setRequests
 
     @Test("_setRequests replaces existing requests")

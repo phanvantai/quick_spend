@@ -151,6 +151,17 @@ final class FeatureRequestService {
         requests.filter { $0.status == status }
     }
 
+    /// What the list shows. Users only see their own requests, so other people's
+    /// text never reaches them (no user-generated content for the age rating);
+    /// admin mode (`includeOthers`) shows every request for moderation.
+    func visibleRequests(includeOthers: Bool, status: RequestStatus? = nil) -> [FeatureRequest] {
+        var result = includeOthers ? requests : myRequests()
+        if let status {
+            result = result.filter { $0.status == status }
+        }
+        return result
+    }
+
     // MARK: - Test Helpers
 
     /// Inject requests directly for unit testing without Firestore
