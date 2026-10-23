@@ -30,6 +30,28 @@ final class QuickSpendUITests: XCTestCase {
         }
     }
 
+    // MARK: - Subscription
+
+    /// Regression: a Premium user was shown as free on every launch (Settings
+    /// offered the upgrade, voice hit the daily limit) because the
+    /// SubscriptionViewModel that checked RevenueCat was not the one the UI used.
+    @MainActor
+    func testPremiumUserIsPremiumAfterLaunch() throws {
+        app.launchArguments = ["-ScreenshotDemo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        let settings = app.buttons["gearshape.fill"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 10))
+        settings.tap()
+
+        let premium = app.staticTexts["Quick Spend Premium"]
+        let upgrade = app.staticTexts["Upgrade to Premium"]
+        XCTAssertTrue(app.staticTexts["Settings"].waitForExistence(timeout: 5))
+        if !premium.exists && !upgrade.exists { app.swipeUp() }
+        XCTAssertTrue(premium.waitForExistence(timeout: 5), "Settings shows the free tier for a Premium user")
+        XCTAssertFalse(upgrade.exists)
+    }
+
     // MARK: - Onboarding Flow
 
     @MainActor

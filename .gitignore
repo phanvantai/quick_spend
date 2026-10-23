@@ -51,3 +51,6 @@ xcshareddata/
 !xcshareddata/swiftpm/Package.resolved
 # Claude Code personal settings
 .claude/settings.local.json
+
+# Coverage output from test runs
+*.profraw

@@ -5,11 +5,12 @@ import SwiftData
 struct RecurringService {
 
     /// Generate all pending recurring transactions
-    /// Should be called on app startup
+    /// Called on app startup and whenever the app returns to the foreground
     @MainActor
     static func generatePendingTransactions(
         modelContext: ModelContext,
-        balanceService: BalanceService? = nil
+        balanceService: BalanceService? = nil,
+        now: Date = .now
     ) -> Int {
         let descriptor = FetchDescriptor<RecurringTemplate>(
             predicate: #Predicate { $0.isActive == true }
@@ -20,7 +21,7 @@ struct RecurringService {
         var transactions: [Transaction] = []
         var originalLastGeneratedDates: [(RecurringTemplate, Date?)] = []
         for template in templates {
-            let result = pendingTransactions(for: template, modelContext: modelContext)
+            let result = pendingTransactions(for: template, modelContext: modelContext, now: now)
             totalGenerated += result.occurrenceCount
             transactions.append(contentsOf: result.transactions)
             if let lastGeneratedDate = result.lastGeneratedDate {
@@ -62,11 +63,11 @@ struct RecurringService {
     @MainActor
     private static func pendingTransactions(
         for template: RecurringTemplate,
-        modelContext: ModelContext
+        modelContext: ModelContext,
+        now: Date
     ) -> (transactions: [Transaction], lastGeneratedDate: Date?, occurrenceCount: Int) {
         guard template.isActive else { return ([], nil, 0) }
 
-        let now = Date.now
         let calendar = Calendar.current
 
         // If template has ended, skip

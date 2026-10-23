@@ -120,25 +120,33 @@ enum GeminiParserService {
             return false
         }
         if trimmed.count < AppConstants.minVoiceInputLength {
+            #if DEBUG
             print("[GeminiParser] Rejected: too short (\(trimmed.count) chars, min \(AppConstants.minVoiceInputLength)): \"\(trimmed)\"")
+            #endif
             return false
         }
         if trimmed.count > AppConstants.maxVoiceInputLength {
+            #if DEBUG
             print("[GeminiParser] Rejected: too long (\(trimmed.count) chars, max \(AppConstants.maxVoiceInputLength)): \"\(trimmed.prefix(50))...\"")
+            #endif
             return false
         }
 
         // Must contain alphanumeric
         let alphanumeric = CharacterSet.alphanumerics
         if trimmed.unicodeScalars.allSatisfy({ !alphanumeric.contains($0) }) {
+            #if DEBUG
             print("[GeminiParser] Rejected: no alphanumeric characters: \"\(trimmed)\"")
+            #endif
             return false
         }
 
         // Must contain at least one letter (pure numbers have no expense context)
         let letters = CharacterSet.letters
         if !trimmed.unicodeScalars.contains(where: { letters.contains($0) }) {
+            #if DEBUG
             print("[GeminiParser] Rejected: no letters (pure numbers/symbols): \"\(trimmed)\"")
+            #endif
             return false
         }
 
@@ -146,7 +154,9 @@ enum GeminiParserService {
         let lowered = trimmed.lowercased()
         for regex in fillerRegexes {
             if regex.firstMatch(in: lowered, range: NSRange(lowered.startIndex..., in: lowered)) != nil {
+                #if DEBUG
                 print("[GeminiParser] Rejected: filler word detected: \"\(trimmed)\"")
+                #endif
                 return false
             }
         }
@@ -156,12 +166,16 @@ enum GeminiParserService {
         if words.count >= 3 {
             let unique = Set(words)
             if unique.count == 1 {
+                #if DEBUG
                 print("[GeminiParser] Rejected: repeated word (\(words.count)x \"\(words[0])\"): \"\(trimmed)\"")
+                #endif
                 return false
             }
         }
 
+        #if DEBUG
         print("[GeminiParser] Input validated: \"\(trimmed)\" (\(trimmed.count) chars, \(words.count) words)")
+        #endif
         return true
     }
 
@@ -315,7 +329,9 @@ enum GeminiParserService {
         var results: [ParsedTransaction] = []
         for (index, item) in items.enumerated() {
             guard let amount = (item["amount"] as? NSNumber)?.doubleValue, amount > 0 else {
+                #if DEBUG
                 print("[GeminiParser] Skipped transaction[\(index)]: invalid amount (\(String(describing: item["amount"])))")
+                #endif
                 continue
             }
             let clampedAmount = min(amount, AppConstants.maxExpenseAmount)
@@ -588,7 +604,9 @@ extension GeminiParserService {
                 return []
             }
 
+            #if DEBUG
             print("[GeminiParser] Raw Gemini response: \(text)")
+            #endif
 
             guard let data = text.data(using: .utf8),
                   let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {

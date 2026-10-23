@@ -247,7 +247,9 @@ struct FirestoreFeatureRequestStore: FeatureRequestStore {
             "language": request.language,
             "priority": request.priority,
         ])
+        #if DEBUG
         print("[FeatureRequest] Submitted: \(request.title)")
+        #endif
     }
 
     func deleteRequest(requestId: String) async throws {

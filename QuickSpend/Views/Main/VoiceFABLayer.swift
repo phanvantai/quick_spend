@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 
 /// Hosts the voice-capture FAB, recording bubble, processing indicator, toast,
 /// and the sheets/alerts the flow can present. Drop into a ZStack above
@@ -19,6 +20,7 @@ struct VoiceFABLayer: View {
     @Query(sort: \Wallet.sortOrder) private var wallets: [Wallet]
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.requestReview) private var requestReview
     @State private var vm = VoiceCaptureViewModel()
     private let preferences = PreferencesService.shared
 
@@ -157,6 +159,17 @@ struct VoiceFABLayer: View {
         }
         .onChange(of: vm.voiceService.isListening) {
             vm.syncWithVoiceServiceListeningState()
+        }
+        .onChange(of: vm.shouldRequestReview) { _, shouldRequest in
+            guard shouldRequest else { return }
+            vm.shouldRequestReview = false
+            #if DEBUG
+            if ScreenshotDemo.isEnabled { return }
+            #endif
+            // Wait for the saved toast (2.5s) or the review sheet to go away.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                requestReview()
+            }
         }
         .onChange(of: subscription.isPremium) {
             vm.isPremium = subscription.isPremium

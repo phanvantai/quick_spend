@@ -6,7 +6,7 @@ import Combine
 @main
 struct QuickSpendApp: App {
     @State private var appConfig = AppConfigViewModel()
-    @State private var subscription = SubscriptionViewModel()
+    @State private var subscription: SubscriptionViewModel
     @State private var cloudSync: CloudSyncService
     @State private var balance: BalanceService
 
@@ -33,6 +33,13 @@ struct QuickSpendApp: App {
         }
         #endif
 
+        // Hand State the instance explicitly. `@State var subscription =
+        // SubscriptionViewModel()` creates an @Observable lazily when SwiftUI
+        // installs the State, so each use here in init built a throwaway one:
+        // initialize() checked Premium on it and the UI never saw the result.
+        let subscription = SubscriptionViewModel()
+        self._subscription = State(initialValue: subscription)
+
         let resolvedContainer: ModelContainer
         do {
             #if DEBUG
@@ -41,7 +48,6 @@ struct QuickSpendApp: App {
                 resolvedContainer = try ScreenshotDemo.makeContainer()
                 try ScreenshotDemo.seed(into: resolvedContainer.mainContext, language: PreferencesService.shared.getConfig().language)
                 self._appConfig = State(initialValue: AppConfigViewModel())
-                self._subscription = State(initialValue: SubscriptionViewModel(provider: ScreenshotDemoPremiumProvider()))
             } else {
                 resolvedContainer = try AppSchema.makeModelContainer()
             }

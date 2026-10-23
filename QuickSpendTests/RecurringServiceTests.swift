@@ -607,4 +607,36 @@ struct RecurringServiceTests {
         let transactions = try fetchTransactions(from: context)
         #expect(transactions.count == 2)
     }
+
+    // MARK: - Foreground Regeneration
+
+    @Test("Generating again after midnight adds only the new day's transaction")
+    func testRegenerationNextDayAddsOnlyNewDay() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let today = Date.now
+
+        let template = RecurringTemplate(
+            amount: 9999,
+            note: "Test daily item",
+            categoryId: "food_drink",
+            type: .expense,
+            pattern: .daily,
+            startDate: Calendar.current.date(byAdding: .day, value: -1, to: today)!
+        )
+        context.insert(template)
+        try context.save()
+
+        #expect(RecurringService.generatePendingTransactions(modelContext: context, now: today) == 2)
+
+        // App stays in memory past midnight, then returns to the foreground.
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
+        #expect(RecurringService.generatePendingTransactions(modelContext: context, now: tomorrow) == 1)
+        #expect(RecurringService.generatePendingTransactions(modelContext: context, now: tomorrow) == 0)
+
+        let transactions = try fetchTransactions(from: context)
+        #expect(transactions.count == 3)
+        #expect(Set(transactions.map(\.id)).count == 3)
+        #expect(Calendar.current.isDate(try #require(transactions.last).date, inSameDayAs: tomorrow))
+    }
 }

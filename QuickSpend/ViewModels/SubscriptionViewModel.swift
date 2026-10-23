@@ -71,15 +71,20 @@ final class SubscriptionViewModel {
         storeEntitlements: StoreEntitlementChecking = StoreKitEntitlementChecker()
     ) {
         self.storeEntitlements = storeEntitlements
-        if let provider {
-            self.provider = provider
-        } else {
-            #if canImport(RevenueCat)
-            self.provider = RevenueCatProvider()
-            #else
-            self.provider = NoOpSubscriptionProvider()
-            #endif
-        }
+        self.provider = provider ?? Self.defaultProvider()
+    }
+
+    private static func defaultProvider() -> SubscriptionProvider {
+        #if DEBUG
+        // Screenshot demo acts as Pro. Chosen here, not in `QuickSpendApp`, so
+        // the demo goes through the same app wiring as a real launch.
+        if ScreenshotDemo.isEnabled { return ScreenshotDemoPremiumProvider() }
+        #endif
+        #if canImport(RevenueCat)
+        return RevenueCatProvider()
+        #else
+        return NoOpSubscriptionProvider()
+        #endif
     }
 
     /// Feature gating
