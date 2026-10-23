@@ -25,6 +25,7 @@ final class VoiceCaptureViewModel {
     private let parser: ExpenseParsing
     private let analytics: VoiceAnalytics
     private let samples: VoiceSampleRecording
+    private let appVersion: String
 
     // MARK: - Synced from view
 
@@ -82,6 +83,9 @@ final class VoiceCaptureViewModel {
     var showAutoSavedToast = false
     /// What the last auto-save stored (as parsed, so a transfer is one item), for the toast.
     var autoSavedItems: [ParsedTransaction] = []
+    /// Set after enough successful voice saves (see `ReviewPromptPolicy`); the
+    /// view asks StoreKit for a review and clears it.
+    var shouldRequestReview = false
 
     // MARK: - Auto-save
 
@@ -127,7 +131,8 @@ final class VoiceCaptureViewModel {
         preferences: PreferencesService,
         parser: ExpenseParsing,
         analytics: AnalyticsLogging = FirebaseAnalyticsLogger(),
-        samples: VoiceSampleRecording? = nil
+        samples: VoiceSampleRecording? = nil,
+        appVersion: String = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
     ) {
         self.voiceService = voiceService
         self.usageLimitService = usageLimitService
@@ -135,6 +140,7 @@ final class VoiceCaptureViewModel {
         self.parser = parser
         self.analytics = VoiceAnalytics(logger: analytics)
         self.samples = samples ?? VoiceSampleRecorder.shared
+        self.appVersion = appVersion
     }
 
     // MARK: - Derived
@@ -236,7 +242,9 @@ final class VoiceCaptureViewModel {
         guard isRecordingActive else { return }
         isRecordingActive = false
         let text = voiceService.stopListening()
+        #if DEBUG
         print("[VoiceCapture] Recording ended — transcription: \"\(text)\" (length: \(text.count))")
+        #endif
         pendingRecordSeconds = recordSecondsSoFar()
         processTranscription(text)
     }
@@ -323,7 +331,9 @@ final class VoiceCaptureViewModel {
             return nil
         }
 
+        #if DEBUG
         print("[VoiceCapture] Sending to parser: \"\(inputText)\"")
+        #endif
         isProcessingVoice = true
 
         let parseStartedAt = Date.now
@@ -348,7 +358,9 @@ final class VoiceCaptureViewModel {
         if results.isEmpty {
             logResult(.failed, recordSeconds: recordSeconds, parseMs: parseMs)
             recordSample(input: inputText, outcome: .failed)
+            #if DEBUG
             print("[VoiceCapture] Parser returned no results for: \"\(inputText)\" — falling back to manual entry")
+            #endif
             parseFailureMessage = L10n.tr("voice.parse_failed", language)
             withAnimation { showParseFailureToast = true }
             fallbackTranscription = inputText
@@ -360,6 +372,7 @@ final class VoiceCaptureViewModel {
             if let saved = autoSaveIfConfident(resultsWithRawInput) {
                 logResult(.autoSaved, items: resultsWithRawInput, recordSeconds: recordSeconds, parseMs: parseMs)
                 recordSample(input: inputText, outcome: .autoSaved, action: "auto_saved", parsed: resultsWithRawInput, saved: saved)
+                voiceSaveSucceeded()
                 return
             }
             logResult(.review, items: resultsWithRawInput, recordSeconds: recordSeconds, parseMs: parseMs)
@@ -395,6 +408,7 @@ final class VoiceCaptureViewModel {
         let edited = VoiceAnalytics.wasEdited(parsed: items, saved: transactions, defaultWalletId: defaultWalletId)
         analytics.logReviewClosed(source: recordingSource, saved: true, edited: edited, itemCount: transactions.count)
         recordSample(input: reviewedInput, outcome: .review, action: "saved", edited: edited, parsed: items, saved: transactions)
+        voiceSaveSucceeded()
     }
 
     /// Call when the review sheet closes; logs a discard unless it was saved.
@@ -403,6 +417,19 @@ final class VoiceCaptureViewModel {
         reviewedItems = nil
         analytics.logReviewClosed(source: recordingSource, saved: false, edited: false, itemCount: items.count)
         recordSample(input: reviewedInput, outcome: .review, action: "discarded", parsed: items)
+    }
+
+    // MARK: - Review prompt
+
+    private func voiceSaveSucceeded() {
+        preferences.incrementVoiceSaveCount()
+        guard ReviewPromptPolicy.shouldRequest(
+            voiceSaveCount: preferences.voiceSaveCount,
+            lastPromptVersion: preferences.lastReviewPromptVersion,
+            currentVersion: appVersion
+        ) else { return }
+        preferences.lastReviewPromptVersion = appVersion
+        shouldRequestReview = true
     }
 
     private func recordSample(

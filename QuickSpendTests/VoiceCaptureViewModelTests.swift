@@ -53,15 +53,18 @@ struct VoiceCaptureViewModelTests {
     private func makeViewModel(
         parser: MockParser? = nil,
         analytics: MockAnalyticsLogger = MockAnalyticsLogger(),
-        samples: MockVoiceSampleRecorder? = nil
+        samples: MockVoiceSampleRecorder? = nil,
+        preferences: PreferencesService? = nil,
+        appVersion: String = "9.9.9-test"
     ) -> VoiceCaptureViewModel {
         VoiceCaptureViewModel(
             voiceService: VoiceService(),
             usageLimitService: makeUsage(),
-            preferences: makePrefs(),
+            preferences: preferences ?? makePrefs(),
             parser: parser ?? MockParser(),
             analytics: analytics,
-            samples: samples ?? MockVoiceSampleRecorder()
+            samples: samples ?? MockVoiceSampleRecorder(),
+            appVersion: appVersion
         )
     }
 
@@ -590,5 +593,88 @@ struct VoiceCaptureViewModelTests {
         let vm = makeViewModel(samples: samples)
         vm.processTranscription("  ")
         #expect(samples.recorded.isEmpty)
+    }
+
+    // MARK: - Review prompt
+
+    private func makeConfidentViewModel(
+        preferences: PreferencesService,
+        appVersion: String = "9.9.9-test"
+    ) -> VoiceCaptureViewModel {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.95)]
+        let vm = makeViewModel(parser: parser, preferences: preferences, appVersion: appVersion)
+        vm.isPremium = true
+        vm.onAutoSave = { _ in }
+        return vm
+    }
+
+    @Test("The third successful voice save asks for a review")
+    func testReviewRequestedAfterThreeSaves() async {
+        let prefs = makePrefs()
+        let vm = makeConfidentViewModel(preferences: prefs)
+
+        await vm.processTranscription("coffee one")?.value
+        await vm.processTranscription("coffee two")?.value
+        #expect(vm.shouldRequestReview == false)
+
+        await vm.processTranscription("coffee three")?.value
+        #expect(vm.shouldRequestReview == true)
+        #expect(prefs.voiceSaveCount == 3)
+        #expect(prefs.lastReviewPromptVersion == "9.9.9-test")
+    }
+
+    @Test("Saves from the review sheet count toward the review prompt")
+    func testReviewSheetSavesCount() async throws {
+        let parser = MockParser()
+        parser.stubbedResults = [makeParsed(confidence: 0.5)]
+        let prefs = makePrefs()
+        let vm = makeViewModel(parser: parser, preferences: prefs)
+        vm.isPremium = true
+        vm.onAutoSave = { _ in }
+
+        for _ in 0..<3 {
+            await vm.processTranscription("coffee")?.value
+            let saved = try VoiceTransactionBuilder.transactions(from: vm.parsedTransactions, defaultWalletId: "wallet_default_test")
+            vm.reviewSaved(saved)
+        }
+
+        #expect(prefs.voiceSaveCount == 3)
+        #expect(vm.shouldRequestReview == true)
+    }
+
+    @Test("Discarded reviews and failed parses don't count toward the review prompt")
+    func testFailuresDontCount() async {
+        let parser = MockParser()
+        let prefs = makePrefs()
+        let vm = makeViewModel(parser: parser, preferences: prefs)
+        vm.isPremium = true
+        vm.onAutoSave = { _ in }
+
+        parser.stubbedResults = []
+        await vm.processTranscription("nothing useful")?.value
+        parser.stubbedResults = [makeParsed(confidence: 0.5)]
+        await vm.processTranscription("coffee")?.value
+        vm.reviewDismissed()
+
+        #expect(prefs.voiceSaveCount == 0)
+        #expect(vm.shouldRequestReview == false)
+    }
+
+    @Test("The review prompt is asked once per app version")
+    func testReviewRequestedOncePerVersion() async {
+        let prefs = makePrefs()
+        let vm = makeConfidentViewModel(preferences: prefs)
+        for _ in 0..<3 { await vm.processTranscription("coffee")?.value }
+        #expect(vm.shouldRequestReview == true)
+
+        vm.shouldRequestReview = false
+        await vm.processTranscription("coffee again")?.value
+        #expect(vm.shouldRequestReview == false)
+
+        let updated = makeConfidentViewModel(preferences: prefs, appVersion: "9.9.10-test")
+        await updated.processTranscription("coffee after update")?.value
+        #expect(updated.shouldRequestReview == true)
+        #expect(prefs.lastReviewPromptVersion == "9.9.10-test")
     }
 }

@@ -9,6 +9,7 @@ struct SplashView: View {
     @Environment(AppConfigViewModel.self) private var appConfig
     @Environment(CloudSyncService.self) private var cloudSync
     @Environment(BalanceService.self) private var balanceService
+    @Environment(\.scenePhase) private var scenePhase
 
     /// True once all launch work has completed and the minimum display time has elapsed
     @State private var isLaunchComplete = false
@@ -38,6 +39,14 @@ struct SplashView: View {
         .onReceive(cloudSync.didFinishImport) { _ in
             guard isLaunchComplete else { return }
             reconcileImportedData()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard SplashLaunchPolicy.shouldGenerateRecurring(
+                on: phase,
+                isLaunchComplete: isLaunchComplete,
+                isOnboardingComplete: appConfig.isOnboardingComplete
+            ) else { return }
+            generateRecurringTransactions()
         }
     }
 
@@ -193,11 +202,16 @@ struct SplashView: View {
 
         // Generate recurring transactions if onboarding is complete
         if appConfig.isOnboardingComplete {
-            let _ = RecurringService.generatePendingTransactions(
-                modelContext: modelContext,
-                balanceService: balanceService
-            )
+            generateRecurringTransactions()
         }
+    }
+
+    @MainActor
+    private func generateRecurringTransactions() {
+        let _ = RecurringService.generatePendingTransactions(
+            modelContext: modelContext,
+            balanceService: balanceService
+        )
     }
 
     @MainActor

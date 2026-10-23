@@ -44,6 +44,7 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 - `AppConfigViewModel` (`@Observable`) — wraps `PreferencesService`, injected as `@Environment` from app root
 - `SubscriptionViewModel` (`@Observable`) — RevenueCat integration, also `@Environment`
 - Both are created in `QuickSpendApp` and passed down via `.environment()`
+- If `QuickSpendApp.init` uses an `@Observable` before SwiftUI installs its State, create it as a local and assign `self._x = State(initialValue: x)`. With `@State var x = X()`, SwiftUI creates the object lazily, so each use in init builds a throwaway instance (this made Premium users look free on every launch until 4.1)
 
 ### Services (`Services/`)
 

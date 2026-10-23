@@ -11,9 +11,9 @@ import SwiftData
 /// Add `-AppleLanguages "(vi)"` for localized screenshots.
 @MainActor
 enum ScreenshotDemo {
-    static let launchArgument = "-ScreenshotDemo"
+    nonisolated static let launchArgument = "-ScreenshotDemo"
 
-    static var isEnabled: Bool {
+    nonisolated static var isEnabled: Bool {
         ProcessInfo.processInfo.arguments.contains(launchArgument)
     }
 

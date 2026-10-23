@@ -12,6 +12,8 @@ final class PreferencesService {
     private let selectedWalletScopeKey = "selected_wallet_scope"
     private let walletsWhatsNewKey = "wallets_whats_new"
     private let shareVoiceSamplesKey = "share_voice_samples"
+    private let voiceSaveCountKey = "voice_save_count"
+    private let lastReviewPromptVersionKey = "last_review_prompt_version"
 
     private convenience init() {
         self.init(defaults: .standard)
@@ -124,6 +126,23 @@ final class PreferencesService {
         defaults.set(voiceRecordingCount + 1, forKey: voiceRecordingCountKey)
     }
 
+    // MARK: - Review Prompt
+
+    /// Voice captures that ended in saved transactions (auto-saved or reviewed).
+    var voiceSaveCount: Int {
+        defaults.integer(forKey: voiceSaveCountKey)
+    }
+
+    func incrementVoiceSaveCount() {
+        defaults.set(voiceSaveCount + 1, forKey: voiceSaveCountKey)
+    }
+
+    /// App version that last asked for a review.
+    var lastReviewPromptVersion: String? {
+        get { defaults.string(forKey: lastReviewPromptVersionKey) }
+        set { defaults.set(newValue, forKey: lastReviewPromptVersionKey) }
+    }
+
     /// Whether anonymous voice samples may be sent to improve parsing. On
     /// unless the user turned it off in Settings.
     var shareVoiceSamples: Bool {
@@ -144,5 +163,7 @@ final class PreferencesService {
         defaults.removeObject(forKey: selectedWalletScopeKey)
         defaults.removeObject(forKey: walletsWhatsNewKey)
         defaults.removeObject(forKey: shareVoiceSamplesKey)
+        defaults.removeObject(forKey: voiceSaveCountKey)
+        defaults.removeObject(forKey: lastReviewPromptVersionKey)
     }
 }

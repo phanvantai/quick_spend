@@ -2,6 +2,56 @@
 
 ---
 
+## [4.1] - 2026-10-23
+
+### What's New
+- After a few successful voice saves, the app asks once per version for an App Store rating (Apple decides whether the prompt appears)
+
+### Bug Fixes
+- Premium subscribers were shown as free on every launch (Settings offered the upgrade, voice hit the 3-a-day limit, longer reports were locked) until they tapped Restore. Since the SwiftUI rewrite, `@State var subscription = SubscriptionViewModel()` created the @Observable lazily, so the instance `QuickSpendApp.init` checked with RevenueCat was a throwaway and the UI's instance never checked. The app now creates one instance and hands it to State explicitly
+- Recurring transactions due today now appear when the app returns to the foreground, not only after a cold launch
+- Release builds no longer print what the user said, the parser input, Gemini's raw response, or feature-request titles to the device console
+
+### App Store Notes
+
+#### en
+What's New
+• Enjoying QuickSpend? After a few voice entries we'll ask once for a quick rating
+
+Bug Fixes
+• Fixed Premium subscribers being shown as free after opening the app
+• Recurring transactions now appear as soon as you return to the app
+• Improved privacy and stability
+
+#### vi
+Tính năng mới
+• Bạn thích QuickSpend? Sau vài lần nhập bằng giọng nói, ứng dụng sẽ hỏi bạn đánh giá một lần
+
+Sửa lỗi
+• Sửa lỗi người dùng Premium bị hiển thị là tài khoản miễn phí khi mở ứng dụng
+• Giao dịch định kỳ giờ hiện ra ngay khi bạn quay lại ứng dụng
+• Cải thiện quyền riêng tư và độ ổn định
+
+#### ja
+新機能
+• QuickSpendを気に入っていただけましたか？音声入力を何回か使うと、評価のお願いを一度だけ表示します
+
+バグ修正
+• アプリを開いたときにPremium会員が無料プランと表示される問題を修正
+• アプリに戻るとすぐに定期的な取引が表示されるように
+• プライバシーと安定性を向上
+
+#### es
+Novedades
+• ¿Te gusta QuickSpend? Tras algunas entradas por voz te pediremos una valoración una sola vez
+
+Correcciones
+• Corregido: los suscriptores Premium aparecían como usuarios gratuitos al abrir la app
+• Las transacciones recurrentes ahora aparecen en cuanto vuelves a la app
+• Mejoras de privacidad y estabilidad
+
+---
+
 ## [4.0] - 2026-10-16
 
 3.4 was never released; its changes ship in 4.0.

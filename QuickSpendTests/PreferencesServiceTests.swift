@@ -198,6 +198,25 @@ struct PreferencesServiceTests {
         #expect(service.voiceRecordingCount == 3)
     }
 
+    @Test("voiceSaveCount starts at 0 and increments")
+    func testVoiceSaveCount() {
+        let service = makeService()
+        #expect(service.voiceSaveCount == 0)
+
+        service.incrementVoiceSaveCount()
+        service.incrementVoiceSaveCount()
+        #expect(service.voiceSaveCount == 2)
+    }
+
+    @Test("lastReviewPromptVersion starts empty and persists")
+    func testLastReviewPromptVersion() {
+        let service = makeService()
+        #expect(service.lastReviewPromptVersion == nil)
+
+        service.lastReviewPromptVersion = "9.9.9-test"
+        #expect(service.lastReviewPromptVersion == "9.9.9-test")
+    }
+
     // MARK: - Config Isolation
 
     @Test("Two service instances don't interfere with each other")
@@ -243,11 +262,15 @@ struct PreferencesServiceTests {
         service.markVoiceTutorialShown()
         service.incrementVoiceRecordingCount()
         service.incrementVoiceRecordingCount()
+        service.incrementVoiceSaveCount()
+        service.lastReviewPromptVersion = "9.9.9-test"
 
         service.clearAll()
 
         #expect(service.hasShownVoiceTutorial == false)
         #expect(service.voiceRecordingCount == 0)
+        #expect(service.voiceSaveCount == 0)
+        #expect(service.lastReviewPromptVersion == nil)
     }
 
     @Test("Overwriting config replaces all values")
