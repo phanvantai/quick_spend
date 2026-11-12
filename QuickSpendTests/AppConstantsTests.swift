@@ -23,6 +23,14 @@ struct AppConstantsTests {
         #expect(AppConstants.freeTierRecurringTemplatesLimit == 3)
     }
 
+    // MARK: - Links
+
+    @Test("Privacy policy opens the page on the Boolery Studio site")
+    func testPrivacyPolicyUrl() {
+        #expect(AppConstants.privacyPolicyUrl == "https://boolery.taiphanvan.dev/quickspend/privacy.html")
+        #expect(URL(string: AppConstants.privacyPolicyUrl) != nil)
+    }
+
     // MARK: - Voice Input
 
     @Test("Voice input min length is reasonable")
