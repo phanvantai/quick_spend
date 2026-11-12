@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`QuickSpend/` contains the iOS application. Keep SwiftData entities and value types in `Models/`, business and integration logic in `Services/`, observable state in `ViewModels/`, reusable helpers in `Utilities/`, and design tokens in `Theme/`. SwiftUI screens are grouped by feature under `Views/`; App Intents and shortcuts live in `Intents/`. Unit tests are in `QuickSpendTests/`, while launch and end-to-end checks are in `QuickSpendUITests/`. `quickspend-landing/` is the static GitHub Pages site, `screenshot-generator/` is a separate Next.js tool, and `screenshots/` stores generated marketing assets.
+`QuickSpend/` contains the iOS application. Keep SwiftData entities and value types in `Models/`, business and integration logic in `Services/`, observable state in `ViewModels/`, reusable helpers in `Utilities/`, and design tokens in `Theme/`. SwiftUI screens are grouped by feature under `Views/`; App Intents and shortcuts live in `Intents/`. Unit tests are in `QuickSpendTests/`, while launch and end-to-end checks are in `QuickSpendUITests/`. The landing, privacy and support pages live in the `boolery-studio` repo (`site/public/quickspend/`); `screenshot-generator/` is a separate Next.js tool, and `screenshots/` stores generated marketing assets.
 
 ## Build, Test, and Development Commands
 
@@ -10,7 +10,7 @@
 - `xcodebuild -project QuickSpend.xcodeproj -scheme QuickSpend -sdk iphonesimulator build` resolves Swift Package Manager dependencies and builds the app.
 - `xcodebuild -project QuickSpend.xcodeproj -scheme QuickSpend -sdk iphonesimulator test` runs unit and UI test targets.
 - Add `-only-testing:QuickSpendTests/TransactionTests` before `test` to run one suite.
-- In `screenshot-generator/`, run `npm install`, then `npm run dev` or `npm run build`. The static landing page needs no local build step.
+- In `screenshot-generator/`, run `npm install`, then `npm run dev` or `npm run build`.
 
 ## Coding Style & Naming Conventions
 
