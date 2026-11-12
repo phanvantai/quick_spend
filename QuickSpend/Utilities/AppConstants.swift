@@ -12,7 +12,7 @@ enum AppConstants {
     static let subscriptionMonthlyPriceUSD = 2.99
     static let subscriptionYearlyPriceUSD = 24.99
     static let termsOfUseUrl = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
-    static let privacyPolicyUrl = "https://quickspend.taiphanvan.dev/privacy.html"
+    static let privacyPolicyUrl = "https://boolery.taiphanvan.dev/quickspend/privacy.html"
     static let freeTierGeminiLimit = 3
     static let freeTierRecurringTemplatesLimit = 3
 

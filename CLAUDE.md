@@ -135,7 +135,7 @@ This project follows **Test-Driven Development (TDD)**. Tests are not optional.
 ## Landing page
 
 - The landing, privacy and support pages live in the Boolery Studio repo (`~/Developer/boolery-studio`, github.com/phanvantai/boolery-studio) under `site/public/quickspend/`, live at <https://boolery.taiphanvan.dev/quickspend/>. Edit and deploy them there (`site/deploy/deploy.sh`).
-- The old address `quickspend.taiphanvan.dev` redirects there. Keep it working: `AppConstants.privacyPolicyUrl` in shipped versions and the App Store listing still use it.
+- The old address `quickspend.taiphanvan.dev` redirects there. Keep it working: versions up to 4.1 open `quickspend.taiphanvan.dev/privacy.html`, and the App Store listing uses the old privacy, support and marketing URLs until a new version is created (App Store Connect only lets a live version change its promotional text). `APP_STORE_METADATA.md` holds the new URLs to enter then.
 
 ## Versioning & Release Tags
 
