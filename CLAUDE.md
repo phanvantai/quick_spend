@@ -57,7 +57,7 @@ Open in Xcode: `open QuickSpend.xcodeproj`
 - `UsageLimitService` (`@Observable`) — daily Gemini parse limit tracking, auto-resets each day
 - `AnalyticsService` — Firebase Analytics wrapper with `#if canImport(FirebaseAnalytics)` guards (collection is off in DEBUG)
 - `VoiceAnalytics` — voice funnel events (`voice_started`, `voice_cancelled`, `voice_result`, `voice_review_closed`) through the `AnalyticsLogging` protocol so tests inject `MockAnalyticsLogger`. Never log what the user said, notes, or amounts
-- `VoiceSampleRecorder` — anonymous voice samples (what was said, what the AI parsed, what was saved) to Firestore `training_data` (`schema: 2`; write-only rules). Only when Settings → Data → "Help improve voice input" is on (`PreferencesService.shareVoiceSamples`, default on). No user or device id; Firestore TTL on `expire_at` deletes each sample after 90 days. Keep `quickspend-landing/privacy.html` in sync if the stored fields change
+- `VoiceSampleRecorder` — anonymous voice samples (what was said, what the AI parsed, what was saved) to Firestore `training_data` (`schema: 2`; write-only rules). Only when Settings → Data → "Help improve voice input" is on (`PreferencesService.shareVoiceSamples`, default on). No user or device id; Firestore TTL on `expire_at` deletes each sample after 90 days. Keep the privacy page in sync if the stored fields change (`site/public/quickspend/privacy.html` in the `boolery-studio` repo, see Landing page)
 - `PreferencesService` — singleton for UserDefaults-backed app config
 
 ### Widgets & Quick Launch
@@ -130,7 +130,12 @@ This project follows **Test-Driven Development (TDD)**. Tests are not optional.
    `xcrun simctl launch <udid> com.randomtech.quickSpend -ScreenshotDemo -AppleLanguages "(en)"` (`Utilities/ScreenshotDemo.swift`). Use light appearance and `xcrun simctl status_bar <udid> override --time 9:41`.
 2. The simulator has no microphone. For the voice slide add `-ScreenshotDemoVoice "<sentence>"`: the text goes to the real parser on launch (needs the simulator's App Check debug token). A vague item keeps it in review instead of auto-saving.
 3. Save raw captures (`xcrun simctl io <udid> screenshot`) as `screenshot-generator/public/screenshots/{home,home2,voice,transactions,report,categories}.png`, run `npm run dev` there, and export 6.9".
-4. Copy the exports to `screenshots/` and `quickspend-landing/assets/screenshots/` (no size suffix there); `home-raw.png` is the raw Home capture.
+4. Copy the exports to `screenshots/` and to `site/public/quickspend/assets/screenshots/` in the `boolery-studio` repo (no size suffix there); `home-raw.png` is the raw Home capture.
+
+## Landing page
+
+- The landing, privacy and support pages live in the Boolery Studio repo (`~/Developer/boolery-studio`, github.com/phanvantai/boolery-studio) under `site/public/quickspend/`, live at <https://boolery.taiphanvan.dev/quickspend/>. Edit and deploy them there (`site/deploy/deploy.sh`).
+- The old address `quickspend.taiphanvan.dev` redirects there. Keep it working: `AppConstants.privacyPolicyUrl` in shipped versions and the App Store listing still use it.
 
 ## Versioning & Release Tags
 
