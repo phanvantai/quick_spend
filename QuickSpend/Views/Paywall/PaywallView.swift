@@ -153,6 +153,16 @@ struct PaywallView: View {
             Divider().padding(.leading, 56)
 
             comparisonRow(
+                icon: "building.columns.fill",
+                color: AppTheme.primaryLight,
+                title: L10n.tr("paywall.feature_bank_categorize", appConfig.language),
+                freeValue: nil,
+                premiumValue: nil
+            )
+
+            Divider().padding(.leading, 56)
+
+            comparisonRow(
                 icon: "lightbulb.fill",
                 color: AppTheme.accentTeal,
                 title: L10n.tr("paywall.feature_requests_label", appConfig.language),

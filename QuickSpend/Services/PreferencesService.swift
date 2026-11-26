@@ -14,6 +14,10 @@ final class PreferencesService {
     private let shareVoiceSamplesKey = "share_voice_samples"
     private let voiceSaveCountKey = "voice_save_count"
     private let lastReviewPromptVersionKey = "last_review_prompt_version"
+    private let bankAlertsEnabledKey = "bank_alerts_enabled"
+    private let bankAlertsAlwaysReviewKey = "bank_alerts_always_review"
+    private let bankAlertWalletsKey = "bank_alert_wallets"
+    private let bankAlertsUseAIKey = "bank_alerts_use_ai"
 
     private convenience init() {
         self.init(defaults: .standard)
@@ -150,6 +154,39 @@ final class PreferencesService {
         set { defaults.set(newValue, forKey: shareVoiceSamplesKey) }
     }
 
+    // MARK: - Bank Alerts
+
+    /// Whether the "Add from Bank Alert" action records anything. On unless
+    /// the user paused it in Settings; the Shortcuts automation stays in place.
+    var bankAlertsEnabled: Bool {
+        get { defaults.object(forKey: bankAlertsEnabledKey) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: bankAlertsEnabledKey) }
+    }
+
+    /// Send every alert to the review list, even ones read with certainty.
+    var bankAlertsAlwaysReview: Bool {
+        get { defaults.bool(forKey: bankAlertsAlwaysReviewKey) }
+        set { defaults.set(newValue, forKey: bankAlertsAlwaysReviewKey) }
+    }
+
+    /// Premium: ask AI for a category when rules and the dictionary don't know.
+    var bankAlertsUseAI: Bool {
+        get { defaults.object(forKey: bankAlertsUseAIKey) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: bankAlertsUseAIKey) }
+    }
+
+    /// Wallet chosen for each bank id (`BankInfo.id`). Banks not listed use
+    /// the default wallet.
+    var bankAlertWalletIds: [String: String] {
+        defaults.dictionary(forKey: bankAlertWalletsKey) as? [String: String] ?? [:]
+    }
+
+    func setBankAlertWalletId(_ walletId: String?, forBank bankId: String) {
+        var map = bankAlertWalletIds
+        map[bankId] = walletId
+        defaults.set(map, forKey: bankAlertWalletsKey)
+    }
+
     // MARK: - Reset
 
     /// Clears all preferences managed by this service.
@@ -165,5 +202,9 @@ final class PreferencesService {
         defaults.removeObject(forKey: shareVoiceSamplesKey)
         defaults.removeObject(forKey: voiceSaveCountKey)
         defaults.removeObject(forKey: lastReviewPromptVersionKey)
+        defaults.removeObject(forKey: bankAlertsEnabledKey)
+        defaults.removeObject(forKey: bankAlertsAlwaysReviewKey)
+        defaults.removeObject(forKey: bankAlertWalletsKey)
+        defaults.removeObject(forKey: bankAlertsUseAIKey)
     }
 }

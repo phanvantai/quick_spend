@@ -57,6 +57,3666 @@
         }
       }
     },
+    "Add from Bank Alert" : {
+      "comment" : "Title of the \"Add from Bank Alert\" Shortcuts action.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add from Bank Alert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir desde aviso bancario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行通知から追加"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm từ tin ngân hàng"
+          }
+        }
+      }
+    },
+    "Alert Text" : {
+      "comment" : "Title of the parameter holding the bank alert text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alert Text"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto del aviso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知のテキスト"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nội dung tin"
+          }
+        }
+      }
+    },
+    "Bank" : {
+      "comment" : "Title of the bank parameter of the Add from Bank Alert action.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banco"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngân hàng"
+          }
+        }
+      }
+    },
+    "Choose the bank when the alert text doesn't name it, for example in bank SMS." : {
+      "comment" : "Description of the bank parameter.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the bank when the alert text doesn't name it, for example in bank SMS."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige el banco cuando el texto no lo nombra, por ejemplo en los SMS."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知の本文に銀行名がない場合（SMSなど）に銀行を選びます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn ngân hàng khi nội dung tin không ghi tên ngân hàng, ví dụ tin SMS."
+          }
+        }
+      }
+    },
+    "Records the income or expense in a bank balance alert. Use it in an automation that runs when your banking app sends a notification. The alert text is read on your iPhone and not stored." : {
+      "comment" : "Description of the \"Add from Bank Alert\" Shortcuts action.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records the income or expense in a bank balance alert. Use it in an automation that runs when your banking app sends a notification. The alert text is read on your iPhone and not stored."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra el ingreso o gasto de un aviso de saldo bancario. Úsalo en una automatización que se ejecute cuando tu app bancaria envíe una notificación. El texto se lee en tu iPhone y no se guarda."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行の残高通知にある収入や支出を記録します。銀行アプリが通知を送ったときに実行されるオートメーションで使います。通知の内容はiPhone上で読み取られ、保存されません。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ghi khoản thu hoặc chi trong tin biến động số dư của ngân hàng. Dùng trong một automation chạy khi app ngân hàng gửi thông báo. Nội dung tin được đọc ngay trên iPhone và không được lưu lại."
+          }
+        }
+      }
+    },
+    "The text of the bank notification, SMS or email." : {
+      "comment" : "Description of the Alert Text parameter.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The text of the bank notification, SMS or email."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El texto de la notificación, SMS o correo del banco."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行の通知、SMS、メールの本文。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nội dung thông báo, SMS hoặc email của ngân hàng."
+          }
+        }
+      }
+    },
+    "bank_alert.banner.subtitle" : {
+      "comment" : "Home banner subtitle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read from bank alerts · tap to check and save"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leídas de avisos bancarios · toca para revisar y guardar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行通知から読み取り · タップして確認・保存"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đọc từ tin ngân hàng · bấm để kiểm tra và lưu"
+          }
+        }
+      }
+    },
+    "bank_alert.banner.title" : {
+      "comment" : "Format: count. Home banner title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld bank transactions to review"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld transacciones bancarias por revisar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認待ちの銀行取引 %lld 件"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld giao dịch ngân hàng cần duyệt"
+          }
+        }
+      }
+    },
+    "bank_alert.banner.uncategorized_subtitle" : {
+      "comment" : "Home banner subtitle for uncategorized.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to file them in a few taps"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para clasificarlas en segundos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タップしてすぐに振り分け"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm để phân loại nhanh"
+          }
+        }
+      }
+    },
+    "bank_alert.banner.uncategorized_title" : {
+      "comment" : "Format: count. Home banner for uncategorized bank transactions.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld bank transactions uncategorized"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld transacciones bancarias sin categoría"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未分類の銀行取引 %lld 件"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld giao dịch ngân hàng chưa phân loại"
+          }
+        }
+      }
+    },
+    "bank_alert.categorize.footer_free" : {
+      "comment" : "Footer for free users in the categorization section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank transactions are filed under Other and listed in Uncategorized, where you can sort them with a tap."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las transacciones bancarias van a Otros y aparecen en Sin categoría, donde puedes clasificarlas con un toque."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行の取引は「その他」に入り、「未分類」からワンタップで振り分けられます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giao dịch từ tin ngân hàng được xếp vào Khác và hiện trong Chưa phân loại để bạn phân loại nhanh bằng một chạm."
+          }
+        }
+      }
+    },
+    "bank_alert.categorize.footer_premium" : {
+      "comment" : "Footer for Premium users in the categorization section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each transaction gets your rule for that recipient, else the category you used last time, else a known merchant, else AI. With AI on, only the note (recipient name or description) is sent to Google Gemini, never the amount, account number or balance."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada transacción usa tu regla para ese destinatario; si no, la categoría de la última vez; luego un comercio conocido; por último la IA. Con la IA activada, solo la nota (nombre o descripción) se envía a Google Gemini, nunca el importe, la cuenta ni el saldo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手のルール、前回のカテゴリ、既知の店舗、AIの順に振り分けます。AIがオンのとき、Google Geminiに送るのはメモ（相手の名前や内容）だけで、金額・口座番号・残高は送りません。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mỗi giao dịch được xếp theo quy tắc của người nhận; nếu không có thì theo danh mục lần trước; rồi đến merchant quen thuộc; cuối cùng là AI. Khi bật AI, chỉ phần ghi chú (tên người nhận hoặc nội dung) được gửi tới Google Gemini, không bao giờ gửi số tiền, số tài khoản hay số dư."
+          }
+        }
+      }
+    },
+    "bank_alert.categorize.header" : {
+      "comment" : "Header of the categorization section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categories"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリ分け"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phân loại danh mục"
+          }
+        }
+      }
+    },
+    "bank_alert.categorize.promo_subtitle" : {
+      "comment" : "Premium upsell subtitle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rules per recipient, well-known merchants and AI file each transaction for you"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reglas por destinatario, comercios conocidos e IA clasifican cada transacción"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手ごとのルール、よく知られた店舗、AIで取引を自動で振り分け"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quy tắc theo người nhận, merchant quen thuộc và AI tự xếp từng giao dịch cho bạn"
+          }
+        }
+      }
+    },
+    "bank_alert.categorize.promo_title" : {
+      "comment" : "Premium upsell title for automatic categorization.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic categories"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías automáticas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動カテゴリ分け"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động phân loại"
+          }
+        }
+      }
+    },
+    "bank_alert.categorize.use_ai" : {
+      "comment" : "Premium toggle: use AI to categorize.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use AI (Gemini)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar IA (Gemini)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI（Gemini）を使う"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dùng AI (Gemini)"
+          }
+        }
+      }
+    },
+    "bank_alert.channel.email" : {
+      "comment" : "Channel name: bank email.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank email"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correo del banco"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行のメール"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email ngân hàng"
+          }
+        }
+      }
+    },
+    "bank_alert.channel.email_subtitle" : {
+      "comment" : "Subtitle of the email channel.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emails in the Mail app"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correos en la app Mail"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メールアプリのメール"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email trong app Mail"
+          }
+        }
+      }
+    },
+    "bank_alert.channel.notification" : {
+      "comment" : "Channel name: banking app notifications.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banking app notifications"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones de la app del banco"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行アプリの通知"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thông báo app ngân hàng"
+          }
+        }
+      }
+    },
+    "bank_alert.channel.notification_subtitle" : {
+      "comment" : "Subtitle of the notification channel.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended · iOS 27 or later"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recomendado · iOS 27 o posterior"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "おすすめ · iOS 27以降"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khuyên dùng · iOS 27 trở lên"
+          }
+        }
+      }
+    },
+    "bank_alert.channel.requires_ios" : {
+      "comment" : "Format: iOS major version. Shown when the device is too old for a channel.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Needs iOS %lld or later"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requiere iOS %lld o posterior"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS %lld以降が必要"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cần iOS %lld trở lên"
+          }
+        }
+      }
+    },
+    "bank_alert.channel.sms" : {
+      "comment" : "Channel name: bank SMS.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank SMS"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SMS del banco"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行のSMS"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tin nhắn SMS ngân hàng"
+          }
+        }
+      }
+    },
+    "bank_alert.channel.sms_subtitle" : {
+      "comment" : "Subtitle of the SMS channel.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If your bank texts you balance changes"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si tu banco te envía SMS de movimientos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行から残高変動のSMSが届く場合"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nếu ngân hàng nhắn tin biến động số dư"
+          }
+        }
+      }
+    },
+    "bank_alert.guide.check" : {
+      "comment" : "How to check the setup worked.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**To check:** make a small payment. It appears in QuickSpend within seconds; if it's in beta, look under **To review** on Home. You can also paste an alert into **Try an alert** in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Para comprobarlo:** haz un pago pequeño. Aparece en QuickSpend en segundos; si es beta, mira en **Por revisar** en Inicio. También puedes pegar un aviso en **Probar un aviso** en Ajustes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**確認方法：** 少額の取引をしてみてください。数秒でQuickSpendに表示されます。ベータの場合はホームの**確認待ち**を見てください。設定の**通知を試す**に通知を貼り付けて確かめることもできます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Kiểm tra:** thử một giao dịch nhỏ. Giao dịch sẽ hiện trong QuickSpend sau vài giây; nếu là kênh thử nghiệm thì xem ở **Cần duyệt** trên Home. Bạn cũng có thể dán một tin vào **Đọc thử một tin** trong Settings."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.email.intro" : {
+      "comment" : "Intro of the email setup guide.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction emails from your bank, in the Mail app, are read and sent to To review."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los correos de transacciones de tu banco en la app Mail se leen y pasan a Por revisar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メールアプリに届く銀行の取引メールを読み取り、確認待ちに入れます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email giao dịch từ ngân hàng (trong app Mail) được đọc và đưa vào Cần duyệt."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.email.step1" : {
+      "comment" : "Email guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open **Shortcuts**, go to **Automation** and tap **+**, then choose **Email**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre **Atajos**, ve a **Automatización**, toca **+** y elige **Correo**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**ショートカット**の**オートメーション**で**＋**をタップし、**メール**を選びます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở **Phím tắt**, vào **Tự động hóa**, bấm **+** rồi chọn **Email**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.email.step2" : {
+      "comment" : "Email guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Under **Sender**, enter the address your bank's transaction emails come from (copy it from one of those emails)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En **Remitente**, escribe la dirección desde la que tu banco envía los correos de transacciones (cópiala de uno de ellos)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**送信者**に、銀行の取引メールの送信元アドレスを入力します（届いたメールからコピーできます）。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ở **Người gửi**, nhập địa chỉ email mà ngân hàng dùng để gửi thông báo giao dịch (chép từ một email cũ)."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.email.step3" : {
+      "comment" : "Email guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select **Run Immediately**, turn off **Notify When Run**, then tap **Next** and **New Blank Automation**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecciona **Ejecutar inmediatamente**, desactiva **Notificar al ejecutar** y toca **Siguiente** y **Nueva automatización en blanco**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**すぐに実行**を選び、**実行時に通知**をオフにして、**次へ**→**新規の空のオートメーション**をタップします。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn **Chạy ngay lập tức**, tắt **Thông báo khi chạy**, rồi bấm **Tiếp** và **Mục tự động hóa trống mới**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.email.step4" : {
+      "comment" : "Email guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the **QuickSpend** action **Add from Bank Alert**. Set **Alert Text** to **Shortcut Input** → **Body**, and **Bank** to **Vietcombank**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade la acción **Añadir desde aviso bancario** de **QuickSpend**. Pon **Texto del aviso** en **Entrada del atajo** → **Cuerpo** y **Banco** en **Vietcombank**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**QuickSpend**の**銀行通知から追加**を追加し、**通知のテキスト**を**ショートカットの入力**→**本文**、**銀行**を**Vietcombank**にします。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm tác vụ **Thêm từ tin ngân hàng** của **QuickSpend**. Đặt **Nội dung tin** là **Đầu vào phím tắt** → **Nội dung** (body), và **Ngân hàng** là **Vietcombank**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.email.step5" : {
+      "comment" : "Email guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap **Done**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca **OK**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**完了**をタップします。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm **Xong**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.email.tip" : {
+      "comment" : "Email guide tip.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only accounts added to Apple's Mail app trigger this automation. Email support is in beta, so each transaction waits in **To review**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo las cuentas añadidas a la app Mail de Apple activan esta automatización. El correo está en beta, así que cada transacción espera en **Por revisar**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appleのメールアプリに追加したアカウントのみが対象です。メールはベータ版のため、取引はすべて**確認待ち**に入ります。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ tài khoản email đã thêm vào app Mail của Apple mới kích hoạt automation này. Email đang thử nghiệm nên mỗi giao dịch vào **Cần duyệt**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.notification.intro" : {
+      "comment" : "Intro of the notification setup guide.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each balance notification from your banking app is recorded without opening QuickSpend."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada notificación de saldo de tu app bancaria se registra sin abrir QuickSpend."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行アプリの残高通知が、QuickSpendを開かずに記録されます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mỗi thông báo biến động số dư từ app ngân hàng được ghi lại mà không cần mở QuickSpend."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.notification.step1" : {
+      "comment" : "Notification guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the **Shortcuts** app, go to the **Automation** tab and tap **+**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la app **Atajos**, ve a la pestaña **Automatización** y toca **+**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**ショートカット**アプリを開き、**オートメーション**タブで**＋**をタップします。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở app **Phím tắt**, vào tab **Tự động hóa** và bấm **+**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.notification.step2" : {
+      "comment" : "Notification guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose **Notification**, then pick your banking app (for example **Vietcombank**)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige **Notificación** y luego tu app bancaria (por ejemplo **Vietcombank**)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**通知**を選び、銀行アプリ（例：**Vietcombank**）を選びます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn **Thông báo**, rồi chọn app ngân hàng của bạn (ví dụ **Vietcombank**)."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.notification.step3" : {
+      "comment" : "Notification guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select **Run Immediately** and turn off **Notify When Run**, then tap **Next**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecciona **Ejecutar inmediatamente**, desactiva **Notificar al ejecutar** y toca **Siguiente**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**すぐに実行**を選び、**実行時に通知**をオフにして**次へ**をタップします。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn **Chạy ngay lập tức** và tắt **Thông báo khi chạy**, rồi bấm **Tiếp**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.notification.step4" : {
+      "comment" : "Notification guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap **New Blank Automation**, then **Add Action**. Search for **QuickSpend** and choose **Add from Bank Alert**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca **Nueva automatización en blanco** y luego **Añadir acción**. Busca **QuickSpend** y elige **Añadir desde aviso bancario**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**新規の空のオートメーション**→**アクションを追加**をタップ。**QuickSpend**を検索し、**銀行通知から追加**を選びます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm **Mục tự động hóa trống mới**, rồi **Thêm tác vụ**. Tìm **QuickSpend** và chọn **Thêm từ tin ngân hàng**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.notification.step5" : {
+      "comment" : "Notification guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap the **Alert Text** field and choose **Shortcut Input**. If it offers a choice, pick the notification's **body** (message)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca el campo **Texto del aviso** y elige **Entrada del atajo**. Si te da opciones, elige el **cuerpo** (mensaje) de la notificación."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**通知のテキスト**欄をタップし、**ショートカットの入力**を選びます。選択肢があれば通知の**本文**を選びます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm vào ô **Nội dung tin** và chọn **Đầu vào phím tắt**. Nếu có lựa chọn, chọn phần **nội dung** (body/message) của thông báo."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.notification.step6" : {
+      "comment" : "Notification guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap **Done**. Repeat for each banking app you use."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca **OK**. Repite con cada app bancaria que uses."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**完了**をタップ。使っている銀行アプリごとに繰り返します。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm **Xong**. Làm lại cho từng app ngân hàng bạn dùng."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.notification.tip" : {
+      "comment" : "Notification guide tip.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Promotions and OTP codes are ignored, so the automation can run on every notification. For a bank other than Vietcombank, first teach QuickSpend its format with **Learn from a sample** in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las promociones y los códigos OTP se ignoran, así que puede ejecutarse con cada notificación. Para un banco que no sea Vietcombank, enseña primero su formato con **Aprender de un ejemplo** en Ajustes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロモーションやOTPは無視されるので、すべての通知で実行して問題ありません。Vietcombank以外の銀行は、先に設定の**サンプルから学習**で形式を教えてください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tin khuyến mãi và mã OTP sẽ được bỏ qua, nên automation có thể chạy với mọi thông báo. Với ngân hàng khác Vietcombank, hãy dạy QuickSpend dạng tin trước bằng **Học từ mẫu** trong Settings."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.open_shortcuts" : {
+      "comment" : "Button that opens the Shortcuts app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Shortcuts"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Atajos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ショートカットを開く"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở Phím tắt"
+          }
+        }
+      }
+    },
+    "bank_alert.guide.requires_ios" : {
+      "comment" : "Format: required iOS major version, then the device's iOS major version.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This needs iOS %lld or later. Your iPhone runs iOS %lld: update it, or use SMS or email instead."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requiere iOS %lld o posterior. Tu iPhone tiene iOS %lld: actualízalo o usa SMS o correo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS %lld以降が必要です。このiPhoneはiOS %lldです。アップデートするか、SMSかメールを使ってください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cách này cần iOS %lld trở lên. iPhone của bạn đang chạy iOS %lld: hãy cập nhật, hoặc dùng SMS hay email."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.sms.intro" : {
+      "comment" : "Intro of the SMS setup guide.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance-change texts from your bank are read and sent to To review."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los SMS de movimientos de tu banco se leen y pasan a Por revisar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行からの残高変動SMSを読み取り、確認待ちに入れます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tin nhắn biến động số dư từ ngân hàng được đọc và đưa vào Cần duyệt."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.sms.step1" : {
+      "comment" : "SMS guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open **Shortcuts**, go to **Automation** and tap **+**, then choose **Message**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre **Atajos**, ve a **Automatización**, toca **+** y elige **Mensaje**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**ショートカット**の**オートメーション**で**＋**をタップし、**メッセージ**を選びます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở **Phím tắt**, vào **Tự động hóa**, bấm **+** rồi chọn **Tin nhắn**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.sms.step2" : {
+      "comment" : "SMS guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Under **Message Contains**, type **VND** (it appears in every balance text). Bank senders usually aren't contacts, so leave **Sender** empty."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En **El mensaje contiene**, escribe **VND** (aparece en todos los SMS de saldo). Los remitentes del banco no suelen ser contactos, así que deja **Remitente** vacío."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**メッセージに次を含む**に**VND**と入力します（残高SMSには必ず含まれます）。銀行の送信者は連絡先にないことが多いので、**送信者**は空のままにします。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ở **Tin nhắn chứa**, nhập **VND** (có trong mọi tin biến động số dư). Người gửi của ngân hàng thường không có trong danh bạ, nên để trống **Người gửi**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.sms.step3" : {
+      "comment" : "SMS guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select **Run Immediately**, turn off **Notify When Run**, then tap **Next** and **New Blank Automation**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecciona **Ejecutar inmediatamente**, desactiva **Notificar al ejecutar** y toca **Siguiente** y **Nueva automatización en blanco**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**すぐに実行**を選び、**実行時に通知**をオフにして、**次へ**→**新規の空のオートメーション**をタップします。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn **Chạy ngay lập tức**, tắt **Thông báo khi chạy**, rồi bấm **Tiếp** và **Mục tự động hóa trống mới**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.sms.step4" : {
+      "comment" : "SMS guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the **QuickSpend** action **Add from Bank Alert**. Set **Alert Text** to **Shortcut Input** → **Content**, and **Bank** to **Vietcombank** (the SMS may not name the bank)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade la acción **Añadir desde aviso bancario** de **QuickSpend**. Pon **Texto del aviso** en **Entrada del atajo** → **Contenido** y **Banco** en **Vietcombank** (el SMS puede no nombrar al banco)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**QuickSpend**の**銀行通知から追加**を追加し、**通知のテキスト**を**ショートカットの入力**→**内容**、**銀行**を**Vietcombank**にします（SMSに銀行名がない場合があるため）。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm tác vụ **Thêm từ tin ngân hàng** của **QuickSpend**. Đặt **Nội dung tin** là **Đầu vào phím tắt** → **Nội dung**, và **Ngân hàng** là **Vietcombank** (vì tin SMS có thể không ghi tên ngân hàng)."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.sms.step5" : {
+      "comment" : "SMS guide step.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap **Done**."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca **OK**."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**完了**をタップします。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm **Xong**."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.sms.tip" : {
+      "comment" : "SMS guide tip.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SMS support is in beta: each transaction waits in **To review** so you can check it. If you also set up app notifications, the SMS for the same transaction is skipped."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los SMS están en beta: cada transacción espera en **Por revisar**. Si también configuras las notificaciones, el SMS de la misma transacción se omite."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SMSはベータ版です。取引はすべて**確認待ち**に入ります。アプリ通知も設定している場合、同じ取引のSMSはスキップされます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SMS đang ở mức thử nghiệm: mỗi giao dịch vào **Cần duyệt** để bạn kiểm tra. Nếu đã cài thông báo app, SMS của cùng giao dịch sẽ được bỏ qua."
+          }
+        }
+      }
+    },
+    "bank_alert.guide.title" : {
+      "comment" : "Navigation title of a setup guide.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setup guide"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guía de configuración"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定ガイド"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hướng dẫn cài đặt"
+          }
+        }
+      }
+    },
+    "bank_alert.learn.bank_name" : {
+      "comment" : "Placeholder of the bank name field.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank name, e.g. Techcombank"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del banco, p. ej. Techcombank"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行名（例：Techcombank）"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tên ngân hàng, ví dụ Techcombank"
+          }
+        }
+      }
+    },
+    "bank_alert.learn.error" : {
+      "comment" : "Shown when a format can't be built from the sample.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't learn from this alert. Try pasting the whole alert, exactly as the bank sent it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo aprender de este aviso. Pega el aviso completo, tal como lo envió el banco."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この通知から学習できませんでした。銀行から届いた通知を全文そのまま貼り付けてください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không học được từ tin này. Hãy dán đầy đủ cả tin, đúng như ngân hàng gửi."
+          }
+        }
+      }
+    },
+    "bank_alert.learn.error_generic" : {
+      "comment" : "Shown when the sample has too few fixed words before the amount.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This alert has too few fixed words before the amount to recognise it reliably. Try a sample that includes the start of the alert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este aviso tiene muy pocas palabras fijas antes del importe para reconocerlo con fiabilidad. Pega un ejemplo que incluya el inicio del aviso."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金額の前の固定語句が少なすぎて確実に認識できません。通知の冒頭を含めて貼り付けてください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tin này có quá ít chữ cố định trước số tiền nên không nhận diện chắc chắn được. Hãy dán tin có cả phần đầu."
+          }
+        }
+      }
+    },
+    "bank_alert.learn.footer" : {
+      "comment" : "Format: approvals needed. Footer of the learn section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QuickSpend keeps only the fixed words of this alert, with every number replaced, so no account number or balance is stored. Alerts in this format wait in To review until you've confirmed %lld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QuickSpend solo guarda las palabras fijas del aviso y sustituye todos los números, así que no guarda números de cuenta ni saldos. Los avisos con este formato esperan en Por revisar hasta que confirmes %lld."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QuickSpendは通知の固定された語句だけを保持し、数字はすべて置き換えるため、口座番号や残高は保存されません。この形式の通知は、%lld件確認するまで確認待ちになります。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QuickSpend chỉ giữ các chữ cố định của tin, mọi con số đều được thay bằng chỗ trống nên không lưu số tài khoản hay số dư. Tin dạng này sẽ vào Cần duyệt cho đến khi bạn duyệt đủ %lld giao dịch."
+          }
+        }
+      }
+    },
+    "bank_alert.learn.header" : {
+      "comment" : "Header of the learn-from-sample section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn this format"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprender este formato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この形式を学習"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Học dạng tin này"
+          }
+        }
+      }
+    },
+    "bank_alert.learn.no_numbers" : {
+      "comment" : "Shown when the pasted text has no amount-like number.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No amount found in this text."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró ningún importe en este texto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このテキストに金額が見つかりません。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tìm thấy số tiền trong nội dung này."
+          }
+        }
+      }
+    },
+    "bank_alert.learn.pick_amount" : {
+      "comment" : "Instruction to pick the amount among the numbers found.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which number is the transaction amount?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué número es el importe de la transacción?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取引金額はどの数字ですか？"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Số nào là số tiền giao dịch?"
+          }
+        }
+      }
+    },
+    "bank_alert.learn.save" : {
+      "comment" : "Button that saves the learned format.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save format"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar formato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "形式を保存"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lưu mẫu"
+          }
+        }
+      }
+    },
+    "bank_alert.learn.saved" : {
+      "comment" : "Format: bank name. Shown after saving a format.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved. Alerts from %@ in this format will now be read."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado. Ahora se leerán los avisos de %@ con este formato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存しました。%@ のこの形式の通知を読み取ります。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã lưu. Từ giờ tin dạng này của %@ sẽ được đọc."
+          }
+        }
+      }
+    },
+    "bank_alert.queued_expense" : {
+      "comment" : "Format: amount, then note. Shown when a bank alert expense was added to the review list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expense %@ · %@ is waiting for your review in QuickSpend"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El gasto %@ · %@ espera tu revisión en QuickSpend"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支出 %@ · %@ はQuickSpendで確認待ちです"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoản chi %@ · %@ đang chờ bạn duyệt trong QuickSpend"
+          }
+        }
+      }
+    },
+    "bank_alert.queued_income" : {
+      "comment" : "Format: amount, then note. Shown when a bank alert income was added to the review list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Income %@ · %@ is waiting for your review in QuickSpend"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El ingreso %@ · %@ espera tu revisión en QuickSpend"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "収入 %@ · %@ はQuickSpendで確認待ちです"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoản thu %@ · %@ đang chờ bạn duyệt trong QuickSpend"
+          }
+        }
+      }
+    },
+    "bank_alert.review.discard_all" : {
+      "comment" : "Discard every item in the review list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard all"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar todo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべて破棄"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bỏ tất cả"
+          }
+        }
+      }
+    },
+    "bank_alert.review.discard_all_confirm" : {
+      "comment" : "Confirmation title before discarding all.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard every transaction waiting for review?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descartar todas las transacciones por revisar?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認待ちの取引をすべて破棄しますか？"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bỏ tất cả giao dịch đang chờ duyệt?"
+          }
+        }
+      }
+    },
+    "bank_alert.review.empty" : {
+      "comment" : "Empty review list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to review"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada por revisar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認待ちはありません"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không có gì cần duyệt"
+          }
+        }
+      }
+    },
+    "bank_alert.review.footer" : {
+      "comment" : "Footer of the review list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to edit and save. Swipe right to save as is, left to discard."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para editar y guardar. Desliza a la derecha para guardar tal cual, a la izquierda para descartar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タップで編集して保存。右スワイプでそのまま保存、左スワイプで破棄。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm để sửa rồi lưu. Vuốt sang phải để lưu luôn, sang trái để bỏ."
+          }
+        }
+      }
+    },
+    "bank_alert.review.save_all" : {
+      "comment" : "Save every item in the review list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save all"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar todo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべて保存"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lưu tất cả"
+          }
+        }
+      }
+    },
+    "bank_alert.review.title" : {
+      "comment" : "Title of the bank alert review list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To review"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por revisar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認待ち"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cần duyệt"
+          }
+        }
+      }
+    },
+    "bank_alert.rules.empty" : {
+      "comment" : "Empty rules list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No rules yet. Categorize a transaction in Uncategorized or To review to make one."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay reglas. Clasifica una transacción en Sin categoría o Por revisar para crear una."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ルールはまだありません。「未分類」か「確認待ち」で取引を振り分けると作成されます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa có quy tắc. Phân loại một giao dịch trong Chưa phân loại hoặc Cần duyệt để tạo quy tắc."
+          }
+        }
+      }
+    },
+    "bank_alert.rules.footer" : {
+      "comment" : "Footer of the rules list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New alerts with the same recipient or description go to that category. Swipe left to delete a rule."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los avisos nuevos con el mismo destinatario o descripción van a esa categoría. Desliza a la izquierda para eliminar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同じ相手や内容の新しい通知はこのカテゴリに入ります。左にスワイプで削除。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tin mới có cùng người nhận hoặc nội dung sẽ vào danh mục này. Vuốt sang trái để xoá quy tắc."
+          }
+        }
+      }
+    },
+    "bank_alert.rules.title" : {
+      "comment" : "Title of the category rules list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category rules"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reglas de categoría"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分類ルール"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quy tắc phân loại"
+          }
+        }
+      }
+    },
+    "bank_alert.saved_expense" : {
+      "comment" : "Format: amount, then note. Shown after a bank alert is recorded as an expense.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded expense %@ · %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto registrado: %@ · %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支出 %@ を記録しました · %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã ghi khoản chi %@ · %@"
+          }
+        }
+      }
+    },
+    "bank_alert.saved_income" : {
+      "comment" : "Format: amount, then note. Shown after a bank alert is recorded as income.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded income %@ · %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingreso registrado: %@ · %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "収入 %@ を記録しました · %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã ghi khoản thu %@ · %@"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.always_review" : {
+      "comment" : "Toggle to review every bank alert before saving.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Always review before saving"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisar siempre antes de guardar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存前に必ず確認"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luôn duyệt trước khi lưu"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.always_review_footer" : {
+      "comment" : "Footer of the always-review toggle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On: every alert waits in To review, even from fully supported banks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado: todos los avisos esperan en Por revisar, incluso de bancos totalmente compatibles."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オン：完全対応の銀行も含め、すべての通知が確認待ちになります。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi bật: mọi tin đều vào Cần duyệt, kể cả ngân hàng được hỗ trợ đầy đủ."
+          }
+        }
+      }
+    },
+    "bank_alert.settings.currency_warning" : {
+      "comment" : "Format: the app currency code. Shown when the app currency is not VND.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank alerts are in VND, but QuickSpend uses %@. Alerts won't be recorded."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los avisos están en VND, pero QuickSpend usa %@. No se registrarán."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行通知はVND建てですが、QuickSpendの通貨は%@のため記録されません。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tin ngân hàng tính bằng VND nhưng QuickSpend đang dùng %@, nên tin sẽ không được ghi."
+          }
+        }
+      }
+    },
+    "bank_alert.settings.default_wallet" : {
+      "comment" : "Wallet picker option meaning the default wallet.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default wallet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billetera predeterminada"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デフォルトのウォレット"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ví mặc định"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.enable" : {
+      "comment" : "Toggle that turns bank alert recording on or off.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record from bank alerts"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar desde avisos bancarios"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行通知から記録"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động ghi từ tin ngân hàng"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.enable_footer_off" : {
+      "comment" : "Footer under the bank alert toggle when paused.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused: alerts are ignored. Your Shortcuts automations stay in place, so turning this back on is all it takes."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pausa: los avisos se ignoran. Tus automatizaciones de Atajos se mantienen; basta con volver a activarlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止中：通知は無視されます。ショートカットのオートメーションはそのまま残るので、オンに戻すだけで再開します。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang tạm dừng: tin ngân hàng sẽ bị bỏ qua. Automation trong Phím tắt vẫn giữ nguyên, chỉ cần bật lại là chạy."
+          }
+        }
+      }
+    },
+    "bank_alert.settings.enable_footer_on" : {
+      "comment" : "Footer under the bank alert toggle when on.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When your bank sends a balance alert by app notification, SMS or email, a Shortcuts automation passes it to QuickSpend, which records the income or expense. Set up the automation with a guide below."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando tu banco envía un aviso de saldo por notificación, SMS o correo, una automatización de Atajos lo pasa a QuickSpend, que registra el ingreso o gasto. Configúrala con una guía de abajo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行がアプリ通知・SMS・メールで残高通知を送ると、ショートカットのオートメーションがQuickSpendに渡し、収入や支出を記録します。下のガイドで設定してください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi ngân hàng gửi tin biến động số dư qua thông báo app, SMS hoặc email, một automation trong Phím tắt chuyển tin cho QuickSpend để ghi khoản thu chi. Làm theo hướng dẫn bên dưới để cài automation."
+          }
+        }
+      }
+    },
+    "bank_alert.settings.guides_footer" : {
+      "comment" : "Footer of the setup guides section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set up one or more. The same transaction arriving by several channels is recorded once."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configura uno o varios. Una misma transacción que llega por varios canales se registra una sola vez."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1つでも複数でも設定できます。複数の経路で届いた同じ取引は1回だけ記録されます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Có thể cài một hoặc nhiều kênh. Một giao dịch đến qua nhiều kênh chỉ được ghi một lần."
+          }
+        }
+      }
+    },
+    "bank_alert.settings.guides_header" : {
+      "comment" : "Header of the setup guides section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set up"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定ガイド"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hướng dẫn cài đặt"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.legend_beta" : {
+      "comment" : "Legend for beta support.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waits in To review for you to check"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espera en Por revisar para que lo compruebes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認待ちに入り、あなたが確認します"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vào Cần duyệt để bạn kiểm tra"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.legend_full" : {
+      "comment" : "Legend for full support.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded automatically"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se registra automáticamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動で記録"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động ghi"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.other_banks_hint" : {
+      "comment" : "Footer hint about other banks.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other bank? Teach QuickSpend its format with Learn from a sample below."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Otro banco? Enseña a QuickSpend su formato con Aprender de un ejemplo, abajo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "他の銀行は、下の「サンプルから学習」で通知の形式を教えられます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngân hàng khác? Dạy QuickSpend đọc tin của ngân hàng đó bằng Học từ mẫu bên dưới."
+          }
+        }
+      }
+    },
+    "bank_alert.settings.privacy" : {
+      "comment" : "Privacy note at the bottom of bank alert settings.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerts are read on your iPhone. QuickSpend doesn't keep the alert text, account numbers or balances. Premium with AI on sends only the note (recipient name or description) to Google Gemini to pick a category."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los avisos se leen en tu iPhone. QuickSpend no guarda el texto, los números de cuenta ni los saldos. Con Premium y la IA activada, solo la nota (nombre o descripción) se envía a Google Gemini para elegir la categoría."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知はiPhone上で読み取られます。本文・口座番号・残高は保存しません。PremiumでAIがオンのときは、カテゴリを選ぶためにメモ（相手の名前や内容）だけをGoogle Geminiに送ります。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tin được đọc ngay trên iPhone. QuickSpend không lưu nội dung tin, số tài khoản hay số dư. Với Premium bật AI, chỉ phần ghi chú (tên người nhận hoặc nội dung) được gửi tới Google Gemini để chọn danh mục."
+          }
+        }
+      }
+    },
+    "bank_alert.settings.row_subtitle_off" : {
+      "comment" : "Settings row subtitle when bank alerts are paused.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pausa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止中"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang tạm dừng"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.row_subtitle_on" : {
+      "comment" : "Settings row subtitle when bank alerts are on.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On · Vietcombank and learned formats"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado · Vietcombank y formatos aprendidos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オン · Vietcombankと学習した形式"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang bật · Vietcombank và các mẫu đã học"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.sources_header" : {
+      "comment" : "Header of the supported banks section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supported banks"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bancos compatibles"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "対応銀行"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngân hàng hỗ trợ"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.title" : {
+      "comment" : "Settings row and screen title for the bank alert feature.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank alerts"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avisos bancarios"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行通知から自動記録"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động ghi từ tin ngân hàng"
+          }
+        }
+      }
+    },
+    "bank_alert.settings.wallets_footer" : {
+      "comment" : "Footer of the per-bank wallet section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banks without a wallet here use your default wallet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los bancos sin billetera aquí usan tu billetera predeterminada."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ここで選んでいない銀行はデフォルトのウォレットに記録されます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngân hàng chưa chọn ví sẽ ghi vào ví mặc định."
+          }
+        }
+      }
+    },
+    "bank_alert.settings.wallets_header" : {
+      "comment" : "Header of the per-bank wallet section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record into wallet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar en la billetera"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記録先のウォレット"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ghi vào ví"
+          }
+        }
+      }
+    },
+    "bank_alert.support.beta" : {
+      "comment" : "Badge: beta support.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ベータ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thử nghiệm"
+          }
+        }
+      }
+    },
+    "bank_alert.support.full" : {
+      "comment" : "Badge: fully supported.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完全対応"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đầy đủ"
+          }
+        }
+      }
+    },
+    "bank_alert.templates.footer" : {
+      "comment" : "Format: number of approvals needed. Footer of learned formats.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste one alert from your bank and pick its amount. The first %lld transactions read this way wait in To review; after that, they're recorded automatically. Swipe left to delete a format."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pega un aviso de tu banco y elige el importe. Las primeras %lld transacciones leídas así esperan en Por revisar; después se registran automáticamente. Desliza a la izquierda para eliminar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行の通知を1件貼り付けて金額を選びます。この形式で読み取った最初の%lld件は確認待ちになり、その後は自動で記録されます。左にスワイプで削除。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dán một tin của ngân hàng và chọn số tiền. %lld giao dịch đầu đọc theo mẫu sẽ vào Cần duyệt; sau đó sẽ được ghi tự động. Vuốt sang trái để xoá mẫu."
+          }
+        }
+      }
+    },
+    "bank_alert.templates.header" : {
+      "comment" : "Header of the learned formats section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learned formats"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formatos aprendidos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学習した形式"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mẫu đã học"
+          }
+        }
+      }
+    },
+    "bank_alert.templates.learn" : {
+      "comment" : "Row that opens Learn from a sample.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn from a sample"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprender de un ejemplo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サンプルから学習"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Học từ mẫu"
+          }
+        }
+      }
+    },
+    "bank_alert.templates.learning" : {
+      "comment" : "Format: approvals so far, approvals needed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learning · %lld/%lld confirmed in To review"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprendiendo · %lld/%lld confirmadas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学習中 · %lld/%lld件確認済み"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang học · đã duyệt %lld/%lld"
+          }
+        }
+      }
+    },
+    "bank_alert.templates.placeholder_amount" : {
+      "comment" : "Placeholder for the amount in a learned format preview.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[amount]"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[importe]"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[金額]"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[số tiền]"
+          }
+        }
+      }
+    },
+    "bank_alert.templates.placeholder_date" : {
+      "comment" : "Placeholder for the date in a learned format preview.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[date]"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[fecha]"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[日付]"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ngày]"
+          }
+        }
+      }
+    },
+    "bank_alert.templates.placeholder_time" : {
+      "comment" : "Placeholder for the time in a learned format preview.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[time]"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[hora]"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[時刻]"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[giờ]"
+          }
+        }
+      }
+    },
+    "bank_alert.templates.trusted" : {
+      "comment" : "Status of a trusted template.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded automatically"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De confianza · se registra automáticamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信頼済み · 自動で記録"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã tin cậy · tự động ghi"
+          }
+        }
+      }
+    },
+    "bank_alert.try.amount" : {
+      "comment" : "Result row label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importe"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金額"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Số tiền"
+          }
+        }
+      }
+    },
+    "bank_alert.try.bank" : {
+      "comment" : "Result row label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banco"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngân hàng"
+          }
+        }
+      }
+    },
+    "bank_alert.try.footer" : {
+      "comment" : "Footer of the try screen.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing is saved here. Use it to check QuickSpend understands your bank's alerts."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquí no se guarda nada. Sirve para comprobar que QuickSpend entiende los avisos de tu banco."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ここでは何も保存されません。銀行の通知を正しく読み取れるか確認できます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không lưu gì ở đây. Dùng để kiểm tra QuickSpend có hiểu tin của ngân hàng bạn không."
+          }
+        }
+      }
+    },
+    "bank_alert.try.not_recognized" : {
+      "comment" : "Shown when the pasted text is not a balance alert.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not recognised as a balance alert. It would be ignored."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se reconoce como aviso de saldo. Se ignoraría."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "残高通知として認識できません。この通知は無視されます。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không nhận ra đây là tin biến động số dư. Tin này sẽ bị bỏ qua."
+          }
+        }
+      }
+    },
+    "bank_alert.try.note" : {
+      "comment" : "Result row label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ghi chú"
+          }
+        }
+      }
+    },
+    "bank_alert.try.placeholder" : {
+      "comment" : "Placeholder in the paste box.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste a bank notification, SMS or email"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pega una notificación, SMS o correo del banco"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行の通知・SMS・メールを貼り付け"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dán một thông báo, SMS hoặc email của ngân hàng"
+          }
+        }
+      }
+    },
+    "bank_alert.try.read" : {
+      "comment" : "Button that parses the pasted alert.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み取る"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đọc thử"
+          }
+        }
+      }
+    },
+    "bank_alert.try.result" : {
+      "comment" : "Header of the parse result.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Result"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resultado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "結果"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kết quả"
+          }
+        }
+      }
+    },
+    "bank_alert.try.time" : {
+      "comment" : "Result row label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日時"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian"
+          }
+        }
+      }
+    },
+    "bank_alert.try.title" : {
+      "comment" : "Screen to test the parser on a pasted alert.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try an alert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probar un aviso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知を試す"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đọc thử một tin"
+          }
+        }
+      }
+    },
+    "bank_alert.try.type" : {
+      "comment" : "Result row label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "種類"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loại"
+          }
+        }
+      }
+    },
+    "bank_alert.try.unknown_bank" : {
+      "comment" : "Result when the bank is not identified.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not identified"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin identificar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不明"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa xác định"
+          }
+        }
+      }
+    },
+    "bank_alert.try.will_review" : {
+      "comment" : "Result: will go to review.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Would wait in To review"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esperaría en Por revisar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認待ちに入ります"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sẽ vào Cần duyệt"
+          }
+        }
+      }
+    },
+    "bank_alert.try.will_save" : {
+      "comment" : "Result: will be saved automatically.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Would be recorded automatically"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se registraría automáticamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動で記録されます"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sẽ được ghi tự động"
+          }
+        }
+      }
+    },
+    "bank_alert.uncategorized.empty" : {
+      "comment" : "Empty uncategorized list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everything is categorized"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo está clasificado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべて分類済みです"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mọi giao dịch đã được phân loại"
+          }
+        }
+      }
+    },
+    "bank_alert.uncategorized.footer" : {
+      "comment" : "Footer of the uncategorized list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a category to file a transaction. Swipe left to keep it as Other."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca una categoría para clasificar. Desliza a la izquierda para dejarla en Otros."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カテゴリをタップして振り分けます。左にスワイプで「その他」のまま。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm vào một danh mục để xếp giao dịch. Vuốt sang trái để giữ là Khác."
+          }
+        }
+      }
+    },
+    "bank_alert.uncategorized.keep_other" : {
+      "comment" : "Swipe action: keep the transaction in Other.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep as Other"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar en Otros"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その他のまま"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giữ là Khác"
+          }
+        }
+      }
+    },
+    "bank_alert.uncategorized.remember" : {
+      "comment" : "Premium toggle: remember the chosen category for this counterparty.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remember for next time"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordar para la próxima vez"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次回も同じカテゴリに"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhớ cho lần sau"
+          }
+        }
+      }
+    },
+    "bank_alert.uncategorized.remember_footer" : {
+      "comment" : "Footer of the remember toggle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QuickSpend makes a rule for that recipient or description, files their other uncategorized transactions too, and uses it for new alerts."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QuickSpend crea una regla para ese destinatario o descripción, clasifica también sus otras transacciones sin categoría y la usa en avisos nuevos."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その相手や内容にルールを作り、他の未分類の取引もまとめて振り分け、新しい通知にも適用します。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QuickSpend tạo quy tắc cho người nhận hoặc nội dung đó, xếp luôn các giao dịch chưa phân loại khác của họ, và áp dụng cho tin mới."
+          }
+        }
+      }
+    },
+    "bank_alert.uncategorized.title" : {
+      "comment" : "Title of the uncategorized bank transactions list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uncategorized"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin categoría"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未分類"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa phân loại"
+          }
+        }
+      }
+    },
+    "bank_alert.unsupported_currency" : {
+      "comment" : "Shown when a VND bank alert arrives but the app currency is not VND.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank alerts are in VND. Switch QuickSpend's currency to VND to record them."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los avisos bancarios están en VND. Cambia la moneda de QuickSpend a VND para registrarlos."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行通知はVND建てです。記録するにはQuickSpendの通貨をVNDに変更してください。"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tin ngân hàng tính bằng VND. Hãy đổi tiền tệ của QuickSpend sang VND để ghi tự động."
+          }
+        }
+      }
+    },
+    "paywall.feature_bank_categorize" : {
+      "comment" : "Paywall comparison row: automatic categorization of bank alerts.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto-categorize bank alerts (AI)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clasificar avisos bancarios (IA)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "銀行通知の自動分類（AI）"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự phân loại tin ngân hàng (AI)"
+          }
+        }
+      }
+    },
     "·" : {
       "localizations" : {
         "en" : {

@@ -6,6 +6,7 @@ struct CoreSection: View {
     @Environment(AppConfigViewModel.self) private var appConfig
 
     let isCurrencyLocked: Bool
+    @State private var bankAlerts = BankAlertStore()
     @Binding var activeSheet: SettingsSheet?
 
     var body: some View {
@@ -57,6 +58,21 @@ struct CoreSection: View {
                 )
             }
             .tint(.primary)
+
+            NavigationLink {
+                BankAlertSettingsView()
+                    .onDisappear { bankAlerts.reload() }
+            } label: {
+                SettingsRow(
+                    icon: "building.columns.fill",
+                    iconColor: AppTheme.adaptiveAccent(colorScheme),
+                    title: L10n.tr("bank_alert.settings.title", appConfig.language),
+                    subtitle: L10n.tr(
+                        bankAlerts.isEnabled ? "bank_alert.settings.row_subtitle_on" : "bank_alert.settings.row_subtitle_off",
+                        appConfig.language
+                    )
+                )
+            }
 
             Button {
                 if !isCurrencyLocked {
