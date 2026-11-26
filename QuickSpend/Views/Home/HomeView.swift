@@ -22,6 +22,10 @@ struct HomeView: View {
     @State private var showWallets = false
     @State private var showSettings = false
     @State private var showWalletsWhatsNew = false
+    @State private var bankAlerts = BankAlertStore()
+    @State private var showBankAlertReview = false
+    @State private var showUncategorized = false
+    @Environment(\.scenePhase) private var scenePhase
 
     // MARK: - Selected Month Data
 
@@ -156,6 +160,24 @@ struct HomeView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: AppTheme.spacing16) {
+                    if !bankAlerts.pending.isEmpty {
+                        BankAlertReviewBanner(
+                            count: bankAlerts.pending.count,
+                            language: appConfig.language,
+                            onTap: { showBankAlertReview = true }
+                        )
+                    }
+
+                    let uncategorizedCount = bankAlerts.uncategorizedTransactions(allTransactions).count
+                    if uncategorizedCount > 0 {
+                        BankAlertReviewBanner(
+                            count: uncategorizedCount,
+                            language: appConfig.language,
+                            kind: .uncategorized,
+                            onTap: { showUncategorized = true }
+                        )
+                    }
+
                     BalanceHero(
                         currentBalance: displayedBalance,
                         monthlyNet: (totalIncome == 0 && totalExpenses == 0) ? nil : (totalIncome - totalExpenses),
@@ -287,8 +309,34 @@ struct HomeView: View {
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
             }
+            .sheet(isPresented: $showUncategorized) {
+                NavigationStack {
+                    BankAlertUncategorizedView(store: bankAlerts)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button(L10n.tr("common.done", appConfig.language)) { showUncategorized = false }
+                            }
+                        }
+                }
+                .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showBankAlertReview) {
+                NavigationStack {
+                    BankAlertReviewView(store: bankAlerts)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button(L10n.tr("common.done", appConfig.language)) { showBankAlertReview = false }
+                            }
+                        }
+                }
+                .presentationDragIndicator(.visible)
+            }
             .onAppear {
                 showWalletsWhatsNew = appConfig.shouldShowWalletsWhatsNew
+                bankAlerts.reload()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { bankAlerts.reload() }
             }
         }
     }

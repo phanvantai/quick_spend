@@ -2,6 +2,50 @@
 
 ---
 
+## [4.2] - Unreleased
+
+### What's New
+- Record transactions from bank alerts: the new "Add from Bank Alert" Shortcuts action reads a bank notification (iOS 27 Notification trigger), SMS (Message trigger) or email (Email trigger) on the device, with no network, no AI parse and no daily limit. An optional "Bank" parameter says which bank sent an SMS or email that doesn't name it
+- Vietcombank app notifications are read by a parser written against real alerts and saved straight away, with the time, amount and the transfer recipient or sender as the note. Vietcombank SMS and email are in beta and wait in a new "To review" list; Home shows a banner while items wait. Save, edit then save, or discard each one, or all at once
+- Other banks: "Learn from a sample" — paste one alert, pick its amount and name the bank. QuickSpend keeps only the alert's fixed words (every number replaced) and reads that format from then on; the first 3 transactions wait for review, then they're recorded automatically. Fixing an amount or type resets the count. Without a learned format, other banks' alerts are ignored
+- Settings → "Bank alerts": on/off switch, step-by-step setup guides for each channel, supported channels, learned formats, a wallet per bank or format, "Always review before saving", and "Try an alert" to check how a pasted alert is read
+- The same money movement arriving through several channels (same amount within 2 minutes) is recorded once. OTP, promotional and failed-transaction messages are ignored silently
+- Premium: bank-alert transactions are categorised automatically — the user's rule for that recipient or description, else the category used last time, else a built-in dictionary of Vietnamese merchants and payment words, else Gemini AI (sends only the note, never the amount, account number or balance; can be turned off). Categorising in "Uncategorized" or "To review" creates a rule (listed in Settings → Category rules) and files the other uncategorized transactions with the same note
+- Free: bank-alert transactions go to Other and are listed in "Uncategorized" (Home banner + Settings), where one tap on a category chip files each one; swipe to keep it as Other. The Paywall lists the new Premium feature
+- The alert text is never stored: no account number, no balance. Works only when the app currency is VND
+
+### App Store Notes
+
+#### en
+What's New
+• Record transactions from your bank's alerts automatically with a Shortcuts automation. Vietcombank notifications are fully supported; for other banks, paste one alert and QuickSpend learns its format
+• Premium: bank transactions are categorized automatically with your rules, well-known merchants and AI
+• Settings → Bank alerts has step-by-step guides and an on/off switch
+• Alerts are read on your iPhone and never stored
+
+#### vi
+Tính năng mới
+• Tự động ghi thu chi từ tin ngân hàng bằng automation trong Phím tắt. Thông báo Vietcombank được hỗ trợ đầy đủ; với ngân hàng khác, chỉ cần dán một tin để QuickSpend học dạng tin
+• Premium: tự động phân loại giao dịch ngân hàng theo quy tắc của bạn, merchant quen thuộc và AI
+• Cài đặt → Tự động ghi từ tin ngân hàng: hướng dẫn từng bước và công tắc bật/tắt
+• Tin được đọc ngay trên iPhone và không được lưu lại
+
+#### ja
+新機能
+• ショートカットのオートメーションで、銀行の通知から取引を自動記録。Vietcombankの通知は完全対応。他の銀行は通知を1件貼り付けるだけで形式を学習します
+• Premium：ルール、よく知られた店舗、AIで銀行取引を自動でカテゴリ分け
+• 設定 →「銀行通知から自動記録」に手順ガイドとオン/オフを用意
+• 通知はiPhone上で読み取られ、保存されません
+
+#### es
+Novedades
+• Registra transacciones desde los avisos de tu banco con una automatización de Atajos. Las notificaciones de Vietcombank son totalmente compatibles; para otros bancos, pega un aviso y QuickSpend aprende su formato
+• Premium: las transacciones bancarias se clasifican automáticamente con tus reglas, comercios conocidos e IA
+• Ajustes → Avisos bancarios tiene guías paso a paso y un interruptor
+• Los avisos se leen en tu iPhone y nunca se guardan
+
+---
+
 ## [4.1] - 2026-10-23
 
 ### What's New

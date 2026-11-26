@@ -646,6 +646,6 @@ extension GeminiParserService {
     }
 }
 
-private struct GeminiTimeoutError: Error {}
+struct GeminiTimeoutError: Error {}
 
 #endif

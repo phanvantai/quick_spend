@@ -293,4 +293,33 @@ struct PreferencesServiceTests {
         #expect(loaded.currency == "JPY")
         #expect(loaded.isOnboardingComplete == true)
     }
+
+    // MARK: - Bank Alerts
+
+    @Test("Bank alerts default to on, no always-review, no wallet mapping")
+    func bankAlertDefaults() {
+        let service = makeService()
+        #expect(service.bankAlertsEnabled == true)
+        #expect(service.bankAlertsAlwaysReview == false)
+        #expect(service.bankAlertWalletIds.isEmpty)
+    }
+
+    @Test("Bank alert settings persist and clearAll resets them")
+    func bankAlertSettingsPersist() {
+        let service = makeService()
+        service.bankAlertsEnabled = false
+        service.bankAlertsAlwaysReview = true
+        service.setBankAlertWalletId("wallet-a", forBank: "vcb")
+        service.setBankAlertWalletId("wallet-b", forBank: "tcb")
+        service.setBankAlertWalletId(nil, forBank: "tcb")
+
+        #expect(service.bankAlertsEnabled == false)
+        #expect(service.bankAlertsAlwaysReview == true)
+        #expect(service.bankAlertWalletIds == ["vcb": "wallet-a"])
+
+        service.clearAll()
+        #expect(service.bankAlertsEnabled == true)
+        #expect(service.bankAlertsAlwaysReview == false)
+        #expect(service.bankAlertWalletIds.isEmpty)
+    }
 }
