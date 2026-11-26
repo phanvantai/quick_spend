@@ -12,7 +12,7 @@ struct AddBankAlertIntent: AppIntent {
     static var title: LocalizedStringResource = "Add from Bank Alert"
 
     static var description = IntentDescription(
-        "Records the income or expense in a bank balance alert. Use it in an automation that runs when your banking app sends a notification. The alert text is read on your iPhone and not stored."
+        "Records the income or expense in a bank balance alert. Use it in an automation that runs when your banking app sends a notification. The alert text is read on the device and never stored."
     )
 
     static var openAppWhenRun: Bool = false

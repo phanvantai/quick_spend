@@ -177,32 +177,32 @@
         }
       }
     },
-    "Records the income or expense in a bank balance alert. Use it in an automation that runs when your banking app sends a notification. The alert text is read on your iPhone and not stored." : {
+    "Records the income or expense in a bank balance alert. Use it in an automation that runs when your banking app sends a notification. The alert text is read on the device and never stored." : {
       "comment" : "Description of the \"Add from Bank Alert\" Shortcuts action.",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Records the income or expense in a bank balance alert. Use it in an automation that runs when your banking app sends a notification. The alert text is read on your iPhone and not stored."
+            "value" : "Records the income or expense in a bank balance alert. Use it in an automation that runs when your banking app sends a notification. The alert text is read on the device and never stored."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registra el ingreso o gasto de un aviso de saldo bancario. Úsalo en una automatización que se ejecute cuando tu app bancaria envíe una notificación. El texto se lee en tu iPhone y no se guarda."
+            "value" : "Registra el ingreso o gasto de un aviso de saldo bancario. Úsalo en una automatización que se ejecute cuando tu app bancaria envíe una notificación. El texto se lee en el dispositivo y nunca se guarda."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "銀行の残高通知にある収入や支出を記録します。銀行アプリが通知を送ったときに実行されるオートメーションで使います。通知の内容はiPhone上で読み取られ、保存されません。"
+            "value" : "銀行の残高通知にある収入や支出を記録します。銀行アプリが通知を送ったときに実行されるオートメーションで使います。通知の内容はデバイス上で読み取られ、保存されません。"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ghi khoản thu hoặc chi trong tin biến động số dư của ngân hàng. Dùng trong một automation chạy khi app ngân hàng gửi thông báo. Nội dung tin được đọc ngay trên iPhone và không được lưu lại."
+            "value" : "Ghi khoản thu hoặc chi trong tin biến động số dư của ngân hàng. Dùng trong một automation chạy khi app ngân hàng gửi thông báo. Nội dung tin được đọc ngay trên thiết bị và không được lưu lại."
           }
         }
       }
