@@ -25,6 +25,8 @@ struct HomeView: View {
     @State private var bankAlerts = BankAlertStore()
     @State private var showBankAlertReview = false
     @State private var showUncategorized = false
+    @State private var showBankAlertSetup = false
+    @State private var setupCardDismissed = PreferencesService.shared.bankAlertsSetupCardDismissed
     @Environment(\.scenePhase) private var scenePhase
 
     // MARK: - Selected Month Data
@@ -154,6 +156,19 @@ struct HomeView: View {
         .sorted { $0.totalAmount > $1.totalAmount }
     }
 
+    // MARK: - Bank alerts
+
+    private var showsBankAlertSetupCard: Bool {
+        BankAlertPromoPolicy.shouldShowSetupCard(
+            currency: appConfig.currency,
+            hasSeenWhatsNew: appConfig.hasSeenBankAlertsWhatsNew,
+            cardDismissed: setupCardDismissed,
+            isEnabled: bankAlerts.isEnabled,
+            hasBankAlertActivity: !bankAlerts.pending.isEmpty
+                || allTransactions.contains { $0.id.hasPrefix(BankAlertImportFlow.idPrefix) }
+        )
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -165,6 +180,17 @@ struct HomeView: View {
                             count: bankAlerts.pending.count,
                             language: appConfig.language,
                             onTap: { showBankAlertReview = true }
+                        )
+                    }
+
+                    if showsBankAlertSetupCard {
+                        BankAlertSetupCard(
+                            language: appConfig.language,
+                            onOpen: { showBankAlertSetup = true },
+                            onClose: {
+                                PreferencesService.shared.bankAlertsSetupCardDismissed = true
+                                withAnimation { setupCardDismissed = true }
+                            }
                         )
                     }
 
@@ -308,6 +334,25 @@ struct HomeView: View {
                 )
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showBankAlertSetup) {
+                // First-time setup goes straight to the steps; the guide's
+                // footer link leads to every other setting.
+                NavigationStack {
+                    BankAlertGuideView(channel: .notification, showsAllSettingsLink: true)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button(L10n.tr("common.done", appConfig.language)) { showBankAlertSetup = false }
+                            }
+                        }
+                }
+                .presentationDragIndicator(.visible)
+            }
+            .onChange(of: appConfig.bankAlertSetupRequested) { _, requested in
+                guard requested else { return }
+                appConfig.bankAlertSetupRequested = false
+                // Let the What's New sheet finish dismissing first.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { showBankAlertSetup = true }
             }
             .sheet(isPresented: $showUncategorized) {
                 NavigationStack {

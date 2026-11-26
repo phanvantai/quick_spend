@@ -29,6 +29,13 @@ struct BankAlertSettingsView: View {
                 }
             }
 
+            if let url = BankAlertShortcut.installURL(for: language) {
+                Section {
+                    QuickInstallCard(language: language) { UIApplication.shared.open(url) }
+                        .listRowInsets(EdgeInsets())
+                }
+            }
+
             Section {
                 Toggle(isOn: Binding(get: { store.isEnabled }, set: { store.setEnabled($0) })) {
                     Text(t("bank_alert.settings.enable"))

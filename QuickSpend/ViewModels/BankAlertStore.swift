@@ -26,12 +26,21 @@ enum BankAlertChannel: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Steps in `BankAlertGuideView`, as `bank_alert.guide.<channel>.stepN` keys.
-    var stepCount: Int {
+    /// Guide text keys, `bank_alert.guide.<key>.stepN`. iOS 27 moved
+    /// automations into the shortcut editor, so SMS and email have a second set
+    /// for it; the notification trigger only exists from iOS 27.
+    func guideKey(onMajorVersion major: Int) -> String {
         switch self {
-        case .notification: return 6
-        case .sms: return 5
-        case .email: return 5
+        case .notification: return "notification"
+        case .sms: return major >= 27 ? "sms27" : "sms"
+        case .email: return major >= 27 ? "email27" : "email"
+        }
+    }
+
+    func stepCount(onMajorVersion major: Int) -> Int {
+        switch guideKey(onMajorVersion: major) {
+        case "sms", "email": return 5
+        default: return 6
         }
     }
 
