@@ -24,6 +24,10 @@ struct AppConfig: Codable, Equatable {
     /// auto-flipped during onboarding — fresh installs and upgrades both see it once
     /// because it's an opt-in feature that lives outside the app.
     var hasSeenVoiceShortcutPromo: Bool = false
+    /// Whether the user has dismissed the one-time 4.2 modal introducing bank
+    /// alerts. Fires after the Voice Shortcut promo, only for VND users (the
+    /// feature reads VND alerts). Fresh installs and upgrades both see it once.
+    var hasSeenBankAlertsWhatsNew: Bool = false
     /// The Home FocalChartCard's currently selected view — "donut" (by category)
     /// or "bar" (income vs expense). Persisted so the user's pick survives app
     /// relaunch. Unknown values from older builds decode to "donut".
@@ -51,6 +55,7 @@ struct AppConfig: Codable, Equatable {
         self.hasSeenBalanceWhatsNew = try c.decodeIfPresent(Bool.self, forKey: .hasSeenBalanceWhatsNew) ?? false
         self.hasSeenSiriPromo = try c.decodeIfPresent(Bool.self, forKey: .hasSeenSiriPromo) ?? false
         self.hasSeenVoiceShortcutPromo = try c.decodeIfPresent(Bool.self, forKey: .hasSeenVoiceShortcutPromo) ?? false
+        self.hasSeenBankAlertsWhatsNew = try c.decodeIfPresent(Bool.self, forKey: .hasSeenBankAlertsWhatsNew) ?? false
         let storedFocal = try c.decodeIfPresent(String.self, forKey: .focalChartPreference)
         self.focalChartPreference = FocalChartPreference(rawValue: storedFocal ?? "")?.rawValue
             ?? FocalChartPreference.donut.rawValue

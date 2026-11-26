@@ -101,6 +101,22 @@ struct SplashView: View {
                 )) {
                     VoiceShortcutPromoModal()
                 }
+                // Bank alerts (4.2) come after every earlier promo, for VND
+                // users only since alerts are read in VND.
+                .sheet(isPresented: Binding(
+                    get: {
+                        BankAlertPromoPolicy.shouldShowWhatsNew(
+                            currency: appConfig.currency,
+                            hasSeenWhatsNew: appConfig.hasSeenBankAlertsWhatsNew,
+                            earlierPromosDone: appConfig.hasSeenBalanceWhatsNew
+                                && appConfig.hasSeenSiriPromo
+                                && appConfig.hasSeenVoiceShortcutPromo
+                        )
+                    },
+                    set: { _ in /* dismiss flows through markBankAlertsWhatsNewSeen */ }
+                )) {
+                    BankAlertsWhatsNewModal()
+                }
         } else {
             OnboardingView { }
         }

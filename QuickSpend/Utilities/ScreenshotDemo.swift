@@ -45,6 +45,7 @@ enum ScreenshotDemo {
         preferences.saveConfig(config)
         preferences.completeOnboarding()
         preferences.markVoiceShortcutPromoSeen()
+        preferences.markBankAlertsWhatsNewSeen()
         preferences.markVoiceTutorialShown()
         preferences.setShouldShowWalletsWhatsNew(false)
         preferences.setDefaultWalletId(Wallet.personalID)

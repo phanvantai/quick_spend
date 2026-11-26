@@ -18,6 +18,7 @@ final class PreferencesService {
     private let bankAlertsAlwaysReviewKey = "bank_alerts_always_review"
     private let bankAlertWalletsKey = "bank_alert_wallets"
     private let bankAlertsUseAIKey = "bank_alerts_use_ai"
+    private let bankAlertsSetupCardDismissedKey = "bank_alerts_setup_card_dismissed"
 
     private convenience init() {
         self.init(defaults: .standard)
@@ -73,6 +74,10 @@ final class PreferencesService {
     func markVoiceShortcutPromoSeen() {
         updateConfig { $0.hasSeenVoiceShortcutPromo = true }
     }
+    func markBankAlertsWhatsNewSeen() {
+        updateConfig { $0.hasSeenBankAlertsWhatsNew = true }
+    }
+
 
     /// Persists the Home FocalChartCard's selected view.
     func setFocalChartPreference(_ value: FocalChartPreference) {
@@ -175,6 +180,12 @@ final class PreferencesService {
         set { defaults.set(newValue, forKey: bankAlertsUseAIKey) }
     }
 
+    /// The user closed the Home card suggesting bank-alert setup.
+    var bankAlertsSetupCardDismissed: Bool {
+        get { defaults.bool(forKey: bankAlertsSetupCardDismissedKey) }
+        set { defaults.set(newValue, forKey: bankAlertsSetupCardDismissedKey) }
+    }
+
     /// Wallet chosen for each bank id (`BankInfo.id`). Banks not listed use
     /// the default wallet.
     var bankAlertWalletIds: [String: String] {
@@ -206,5 +217,6 @@ final class PreferencesService {
         defaults.removeObject(forKey: bankAlertsAlwaysReviewKey)
         defaults.removeObject(forKey: bankAlertWalletsKey)
         defaults.removeObject(forKey: bankAlertsUseAIKey)
+        defaults.removeObject(forKey: bankAlertsSetupCardDismissedKey)
     }
 }

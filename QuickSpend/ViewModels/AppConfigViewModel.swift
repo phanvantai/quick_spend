@@ -19,6 +19,9 @@ final class AppConfigViewModel {
     var hasSeenBalanceWhatsNew: Bool { config.hasSeenBalanceWhatsNew }
     var hasSeenSiriPromo: Bool { config.hasSeenSiriPromo }
     var hasSeenVoiceShortcutPromo: Bool { config.hasSeenVoiceShortcutPromo }
+    var hasSeenBankAlertsWhatsNew: Bool { config.hasSeenBankAlertsWhatsNew }
+    /// Set when a promo asks Home to open the bank-alert setup; Home resets it.
+    var bankAlertSetupRequested = false
     var shouldShowWalletsWhatsNew: Bool { preferences.shouldShowWalletsWhatsNew }
     /// Decoded form of `config.focalChartPreference`. Unknown raw values fall
     /// back to `.donut` (mirrors the AppConfig decoder).
@@ -120,6 +123,12 @@ final class AppConfigViewModel {
     /// shortcut or chooses "Maybe later".
     func markVoiceShortcutPromoSeen() {
         config.hasSeenVoiceShortcutPromo = true
+        preferences.saveConfig(config)
+    }
+
+    /// Called from the bank alerts What's New modal, whichever button was tapped.
+    func markBankAlertsWhatsNewSeen() {
+        config.hasSeenBankAlertsWhatsNew = true
         preferences.saveConfig(config)
     }
 
